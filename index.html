@@ -370,6 +370,18 @@
 }
 .scroll-top-button :hover{opacity:0.8;}
 
+.day-section {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.day-section.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
 
   </style>
 </head>
@@ -1110,10 +1122,33 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 </script>
+<script>
+function showDay(dayNumber) {
+  // 移除所有 tab 的 active 狀態
+  document.querySelectorAll('.day-tab').forEach(tab => tab.classList.remove('active'));
+
+  // 隱藏所有日區塊
+  document.querySelectorAll('.day-section').forEach(section => {
+    section.classList.remove('active');
+    section.style.display = 'none';
+  });
+
+  // 啟用被點選的 tab
+  document.querySelectorAll('.day-tab')[dayNumber - 1].classList.add('active');
+
+  // 顯示對應的內容區塊
+  const targetSection = document.getElementById(`day-${dayNumber}`);
+  targetSection.style.display = 'block';
+
+  // 等一點時間再加上 active 讓 transition 可以被觸發
+  setTimeout(() => targetSection.classList.add('active'), 10);
+}
+</script>
 
 
 </body>
 </html>
+
 
 
 

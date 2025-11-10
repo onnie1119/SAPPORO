@@ -1143,11 +1143,14 @@ function showDay(dayNumber) {
   // 等一點時間再加上 active 讓 transition 可以被觸發
   setTimeout(() => targetSection.classList.add('active'), 10);
 }
+	document.addEventListener("DOMContentLoaded", () => {
+  showDay(1);
 </script>
 
 
 </body>
 </html>
+
 
 
 

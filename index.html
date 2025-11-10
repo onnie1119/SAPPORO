@@ -377,11 +377,11 @@
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.day-section.active {
-  display: block;
+.day-section.fade-in {
   opacity: 1;
   transform: translateY(0);
 }
+
 
   </style>
 </head>
@@ -1123,33 +1123,39 @@
   });
 </script>
 <script>
-function showDay(dayNumber) {
-  // 移除所有 tab 的 active 狀態
-  document.querySelectorAll('.day-tab').forEach(tab => tab.classList.remove('active'));
-
-  // 隱藏所有日區塊
-  document.querySelectorAll('.day-section').forEach(section => {
-    section.classList.remove('active');
-    section.style.display = 'none';
+<script>
+function showDay(day) {
+  const sections = document.querySelectorAll('.day-section');
+  const tabs = document.querySelectorAll('.day-tab');
+  
+  sections.forEach((section, index) => {
+    if (index === day - 1) {
+      section.style.display = "block";
+      // 先強制重新觸發動畫
+      setTimeout(() => section.classList.add("fade-in"), 10);
+    } else {
+      section.style.display = "none";
+      section.classList.remove("fade-in");
+    }
   });
 
-  // 啟用被點選的 tab
-  document.querySelectorAll('.day-tab')[dayNumber - 1].classList.add('active');
-
-  // 顯示對應的內容區塊
-  const targetSection = document.getElementById(`day-${dayNumber}`);
-  targetSection.style.display = 'block';
-
-  // 等一點時間再加上 active 讓 transition 可以被觸發
-  setTimeout(() => targetSection.classList.add('active'), 10);
+  tabs.forEach((tab, index) => {
+    tab.classList.toggle("active", index === day - 1);
+  });
 }
-	document.addEventListener("DOMContentLoaded", () => {
+
+// 預設顯示第 1 天
+document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
+});
+</script>
+
 </script>
 
 
 </body>
 </html>
+
 
 
 

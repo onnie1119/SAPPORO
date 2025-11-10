@@ -1150,11 +1150,44 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script>
+function showDay(dayNumber) {
+  const sections = document.querySelectorAll(".day-section");
+  const tabs = document.querySelectorAll(".day-tab");
+
+  sections.forEach((section, index) => {
+    if (index === dayNumber - 1) {
+      section.style.display = "block";
+
+      // 先確保 class 狀態正確
+      requestAnimationFrame(() => {
+        section.classList.add("fade-in");
+      });
+    } else {
+      section.style.display = "none";
+      section.classList.remove("fade-in");
+    }
+  });
+
+  tabs.forEach((tab, index) => {
+    tab.classList.toggle("active", index === dayNumber - 1);
+  });
+
+  // 可選：切換時自動滾回最上方（避開固定 topbar）
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// 頁面載入時自動顯示第一天
+document.addEventListener("DOMContentLoaded", () => {
+  showDay(1);
+});
 </script>
+
 
 
 </body>
 </html>
+
 
 
 

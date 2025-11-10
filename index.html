@@ -381,8 +381,49 @@
 		<div class="trip-title">北海道の旅</div>
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
 		<div class="top-buttons">
-			<button>機票資訊</button>
-			<button>嚴選美食</button>
+			<button>天氣croll-top-button {
+  display: none;
+}
+
+.scroll-top-button {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3A7AFE;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 6px 18px;
+  font-size: 11px;
+  
+  cursor: pointer;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.3s ease, background 0.3s ease;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.scroll-top-button.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.scroll-top-button :hover{opacity:0.8;}
+
+
+  </style>
+</head>
+<body>
+
+	<div class="topbar"></
+		<div class="trip-title">北海道の旅</div>
+		<div class="trip-date">旅を記錄する、思い出を綴る</div>
+		<div class="top-buttons">
+			<button>行李清單</button>
+			<button>電子憑證</button>
  			<button>景點介紹</button>
 		</div>
 	</div>
@@ -509,6 +550,9 @@
     	</div>
 	</a>
 </div> 
+		<input type="number" id="yen" placeholder="輸入日圓金額" />
+<button onclick="convertJPY()">換算成台幣</button>
+<div id="result"></div>
     <!-- Day 2 -->
     <div class="day-section" id="day-2" style="display:none;">
       <div class="day-label">2026.02.10（二）</div>
@@ -1112,10 +1156,26 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 </script>
+<script>
+  async function convertJPY() {
+    const amount = parseFloat(document.getElementById('yen').value);
+    if (!amount) return;
 
+    try {
+      const res = await fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD');
+      const data = await res.json();
+      const rate = data.rates.TWD;
+      const converted = (amount * rate).toFixed(2);
+      document.getElementById('result').textContent = `${amount} 日圓 ≈ ${converted} 新台幣`;
+    } catch (error) {
+      document.getElementById('result').textContent = '匯率取得失敗';
+    }
+  }
+</script>
 
 </body>
 </html>
+
 
 
 

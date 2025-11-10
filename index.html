@@ -1122,33 +1122,6 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 </script>
-<script>
-<script>
-function showDay(day) {
-  const sections = document.querySelectorAll('.day-section');
-  const tabs = document.querySelectorAll('.day-tab');
-  
-  sections.forEach((section, index) => {
-    if (index === day - 1) {
-      section.style.display = "block";
-      // 先強制重新觸發動畫
-      setTimeout(() => section.classList.add("fade-in"), 10);
-    } else {
-      section.style.display = "none";
-      section.classList.remove("fade-in");
-    }
-  });
-
-  tabs.forEach((tab, index) => {
-    tab.classList.toggle("active", index === day - 1);
-  });
-}
-
-// 預設顯示第 1 天
-document.addEventListener("DOMContentLoaded", () => {
-  showDay(1);
-});
-</script>
 
 <script>
 function showDay(dayNumber) {
@@ -1187,6 +1160,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 

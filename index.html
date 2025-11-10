@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    
     body {
       margin: 0;
       background: #FAFAF7;
@@ -359,7 +358,6 @@
 .scroll-top-button :hover{opacity:0.8;}
 
 
-  
   </style>
 </head>
 <body>
@@ -496,7 +494,6 @@
     	</div>
 	</a>
 </div> 
-
     <!-- Day 2 -->
     <div class="day-section" id="day-2" style="display:none;">
       <div class="day-label">2026.02.10（二）</div>
@@ -1044,9 +1041,6 @@
     	</div>
 		</a>
 	</div>
-		<input type="number" id="yen" placeholder="輸入日圓金額" />
-<button onclick="convertJPY()">換算成台幣</button>
-<div id="result"></div>
     <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
   <script>
     function showDay(day) {
@@ -1103,31 +1097,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 </script>
-<script>
-  async function convertJPY() {
-    const amount = parseFloat(document.getElementById('yen').value);
-    if (!amount) return;
 
-    try {
-      const res = await fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD');
-      const data = await res.json();
-      const rate = data.rates.TWD;
-      const converted = (amount * rate).toFixed(2);
-      document.getElementById('result').textContent = `${amount} 日圓 ≈ ${converted} 新台幣`;
-    } catch (error) {
-      document.getElementById('result').textContent = '匯率取得失敗';
-    }
-  }
-</script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-

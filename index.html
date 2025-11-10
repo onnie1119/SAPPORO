@@ -1066,6 +1066,19 @@
     	</div>
 		</a>
 	</div>
+		
+	<div class="exchange-section" style="display:none;">
+  <div class="day-label">匯率換算</div>
+  <div class="activity-card">
+    <div class="info">
+      <label for="yen" class="title">輸入日圓金額：</label>
+      <input type="number" id="yen" placeholder="例如：10000" style="padding:6px; font-size:14px; margin-bottom:10px;" />
+      <button onclick="convertJPY()" style="padding:6px 12px; font-size:12px; border-radius:6px; background:#3A7AFE; color:#fff; border:none;">自動換算</button>
+      <div id="exchange-result" class="note" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+
     <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
   <script>
     function showDay(day) {
@@ -1155,11 +1168,39 @@ document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
 });
 </script>
+<script>
+function showExchange() {
+  // 隱藏所有行程卡
+  document.querySelectorAll('.day-section').forEach(el => el.style.display = 'none');
+  // 顯示匯率換算區塊
+  document.querySelector('.exchange-section').style.display = 'block';
+}
+
+function convertJPY() {
+  const amount = parseFloat(document.getElementById('yen').value);
+  if (!amount || amount <= 0) {
+    document.getElementById('exchange-result').textContent = '請輸入有效的日圓金額';
+    return;
+  }
+
+  fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD')
+    .then(res => res.json())
+    .then(data => {
+      const rate = data.rates.TWD;
+      const converted = (amount * rate).toFixed(2);
+      document.getElementById('exchange-result').textContent = `${amount} 日圓 ≈ ${converted} 新台幣`;
+    })
+    .catch(() => {
+      document.getElementById('exchange-result').textContent = '匯率取得失敗，請稍後再試';
+    });
+}
+</script>
 
 
 
 </body>
 </html>
+
 
 
 

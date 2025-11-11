@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>北海道の旅</title>
@@ -75,7 +74,7 @@
       padding: 0 20px;
       max-width: 600px;
       margin: 0 auto;
-	  padding-top: 130px;
+	  padding-top: calc(120px + 1rem);
     }
 
     .day-tabs {
@@ -383,98 +382,7 @@
   transform: translateY(0);
 }
 
-.return-button {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #3A7AFE;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  padding: 6px 18px;
-  font-size: 11px;
-  cursor: pointer;
-  box-shadow: 0 2px 2px rgba(0,0,0,0.2);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 999;
-}
 
-
-.return-button:hover {
-  background: #2a5edb;
-  transform: translateX(-50%) scale(1.05);
-}
-
-.day-section {
-  scroll-margin-top: 140px; /* 根據你的 .topbar 高度調整 */
-}
-	  
-.day-section:first-of-type .day-label {
-  margin-top: -140px;
-  padding-top: 140px;
-}	
-
-.fade-in {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.fade-out {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-
-.exchange-section {
-  min-height: 79vh; /* 或 100vh 根據你想要的高度 */
-  position: relative;
-}
-
-.exchange-wrapper {
-  display: none;
-  min-height: 70vh;
-  padding: 20px;
-}
-
-	  .exchange-section {
-  display: none;
-  min-height: 70vh;
-  padding: 20px;
-  position: relative;
-}
-
-.return-button {
-  display: none;
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
-}
-
-.scroll-top-button {
-  display: none;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
-}
-
-.scroll-top-button.show {
-  display: block;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
-
-	  
   </style>
 </head>
 <body>
@@ -485,7 +393,7 @@
 		<div class="top-buttons">
 			<button>行李清單</button>
 			<button>電子憑證</button>
- 			<button onclick="showExchange()">匯率換算</button>
+ 			<button>匯率換算</button>
 		</div>
 	</div>
 
@@ -1158,324 +1066,97 @@
     	</div>
 		</a>
 	</div>
-</div>		
-<!-- 匯率換算區塊 -->
-<div class="exchange-section" style="display: none;">
-  <div class="activity-card">
-    <div class="info">
-      <label class="title">日圓 (JPY)</label>
-      <input type="number" id="yen" placeholder="輸入金額" />
-    </div>
-    <div class="info">
-      <label class="title">新台幣 (TWD)</label>
-      <input type="text" id="twd" readonly />
-    </div>
-  </div>
-</div>
+    <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
+  <script>
+    function showDay(day) {
+      document.querySelectorAll('.day-section').forEach(section => {
+        section.style.display = 'none';
+      });
+      document.getElementById('day-' + day).style.display = 'block';
 
-<!-- 返回主頁按鈕 -->
-<button class="return-button" id="returnButton" style="display: none;" onclick="returnToSchedule()">返回主頁</button>
+      document.querySelectorAll('.day-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.day-tab')[day - 1].classList.add('active');
+    }
+  </script>
+	<script>
+  const scrollEl = document.getElementById('dayTabsScroll');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
 
-<!-- 置頂按鈕 -->
-<button id="scrollToTop" class="scroll-top-button">ピン留め</button>
+  function updateArrows() {
+    const scrollLeft = scrollEl.scrollLeft;
+    const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
 
-	
-	
+    arrowLeft.style.opacity = scrollLeft > 10 ? '1' : '0';
+    arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? '1' : '0';
+  }
+
+  scrollEl.addEventListener('scroll', updateArrows);
+  window.addEventListener('resize', updateArrows);
+  document.addEventListener('DOMContentLoaded', updateArrows);
+</script>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  showDay(1);
-  updateTabArrows();
-  initExchangeRate();
-  initScrollTopButton();
+  document.getElementById('scrollToTop').addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  window.addEventListener('scroll', function () {
+  const btn = document.getElementById('scrollToTop');
+  btn.style.display = window.scrollY > 300 ? 'block' : 'none';
 });
 
-// 行程卡切換
+</script>
+<script>
+  const scrollBtn = document.getElementById('scrollToTop');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+      scrollBtn.classList.add('show');
+    } else {
+      scrollBtn.classList.remove('show');
+    }
+  });
+
+  scrollBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+<script>
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
   const tabs = document.querySelectorAll(".day-tab");
 
   sections.forEach((section, index) => {
-    section.style.display = index === dayNumber - 1 ? "block" : "none";
-    section.classList.toggle("fade-in", index === dayNumber - 1);
+    if (index === dayNumber - 1) {
+      section.style.display = "block";
+
+      // 先確保 class 狀態正確
+      requestAnimationFrame(() => {
+        section.classList.add("fade-in");
+      });
+    } else {
+      section.style.display = "none";
+      section.classList.remove("fade-in");
+    }
   });
 
   tabs.forEach((tab, index) => {
     tab.classList.toggle("active", index === dayNumber - 1);
   });
 
+  // 可選：切換時自動滾回最上方（避開固定 topbar）
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// tab 滾動箭頭
-const scrollEl = document.getElementById("dayTabsScroll");
-const arrowLeft = document.getElementById("arrowLeft");
-const arrowRight = document.getElementById("arrowRight");
-
-function updateTabArrows() {
-  const scrollLeft = scrollEl.scrollLeft;
-  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
-  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
-  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
-}
-
-scrollEl.addEventListener("scroll", updateTabArrows);
-window.addEventListener("resize", updateTabArrows);
-
-// scroll-to-top 按鈕
-function initScrollTopButton() {
-  const scrollBtn = document.getElementById("scrollToTop");
-
-  window.addEventListener("scroll", () => {
-    scrollBtn.classList.toggle("show", window.scrollY > 100);
-  });
-
-  scrollBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-}
-
-// 匯率換算頁切換
-function showExchange() {
-  document.querySelectorAll(".day-section").forEach(el => {
-    el.style.display = "none";
-    el.classList.remove("fade-in");
-  });
-
-  document.querySelector(".day-tabs-wrapper").style.display = "none";
-  document.querySelector(".exchange-section").style.display = "block";
-  document.querySelector(".exchange-section").classList.add("fade-in");
-  document.getElementById("returnButton").style.display = "block";
-}
-
-function returnToSchedule() {
-  const exchange = document.querySelector(".exchange-section");
-  exchange.style.display = "none";
-  exchange.classList.remove("fade-in");
-
-  document.querySelector(".day-tabs-wrapper").style.display = "block";
-  document.getElementById("returnButton").style.display = "none";
-
-  showDay(1);
-}
-
-// 即時匯率換算
-function initExchangeRate() {
-  const yenInput = document.getElementById("yen");
-  const twdOutput = document.getElementById("twd");
-  let currentRate = null;
-
-  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-    .then(res => res.json())
-    .then(data => {
-      currentRate = data.rates.TWD;
-    })
-    .catch(() => {
-      currentRate = 0.22;
-    });
-
-  yenInput.addEventListener("input", () => {
-    const amount = parseFloat(yenInput.value);
-    if (!amount || amount <= 0) {
-      twdOutput.value = "";
-      return;
-    }
-
-    if (!currentRate) {
-      twdOutput.value = "匯率取得失敗";
-      return;
-    }
-
-    const converted = (amount * currentRate).toFixed(2);
-    twdOutput.value = `${converted} 元`;
-  });
-}
-</script>
-
-<script>
+// 頁面載入時自動顯示第一天
 document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
-  initExchangeRate();
-  initScrollTopButton();
 });
-
-// 行程卡切換
-function showDay(dayNumber) {
-  document.querySelectorAll(".day-section").forEach((section, index) => {
-    section.style.display = index === dayNumber - 1 ? "block" : "none";
-    section.classList.toggle("fade-in", index === dayNumber - 1);
-  });
-
-  document.querySelectorAll(".day-tab").forEach((tab, index) => {
-    tab.classList.toggle("active", index === dayNumber - 1);
-  });
-
- window.scrollTo({ top: document.querySelector('.topbar').offsetHeight, behavior: "smooth" });
-
-}
-
-// 匯率換算頁切換
-function showExchange() {
-  document.querySelectorAll(".day-section").forEach(el => {
-    el.style.display = "none";
-    el.classList.remove("fade-in");
-  });
-
-  document.querySelector(".day-tabs-wrapper").style.display = "none";
-  document.querySelector(".exchange-section").style.display = "block";
-  document.querySelector(".exchange-section").classList.add("fade-in");
-  document.getElementById("returnButton").style.display = "block";
-}
-
-function returnToSchedule() {
-  document.querySelector(".exchange-section").style.display = "none";
-  document.querySelector(".exchange-section").classList.remove("fade-in");
-  document.querySelector(".day-tabs-wrapper").style.display = "block";
-  document.getElementById("returnButton").style.display = "none";
-  showDay(1);
-}
-
-// 匯率換算功能
-function initExchangeRate() {
-  const yenInput = document.getElementById("yen");
-  const twdOutput = document.getElementById("twd");
-  let currentRate = null;
-
-  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-    .then(res => res.json())
-    .then(data => {
-      currentRate = data.rates.TWD;
-    })
-    .catch(() => {
-      currentRate = 0.22;
-    });
-
-  yenInput.addEventListener("input", () => {
-    const amount = parseFloat(yenInput.value);
-    if (!amount || amount <= 0) {
-      twdOutput.value = "";
-      return;
-    }
-
-    if (!currentRate) {
-      twdOutput.value = "匯率取得失敗";
-      return;
-    }
-
-    const converted = (amount * currentRate).toFixed(2);
-    twdOutput.value = `${converted} 元`;
-  });
-}
-
-// 置頂按鈕控制
-function initScrollTopButton() {
-  const scrollBtn = document.getElementById("scrollToTop");
-
-  window.addEventListener("scroll", () => {
-    scrollBtn.classList.toggle("show", window.scrollY > 100);
-  });
-
-  scrollBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-}
 </script>
-<script>
-function showExchange() {
-  // 淡出所有行程卡
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.classList.remove('fade-in');
-    el.classList.add('fade-out');
-    setTimeout(() => el.style.display = 'none', 300);
-  });
 
-  // 淡出 tab
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  tabs.classList.remove('fade-in');
-  tabs.classList.add('fade-out');
-  setTimeout(() => tabs.style.display = 'none', 300);
 
-  // 顯示匯率頁
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'block';
-  exchange.classList.remove('fade-out');
-  exchange.classList.add('fade-in');
 
-  // 顯示返回按鈕
-  document.getElementById('returnButton').style.display = 'block';
-}
-function returnToSchedule() {
-  const exchange = document.querySelector('.exchange-section');
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  const day1 = document.getElementById('day-1');
-
-  // 淡出匯率頁
-  exchange.classList.remove('fade-in');
-  exchange.classList.add('fade-out');
-
-  setTimeout(() => {
-    exchange.style.display = 'none';
-    exchange.classList.remove('fade-out');
-
-    // 顯示 tab
-    tabs.style.display = 'block';
-    tabs.classList.remove('fade-out');
-    tabs.classList.add('fade-in');
-
-    // 顯示第 1 天行程
-    document.querySelectorAll('.day-section').forEach(el => {
-      el.style.display = 'none';
-      el.classList.remove('fade-in');
-    });
-    day1.style.display = 'block';
-    day1.classList.add('fade-in');
-
-    // 隱藏返回按鈕
-    document.getElementById('returnButton').style.display = 'none';
-  }, 300);
-}
-
-</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

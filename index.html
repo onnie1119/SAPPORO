@@ -1074,19 +1074,20 @@
 </div>
 <!-- 匯率換算頁 -->
 <div class="exchange-section" style="display: none;">
-	<div class="day-label">匯率換算</div>
-	<div class="activity-card">
-		<div class="info">
-			<label class="title">日圓 (JPY)</label>
-			<input type="number" id="yen" placeholder="輸入金額" />
-		</div>
-		<div class="info">
-			<label class="title">新台幣 (TWD)</label>
-			<input type="text" id="twd" readonly />
-		</div>
-	</div>
-	<button class="return-button" onclick="returnToSchedule()">返回主頁</button>
+  <div class="day-label">匯率換算</div>
+  <div class="activity-card">
+    <div class="info">
+      <label class="title">日圓 (JPY)</label>
+      <input type="number" id="yen" placeholder="輸入金額" />
+    </div>
+    <div class="info">
+      <label class="title">新台幣 (TWD)</label>
+      <input type="text" id="twd" readonly />
+    </div>
+  </div>
+  <button class="return-button" onclick="returnToSchedule()">返回主頁</button>
 </div>
+
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
 	
 <script>
@@ -1285,10 +1286,204 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  initExchangeRate();
+});
 
+// 匯率換算功能
+function initExchangeRate() {
+  const yenInput = document.getElementById("yen");
+  const twdOutput = document.getElementById("twd");
+  let currentRate = null;
+  const fallbackRate = 0.22;
+
+  // 取得即時匯率
+  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
+    .then(res => res.json())
+    .then(data => {
+      if (!data || !data.rates || !data.rates.TWD) throw new Error("匯率資料錯誤");
+      currentRate = data.rates.TWD;
+    })
+    .catch(() => {
+      currentRate = fallbackRate;
+    });
+
+  // 使用者輸入時即時換算
+  yenInput.addEventListener("input", () => {
+    const amount = parseFloat(yenInput.value);
+    if (!amount || amount <= 0) {
+      twdOutput.value = "";
+      return;
+    }
+
+    if (!currentRate) {
+      twdOutput.value = "匯率取得失敗";
+      return;
+    }
+
+    const converted = (amount * currentRate).toFixed(2);
+    twdOutput.value = `${converted} 元`;
+  });
+}
+
+// 顯示匯率頁
+function showExchange() {
+  // 淡出所有行程卡
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.classList.remove('fade-in');
+    el.classList.add('fade-out');
+    setTimeout(() => {
+      el.style.display = 'none';
+      el.classList.remove('fade-out');
+    }, 300);
+  });
+
+  // 淡出 tab
+  const tabs = document.querySelector('.day-tabs-wrapper');
+  tabs.classList.remove('fade-in');
+  tabs.classList.add('fade-out');
+  setTimeout(() => {
+    tabs.style.display = 'none';
+    tabs.classList.remove('fade-out');
+  }, 300);
+
+  // 顯示匯率頁
+  const exchange = document.querySelector('.exchange-section');
+  exchange.style.display = 'block';
+  exchange.classList.add('fade-in');
+}
+
+// 返回主頁
+function returnToSchedule() {
+  const exchange = document.querySelector('.exchange-section');
+  const tabs = document.querySelector('.day-tabs-wrapper');
+  const day1 = document.getElementById('day-1');
+
+  // 淡出匯率頁
+  exchange.classList.remove('fade-in');
+  exchange.classList.add('fade-out');
+
+  setTimeout(() => {
+    exchange.style.display = 'none';
+    exchange.classList.remove('fade-out');
+
+    // 顯示 tab
+    tabs.style.display = 'block';
+    tabs.classList.add('fade-in');
+
+    // 顯示第 1 天行程
+    document.querySelectorAll('.day-section').forEach(el => {
+      el.style.display = 'none';
+      el.classList.remove('fade-in');
+    });
+    day1.style.display = 'block';
+    day1.classList.add('fade-in');
+  }, 300);
+}
+</script>
+
+
+	<script>
+document.addEventListener("DOMContentLoaded", () => {
+  initExchangeRate();
+});
+
+// 匯率換算功能
+function initExchangeRate() {
+  const yenInput = document.getElementById("yen");
+  const twdOutput = document.getElementById("twd");
+  let currentRate = null;
+  const fallbackRate = 0.22;
+
+  // 取得即時匯率
+  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
+    .then(res => res.json())
+    .then(data => {
+      if (!data || !data.rates || !data.rates.TWD) throw new Error("匯率資料錯誤");
+      currentRate = data.rates.TWD;
+    })
+    .catch(() => {
+      currentRate = fallbackRate;
+    });
+
+  // 使用者輸入時即時換算
+  yenInput.addEventListener("input", () => {
+    const amount = parseFloat(yenInput.value);
+    if (!amount || amount <= 0) {
+      twdOutput.value = "";
+      return;
+    }
+
+    if (!currentRate) {
+      twdOutput.value = "匯率取得失敗";
+      return;
+    }
+
+    const converted = (amount * currentRate).toFixed(2);
+    twdOutput.value = `${converted} 元`;
+  });
+}
+
+// 顯示匯率頁
+function showExchange() {
+  // 淡出所有行程卡
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.classList.remove('fade-in');
+    el.classList.add('fade-out');
+    setTimeout(() => {
+      el.style.display = 'none';
+      el.classList.remove('fade-out');
+    }, 300);
+  });
+
+  // 淡出 tab
+  const tabs = document.querySelector('.day-tabs-wrapper');
+  tabs.classList.remove('fade-in');
+  tabs.classList.add('fade-out');
+  setTimeout(() => {
+    tabs.style.display = 'none';
+    tabs.classList.remove('fade-out');
+  }, 300);
+
+  // 顯示匯率頁
+  const exchange = document.querySelector('.exchange-section');
+  exchange.style.display = 'block';
+  exchange.classList.add('fade-in');
+}
+
+// 返回主頁
+function returnToSchedule() {
+  const exchange = document.querySelector('.exchange-section');
+  const tabs = document.querySelector('.day-tabs-wrapper');
+  const day1 = document.getElementById('day-1');
+
+  // 淡出匯率頁
+  exchange.classList.remove('fade-in');
+  exchange.classList.add('fade-out');
+
+  setTimeout(() => {
+    exchange.style.display = 'none';
+    exchange.classList.remove('fade-out');
+
+    // 顯示 tab
+    tabs.style.display = 'block';
+    tabs.classList.add('fade-in');
+
+    // 顯示第 1 天行程
+    document.querySelectorAll('.day-section').forEach(el => {
+      el.style.display = 'none';
+      el.classList.remove('fade-in');
+    });
+    day1.style.display = 'block';
+    day1.classList.add('fade-in');
+  }, 300);
+}
+</script>
 
 </body>
 </html>
+
 
 
 

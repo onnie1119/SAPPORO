@@ -1141,363 +1141,116 @@
 <button class="return-button" id="returnButton" onclick="returnToSchedule()" style="display:none;">返回主頁</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
   <script>
-    function showDay(day) {
-      document.querySelectorAll('.day-section').forEach(section => {
-        section.style.display = 'none';
-      });
-      document.getElementById('day-' + day).style.display = 'block';
-
-      document.querySelectorAll('.day-tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelectorAll('.day-tab')[day - 1].classList.add('active');
-    }
-  </script>
-	<script>
-  const scrollEl = document.getElementById('dayTabsScroll');
-  const arrowLeft = document.getElementById('arrowLeft');
-  const arrowRight = document.getElementById('arrowRight');
-
-  function updateArrows() {
-    const scrollLeft = scrollEl.scrollLeft;
-    const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
-
-    arrowLeft.style.opacity = scrollLeft > 10 ? '1' : '0';
-    arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? '1' : '0';
-  }
-
-  scrollEl.addEventListener('scroll', updateArrows);
-  window.addEventListener('resize', updateArrows);
-  document.addEventListener('DOMContentLoaded', updateArrows);
-</script>
-<script>
-  document.getElementById('scrollToTop').addEventListener('click', function () {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  window.addEventListener('scroll', function () {
-  const btn = document.getElementById('scrollToTop');
-  btn.style.display = window.scrollY > 100 ? 'block' : 'none';
+document.addEventListener("DOMContentLoaded", () => {
+  // 頁面初始化：顯示第 1 天行程
+  showDay(1);
+  updateArrows();
+  initExchangeRate();
 });
 
-</script>
-<script>
-  const scrollBtn = document.getElementById('scrollToTop');
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 100) {
-      scrollBtn.classList.add('show');
-    } else {
-      scrollBtn.classList.remove('show');
-    }
-  });
-
-  scrollBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-</script>
-
-<script>
+// 行程卡切換
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
   const tabs = document.querySelectorAll(".day-tab");
 
   sections.forEach((section, index) => {
-    if (index === dayNumber - 1) {
-      section.style.display = "block";
-
-      // 先確保 class 狀態正確
-      requestAnimationFrame(() => {
-        section.classList.add("fade-in");
-      });
-    } else {
-      section.style.display = "none";
-      section.classList.remove("fade-in");
-    }
+    section.style.display = index === dayNumber - 1 ? "block" : "none";
+    section.classList.toggle("fade-in", index === dayNumber - 1);
   });
 
   tabs.forEach((tab, index) => {
     tab.classList.toggle("active", index === dayNumber - 1);
   });
 
-  // 可選：切換時自動滾回最上方（避開固定 topbar）
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// 頁面載入時自動顯示第一天
-document.addEventListener("DOMContentLoaded", () => {
-  showDay(1);
+// tab 滾動箭頭
+const scrollEl = document.getElementById("dayTabsScroll");
+const arrowLeft = document.getElementById("arrowLeft");
+const arrowRight = document.getElementById("arrowRight");
+
+function updateArrows() {
+  const scrollLeft = scrollEl.scrollLeft;
+  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
+  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
+}
+
+scrollEl.addEventListener("scroll", updateArrows);
+window.addEventListener("resize", updateArrows);
+
+// scroll-to-top 按鈕
+const scrollBtn = document.getElementById("scrollToTop");
+
+window.addEventListener("scroll", () => {
+  scrollBtn.classList.toggle("show", window.scrollY > 100);
 });
-</script>
-<script>
 
-function showExchange() {
-  // 隱藏所有行程卡
-  document.querySelectorAll('.day-section').forEach(el => el.style.display = 'none');
-  // 隱藏上方的 tab 列
-  const tabsWrapper = document.querySelector('.day-tabs-wrapper');
-  if (tabsWrapper) tabsWrapper.style.display = 'none';
-  // 顯示匯率換算區塊
-  document.querySelector('.exchange-section').style.display = 'block';
-  // 移除所有 tab 的 active 樣式
-  document.querySelectorAll('.day-tab').forEach(tab => tab.classList.remove('active'));
-}
-</script>
-
-<script>
-function showExchange() {
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.style.display = 'none';
-    el.classList.remove('fade-in');
-  });
-  document.querySelector('.day-tabs-wrapper').style.display = 'none';
-
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'block';
-  exchange.classList.add('fade-in');
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  const yenInput = document.getElementById('yen');
-  yenInput.addEventListener('input', () => {
-    const amount = parseFloat(yenInput.value);
-    if (!amount || amount <= 0) {
-      document.getElementById('twd').value = '';
-      return;
-    }
-
-    fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD')
-      .then(res => res.json())
-      .then(data => {
-        const rate = data.rates.TWD;
-        const converted = (amount * rate).toFixed(2);
-        document.getElementById('twd').value = `${converted} 元`;
-      })
-      .catch(() => {
-        document.getElementById('twd').value = '匯率取得失敗';
-      });
-  });
+scrollBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });
-</script>
 
-<script>
-function returnToSchedule() {
-  // 顯示 tab 列
-  const tabsWrapper = document.querySelector('.day-tabs-wrapper');
-  if (tabsWrapper) tabsWrapper.style.display = 'block';
-  // 顯示第 1 天行程
-  showDay(1);
-  // 隱藏匯率區塊
-  document.querySelector('.exchange-section').style.display = 'none';
-}
-</script>
-<script>
-function returnToSchedule() {
-  document.querySelector('.exchange-section').style.display = 'none';
-  document.querySelector('.day-tabs-wrapper').style.display = 'block';
-  showDay(1); // 或你要切回的那一天
-}
-</script>
-<script>
-function returnToSchedule() {
-  // 隱藏匯率頁
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'none';
-  exchange.classList.remove('fade-in');
-
-  // 顯示 tab
-  document.querySelector('.day-tabs-wrapper').style.display = 'block';
-
-  // 顯示第 1 天行程
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.style.display = 'none';
-    el.classList.remove('fade-in');
-  });
-  const day1 = document.getElementById('day-1');
-  day1.style.display = 'block';
-  day1.classList.add('fade-in');
-
-  // 隱藏返回主頁按鈕
-  document.querySelector('.return-button').style.display = 'none';
-}
-
-</script>
-<script>
+// 匯率換算頁切換
 function showExchange() {
-  // 淡出所有行程卡
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.classList.remove('fade-in');
-    el.classList.add('fade-out');
-    setTimeout(() => el.style.display = 'none', 300);
+  document.querySelectorAll(".day-section").forEach(el => {
+    el.style.display = "none";
+    el.classList.remove("fade-in");
   });
 
-  // 淡出 tab
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  tabs.classList.remove('fade-in');
-  tabs.classList.add('fade-out');
-  setTimeout(() => tabs.style.display = 'none', 300);
-
-  // 顯示匯率頁
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'block';
-  exchange.classList.remove('fade-out');
-  exchange.classList.add('fade-in');
+  document.querySelector(".day-tabs-wrapper").style.display = "none";
+  document.querySelector(".exchange-section").style.display = "block";
+  document.querySelector(".exchange-section").classList.add("fade-in");
+  document.querySelector(".return-button").style.display = "block";
 }
-</script>
-<script>
+
 function returnToSchedule() {
-  const exchange = document.querySelector('.exchange-section');
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  const day1 = document.getElementById('day-1');
+  const exchange = document.querySelector(".exchange-section");
+  exchange.style.display = "none";
+  exchange.classList.remove("fade-in");
 
-  // 淡出匯率頁
-  exchange.classList.remove('fade-in');
-  exchange.classList.add('fade-out');
+  document.querySelector(".day-tabs-wrapper").style.display = "block";
+  document.querySelector(".return-button").style.display = "none";
 
-  setTimeout(() => {
-    exchange.style.display = 'none';
-    exchange.classList.remove('fade-out');
-
-    // 顯示 tab
-    tabs.style.display = 'block';
-    tabs.classList.remove('fade-out');
-    tabs.classList.add('fade-in');
-
-    // 顯示第 1 天行程
-    document.querySelectorAll('.day-section').forEach(el => {
-      el.style.display = 'none';
-      el.classList.remove('fade-in');
-    });
-    day1.style.display = 'block';
-    day1.classList.add('fade-in');
-  }, 300);
+  showDay(1);
 }
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const yenInput = document.getElementById('yen');
-  const twdOutput = document.getElementById('twd');
 
+// 匯率換算功能
+function initExchangeRate() {
+  const yenInput = document.getElementById("yen");
+  const twdOutput = document.getElementById("twd");
   let currentRate = null;
 
-  // 取得即時匯率
-  fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD')
+  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
     .then(res => res.json())
     .then(data => {
       currentRate = data.rates.TWD;
     })
     .catch(() => {
-      currentRate = 0.22; // fallback 匯率
+      currentRate = 0.22;
     });
 
-  // 使用者輸入時即時換算
-  yenInput.addEventListener('input', () => {
+  yenInput.addEventListener("input", () => {
     const amount = parseFloat(yenInput.value);
     if (!amount || amount <= 0) {
-      twdOutput.value = '';
+      twdOutput.value = "";
       return;
     }
 
     if (!currentRate) {
-      twdOutput.value = '匯率取得失敗';
+      twdOutput.value = "匯率取得失敗";
       return;
     }
 
     const converted = (amount * currentRate).toFixed(2);
     twdOutput.value = `${converted} 元`;
   });
-});
+}
 </script>
-<script>
-function showExchange() {
-  // 隱藏所有行程卡
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.style.display = 'none';
-    el.classList.remove('fade-in');
-  });
 
-  // 隱藏 tab
-  document.querySelector('.day-tabs-wrapper').style.display = 'none';
-
-  // 顯示匯率頁
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'block';
-  exchange.classList.add('fade-in');
-
-  // 顯示返回主頁按鈕
-  document.getElementById('returnButton').style.display = 'block';
-
-	function returnToSchedule() {
-  document.querySelector('.exchange-section').style.display = 'none';
-  document.querySelector('.day-tabs-wrapper').style.display = 'block';
-  document.getElementById('returnButton').style.display = 'none';
-  showDay(1); // 或你要回到的那一天
-}
-
-}
-
-</script>
-<script>
-	function returnToSchedule() {
-  // 隱藏匯率區塊
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'none';
-  exchange.classList.remove('fade-in');
-
-  // 顯示 tab
-  document.querySelector('.day-tabs-wrapper').style.display = 'block';
-
-  // 顯示第 1 天行程
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.style.display = 'none';
-    el.classList.remove('fade-in');
-  });
-  const day1 = document.getElementById('day-1');
-  day1.style.display = 'block';
-  day1.classList.add('fade-in');
-
-  // 隱藏返回主頁按鈕
-  document.querySelector('.return-button').style.display = 'none';
-}
-
-</script>
-<script>
-function showExchange() {
-  // 隱藏所有行程卡
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.style.display = 'none';
-  });
-
-  // 隱藏 tab
-  document.querySelector('.day-tabs-wrapper').style.display = 'none';
-
-  // 顯示匯率卡片
-  document.querySelector('.exchange-wrapper').style.display = 'block';
-
-  // 顯示返回按鈕
-  document.querySelector('.return-button').style.display = 'block';
-}
-function returnToSchedule() {
-  // 隱藏匯率卡片
-  document.querySelector('.exchange-wrapper').style.display = 'none';
-
-  // 顯示 tab
-  document.querySelector('.day-tabs-wrapper').style.display = 'block';
-
-  // 顯示第 1 天行程
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.style.display = 'none';
-  });
-  const day1 = document.getElementById('day-1');
-  day1.style.display = 'block';
-
-  // 隱藏返回按鈕
-  document.querySelector('.return-button').style.display = 'none';
-}
-
-</script>
 </body>
 </html>
+
 
 
 

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>北海道の旅</title>
@@ -395,11 +396,10 @@
   font-size: 11px;
   cursor: pointer;
   box-shadow: 0 2px 2px rgba(0,0,0,0.2);
-  transition: opacity 0.4s ease, transform 0.3s ease, background 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 999;
-  opacity: 1;
-  visibility: visible;
 }
+
 
 .return-button:hover {
   background: #2a5edb;
@@ -1126,13 +1126,14 @@
 			<label class="title">新台幣 (TWD)</label>
 			<input type="text" id="twd" readonly style="padding:8px; font-size:14px; background:#f5f5f5; border-radius:6px; border:1px solid #ccc;" />
 		</div>
-		<button class="return-button" onclick="returnToSchedule()" style="margin-top:10px;">ホームページ</button>
 	</div>
 		
 
 </div>
-
-    <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
+	
+	<!-- 放在 .container 外層或 body 裡 -->
+<button class="return-button" id="returnButton" onclick="returnToSchedule()" style="display:none;">返回主頁</button>
+<button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
   <script>
     function showDay(day) {
       document.querySelectorAll('.day-section').forEach(section => {
@@ -1403,9 +1404,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<script>
+function showExchange() {
+  // 隱藏所有行程卡
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.style.display = 'none';
+    el.classList.remove('fade-in');
+  });
 
+  // 隱藏 tab
+  document.querySelector('.day-tabs-wrapper').style.display = 'none';
+
+  // 顯示匯率頁
+  const exchange = document.querySelector('.exchange-section');
+  exchange.style.display = 'block';
+  exchange.classList.add('fade-in');
+
+  // 顯示返回主頁按鈕
+  document.getElementById('returnButton').style.display = 'block';
+
+	function returnToSchedule() {
+  document.querySelector('.exchange-section').style.display = 'none';
+  document.querySelector('.day-tabs-wrapper').style.display = 'block';
+  document.getElementById('returnButton').style.display = 'none';
+  showDay(1); // 或你要回到的那一天
+}
+
+}
+
+</script>
 </body>
 </html>
+
 
 
 

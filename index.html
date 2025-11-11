@@ -1200,10 +1200,14 @@ document.addEventListener("DOMContentLoaded", () => {
 let jpyRate = null;
 
 async function getExchangeRate() {
-  const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
-  const data = await res.json();
-  jpyRate = data.rates.TWD;
-  document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/JPY");
+    const data = await res.json();
+    jpyRate = data.rates.TWD;
+    document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
+  } catch (err) {
+    document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗，請稍後再試";
+  }
 }
 
 function showExchange() {
@@ -1222,8 +1226,13 @@ function convertCurrency() {
   const type = document.getElementById("currency").value;
   const resultEl = document.getElementById("result");
 
-  if (!amount || !jpyRate) {
-    resultEl.textContent = "請輸入金額或稍候匯率載入完成";
+  if (!amount) {
+    resultEl.textContent = "請輸入金額";
+    return;
+  }
+
+  if (!jpyRate) {
+    resultEl.textContent = "⚠️ 匯率尚未載入完成，請稍候再試";
     return;
   }
 
@@ -1237,8 +1246,10 @@ function convertCurrency() {
 
 
 
+
 </body>
 </html>
+
 
 
 

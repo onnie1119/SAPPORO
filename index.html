@@ -1401,13 +1401,14 @@ function initExchangeRate() {
 
     .then(res => res.json())
     .then(data => {
-      if (!data || !data.rates || !data.rates.TWD) throw new Error("匯率資料錯誤");
-      currentRate = data.rates.TWD;
-    })
+		const rate = data.rates.TWD / data.rates.JPY;
+	     if (!data || !data.rates || !data.rates.TWD) throw new Error("匯率資料錯誤");
+	      currentRate = data.rates.TWD;
+	    }) 
     .catch(() => {
       currentRate = fallbackRate;
     });
-const rate = data.rates.TWD / data.rates.JPY;
+
 
   // 使用者輸入時即時換算
   yenInput.addEventListener("input", () => {
@@ -1485,6 +1486,7 @@ function returnToSchedule() {
 
 </body>
 </html>
+
 
 
 

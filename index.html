@@ -1238,102 +1238,9 @@ document.addEventListener("DOMContentLoaded", () => {
     day1.classList.add('fade-in');
   }, 300);
 }
-document.addEventListener("DOMContentLoaded", () => {
-  const yenInput = document.getElementById("yen");
-  const twdOutput = document.getElementById("twd");
-  let currentRate = null;
-
-  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-    .then(res => res.json())
-    .then(data => {
-      currentRate = data.rates.TWD;
-    })
-    .catch(() => {
-      currentRate = 0.22;
-    });
-
-  yenInput.addEventListener("input", () => {
-    const amount = parseFloat(yenInput.value);
-    if (!amount || amount <= 0) {
-      twdOutput.value = "";
-      return;
-    }
-
-    if (!currentRate) {
-      twdOutput.value = "匯率取得失敗";
-      return;
-    }
-
-    const converted = (amount * currentRate).toFixed(2);
-    twdOutput.value = `${converted} 元`;
-  });
-});
-document.addEventListener("DOMContentLoaded", () => {
-  const yenInput = document.getElementById("yen");
-  const twdOutput = document.getElementById("twd");
-
-  yenInput.addEventListener("input", () => {
-    const amount = parseFloat(yenInput.value);
-    if (!amount || amount <= 0) {
-      twdOutput.value = "";
-      return;
-    }
-
-    fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-      .then(res => res.json())
-      .then(data => {
-        const rate = data.rates.TWD;
-        const converted = (amount * rate).toFixed(2);
-        twdOutput.value = `${converted} 元`;
-      })
-      .catch(() => {
-        twdOutput.value = "匯率取得失敗";
-      });
-  });
-});
 
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  initExchangeRate();
-});
-
-// 匯率換算功能
-function initExchangeRate() {
-  const yenInput = document.getElementById("yen");
-  const twdOutput = document.getElementById("twd");
-  let currentRate = null;
-  const fallbackRate = 0.22;
-
-  // 取得即時匯率
-  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-    .then(res => res.json())
-    .then(data => {
-      if (!data || !data.rates || !data.rates.TWD) throw new Error("匯率資料錯誤");
-      currentRate = data.rates.TWD;
-    })
-    .catch(() => {
-      currentRate = fallbackRate;
-    });
-
-  // 使用者輸入時即時換算
-  yenInput.addEventListener("input", () => {
-    const amount = parseFloat(yenInput.value);
-    if (!amount || amount <= 0) {
-      twdOutput.value = "";
-      return;
-    }
-
-    if (!currentRate) {
-      twdOutput.value = "匯率取得失敗";
-      return;
-    }
-
-    const converted = (amount * currentRate).toFixed(2);
-    twdOutput.value = `${converted} 元`;
-  });
-}
-
 // 顯示匯率頁
 function showExchange() {
   // 淡出所有行程卡
@@ -1390,32 +1297,25 @@ function returnToSchedule() {
 }
 </script>
 
-
-	<script>
+<script>
 document.addEventListener("DOMContentLoaded", () => {
-  initExchangeRate();
-});
-
-// 匯率換算功能
-function initExchangeRate() {
   const yenInput = document.getElementById("yen");
   const twdOutput = document.getElementById("twd");
-  let currentRate = null;
   const fallbackRate = 0.22;
+  let currentRate = null;
 
   // 取得即時匯率
- fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-
+  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
     .then(res => res.json())
     .then(data => {
-		const rate = data.rates.TWD / data.rates.JPY;
-	     if (!data || !data.rates || !data.rates.TWD) throw new Error("匯率資料錯誤");
-	      currentRate = data.rates.TWD;
-	    }) 
+      if (!data || !data.rates || !data.rates.TWD) {
+        throw new Error("匯率資料錯誤");
+      }
+      currentRate = data.rates.TWD;
+    })
     .catch(() => {
       currentRate = fallbackRate;
     });
-
 
   // 使用者輸入時即時換算
   yenInput.addEventListener("input", () => {
@@ -1433,66 +1333,13 @@ function initExchangeRate() {
     const converted = (amount * currentRate).toFixed(2);
     twdOutput.value = `${converted} 元`;
   });
-}
+});
 
-// 顯示匯率頁
-function showExchange() {
-  // 淡出所有行程卡
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.classList.remove('fade-in');
-    el.classList.add('fade-out');
-    setTimeout(() => {
-      el.style.display = 'none';
-      el.classList.remove('fade-out');
-    }, 300);
-  });
-
-  // 淡出 tab
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  tabs.classList.remove('fade-in');
-  tabs.classList.add('fade-out');
-  setTimeout(() => {
-    tabs.style.display = 'none';
-    tabs.classList.remove('fade-out');
-  }, 300);
-
-  // 顯示匯率頁
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'block';
-  exchange.classList.add('fade-in');
-}
-
-// 返回主頁
-function returnToSchedule() {
-  const exchange = document.querySelector('.exchange-section');
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  const day1 = document.getElementById('day-1');
-
-  // 淡出匯率頁
-  exchange.classList.remove('fade-in');
-  exchange.classList.add('fade-out');
-
-  setTimeout(() => {
-    exchange.style.display = 'none';
-    exchange.classList.remove('fade-out');
-
-    // 顯示 tab
-    tabs.style.display = 'block';
-    tabs.classList.add('fade-in');
-
-    // 顯示第 1 天行程
-    document.querySelectorAll('.day-section').forEach(el => {
-      el.style.display = 'none';
-      el.classList.remove('fade-in');
-    });
-    day1.style.display = 'block';
-    day1.classList.add('fade-in');
-  }, 300);
-}
 </script>
 
 </body>
 </html>
+
 
 
 

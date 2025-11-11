@@ -1387,22 +1387,25 @@ function swapCurrencies() {
   const outputSelect = document.getElementById("output-currency");
   const label = document.getElementById("toggle-label");
 
-  // 切換動畫 class
+  // 切換動畫
   toggle.classList.toggle("active");
 
-  // 交換幣別 select
+  // 交換幣別
   const temp = inputSelect.value;
   inputSelect.value = outputSelect.value;
   outputSelect.value = temp;
 
-  // ✅ 更新提示文字（只顯示 input 的幣別）
+  // 更新提示文字
   label.textContent = inputSelect.value;
 
-  // 更新匯率與換算
+  // ✅ 轉換數字：把原本 output 的值搬到 input，再重新換算
+  const outputVal = document.getElementById("output-amount").value;
+  document.getElementById("input-amount").value = outputVal;
+
+  // ✅ 更新匯率與換算
   updateRateDisplay();
   updateConversion("input");
 }
-
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1427,6 +1430,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

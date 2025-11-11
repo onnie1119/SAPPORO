@@ -1140,12 +1140,12 @@
 	<!-- 放在 .container 外層或 body 裡 -->
 <button class="return-button" id="returnButton" onclick="returnToSchedule()" style="display:none;">返回主頁</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
-  <script>
+<script>
 document.addEventListener("DOMContentLoaded", () => {
-  // 頁面初始化：顯示第 1 天行程
   showDay(1);
-  updateArrows();
+  updateTabArrows();
   initExchangeRate();
+  initScrollTopButton();
 });
 
 // 行程卡切換
@@ -1170,26 +1170,28 @@ const scrollEl = document.getElementById("dayTabsScroll");
 const arrowLeft = document.getElementById("arrowLeft");
 const arrowRight = document.getElementById("arrowRight");
 
-function updateArrows() {
+function updateTabArrows() {
   const scrollLeft = scrollEl.scrollLeft;
   const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
   arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
   arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
 }
 
-scrollEl.addEventListener("scroll", updateArrows);
-window.addEventListener("resize", updateArrows);
+scrollEl.addEventListener("scroll", updateTabArrows);
+window.addEventListener("resize", updateTabArrows);
 
 // scroll-to-top 按鈕
-const scrollBtn = document.getElementById("scrollToTop");
+function initScrollTopButton() {
+  const scrollBtn = document.getElementById("scrollToTop");
 
-window.addEventListener("scroll", () => {
-  scrollBtn.classList.toggle("show", window.scrollY > 100);
-});
+  window.addEventListener("scroll", () => {
+    scrollBtn.classList.toggle("show", window.scrollY > 100);
+  });
 
-scrollBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
 
 // 匯率換算頁切換
 function showExchange() {
@@ -1201,7 +1203,7 @@ function showExchange() {
   document.querySelector(".day-tabs-wrapper").style.display = "none";
   document.querySelector(".exchange-section").style.display = "block";
   document.querySelector(".exchange-section").classList.add("fade-in");
-  document.querySelector(".return-button").style.display = "block";
+  document.getElementById("returnButton").style.display = "block";
 }
 
 function returnToSchedule() {
@@ -1210,12 +1212,12 @@ function returnToSchedule() {
   exchange.classList.remove("fade-in");
 
   document.querySelector(".day-tabs-wrapper").style.display = "block";
-  document.querySelector(".return-button").style.display = "none";
+  document.getElementById("returnButton").style.display = "none";
 
   showDay(1);
 }
 
-// 匯率換算功能
+// 即時匯率換算
 function initExchangeRate() {
   const yenInput = document.getElementById("yen");
   const twdOutput = document.getElementById("twd");
@@ -1248,8 +1250,10 @@ function initExchangeRate() {
 }
 </script>
 
+
 </body>
 </html>
+
 
 
 

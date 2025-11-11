@@ -1397,7 +1397,8 @@ function initExchangeRate() {
   const fallbackRate = 0.22;
 
   // 取得即時匯率
-  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
+ fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
+
     .then(res => res.json())
     .then(data => {
       if (!data || !data.rates || !data.rates.TWD) throw new Error("匯率資料錯誤");
@@ -1406,6 +1407,7 @@ function initExchangeRate() {
     .catch(() => {
       currentRate = fallbackRate;
     });
+const rate = data.rates.TWD / data.rates.JPY;
 
   // 使用者輸入時即時換算
   yenInput.addEventListener("input", () => {
@@ -1483,6 +1485,7 @@ function returnToSchedule() {
 
 </body>
 </html>
+
 
 
 

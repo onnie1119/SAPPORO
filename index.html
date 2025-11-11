@@ -393,7 +393,7 @@
 		<div class="top-buttons">
 			<button>行李清單</button>
 			<button>電子憑證</button>
- 			<button>匯率換算</button>
+ 			<button onclick="showExchange()">匯率換算</button>
 		</div>
 	</div>
 
@@ -1068,15 +1068,17 @@
 	</div>
 		
 	<div class="exchange-section" style="display:none;">
-  <div class="day-label">匯率換算</div>
-  <div class="activity-card">
-    <div class="info">
-      <label for="yen" class="title">輸入日圓金額：</label>
-      <input type="number" id="yen" placeholder="例如：10000" style="padding:6px; font-size:14px; margin-bottom:10px;" />
-      <button onclick="convertJPY()" style="padding:6px 12px; font-size:12px; border-radius:6px; background:#3A7AFE; color:#fff; border:none;">自動換算</button>
-      <div id="exchange-result" class="note" style="margin-top:10px;"></div>
-    </div>
-  </div>
+		<div class="day-label">匯率換算</div>
+		  <div class="activity-card">
+		    <div class="info">
+		      <label for="yen" class="title">輸入日圓金額：</label>
+		      <input type="number" id="yen" placeholder="例如：10000" style="padding:6px; font-size:14px; margin-bottom:10px;" />
+		      <button onclick="convertJPY()" style="padding:6px 12px; font-size:12px; border-radius:6px; background:#3A7AFE; color:#fff; border:none;">自動換算</button>
+		      <div id="exchange-result" class="note" style="margin-top:10px;"></div>
+		   </div>
+		</div>
+	</div>
+
 </div>
 
     <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
@@ -1174,6 +1176,8 @@ function showExchange() {
   document.querySelectorAll('.day-section').forEach(el => el.style.display = 'none');
   // 顯示匯率換算區塊
   document.querySelector('.exchange-section').style.display = 'block';
+  // 移除所有 tab 的 active 樣式
+  document.querySelectorAll('.day-tab').forEach(tab => tab.classList.remove('active'));
 }
 
 function convertJPY() {
@@ -1198,8 +1202,10 @@ function convertJPY() {
 
 
 
+
 </body>
 </html>
+
 
 
 

@@ -1379,37 +1379,14 @@ function swapCurrencies() {
   const toggle = document.querySelector(".toggle-switch");
   toggle.classList.toggle("active");
 }
-function showExchange() {
-  // 顯示匯率換算頁面
-  document.getElementById("exchangePage").style.display = "block";
 
-  // 隱藏行程卡與 tabs
-  document.querySelectorAll(".day-section").forEach(el => el.style.display = "none");
-  const tabs = document.querySelector(".day-tabs-wrapper");
-  if (tabs) tabs.style.display = "none";
-
-  // 顯示返回主頁按鈕
-  document.getElementById("backBtn").style.display = "block";
-}
-
-function backToMain() {
-  // 隱藏匯率換算頁面
-  document.getElementById("exchangePage").style.display = "none";
-
-  // 顯示行程卡與 tabs
-  document.getElementById("day-1").style.display = "block";
-  const tabs = document.querySelector(".day-tabs-wrapper");
-  if (tabs) tabs.style.display = "block";
-
-  // 隱藏返回主頁按鈕
-  document.getElementById("backBtn").style.display = "none";
-}
 
 </script>
 
 
 </body>
 </html>
+
 
 
 

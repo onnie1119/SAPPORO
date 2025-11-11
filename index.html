@@ -464,7 +464,8 @@ select {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.toggle-switch {
+
+ .toggle-switch {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -493,49 +494,7 @@ select {
 }
 
 .toggle-switch.active .toggle-thumb {
-  left: 32px; /* 往右滑 */
-}
-
-.toggle-switch.active .toggle-track {
-  background: #a3c1ff; /* 可自訂顏色 */
-}
-
-.toggle-label-left,
-.toggle-label-right {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.toggle-switch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  margin: 10px 0;
-}
-
-.toggle-track {
-  position: relative;
-  width: 60px;
-  height: 30px;
-  background: #ccc;
-  border-radius: 15px;
-  transition: background 0.3s ease;
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 26px;
-  height: 26px;
-  background: #3a7afe;
-  border-radius: 50%;
-  transition: left 0.3s ease;
-}
-
-.toggle-switch.active .toggle-thumb {
-  left: 32px; /* ✅ 滑到右邊 */
+  left: 32px;
 }
 
 .toggle-switch.active .toggle-track {
@@ -1232,12 +1191,14 @@ select {
 	
 <div id="exchange-page" class="exchange-page">
 	<div class="converter">
-		<div class="toggle-switch" id="currencyToggle" onclick="swapCurrencies()">
-			  <div class="toggle-track">
-			    <div class="toggle-thumb"></div>
-			  </div>
-			  <span class="toggle-label" id="toggle-label">JPY</span>
+		<div class="toggle-switch" onclick="swapCurrencies()" id="currencyToggle">
+			<div class="toggle-track">
+				<div class="toggle-thumb"></div>
+			</div>
+			<span class="toggle-label-left" id="label-left">JPY</span>
+			<span class="toggle-label-right" id="label-right">TWD</span>
 		</div>
+
 
 		
 	    <div class="input-group">
@@ -1422,24 +1383,30 @@ function updateConversion(source) {
 }
 
 function swapCurrencies() {
+  const toggle = document.getElementById("currencyToggle");
   const inputSelect = document.getElementById("input-currency");
   const outputSelect = document.getElementById("output-currency");
+  const labelLeft = document.getElementById("label-left");
+  const labelRight = document.getElementById("label-right");
 
+  // 切換動畫 class
+  toggle.classList.toggle("active");
+
+  // 交換幣別 select
   const temp = inputSelect.value;
   inputSelect.value = outputSelect.value;
   outputSelect.value = temp;
 
+  // 交換提示文字
+  const tempLabel = labelLeft.textContent;
+  labelLeft.textContent = labelRight.textContent;
+  labelRight.textContent = tempLabel;
+
+  // 更新匯率與換算
   updateRateDisplay();
   updateConversion("input");
-
-  // ✅ 切換動畫
-  const toggle = document.getElementById("currencyToggle");
-  toggle.classList.toggle("active");
-
-  // ✅ 更新提示文字
-  const label = document.getElementById("toggle-label");
-  label.textContent = inputSelect.value;
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   getExchangeRate();
@@ -1463,6 +1430,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

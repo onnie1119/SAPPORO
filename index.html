@@ -1337,9 +1337,11 @@ async function getExchangeRate() {
 }
 
 function updateRateDisplay() {
+  const rateInfo = document.getElementById("rate-info");
+  if (!rateInfo) return; // ✅ 如果找不到就跳過，避免錯誤
+
   const inputCurr = document.getElementById("input-currency").value;
   const outputCurr = document.getElementById("output-currency").value;
-  const rateInfo = document.getElementById("rate-info");
 
   if (inputCurr === "JPY" && outputCurr === "TWD") {
     rateInfo.textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
@@ -1349,6 +1351,7 @@ function updateRateDisplay() {
     rateInfo.textContent = "⚠️ 幣別不支援";
   }
 }
+
 
 function updateConversion(source) {
   if (!jpyRate) return;
@@ -1438,6 +1441,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

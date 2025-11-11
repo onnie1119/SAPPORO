@@ -1403,8 +1403,8 @@ function swapCurrencies() {
 <script>
 	document.addEventListener("DOMContentLoaded", () => {
   window.showExchange = function () {
-    document.querySelector(".container").classList.remove("show");
-    document.getElementById("exchange-page").classList.add("show");
+    document.querySelector(".container").style.display = "none";
+    document.getElementById("exchange-page").style.display = "block";
     document.getElementById("backBtn").classList.add("show");
    
   };
@@ -1418,6 +1418,7 @@ function swapCurrencies() {
 </script>
 </body>
 </html>
+
 
 
 

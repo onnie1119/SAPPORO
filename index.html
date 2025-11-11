@@ -1178,37 +1178,33 @@ select {
 </div>
 	
 <div id="exchange-page" class="exchange-page">
-  <h2>日圓 ↔ 新台幣 匯率換算</h2>
-  <p id="rate-info">載入中...</p>
-
-  <div class="converter">
-    <div class="input-group">
-      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
-      <select id="input-currency" onchange="updateConversion('input')">
-        <option value="JPY">日圓</option>
-        <option value="TWD">台幣</option>
-      </select>
-    </div>
-
-    <div class="toggle-switch" onclick="swapCurrencies()">
-		<div class="toggle-track">
-			<div class="toggle-thumb"></div>
+	<div class="converter">
+	    <div class="input-group">
+	      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
+	      <select id="input-currency" onchange="updateConversion('input')">
+	        <option value="JPY">日圓</option>
+	        <option value="TWD">台幣</option>
+	      </select>
+	    </div>
+	
+	    <div class="toggle-switch" onclick="swapCurrencies()">
+			<div class="toggle-track">
+				<div class="toggle-thumb"></div>
+			</div>
+			<span class="toggle-label-left">JPY</span>
+			<span class="toggle-label-right">TWD</span>
 		</div>
-		<span class="toggle-label-left">JPY</span>
-		<span class="toggle-label-right">TWD</span>
+	
+	
+	    <div class="input-group">
+	      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
+	      <select id="output-currency" onchange="updateConversion('output')">
+	        <option value="TWD">台幣</option>
+	        <option value="JPY">日圓</option>
+	      </select>
+	    </div>
 	</div>
-
-
-    <div class="input-group">
-      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
-      <select id="output-currency" onchange="updateConversion('output')">
-        <option value="TWD">台幣</option>
-        <option value="JPY">日圓</option>
-      </select>
-    </div>
-  </div>
-
-  <button class="back-btn" onclick="backToMain()">返回旅程頁面</button>
+	<button class="back-btn" onclick="backToMain()">返回旅程頁面</button>
 </div>
 
 	
@@ -1381,6 +1377,7 @@ function swapCurrencies() {
 
 </body>
 </html>
+
 
 
 

@@ -1196,7 +1196,7 @@ select {
 	
 <div id="exchange-page" class="exchange-page">
 	<p id="rate-info">1 日圓 等於</p>
-	<h2>0.20 新台幣</h2>
+	<h2 id="rate-value">0.20 新台幣</h2>
 	<p>11月11日 上午6:05 [UTC] · 免責聲明</p>
 	
 	<div class="converter">
@@ -1374,16 +1374,53 @@ function updateConversion(source) {
 
 // 交換貨幣
 function swapCurrencies() {
-  const inCurr = document.getElementById("input-currency");
-  const outCurr = document.getElementById("output-currency");
+  // 交換 select 的幣別
+  const inputSelect = document.getElementById("input-currency");
+  const outputSelect = document.getElementById("output-currency");
 
-  // 交換幣別
-  const temp = inCurr.value;
-  inCurr.value = outCurr.value;
-  outCurr.value = temp;
+  const temp = inputSelect.value;
+  inputSelect.value = outputSelect.value;
+  outputSelect.value = temp;
 
-  // 觸發即時計算
+  // 更新匯率顯示文字
+  updateRateDisplay();
+
+  // 更新換算結果
   updateConversion("input");
+}
+
+function updateRateDisplay() {
+  const inputCurrency = document.getElementById("input-currency").value;
+  const outputCurrency = document.getElementById("output-currency").value;
+
+  const rateInfo = document.getElementById("rate-info");
+  const rateValue = document.getElementById("rate-value");
+
+  // 假設匯率是固定的（你可以改成即時匯率）
+  const rates = {
+    JPY_TWD: 0.20,
+    TWD_JPY: 5.00 // 你可以改成即時匯率
+  };
+
+  let rate = 0;
+  let displayText = "";
+
+  if (inputCurrency === "JPY" && outputCurrency === "TWD") {
+    rate = rates.JPY_TWD;
+    displayText = `1 日圓 等於`;
+    rateValue.textContent = `${rate.toFixed(2)} 新台幣`;
+  } else if (inputCurrency === "TWD" && outputCurrency === "JPY") {
+    rate = rates.TWD_JPY;
+    displayText = `1 新台幣 等於`;
+    rateValue.textContent = `${rate.toFixed(2)} 日圓`;
+  } else {
+    displayText = `匯率無法顯示`;
+    rateValue.textContent = `--`;
+  }
+
+  rateInfo.textContent = displayText;
+}
+
 
   // 切換開關狀態動畫
   const toggle = document.querySelector(".toggle-switch");
@@ -1408,6 +1445,7 @@ function showExchange() {
 
 </body>
 </html>
+
 
 
 

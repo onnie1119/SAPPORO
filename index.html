@@ -1390,9 +1390,6 @@ function swapCurrencies() {
   toggle.classList.toggle("active");
 }
 
-function showExchange() {
-  document.getElementById("backBtn").classList.add("show");
-}
 
 function backToMain() {
   document.getElementById("backBtn").classList.remove("show");
@@ -1401,7 +1398,7 @@ function backToMain() {
 function showExchange() {
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
-  document.getElementById("backBtn").style.display = "block";
+  document.getElementById("backBtn").classList.add("show");
   getExchangeRate();
 }
 </script>
@@ -1409,6 +1406,7 @@ function showExchange() {
 
 </body>
 </html>
+
 
 
 

@@ -1340,13 +1340,7 @@ async function getExchangeRate() {
   }
 }
 
-// 顯示換算頁
-function showExchange() {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
-  document.getElementById("backBtn").style.display = "block";
-  getExchangeRate();
-}
+
 	
 
 // 回首頁
@@ -1403,12 +1397,19 @@ function showExchange() {
 function backToMain() {
   document.getElementById("backBtn").classList.remove("show");
 }
-
+// 顯示換算頁
+function showExchange() {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "block";
+  document.getElementById("backBtn").style.display = "block";
+  getExchangeRate();
+}
 </script>
 
 
 </body>
 </html>
+
 
 
 

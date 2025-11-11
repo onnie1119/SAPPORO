@@ -1309,7 +1309,8 @@ function showDay(dayNumber) {
     tab.classList.toggle("active", index === dayNumber - 1);
   });
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+ window.scrollTo({ top: document.querySelector('.topbar').offsetHeight, behavior: "smooth" });
+
 }
 
 // 匯率換算頁切換
@@ -1436,6 +1437,7 @@ function returnToSchedule() {
 </script>
 </body>
 </html>
+
 
 
 

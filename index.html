@@ -1192,11 +1192,10 @@ select {
 <div id="exchange-page" class="exchange-page">
 	<div class="converter">
 		<div class="toggle-switch" onclick="swapCurrencies()" id="currencyToggle">
-			<div class="toggle-track">
-				<div class="toggle-thumb"></div>
-			</div>
-			<span class="toggle-label-left" id="label-left">JPY</span>
-			<span class="toggle-label-right" id="label-right">TWD</span>
+		  <div class="toggle-track">
+		    <div class="toggle-thumb"></div>
+		  </div>
+		  <span class="toggle-label" id="toggle-label">JPY</span>
 		</div>
 
 
@@ -1386,8 +1385,7 @@ function swapCurrencies() {
   const toggle = document.getElementById("currencyToggle");
   const inputSelect = document.getElementById("input-currency");
   const outputSelect = document.getElementById("output-currency");
-  const labelLeft = document.getElementById("label-left");
-  const labelRight = document.getElementById("label-right");
+  const label = document.getElementById("toggle-label");
 
   // 切換動畫 class
   toggle.classList.toggle("active");
@@ -1397,15 +1395,14 @@ function swapCurrencies() {
   inputSelect.value = outputSelect.value;
   outputSelect.value = temp;
 
-  // 交換提示文字
-  const tempLabel = labelLeft.textContent;
-  labelLeft.textContent = labelRight.textContent;
-  labelRight.textContent = tempLabel;
+  // ✅ 更新提示文字（只顯示 input 的幣別）
+  label.textContent = inputSelect.value;
 
   // 更新匯率與換算
   updateRateDisplay();
   updateConversion("input");
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1430,6 +1427,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

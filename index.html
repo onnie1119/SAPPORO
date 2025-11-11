@@ -438,6 +438,41 @@
   padding: 20px;
 }
 
+	  .exchange-section {
+  display: none;
+  min-height: 70vh;
+  padding: 20px;
+  position: relative;
+}
+
+.return-button {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+}
+
+.scroll-top-button {
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+}
+
+.scroll-top-button.show {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
 	  
   </style>
 </head>
@@ -1122,24 +1157,29 @@
     	</div>
 		</a>
 	</div>
-		
-	<div class="exchange-wrapper" style="display: none;">
-		<div class="activity-card">
-			<div class="info">
-				<label class="title">日圓 (JPY)</label>
-				<input type="number" id="yen" placeholder="輸入金額" />
-			</div>
-			<div class="info">
-				<label class="title">新台幣 (TWD)</label>
-				<input type="text" id="twd" readonly />
-			</div>
-		</div>
-	</div>
+</div>		
+<!-- 匯率換算區塊 -->
+<div class="exchange-section" style="display: none;">
+  <div class="activity-card">
+    <div class="info">
+      <label class="title">日圓 (JPY)</label>
+      <input type="number" id="yen" placeholder="輸入金額" />
+    </div>
+    <div class="info">
+      <label class="title">新台幣 (TWD)</label>
+      <input type="text" id="twd" readonly />
+    </div>
+  </div>
 </div>
+
+<!-- 返回主頁按鈕 -->
+<button class="return-button" id="returnButton" style="display: none;" onclick="returnToSchedule()">返回主頁</button>
+
+<!-- 置頂按鈕 -->
+<button id="scrollToTop" class="scroll-top-button">ピン留め</button>
+
 	
-	<!-- 放在 .container 外層或 body 裡 -->
-<button class="return-button" id="returnButton" onclick="returnToSchedule()" style="display:none;">返回主頁</button>
-<button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
+	
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
@@ -1250,9 +1290,97 @@ function initExchangeRate() {
 }
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  showDay(1);
+  initExchangeRate();
+  initScrollTopButton();
+});
+
+// 行程卡切換
+function showDay(dayNumber) {
+  document.querySelectorAll(".day-section").forEach((section, index) => {
+    section.style.display = index === dayNumber - 1 ? "block" : "none";
+    section.classList.toggle("fade-in", index === dayNumber - 1);
+  });
+
+  document.querySelectorAll(".day-tab").forEach((tab, index) => {
+    tab.classList.toggle("active", index === dayNumber - 1);
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// 匯率換算頁切換
+function showExchange() {
+  document.querySelectorAll(".day-section").forEach(el => {
+    el.style.display = "none";
+    el.classList.remove("fade-in");
+  });
+
+  document.querySelector(".day-tabs-wrapper").style.display = "none";
+  document.querySelector(".exchange-section").style.display = "block";
+  document.querySelector(".exchange-section").classList.add("fade-in");
+  document.getElementById("returnButton").style.display = "block";
+}
+
+function returnToSchedule() {
+  document.querySelector(".exchange-section").style.display = "none";
+  document.querySelector(".exchange-section").classList.remove("fade-in");
+  document.querySelector(".day-tabs-wrapper").style.display = "block";
+  document.getElementById("returnButton").style.display = "none";
+  showDay(1);
+}
+
+// 匯率換算功能
+function initExchangeRate() {
+  const yenInput = document.getElementById("yen");
+  const twdOutput = document.getElementById("twd");
+  let currentRate = null;
+
+  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
+    .then(res => res.json())
+    .then(data => {
+      currentRate = data.rates.TWD;
+    })
+    .catch(() => {
+      currentRate = 0.22;
+    });
+
+  yenInput.addEventListener("input", () => {
+    const amount = parseFloat(yenInput.value);
+    if (!amount || amount <= 0) {
+      twdOutput.value = "";
+      return;
+    }
+
+    if (!currentRate) {
+      twdOutput.value = "匯率取得失敗";
+      return;
+    }
+
+    const converted = (amount * currentRate).toFixed(2);
+    twdOutput.value = `${converted} 元`;
+  });
+}
+
+// 置頂按鈕控制
+function initScrollTopButton() {
+  const scrollBtn = document.getElementById("scrollToTop");
+
+  window.addEventListener("scroll", () => {
+    scrollBtn.classList.toggle("show", window.scrollY > 100);
+  });
+
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+</script>
 
 </body>
 </html>
+
 
 
 

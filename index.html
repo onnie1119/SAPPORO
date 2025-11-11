@@ -1197,7 +1197,7 @@ select {
 <div id="exchange-page" class="exchange-page">
 	<p id="rate-info">1 日圓 等於</p>
 	<h2 id="rate-value">0.20 新台幣</h2>
-	<p>11月11日 上午6:05 [UTC] · 免責聲明</p>
+	<p id="rate-timestamp">11月11日 上午6:05 [UTC]・免責聲明</p>
 	
 	<div class="converter">
 	    <div class="input-group">
@@ -1387,6 +1387,8 @@ function swapCurrencies() {
 
   // 更新換算結果
   updateConversion("input");
+
+
 }
 
 
@@ -1415,8 +1417,60 @@ function swapCurrencies() {
   };
 });
 </script>
+
+	
+<script>
+	function updateRateDisplay() {
+	  const inputCurrency = document.getElementById("input-currency").value;
+	  const outputCurrency = document.getElementById("output-currency").value;
+	
+	  const rateInfo = document.getElementById("rate-info");
+	  const rateValue = document.getElementById("rate-value");
+	  const rateTimestamp = document.getElementById("rate-timestamp");
+	
+	  // 假設匯率是固定的（你可以改成即時 API）
+	  const rates = {
+	    JPY_TWD: 0.20,
+	    TWD_JPY: 5.00
+	  };
+	
+	  let rate = 0;
+	  let infoText = "";
+	  let valueText = "";
+	
+	  if (inputCurrency === "JPY" && outputCurrency === "TWD") {
+	    rate = rates.JPY_TWD;
+	    infoText = "1 日圓 等於";
+	    valueText = `${rate.toFixed(2)} 新台幣`;
+	  } else if (inputCurrency === "TWD" && outputCurrency === "JPY") {
+	    rate = rates.TWD_JPY;
+	    infoText = "1 新台幣 等於";
+	    valueText = `${rate.toFixed(2)} 日圓`;
+	  } else {
+	    infoText = "匯率無法顯示";
+	    valueText = "--";
+	  }
+	
+	  rateInfo.textContent = infoText;
+	  rateValue.textContent = valueText;
+	
+	  // 更新時間戳
+	  const now = new Date();
+	  const month = now.getMonth() + 1;
+	  const day = now.getDate();
+	  const hour = now.getHours();
+	  const minute = now.getMinutes().toString().padStart(2, "0");
+	
+	  const isMorning = hour < 12;
+	  const hour12 = hour % 12 || 12;
+	  const ampm = isMorning ? "上午" : "下午";
+	
+	  rateTimestamp.textContent = `${month}月${day}日 ${ampm}${hour12}:${minute} [UTC+8]・免責聲明`;
+	}
+</script>
 </body>
 </html>
+
 
 
 

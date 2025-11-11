@@ -1077,16 +1077,18 @@
   <div class="day-label">匯率換算</div>
   <div class="activity-card">
     <div class="info">
-      <label class="title">日圓 (JPY)</label>
+      <label for="yen" class="title">日圓 (JPY)</label>
       <input type="number" id="yen" placeholder="輸入金額" />
     </div>
     <div class="info">
-      <label class="title">新台幣 (TWD)</label>
-      <input type="text" id="twd" readonly />
+      <label for="twd" class="title">新台幣 (TWD)</label>
+      <input type="text" id="twd" readonly placeholder="自動換算結果" />
+      <div id="rateInfo" style="font-size: 12px; color: #999; margin-top: 8px;"></div>
     </div>
   </div>
   <button class="return-button" onclick="returnToSchedule()">返回主頁</button>
 </div>
+
 
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
 	
@@ -1301,7 +1303,31 @@ function returnToSchedule() {
 document.addEventListener("DOMContentLoaded", () => {
   const yenInput = document.getElementById("yen");
   const twdOutput = document.getElementById("twd");
+  const rateInfo = document.getElementById("rateInfo"); // 顯示匯率時間用
+  let currentRate = null;
 
+  // 取得即時匯率
+  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
+    .then(res => res.json())
+    .then(data => {
+      if (!data || !data.rates || !data.rates.TWD) {
+        throw new Error("匯率資料錯誤");
+      }
+      currentRate = data.rates.TWD;
+
+      // 顯示匯率更新時間
+      if (rateInfo && data.date) {
+        rateInfo.textContent = `匯率更新於 ${data.date}`;
+      }
+    })
+    .catch(() => {
+      currentRate = null;
+      if (rateInfo) {
+        rateInfo.textContent = "⚠️ 無法取得匯率資料";
+      }
+    });
+
+  // 使用者輸入時即時換算
   yenInput.addEventListener("input", () => {
     const amount = parseFloat(yenInput.value);
     if (!amount || amount <= 0) {
@@ -1309,30 +1335,22 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    twdOutput.value = "匯率取得中…";
+    if (!currentRate) {
+      twdOutput.value = "匯率取得失敗";
+      return;
+    }
 
-    fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-      .then(res => res.json())
-      .then(data => {
-        if (!data || !data.rates || !data.rates.TWD) {
-          twdOutput.value = "⚠️ 匯率取得失敗";
-          return;
-        }
-
-        const rate = data.rates.TWD;
-        const converted = (amount * rate).toFixed(2);
-        twdOutput.value = `${converted} 元`;
-      })
-      .catch(() => {
-        twdOutput.value = "⚠️ 無法連線至匯率伺服器";
-      });
+    const converted = (amount * currentRate).toFixed(2);
+    twdOutput.value = `${converted} 元`;
   });
 });
+
 
 </script>
 
 </body>
 </html>
+
 
 
 

@@ -433,19 +433,29 @@ select {
 }
 
 .back-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #3A7AFE;
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    padding: 6px 18px;
-    font-size: 12px;
-    cursor: pointer;
-    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-    z-index: 999;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3A7AFE;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 6px 18px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.back-btn.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 @keyframes fadeIn {
@@ -1390,6 +1400,7 @@ function swapCurrencies() {
 
 </body>
 </html>
+
 
 
 

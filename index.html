@@ -1362,23 +1362,34 @@ function backToMain() {
 function updateConversion(source) {
   if (!jpyRate) return;
 
-  const inputVal = parseFloat(document.getElementById("input-amount").value);
-  const outputVal = parseFloat(document.getElementById("output-amount").value);
+  const inputEl = document.getElementById("input-amount");
+  const outputEl = document.getElementById("output-amount");
+  const inputVal = parseFloat(inputEl.value);
+  const outputVal = parseFloat(outputEl.value);
   const inputCurr = document.getElementById("input-currency").value;
   const outputCurr = document.getElementById("output-currency").value;
 
-  if (source === "input" && inputVal) {
-    document.getElementById("output-amount").value =
+  if (source === "input") {
+    if (!inputEl.value) {
+      outputEl.value = "";
+      return;
+    }
+    outputEl.value =
       inputCurr === "JPY"
         ? (inputVal * jpyRate).toFixed(2)
         : (inputVal / jpyRate).toFixed(2);
-  } else if (source === "output" && outputVal) {
-    document.getElementById("input-amount").value =
+  } else if (source === "output") {
+    if (!outputEl.value) {
+      inputEl.value = "";
+      return;
+    }
+    inputEl.value =
       outputCurr === "JPY"
         ? (outputVal * jpyRate).toFixed(2)
         : (outputVal / jpyRate).toFixed(2);
   }
 }
+
 
 // 交換貨幣
 function swapCurrencies() {
@@ -1443,6 +1454,7 @@ function updateRateDisplay() {
 </script>
 </body>
 </html>
+
 
 
 

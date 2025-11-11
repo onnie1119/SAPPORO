@@ -1405,8 +1405,8 @@ function backToMain() {
 }
 // 顯示換算頁
 function showExchange() {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
+  document.querySelector(".container").classList.remove("show");
+  document.getElementById("exchange-page").classList.add("show");
   document.getElementById("backBtn").classList.add("show");
   getExchangeRate();
 }
@@ -1414,6 +1414,7 @@ function showExchange() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -390,6 +390,58 @@
   animation: fadeIn 0.4s ease;
 }
 
+.converter {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="number"] {
+  width: 180px;
+  padding: 8px;
+  font-size: 18px;
+  text-align: right;
+}
+
+select {
+  padding: 8px;
+  font-size: 16px;
+}
+
+#swap-btn {
+  font-size: 22px;
+  border: none;
+  background: #3a7afe;
+  color: #fff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+#swap-btn:hover {
+  transform: rotate(180deg);
+}
+
+.back-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border: 1px solid #3a7afe;
+  background: none;
+  color: #3a7afe;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -1088,17 +1140,28 @@
   <p id="rate-info">載入中...</p>
 
   <div class="converter">
-    <input type="number" id="amount" placeholder="輸入金額">
-    <select id="currency">
-      <option value="JPY">日圓 → 台幣</option>
-      <option value="TWD">台幣 → 日圓</option>
-    </select>
-    <button onclick="convertCurrency()">轉換</button>
+    <div class="input-group">
+      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
+      <select id="input-currency" onchange="updateConversion('input')">
+        <option value="JPY">日圓</option>
+        <option value="TWD">台幣</option>
+      </select>
+    </div>
+
+    <button id="swap-btn" onclick="swapCurrencies()">⇅</button>
+
+    <div class="input-group">
+      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
+      <select id="output-currency" onchange="updateConversion('output')">
+        <option value="TWD">台幣</option>
+        <option value="JPY">日圓</option>
+      </select>
+    </div>
   </div>
 
-  <h3 id="result"></h3>
-  <button onclick="backToMain()">返回旅程頁面</button>
+  <button class="back-btn" onclick="backToMain()">返回旅程頁面</button>
 </div>
+
 	
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
   <script>
@@ -1199,56 +1262,68 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
 let jpyRate = null;
 
+// 抓匯率
 async function getExchangeRate() {
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
     jpyRate = data.rates.TWD;
     document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
-  } catch (err) {
+  } catch {
     document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗，請稍後再試";
   }
 }
 
+// 顯示換算頁
 function showExchange() {
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
   getExchangeRate();
 }
 
+// 回首頁
 function backToMain() {
   document.getElementById("exchange-page").style.display = "none";
   document.querySelector(".container").style.display = "block";
 }
 
-function convertCurrency() {
-  const amount = parseFloat(document.getElementById("amount").value);
-  const type = document.getElementById("currency").value;
-  const resultEl = document.getElementById("result");
+// 更新轉換結果
+function updateConversion(source) {
+  if (!jpyRate) return;
 
-  if (!amount) {
-    resultEl.textContent = "請輸入金額";
-    return;
-  }
+  const inputVal = parseFloat(document.getElementById("input-amount").value);
+  const outputVal = parseFloat(document.getElementById("output-amount").value);
+  const inputCurr = document.getElementById("input-currency").value;
+  const outputCurr = document.getElementById("output-currency").value;
 
-  if (!jpyRate) {
-    resultEl.textContent = "⚠️ 匯率尚未載入完成，請稍候再試";
-    return;
+  if (source === "input" && inputVal) {
+    document.getElementById("output-amount").value =
+      inputCurr === "JPY"
+        ? (inputVal * jpyRate).toFixed(2)
+        : (inputVal / jpyRate).toFixed(2);
+  } else if (source === "output" && outputVal) {
+    document.getElementById("input-amount").value =
+      outputCurr === "JPY"
+        ? (outputVal * jpyRate).toFixed(2)
+        : (outputVal / jpyRate).toFixed(2);
   }
+}
 
-  if (type === "JPY") {
-    resultEl.textContent = `${amount} 日圓 ≈ ${(amount * jpyRate).toFixed(2)} 台幣`;
-  } else {
-    resultEl.textContent = `${amount} 台幣 ≈ ${(amount / jpyRate).toFixed(2)} 日圓`;
-  }
+// 交換貨幣
+function swapCurrencies() {
+  const inCurr = document.getElementById("input-currency");
+  const outCurr = document.getElementById("output-currency");
+  const temp = inCurr.value;
+  inCurr.value = outCurr.value;
+  outCurr.value = temp;
+  updateConversion("input");
 }
 </script>
 
 
-
-
 </body>
 </html>
+
 
 
 

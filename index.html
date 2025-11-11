@@ -1077,6 +1077,8 @@
 		      <div id="exchange-result" class="note" style="margin-top:10px;"></div>
 		   </div>
 		</div>
+		<button onclick="returnToSchedule()" style="margin-top:10px;">返回行程</button>
+
 	</div>
 
 </div>
@@ -1171,15 +1173,21 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
+<script>
 function showExchange() {
   // 隱藏所有行程卡
   document.querySelectorAll('.day-section').forEach(el => el.style.display = 'none');
+  // 隱藏上方的 tab 列
+  const tabsWrapper = document.querySelector('.day-tabs-wrapper');
+  if (tabsWrapper) tabsWrapper.style.display = 'none';
   // 顯示匯率換算區塊
   document.querySelector('.exchange-section').style.display = 'block';
   // 移除所有 tab 的 active 樣式
   document.querySelectorAll('.day-tab').forEach(tab => tab.classList.remove('active'));
 }
+</script>
 
+<script>
 function convertJPY() {
   const amount = parseFloat(document.getElementById('yen').value);
   if (!amount || amount <= 0) {
@@ -1198,6 +1206,18 @@ function convertJPY() {
       document.getElementById('exchange-result').textContent = '匯率取得失敗，請稍後再試';
     });
 }
+	  
+</script>
+<script>
+function returnToSchedule() {
+  // 顯示 tab 列
+  const tabsWrapper = document.querySelector('.day-tabs-wrapper');
+  if (tabsWrapper) tabsWrapper.style.display = 'block';
+  // 顯示第 1 天行程
+  showDay(1);
+  // 隱藏匯率區塊
+  document.querySelector('.exchange-section').style.display = 'none';
+}
 </script>
 
 
@@ -1205,6 +1225,7 @@ function convertJPY() {
 
 </body>
 </html>
+
 
 
 

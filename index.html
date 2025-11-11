@@ -446,6 +446,47 @@ select {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.toggle-track {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background: #ccc;
+  border-radius: 15px;
+  transition: background 0.3s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  background: #3a7afe;
+  border-radius: 50%;
+  transition: left 0.3s ease;
+}
+
+.toggle-switch.active .toggle-thumb {
+  left: 32px; /* 往右滑 */
+}
+
+.toggle-switch.active .toggle-track {
+  background: #a3c1ff; /* 可自訂顏色 */
+}
+
+.toggle-label-left,
+.toggle-label-right {
+  font-size: 14px;
+  font-weight: bold;
+}
 	  
 </style>
 </head>
@@ -1148,7 +1189,14 @@ select {
       </select>
     </div>
 
-    <button id="swap-btn" onclick="swapCurrencies()">⇅</button>
+    <div class="toggle-switch" onclick="swapCurrencies()">
+		<div class="toggle-track">
+			<div class="toggle-thumb"></div>
+		</div>
+		<span class="toggle-label-left">JPY</span>
+		<span class="toggle-label-right">TWD</span>
+	</div>
+
 
     <div class="input-group">
       <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
@@ -1313,16 +1361,26 @@ function updateConversion(source) {
 function swapCurrencies() {
   const inCurr = document.getElementById("input-currency");
   const outCurr = document.getElementById("output-currency");
+
+  // 交換幣別
   const temp = inCurr.value;
   inCurr.value = outCurr.value;
   outCurr.value = temp;
+
+  // 觸發即時計算
   updateConversion("input");
+
+  // 切換開關狀態動畫
+  const toggle = document.querySelector(".toggle-switch");
+  toggle.classList.toggle("active");
 }
+
 </script>
 
 
 </body>
 </html>
+
 
 
 

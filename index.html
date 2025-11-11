@@ -1232,11 +1232,11 @@ select {
 	
 <div id="exchange-page" class="exchange-page">
 	<div class="converter">
-		<div class="toggle-switch" onclick="swapCurrencies()">
-		  <div class="toggle-track">
+		<div class="toggle-switch" id="currencyToggle" onclick="swapCurrencies()">
+			  <div class="toggle-track">
 			    <div class="toggle-thumb"></div>
-		  </div>
-		  <span class="toggle-label" id="toggle-label">JPY</span>
+			  </div>
+			  <span class="toggle-label" id="toggle-label">JPY</span>
 		</div>
 
 		
@@ -1364,33 +1364,32 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
 let jpyRate = null;
 
-// 抓匯率
 async function getExchangeRate() {
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
     jpyRate = data.rates.TWD;
-
-    document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
-
-    // ✅ 加這行：匯率載入後立即執行換算
+    updateRateDisplay();
     updateConversion("input");
   } catch {
-    document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗，請稍後再試";
+    document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗";
   }
 }
 
+function updateRateDisplay() {
+  const inputCurr = document.getElementById("input-currency").value;
+  const outputCurr = document.getElementById("output-currency").value;
+  const rateInfo = document.getElementById("rate-info");
 
-	
-
-// 回首頁
-function backToMain() {
-  document.getElementById("exchange-page").style.display = "none";
-  document.querySelector(".container").style.display = "block";
-  document.getElementById("backBtn").style.display = "none";
+  if (inputCurr === "JPY" && outputCurr === "TWD") {
+    rateInfo.textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
+  } else if (inputCurr === "TWD" && outputCurr === "JPY") {
+    rateInfo.textContent = `1 台幣 = ${(1 / jpyRate).toFixed(4)} 日圓`;
+  } else {
+    rateInfo.textContent = "⚠️ 幣別不支援";
+  }
 }
 
-// 更新轉換結果
 function updateConversion(source) {
   if (!jpyRate) return;
 
@@ -1422,23 +1421,19 @@ function updateConversion(source) {
   }
 }
 
-
-// 交換貨幣
 function swapCurrencies() {
   const inputSelect = document.getElementById("input-currency");
   const outputSelect = document.getElementById("output-currency");
 
-  // 交換幣別
   const temp = inputSelect.value;
   inputSelect.value = outputSelect.value;
   outputSelect.value = temp;
 
-  // 更新匯率與換算
   updateRateDisplay();
   updateConversion("input");
 
-  // ✅ 切換動畫 class
-  const toggle = document.querySelector(".toggle-switch");
+  // ✅ 切換動畫
+  const toggle = document.getElementById("currencyToggle");
   toggle.classList.toggle("active");
 
   // ✅ 更新提示文字
@@ -1446,30 +1441,9 @@ function swapCurrencies() {
   label.textContent = inputSelect.value;
 }
 
-	
-function updateRateDisplay() {
-  if (!jpyRate) return;
-
-  const inputCurr = document.getElementById("input-currency").value;
-  const outputCurr = document.getElementById("output-currency").value;
-
-  const rateInfo = document.getElementById("rate-info");
-
-  if (inputCurr === "JPY" && outputCurr === "TWD") {
-    rateInfo.textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
-  } else if (inputCurr === "TWD" && outputCurr === "JPY") {
-    rateInfo.textContent = `1 台幣 = ${(1 / jpyRate).toFixed(4)} 日圓`;
-  } else {
-    rateInfo.textContent = "⚠️ 幣別不支援";
-  }
-}
-
-
-
-  
-
-
-
+document.addEventListener("DOMContentLoaded", () => {
+  getExchangeRate();
+});
 </script>
 <script>
 	document.addEventListener("DOMContentLoaded", () => {
@@ -1489,6 +1463,7 @@ function updateRateDisplay() {
 </script>
 </body>
 </html>
+
 
 
 

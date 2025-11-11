@@ -505,7 +505,43 @@ select {
   font-size: 14px;
   font-weight: bold;
 }
-	  
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.toggle-track {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background: #ccc;
+  border-radius: 15px;
+  transition: background 0.3s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  background: #3a7afe;
+  border-radius: 50%;
+  transition: left 0.3s ease;
+}
+
+.toggle-switch.active .toggle-thumb {
+  left: 32px; /* ✅ 滑到右邊 */
+}
+
+.toggle-switch.active .toggle-track {
+  background: #a3c1ff;
+}
+
 </style>
 </head>
 <body>
@@ -1401,16 +1437,16 @@ function swapCurrencies() {
   updateRateDisplay();
   updateConversion("input");
 
-  // 切換動畫
+  // ✅ 切換動畫 class
   const toggle = document.querySelector(".toggle-switch");
   toggle.classList.toggle("active");
 
-  // ✅ 更新提示文字（只顯示 input 的幣別）
+  // ✅ 更新提示文字
   const label = document.getElementById("toggle-label");
   label.textContent = inputSelect.value;
 }
 
-
+	
 function updateRateDisplay() {
   if (!jpyRate) return;
 
@@ -1453,6 +1489,7 @@ function updateRateDisplay() {
 </script>
 </body>
 </html>
+
 
 
 

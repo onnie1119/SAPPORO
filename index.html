@@ -1117,17 +1117,14 @@
 		</a>
 	</div>
 		
-	<div class="exchange-section" style="display:none;">
-		<div class="day-label"></div>
-	  	<div class="activity-card" style="flex-direction: column; align-items: stretch;">
-	    	<div class="info">
-	      		<label for="yen" class="title">日圓（JPY）</label>
-	      		<input type="number" id="yen" placeholder="輸入日圓金額" style="padding:8px; font-size:14px; margin-bottom:12px; border-radius:6px; border:1px solid #ccc;" />
-	    	</div>
-	    	<div class="info">
-				<label class="title">新台幣（TWD）</label>
-	   			<input type="text" id="twd" readonly style="padding:8px; font-size:14px; background:#f5f5f5; border-radius:6px; border:1px solid #ccc;" />
-	    	</div>
+	<div class="activity-card" style="flex-direction: column; align-items: stretch;">
+		<div class="info">
+			<label for="yen" class="title">日圓 (JPY)</label>
+		    <input type="number" id="yen" placeholder="輸入金額" style="padding:8px; font-size:14px; margin-bottom:12px; border-radius:6px; border:1px solid #ccc;" />
+		</div>
+		<div class="info">
+			<label class="title">新台幣 (TWD)</label>
+			<input type="text" id="twd" readonly style="padding:8px; font-size:14px; background:#f5f5f5; border-radius:6px; border:1px solid #ccc;" />
 		</div>
 		<button class="return-button" onclick="returnToSchedule()" style="margin-top:10px;">ホームページ</button>
 	</div>
@@ -1371,9 +1368,45 @@ function returnToSchedule() {
   }, 300);
 }
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const yenInput = document.getElementById('yen');
+  const twdOutput = document.getElementById('twd');
+
+  let currentRate = null;
+
+  // 取得即時匯率
+  fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD')
+    .then(res => res.json())
+    .then(data => {
+      currentRate = data.rates.TWD;
+    })
+    .catch(() => {
+      currentRate = 0.22; // fallback 匯率
+    });
+
+  // 使用者輸入時即時換算
+  yenInput.addEventListener('input', () => {
+    const amount = parseFloat(yenInput.value);
+    if (!amount || amount <= 0) {
+      twdOutput.value = '';
+      return;
+    }
+
+    if (!currentRate) {
+      twdOutput.value = '匯率取得失敗';
+      return;
+    }
+
+    const converted = (amount * currentRate).toFixed(2);
+    twdOutput.value = `${converted} 元`;
+  });
+});
+</script>
 
 </body>
 </html>
+
 
 
 

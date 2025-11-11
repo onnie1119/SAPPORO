@@ -418,14 +418,15 @@
 .fade-in {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .fade-out {
   opacity: 0;
-  transform: translateY(5px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
+
 
 .exchange-section {
   min-height: 79vh; /* 或 100vh 根據你想要的高度 */
@@ -1377,9 +1378,65 @@ function initScrollTopButton() {
   });
 }
 </script>
+<script>
+function showExchange() {
+  // 淡出所有行程卡
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.classList.remove('fade-in');
+    el.classList.add('fade-out');
+    setTimeout(() => el.style.display = 'none', 300);
+  });
 
+  // 淡出 tab
+  const tabs = document.querySelector('.day-tabs-wrapper');
+  tabs.classList.remove('fade-in');
+  tabs.classList.add('fade-out');
+  setTimeout(() => tabs.style.display = 'none', 300);
+
+  // 顯示匯率頁
+  const exchange = document.querySelector('.exchange-section');
+  exchange.style.display = 'block';
+  exchange.classList.remove('fade-out');
+  exchange.classList.add('fade-in');
+
+  // 顯示返回按鈕
+  document.getElementById('returnButton').style.display = 'block';
+}
+function returnToSchedule() {
+  const exchange = document.querySelector('.exchange-section');
+  const tabs = document.querySelector('.day-tabs-wrapper');
+  const day1 = document.getElementById('day-1');
+
+  // 淡出匯率頁
+  exchange.classList.remove('fade-in');
+  exchange.classList.add('fade-out');
+
+  setTimeout(() => {
+    exchange.style.display = 'none';
+    exchange.classList.remove('fade-out');
+
+    // 顯示 tab
+    tabs.style.display = 'block';
+    tabs.classList.remove('fade-out');
+    tabs.classList.add('fade-in');
+
+    // 顯示第 1 天行程
+    document.querySelectorAll('.day-section').forEach(el => {
+      el.style.display = 'none';
+      el.classList.remove('fade-in');
+    });
+    day1.style.display = 'block';
+    day1.classList.add('fade-in');
+
+    // 隱藏返回按鈕
+    document.getElementById('returnButton').style.display = 'none';
+  }, 300);
+}
+
+</script>
 </body>
 </html>
+
 
 
 

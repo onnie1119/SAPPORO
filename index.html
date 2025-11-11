@@ -1088,13 +1088,20 @@
   const arrowLeft = document.getElementById('arrowLeft');
   const arrowRight = document.getElementById('arrowRight');
 
-  function updateArrows() {
-    const scrollLeft = scrollEl.scrollLeft;
-    const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+ function updateArrows() {
+  const scrollEl = document.getElementById("dayTabsScroll");
+  const arrowLeft = document.getElementById("arrowLeft");
+  const arrowRight = document.getElementById("arrowRight");
 
-    arrowLeft.style.opacity = scrollLeft > 10 ? '1' : '0';
-    arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? '1' : '0';
-  }
+  if (!scrollEl || !arrowLeft || !arrowRight) return; // 防止錯誤
+
+  const scrollLeft = scrollEl.scrollLeft;
+  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+
+  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
+  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
+}
+
 
   scrollEl.addEventListener('scroll', updateArrows);
   window.addEventListener('resize', updateArrows);
@@ -1163,6 +1170,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 

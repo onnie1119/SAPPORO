@@ -1332,14 +1332,11 @@ async function getExchangeRate() {
 function showExchange() {
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
+  document.getElementById("backBtn").style.display = "block";
   getExchangeRate();
 }
 	
-// 顯示返回鍵	
-function showExchange(){
-	document.getElementById("backBtn").style.display = "block";
-	
-}
+
 // 回首頁
 function backToMain() {
   document.getElementById("exchange-page").style.display = "none";
@@ -1392,6 +1389,7 @@ function swapCurrencies() {
 
 </body>
 </html>
+
 
 
 

@@ -413,7 +413,22 @@
 .day-section:first-of-type .day-label {
   margin-top: -140px;
   padding-top: 140px;
-}	  
+}	
+
+.fade-out {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+
+	  
   </style>
 </head>
 <body>
@@ -1222,10 +1237,17 @@ function showExchange() {
 
 <script>
 function showExchange() {
-  document.querySelectorAll('.day-section').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.style.display = 'none';
+    el.classList.remove('fade-in');
+  });
   document.querySelector('.day-tabs-wrapper').style.display = 'none';
-  document.querySelector('.exchange-section').style.display = 'block';
+
+  const exchange = document.querySelector('.exchange-section');
+  exchange.style.display = 'block';
+  exchange.classList.add('fade-in');
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const yenInput = document.getElementById('yen');
@@ -1268,12 +1290,39 @@ function returnToSchedule() {
   showDay(1); // 或你要切回的那一天
 }
 </script>
+<script>
+function returnToSchedule() {
+  const exchange = document.querySelector('.exchange-section');
+  const tabs = document.querySelector('.day-tabs-wrapper');
+  const day1 = document.getElementById('day-1');
+
+  // 淡出匯率頁
+  exchange.classList.remove('fade-in');
+  exchange.classList.add('fade-out');
+
+  // 延遲切換主頁內容
+  setTimeout(() => {
+    exchange.style.display = 'none';
+    tabs.style.display = 'block';
+    exchange.classList.remove('fade-out');
+
+    // 顯示第 1 天行程並加上淡入動畫
+    document.querySelectorAll('.day-section').forEach(el => {
+      el.style.display = 'none';
+      el.classList.remove('fade-in');
+    });
+    day1.style.display = 'block';
+    day1.classList.add('fade-in');
+  }, 400); // 與 CSS transition 時間一致
+}
+</script>
 
 
 
 
 </body>
 </html>
+
 
 
 

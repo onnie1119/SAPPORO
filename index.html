@@ -1411,41 +1411,10 @@ function showExchange() {
   getExchangeRate();
 }
 </script>
-<script>
-function updateRateDisplay() {
-  const inputCurrency = document.getElementById("input-currency").value;
-  const outputCurrency = document.getElementById("output-currency").value;
-
-  const rateInfo = document.getElementById("rate-info");
-  const rateValue = document.getElementById("rate-value");
-
-  // 假設匯率是固定的（你可以改成即時匯率）
-  const rates = {
-    JPY_TWD: 0.20,
-    TWD_JPY: 5.00 // 你可以改成即時匯率
-  };
-
-  let rate = 0;
-  let displayText = "";
-
-  if (inputCurrency === "JPY" && outputCurrency === "TWD") {
-    rate = rates.JPY_TWD;
-    displayText = `1 日圓 等於`;
-    rateValue.textContent = `${rate.toFixed(2)} 新台幣`;
-  } else if (inputCurrency === "TWD" && outputCurrency === "JPY") {
-    rate = rates.TWD_JPY;
-    displayText = `1 新台幣 等於`;
-    rateValue.textContent = `${rate.toFixed(2)} 日圓`;
-  } else {
-    displayText = `匯率無法顯示`;
-    rateValue.textContent = `--`;
-  }
-
-  rateInfo.textContent = displayText;
-}
 </script>
 </body>
 </html>
+
 
 
 

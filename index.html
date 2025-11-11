@@ -1301,23 +1301,7 @@ function returnToSchedule() {
 document.addEventListener("DOMContentLoaded", () => {
   const yenInput = document.getElementById("yen");
   const twdOutput = document.getElementById("twd");
-  const fallbackRate = 0.22;
-  let currentRate = null;
 
-  // 取得即時匯率
-  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-    .then(res => res.json())
-    .then(data => {
-      if (!data || !data.rates || !data.rates.TWD) {
-        throw new Error("匯率資料錯誤");
-      }
-      currentRate = data.rates.TWD;
-    })
-    .catch(() => {
-      currentRate = fallbackRate;
-    });
-
-  // 使用者輸入時即時換算
   yenInput.addEventListener("input", () => {
     const amount = parseFloat(yenInput.value);
     if (!amount || amount <= 0) {
@@ -1325,13 +1309,23 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!currentRate) {
-      twdOutput.value = "匯率取得失敗";
-      return;
-    }
+    twdOutput.value = "匯率取得中…";
 
-    const converted = (amount * currentRate).toFixed(2);
-    twdOutput.value = `${converted} 元`;
+    fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
+      .then(res => res.json())
+      .then(data => {
+        if (!data || !data.rates || !data.rates.TWD) {
+          twdOutput.value = "⚠️ 匯率取得失敗";
+          return;
+        }
+
+        const rate = data.rates.TWD;
+        const converted = (amount * rate).toFixed(2);
+        twdOutput.value = `${converted} 元`;
+      })
+      .catch(() => {
+        twdOutput.value = "⚠️ 無法連線至匯率伺服器";
+      });
   });
 });
 
@@ -1339,6 +1333,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 

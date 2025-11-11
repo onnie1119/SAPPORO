@@ -382,6 +382,29 @@
   transform: translateY(0);
 }
 
+.return-button {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3A7AFE;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 6px 18px;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  transition: opacity 0.4s ease, transform 0.3s ease, background 0.3s ease;
+  z-index: 999;
+  opacity: 1;
+  visibility: visible;
+}
+
+.return-button:hover {
+  background: #2a5edb;
+  transform: translateX(-50%) scale(1.05);
+}
 
   </style>
 </head>
@@ -1068,18 +1091,20 @@
 	</div>
 		
 	<div class="exchange-section" style="display:none;">
-		<div class="day-label"></div>
-		  <div class="activity-card">
-		    <div class="info">
-		      <label for="yen" class="title">輸入日圓金額：</label>
-		      <input type="number" id="yen" placeholder="例如：10000" style="padding:6px; font-size:14px; margin-bottom:10px;" />
-		      <button onclick="convertJPY()" style="padding:6px 12px; font-size:12px; border-radius:6px; background:#3A7AFE; color:#fff; border:none;">自動換算</button>
-		      <div id="exchange-result" class="note" style="margin-top:10px;"></div>
-		   </div>
+		<div class="day-label">匯率換算</div>
+	  	<div class="activity-card" style="flex-direction: column; align-items: stretch;">
+	    	<div class="info">
+	      		<label for="yen" class="title">日圓（JPY）</label>
+	      		<input type="number" id="yen" placeholder="輸入日圓金額" style="padding:8px; font-size:14px; margin-bottom:12px; border-radius:6px; border:1px solid #ccc;" />
+	    	</div>
+	    	<div class="info">
+				<label class="title">新台幣（TWD）</label>
+	   			<input type="text" id="twd" readonly style="padding:8px; font-size:14px; background:#f5f5f5; border-radius:6px; border:1px solid #ccc;" />
+	    	</div>
 		</div>
-		<button onclick="returnToSchedule()" style="margin-top:10px;">ホームページ</button>
-
+		<button class="return-button" onclick="returnToSchedule()" style="margin-top:10px;">ホームページ</button>
 	</div>
+		
 
 </div>
 
@@ -1188,26 +1213,35 @@ function showExchange() {
 </script>
 
 <script>
-function convertJPY() {
-  const amount = parseFloat(document.getElementById('yen').value);
-  if (!amount || amount <= 0) {
-    document.getElementById('exchange-result').textContent = '請輸入有效的日圓金額';
-    return;
-  }
-
-  fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD')
-    .then(res => res.json())
-    .then(data => {
-      const rate = data.rates.TWD;
-      const converted = (amount * rate).toFixed(2);
-      document.getElementById('exchange-result').textContent = `${amount} 日圓 ≈ ${converted} 新台幣`;
-    })
-    .catch(() => {
-      document.getElementById('exchange-result').textContent = '匯率取得失敗，請稍後再試';
-    });
+function showExchange() {
+  document.querySelectorAll('.day-section').forEach(el => el.style.display = 'none');
+  document.querySelector('.day-tabs-wrapper').style.display = 'none';
+  document.querySelector('.exchange-section').style.display = 'block';
 }
-	  
+
+document.addEventListener('DOMContentLoaded', () => {
+  const yenInput = document.getElementById('yen');
+  yenInput.addEventListener('input', () => {
+    const amount = parseFloat(yenInput.value);
+    if (!amount || amount <= 0) {
+      document.getElementById('twd').value = '';
+      return;
+    }
+
+    fetch('https://api.exchangerate.host/latest?base=JPY&symbols=TWD')
+      .then(res => res.json())
+      .then(data => {
+        const rate = data.rates.TWD;
+        const converted = (amount * rate).toFixed(2);
+        document.getElementById('twd').value = `${converted} 元`;
+      })
+      .catch(() => {
+        document.getElementById('twd').value = '匯率取得失敗';
+      });
+  });
+});
 </script>
+
 <script>
 function returnToSchedule() {
   // 顯示 tab 列
@@ -1219,12 +1253,20 @@ function returnToSchedule() {
   document.querySelector('.exchange-section').style.display = 'none';
 }
 </script>
+<script>
+function returnToSchedule() {
+  document.querySelector('.exchange-section').style.display = 'none';
+  document.querySelector('.day-tabs-wrapper').style.display = 'block';
+  showDay(1); // 或你要切回的那一天
+}
+</script>
 
 
 
 
 </body>
 </html>
+
 
 
 

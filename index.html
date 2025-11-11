@@ -428,9 +428,14 @@
 }
 
 .exchange-section {
-  display:none;
   min-height: 79vh; /* 或 100vh 根據你想要的高度 */
   position: relative;
+}
+
+.exchange-wrapper {
+  display: none;
+  min-height: 70vh;
+  padding: 20px;
 }
 
 	  
@@ -1118,18 +1123,18 @@
 		</a>
 	</div>
 		
-	<div class="activity-card" style="flex-direction: column; align-items: stretch;">
-		<div class="info">
-			<label for="yen" class="title">日圓 (JPY)</label>
-		    <input type="number" id="yen" placeholder="輸入金額" style="padding:8px; font-size:14px; margin-bottom:12px; border-radius:6px; border:1px solid #ccc;" />
-		</div>
-		<div class="info">
-			<label class="title">新台幣 (TWD)</label>
-			<input type="text" id="twd" readonly style="padding:8px; font-size:14px; background:#f5f5f5; border-radius:6px; border:1px solid #ccc;" />
+	<div class="exchange-wrapper" style="display: none;">
+		<div class="activity-card">
+			<div class="info">
+				<label class="title">日圓 (JPY)</label>
+				<input type="number" id="yen" placeholder="輸入金額" />
+			</div>
+			<div class="info">
+				<label class="title">新台幣 (TWD)</label>
+				<input type="text" id="twd" readonly />
+			</div>
 		</div>
 	</div>
-		
-
 </div>
 	
 	<!-- 放在 .container 外層或 body 裡 -->
@@ -1455,8 +1460,45 @@ function showExchange() {
   document.querySelector('.return-button').style.display = 'none';
 }
 
-</script></body>
+</script>
+<script>
+function showExchange() {
+  // 隱藏所有行程卡
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  // 隱藏 tab
+  document.querySelector('.day-tabs-wrapper').style.display = 'none';
+
+  // 顯示匯率卡片
+  document.querySelector('.exchange-wrapper').style.display = 'block';
+
+  // 顯示返回按鈕
+  document.querySelector('.return-button').style.display = 'block';
+}
+function returnToSchedule() {
+  // 隱藏匯率卡片
+  document.querySelector('.exchange-wrapper').style.display = 'none';
+
+  // 顯示 tab
+  document.querySelector('.day-tabs-wrapper').style.display = 'block';
+
+  // 顯示第 1 天行程
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.style.display = 'none';
+  });
+  const day1 = document.getElementById('day-1');
+  day1.style.display = 'block';
+
+  // 隱藏返回按鈕
+  document.querySelector('.return-button').style.display = 'none';
+}
+
+</script>
+</body>
 </html>
+
 
 
 

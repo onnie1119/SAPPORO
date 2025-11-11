@@ -1153,7 +1153,7 @@
   });
   window.addEventListener('scroll', function () {
   const btn = document.getElementById('scrollToTop');
-  btn.style.display = window.scrollY > 200 ? 'block' : 'none';
+  btn.style.display = window.scrollY > 100 ? 'block' : 'none';
 });
 
 </script>
@@ -1161,7 +1161,7 @@
   const scrollBtn = document.getElementById('scrollToTop');
 
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 200) {
+    if (window.scrollY > 100) {
       scrollBtn.classList.add('show');
     } else {
       scrollBtn.classList.remove('show');
@@ -1274,6 +1274,7 @@ function returnToSchedule() {
 
 </body>
 </html>
+
 
 
 

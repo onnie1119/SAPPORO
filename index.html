@@ -382,14 +382,9 @@
   opacity: 1;
   transform: translateY(0);
 }
-.fade-out {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
 
 
-</style>
+  </style>
 </head>
 <body>
 
@@ -399,26 +394,26 @@
 		<div class="top-buttons">
 			<button>行李清單</button>
 			<button>電子憑證</button>
- 			<button onclick="showExchange()">匯率換算</button>
+ 			<button>匯率換算</button>
 		</div>
 	</div>
 
-<div class="container">
-	<div class="day-tabs-wrapper">
-		<div class="day-tabs-arrow left" id="arrow-left"><span class="icon-arrow-left"></span></div>
-		<div class="day-tabs-scroll" id="dayTabsScroll">
-			<div class="day-tabs">
-				<button class="day-tab active" onclick="showDay(1)">第 1 天</button>
-				<button class="day-tab" onclick="showDay(2)">第 2 天</button>
-				<button class="day-tab" onclick="showDay(3)">第 3 天</button>
-				<button class="day-tab" onclick="showDay(4)">第 4 天</button>
-				<button class="day-tab" onclick="showDay(5)">第 5 天</button>
-				<button class="day-tab" onclick="showDay(6)">第 6 天</button>
-				<button class="day-tab" onclick="showDay(7)">第 7 天</button>
+	<div class="container">
+		<div class="day-tabs-wrapper">
+			<div class="day-tabs-arrow left" id="arrow-left"><span class="icon-arrow-left"></span></div>
+			<div class="day-tabs-scroll" id="dayTabsScroll">
+				<div class="day-tabs">
+					<button class="day-tab active" onclick="showDay(1)">第 1 天</button>
+					<button class="day-tab" onclick="showDay(2)">第 2 天</button>
+					<button class="day-tab" onclick="showDay(3)">第 3 天</button>
+					<button class="day-tab" onclick="showDay(4)">第 4 天</button>
+					<button class="day-tab" onclick="showDay(5)">第 5 天</button>
+					<button class="day-tab" onclick="showDay(6)">第 6 天</button>
+					<button class="day-tab" onclick="showDay(7)">第 7 天</button>
             </div>
-		</div>
-		<div class="day-tabs-arrow right" id="arrow-right"><span class="icon-arrow-right"></span></div>
-	</div>
+          </div>
+          <div class="day-tabs-arrow right" id="arrow-right"><span class="icon-arrow-right"></span></div>
+        </div>
 
     
     
@@ -426,8 +421,9 @@
     <div class="day-section" id="day-1" style="display:block;">
 		<div class="day-label">2026.02.09（一）</div>
 		<a href="https://www.google.com/maps/dir/?api=1&destination=桃園機場&travelmode=driving" target="_blank">
-			<div class="activity-card">
-				<img src="images/1.png">
+      
+        	<div class="activity-card">
+            	<img src="images/1.png">
             	<div class="info">
               		<div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;00:10</div>
               		<div class="title">桃園機場T1</div>
@@ -437,93 +433,93 @@
 		</a>
     	<div class="transport-info"><span class="icon-airplane"></span> 2  小時  30  分</div>
 		<a href="https://www.google.com/maps/dir/?api=1&destination=羽田機場&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-				<img src="images/2.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;04:00</div>
-	              <div class="title">羽田機場T3</div>
-	              <div class="note">06:15&nbsp;&nbsp;報到託運</div>
-	            </div>
-	    	</div>
-		</a>
-	    <div class="transport-info"><span class="icon-airplane"></span> 1  小時  30  分</div>
-	    <a href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-	            <img src="images/3.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:45</div>
-	              <div class="title">新千歲機場</div>
-	              <div class="note">預留1小時入境</div>
-	            </div>
-	    	</div>
-		</a>
-	    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
-	    <a href="https://www.google.com/maps/dir/?api=1&destination=一幻拉麵 新千歲機場店, 日本〒066-0012 Hokkaido, Chitose, Bibi, ターミナルビル Domestic Terminal New Chitose Airport, 3F&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-	            <img src="images/4.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;11:00</div>
-	              <div class="title">一幻拉麵</div>
-	              <div class="note">停留1小時用餐</div>
-	            </div>
-	    	</div>
-		</a>
-	    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
-	    <a href="https://www.google.com/maps/dir/?api=1&destination=Kinotoya New Chitose Airport Factory, 2F Bibi, Chitose City, Hokkaido 066-0012&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-	            <img src="images/5.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;12:00</div>
-	              <div class="title">Kinotoya冰淇淋</div>
-	              <div class="note">步行至2F購買</div>
-	            </div>
-	    	</div>
-		</a>
-	    <div class="transport-info"><span class="icon-travel-bus"></span> 1  小時  20  分</div>
-	    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-	            <img src="images/6.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;13:30</div>
-	              <div class="title">由緣溫泉旅館</div>
-	              <div class="note">Checkin&寄放行李</div>
-	            </div>
-	    	</div>
-		</a>
-	    <div class="transport-info"><span class="icon-travel-train"></span> 20  分</div>
-	    <a href="https://www.google.com/maps/dir/?api=1&destination=北海道大學&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-	            <img src="images/7.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;14:30</div>
-	              <div class="title">北海道大學</div>
-	              <div class="note">雪中校園散步及拍照</div>
-	            </div>
-	    	</div>
-		</a>
-	    <div class="transport-info"><span class="icon-travel-train"></span> 15  分</div>
-	    <a href="https://www.google.com/maps/dir/?api=1&destination=湯咖喱 奥芝商店 站前創成寺 日本〒060-0004 Hokkaido, Sapporo, Chuo Ward, Kita 4 Jonishi, 1 Chome ホクレンビル B1F パールタウン&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-	            <img src="images/8.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;17:00</div>
-	              <div class="title">奧芝咖哩</div>
-	              <div class="note">停留1小時用餐</div>
-	            </div>
-	    	</div>
-		</a>
-	    <div class="transport-info"><span class="icon-travel-bus"></span> 15  分</div>
-	    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
-	        <div class="activity-card">
-	            <img src="images/9.png">
-	            <div class="info">
-	              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;18:30</div>
-	              <div class="title">由緣溫泉旅館</div>
-	              <div class="note">回旅館泡溫泉休息</div>
-	            </div>
-	    	</div>
-		</a>
-	</div> 
+        <div class="activity-card">
+			<img src="images/2.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;04:00</div>
+              <div class="title">羽田機場T3</div>
+              <div class="note">06:15&nbsp;&nbsp;報到託運</div>
+            </div>
+    	</div>
+	</a>
+    <div class="transport-info"><span class="icon-airplane"></span> 1  小時  30  分</div>
+    <a href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving" target="_blank">
+        <div class="activity-card">
+            <img src="images/3.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:45</div>
+              <div class="title">新千歲機場</div>
+              <div class="note">預留1小時入境</div>
+            </div>
+    	</div>
+	</a>
+    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
+    <a href="https://www.google.com/maps/dir/?api=1&destination=一幻拉麵 新千歲機場店, 日本〒066-0012 Hokkaido, Chitose, Bibi, ターミナルビル Domestic Terminal New Chitose Airport, 3F&travelmode=driving" target="_blank">
+        <div class="activity-card">
+            <img src="images/4.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;11:00</div>
+              <div class="title">一幻拉麵</div>
+              <div class="note">停留1小時用餐</div>
+            </div>
+    	</div>
+	</a>
+    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
+    <a href="https://www.google.com/maps/dir/?api=1&destination=Kinotoya New Chitose Airport Factory, 2F Bibi, Chitose City, Hokkaido 066-0012&travelmode=driving" target="_blank">
+        <div class="activity-card">
+            <img src="images/5.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;12:00</div>
+              <div class="title">Kinotoya冰淇淋</div>
+              <div class="note">步行至2F購買</div>
+            </div>
+    	</div>
+	</a>
+    <div class="transport-info"><span class="icon-travel-bus"></span> 1  小時  20  分</div>
+    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
+        <div class="activity-card">
+            <img src="images/6.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;13:30</div>
+              <div class="title">由緣溫泉旅館</div>
+              <div class="note">Checkin&寄放行李</div>
+            </div>
+    	</div>
+	</a>
+    <div class="transport-info"><span class="icon-travel-train"></span> 20  分</div>
+    <a href="https://www.google.com/maps/dir/?api=1&destination=北海道大學&travelmode=driving" target="_blank">
+        <div class="activity-card">
+            <img src="images/7.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;14:30</div>
+              <div class="title">北海道大學</div>
+              <div class="note">雪中校園散步及拍照</div>
+            </div>
+    	</div>
+	</a>
+    <div class="transport-info"><span class="icon-travel-train"></span> 15  分</div>
+    <a href="https://www.google.com/maps/dir/?api=1&destination=湯咖喱 奥芝商店 站前創成寺 日本〒060-0004 Hokkaido, Sapporo, Chuo Ward, Kita 4 Jonishi, 1 Chome ホクレンビル B1F パールタウン&travelmode=driving" target="_blank">
+        <div class="activity-card">
+            <img src="images/8.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;17:00</div>
+              <div class="title">奧芝咖哩</div>
+              <div class="note">停留1小時用餐</div>
+            </div>
+    	</div>
+	</a>
+    <div class="transport-info"><span class="icon-travel-bus"></span> 15  分</div>
+    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
+        <div class="activity-card">
+            <img src="images/9.png">
+            <div class="info">
+              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;18:30</div>
+              <div class="title">由緣溫泉旅館</div>
+              <div class="note">回旅館泡溫泉休息</div>
+            </div>
+    	</div>
+	</a>
+</div> 
     <!-- Day 2 -->
     <div class="day-section" id="day-2" style="display:none;">
       <div class="day-label">2026.02.10（二）</div>
@@ -733,6 +729,7 @@
             	<div class="info">
               		<div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;08:00</div>
               		<div class="title">由緣溫泉旅館</div>
+
               		<div class="note">Checkout</div>
             	</div>
 			</div>
@@ -812,6 +809,7 @@
               <div class="note">停留半小時拍照打卡</div>
             </div>
     	</div>
+
 		</a>
         <div class="transport-info"><span class="icon-travel-walk"></span> 20  分</div>
 		<a href="https://www.google.com/maps/dir/?api=1&destination=小樽運河, 日本北海道小樽市&travelmode=driving" target="_blank">
@@ -1071,28 +1069,8 @@
     	</div>
 		</a>
 	</div>
-</div>
-<!-- 匯率換算頁 -->
-<div class="exchange-section" style="display: none;">
-  <div class="day-label">匯率換算</div>
-  <div class="activity-card">
-    <div class="info">
-      <label for="yen" class="title">日圓 (JPY)</label>
-      <input type="number" id="yen" placeholder="輸入金額" />
-    </div>
-    <div class="info">
-      <label for="twd" class="title">新台幣 (TWD)</label>
-      <input type="text" id="twd" readonly placeholder="自動換算結果" />
-      <div id="rateInfo" style="font-size: 12px; color: #999; margin-top: 8px;"></div>
-    </div>
-  </div>
-  <button class="return-button" onclick="returnToSchedule()">返回主頁</button>
-</div>
-
-
-<button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
-	
-<script>
+    <button id="scrollToTop" class="scroll-top-button" title="回到頂部">ピン留め</button>
+  <script>
     function showDay(day) {
       document.querySelectorAll('.day-section').forEach(section => {
         section.style.display = 'none';
@@ -1111,19 +1089,12 @@
   const arrowRight = document.getElementById('arrowRight');
 
   function updateArrows() {
-  const scrollEl = document.getElementById("dayTabsScroll");
-  const arrowLeft = document.getElementById("arrowLeft");
-  const arrowRight = document.getElementById("arrowRight");
+    const scrollLeft = scrollEl.scrollLeft;
+    const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
 
-  if (!scrollEl || !arrowLeft || !arrowRight) return; // 防止錯誤
-
-  const scrollLeft = scrollEl.scrollLeft;
-  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
-
-  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
-  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
-}
-
+    arrowLeft.style.opacity = scrollLeft > 10 ? '1' : '0';
+    arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? '1' : '0';
+  }
 
   scrollEl.addEventListener('scroll', updateArrows);
   window.addEventListener('resize', updateArrows);
@@ -1187,179 +1158,11 @@ document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
 });
 </script>
-<script>
-	function showExchange() {
-	  // 淡出所有行程卡
-	  document.querySelectorAll('.day-section').forEach(el => {
-	    el.classList.remove('fade-in');
-	    el.classList.add('fade-out');
-	    setTimeout(() => {
-	      el.style.display = 'none';
-	      el.classList.remove('fade-out');
-	    }, 300);
-	  });
-	
-	  // 淡出 tab
-	  const tabs = document.querySelector('.day-tabs-wrapper');
-	  tabs.classList.remove('fade-in');
-	  tabs.classList.add('fade-out');
-	  setTimeout(() => {
-	    tabs.style.display = 'none';
-	    tabs.classList.remove('fade-out');
-	  }, 300);
-	
-	  // 顯示匯率頁
-	  const exchange = document.querySelector('.exchange-section');
-	  exchange.style.display = 'block';
-	  exchange.classList.add('fade-in');
-	}
-
-	function returnToSchedule() {
-  const exchange = document.querySelector('.exchange-section');
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  const day1 = document.getElementById('day-1');
-
-  // 淡出匯率頁
-  exchange.classList.remove('fade-in');
-  exchange.classList.add('fade-out');
-
-  setTimeout(() => {
-    exchange.style.display = 'none';
-    exchange.classList.remove('fade-out');
-
-    // 顯示 tab
-    tabs.style.display = 'block';
-    tabs.classList.add('fade-in');
-
-    // 顯示第 1 天行程
-    document.querySelectorAll('.day-section').forEach(el => {
-      el.style.display = 'none';
-      el.classList.remove('fade-in');
-    });
-    day1.style.display = 'block';
-    day1.classList.add('fade-in');
-  }, 300);
-}
-
-</script>
-<script>
-// 顯示匯率頁
-function showExchange() {
-  // 淡出所有行程卡
-  document.querySelectorAll('.day-section').forEach(el => {
-    el.classList.remove('fade-in');
-    el.classList.add('fade-out');
-    setTimeout(() => {
-      el.style.display = 'none';
-      el.classList.remove('fade-out');
-    }, 300);
-  });
-
-  // 淡出 tab
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  tabs.classList.remove('fade-in');
-  tabs.classList.add('fade-out');
-  setTimeout(() => {
-    tabs.style.display = 'none';
-    tabs.classList.remove('fade-out');
-  }, 300);
-
-  // 顯示匯率頁
-  const exchange = document.querySelector('.exchange-section');
-  exchange.style.display = 'block';
-  exchange.classList.add('fade-in');
-}
-
-// 返回主頁
-function returnToSchedule() {
-  const exchange = document.querySelector('.exchange-section');
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  const day1 = document.getElementById('day-1');
-
-  // 淡出匯率頁
-  exchange.classList.remove('fade-in');
-  exchange.classList.add('fade-out');
-
-  setTimeout(() => {
-    exchange.style.display = 'none';
-    exchange.classList.remove('fade-out');
-
-    // 顯示 tab
-    tabs.style.display = 'block';
-    tabs.classList.add('fade-in');
-
-    // 顯示第 1 天行程
-    document.querySelectorAll('.day-section').forEach(el => {
-      el.style.display = 'none';
-      el.classList.remove('fade-in');
-    });
-    day1.style.display = 'block';
-    day1.classList.add('fade-in');
-  }, 300);
-}
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const yenInput = document.getElementById("yen");
-  const twdOutput = document.getElementById("twd");
-  const rateInfo = document.getElementById("rateInfo"); // 顯示匯率時間用
-  let currentRate = null;
-
-  // 取得即時匯率
-  fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD")
-    .then(res => res.json())
-    .then(data => {
-      if (!data || !data.rates || !data.rates.TWD) {
-        throw new Error("匯率資料錯誤");
-      }
-      currentRate = data.rates.TWD;
-
-      // 顯示匯率更新時間
-      if (rateInfo && data.date) {
-        rateInfo.textContent = `匯率更新於 ${data.date}`;
-      }
-    })
-    .catch(() => {
-      currentRate = null;
-      if (rateInfo) {
-        rateInfo.textContent = "⚠️ 無法取得匯率資料";
-      }
-    });
-
-  // 使用者輸入時即時換算
-  yenInput.addEventListener("input", () => {
-    const amount = parseFloat(yenInput.value);
-    if (!amount || amount <= 0) {
-      twdOutput.value = "";
-      return;
-    }
-
-    if (!currentRate) {
-      twdOutput.value = "匯率取得失敗";
-      return;
-    }
-
-    const converted = (amount * currentRate).toFixed(2);
-    twdOutput.value = `${converted} 元`;
-  });
-});
 
 
-</script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
 
 
 

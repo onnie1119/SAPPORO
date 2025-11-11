@@ -41,7 +41,7 @@
     }
 
     .trip-date {
-      font-size: 12px;
+      font-size: 10px;
       letter-spacing: 1px;
     }
 
@@ -50,7 +50,7 @@
       justify-content: center;
       gap: 12px;
       flex-wrap: wrap;
-      margin-top: 12px;
+      margin-top: 14px;
     }
 
     .top-buttons button {
@@ -1410,7 +1410,7 @@ function swapCurrencies() {
   if (inputSelect.value === "JPY") {
     outputEl.value = (originalInput * jpyRate).toFixed(1);
   } else {
-    outputEl.value = (originalInput / jpyRate).toFixed(1);
+    outputEl.value = (originalInput / jpyRate).toFixed(0);
   }
 
   // 更新匯率顯示
@@ -1441,6 +1441,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

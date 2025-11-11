@@ -1398,22 +1398,27 @@ function swapCurrencies() {
 }
 
 
-function backToMain() {
-  document.getElementById("backBtn").classList.remove("show");
-  document.getElementById("exchange-page").classList.remove("show");
-  document.querySelector(".container").style.display = "block";
-}
-// 顯示換算頁
-function showExchange() {
-  document.querySelector(".container").classList.remove("show");
-  document.getElementById("exchange-page").classList.add("show");
-  document.getElementById("backBtn").classList.add("show");
-  getExchangeRate();
-}
+
 </script>
+<script>
+	document.addEventListener("DOMContentLoaded", () => {
+  window.showExchange = function () {
+    document.querySelector(".container").classList.remove("show");
+    document.getElementById("exchange-page").classList.add("show");
+    document.getElementById("backBtn").classList.add("show");
+    getExchangeRate();
+  };
+
+  window.backToMain = function () {
+    document.getElementById("backBtn").classList.remove("show");
+    document.getElementById("exchange-page").classList.remove("show");
+    document.querySelector(".container").style.display = "block";
+  };
+});
 </script>
 </body>
 </html>
+
 
 
 

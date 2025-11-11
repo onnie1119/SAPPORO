@@ -1295,29 +1295,27 @@ function returnToSchedule() {
 </script>
 <script>
 function returnToSchedule() {
+  // 隱藏匯率頁
   const exchange = document.querySelector('.exchange-section');
-  const tabs = document.querySelector('.day-tabs-wrapper');
-  const day1 = document.getElementById('day-1');
-
-  // 淡出匯率頁
+  exchange.style.display = 'none';
   exchange.classList.remove('fade-in');
-  exchange.classList.add('fade-out');
 
-  // 延遲切換主頁內容
-  setTimeout(() => {
-    exchange.style.display = 'none';
-    tabs.style.display = 'block';
-    exchange.classList.remove('fade-out');
+  // 顯示 tab
+  document.querySelector('.day-tabs-wrapper').style.display = 'block';
 
-    // 顯示第 1 天行程並加上淡入動畫
-    document.querySelectorAll('.day-section').forEach(el => {
-      el.style.display = 'none';
-      el.classList.remove('fade-in');
-    });
-    day1.style.display = 'block';
-    day1.classList.add('fade-in');
-  }, 400); // 與 CSS transition 時間一致
+  // 顯示第 1 天行程
+  document.querySelectorAll('.day-section').forEach(el => {
+    el.style.display = 'none';
+    el.classList.remove('fade-in');
+  });
+  const day1 = document.getElementById('day-1');
+  day1.style.display = 'block';
+  day1.classList.add('fade-in');
+
+  // 隱藏返回主頁按鈕
+  document.querySelector('.return-button').style.display = 'none';
 }
+
 </script>
 <script>
 function showExchange() {
@@ -1459,6 +1457,7 @@ function showExchange() {
 
 </script></body>
 </html>
+
 
 
 

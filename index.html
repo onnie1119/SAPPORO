@@ -501,6 +501,29 @@ select {
 .toggle-switch.active .toggle-track {
   background: #a3c1ff;
 }
+.input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.input-wrapper input[type="number"] {
+  width: 200px;
+  padding: 8px 55px 8px 10px; /* 留右側空間給提示文字 */
+  font-size: 18px;
+  text-align: right;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.currency-label {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #888;
+  pointer-events: none;
+}
 
 </style>
 </head>
@@ -1201,22 +1224,20 @@ select {
 
 
 		
-	    <div class="input-group">
-	      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
-	      <select id="input-currency" onchange="updateConversion('input')">
-	        <option value="JPY">日圓</option>
-	        <option value="TWD">新台幣</option>
-	      </select>
-	    </div>
-	
-	    
-		<div class="input-group">
-	      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
-	      <select id="output-currency" onchange="updateConversion('output')">
-	        <option value="TWD">新台幣</option>
-	        <option value="JPY">日圓</option>
-	      </select>
-	    </div>
+	   <div class="input-group">
+		    <div class="input-wrapper">
+		      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
+		      <span class="currency-label" id="input-label">日圓</span>
+		    </div>
+	  </div>
+
+	  <div class="input-group">
+		    <div class="input-wrapper">
+		      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
+		      <span class="currency-label" id="output-label">台幣</span>
+		    </div>
+		  </div>
+		</div>
 	</div>
 </div>
 	
@@ -1387,32 +1408,28 @@ function updateConversion(source) {
 
 function swapCurrencies() {
   const toggle = document.getElementById("currencyToggle");
-  const inputSelect = document.getElementById("input-currency");
-  const outputSelect = document.getElementById("output-currency");
   const label = document.getElementById("toggle-label");
+  const inputLabel = document.getElementById("input-label");
+  const outputLabel = document.getElementById("output-label");
   const inputEl = document.getElementById("input-amount");
   const outputEl = document.getElementById("output-amount");
 
-  // 取得原始輸入值（不管幣別）
-  const originalInput = parseFloat(inputEl.value);
-
-  // 切換動畫
   toggle.classList.toggle("active");
 
-  // 交換幣別
-  const temp = inputSelect.value;
-  inputSelect.value = outputSelect.value;
-  outputSelect.value = temp;
-
-  // 更新提示文字
-  label.textContent = inputSelect.value;
-
-  // ✅ 用原始輸入值重新換算（根據新幣別）
-  if (inputSelect.value === "JPY") {
-    outputEl.value = (originalInput * jpyRate).toFixed(1);
+  const isJPYtoTWD = label.textContent.includes("JPY");
+  if (isJPYtoTWD) {
+    label.textContent = "TWD → JPY";
+    inputLabel.textContent = "台幣";
+    outputLabel.textContent = "日圓";
+    if (inputEl.value) outputEl.value = (inputEl.value / jpyRate).toFixed(1);
   } else {
-    outputEl.value = (originalInput / jpyRate).toFixed(0);
+    label.textContent = "JPY → TWD";
+    inputLabel.textContent = "日圓";
+    outputLabel.textContent = "台幣";
+    if (inputEl.value) outputEl.value = (inputEl.value * jpyRate).toFixed(1);
   }
+}
+
 
   // 更新匯率顯示
   updateRateDisplay();
@@ -1442,6 +1459,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

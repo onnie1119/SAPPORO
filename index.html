@@ -1396,12 +1396,12 @@ function swapCurrencies() {
 
   if (isJPYtoTWD) {
     label.textContent = "JPY";
-    inputLabel.textContent = "｜&nbsp;日圓";
-    outputLabel.textContent = "｜&nbsp;台幣";
+    inputLabel.textContent = "｜ 日圓";
+    outputLabel.textContent = "｜ 新台幣";
   } else {
     label.textContent = "TWD";
-    inputLabel.textContent = "｜&nbsp;台幣";
-    outputLabel.textContent = "｜&nbsp;日圓";
+    inputLabel.textContent = "｜ 新台幣";
+    outputLabel.textContent = "｜ 日圓";
   }
 
   // 重新計算一次（避免切換時顯示錯誤）
@@ -1440,6 +1440,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

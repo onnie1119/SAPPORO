@@ -1361,7 +1361,7 @@ async function getExchangeRate() {
     jpyRate = data.rates.TWD;
     document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
   } catch {
-    document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗，請稍後再試";
+    
   }
 }
 
@@ -1439,6 +1439,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

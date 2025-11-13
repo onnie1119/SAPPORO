@@ -501,6 +501,34 @@ select {
 .toggle-switch.active .toggle-track {
   background: #a3c1ff;
 }
+.numpad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.numpad-row {
+  display: flex;
+  gap: 8px;
+}
+
+.numpad-row button {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 18px;
+  background: #f0f4ff;
+  border: none;
+  border-radius: 8px;
+  color: #3a7afe;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.numpad-row button:hover {
+  background: #dbe8ff;
+}
 
 </style>
 </head>
@@ -1202,7 +1230,7 @@ select {
 
 		
 	    <div class="input-group">
-	      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
+	      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')" readonly>
 	      <select id="input-currency" onchange="updateConversion('input')">
 	        <option value="JPY">日圓</option>
 	        <option value="TWD">新台幣</option>
@@ -1218,6 +1246,30 @@ select {
 	      </select>
 	    </div>
 	</div>
+
+	<div class="numpad">
+	  <div class="numpad-row">
+	    <button onclick="pressKey('1')">1</button>
+	    <button onclick="pressKey('2')">2</button>
+	    <button onclick="pressKey('3')">3</button>
+	  </div>
+	  <div class="numpad-row">
+	    <button onclick="pressKey('4')">4</button>
+	    <button onclick="pressKey('5')">5</button>
+	    <button onclick="pressKey('6')">6</button>
+	  </div>
+	  <div class="numpad-row">
+	    <button onclick="pressKey('7')">7</button>
+	    <button onclick="pressKey('8')">8</button>
+	    <button onclick="pressKey('9')">9</button>
+	  </div>
+	  <div class="numpad-row">
+	    <button onclick="pressKey('0')">0</button>
+	    <button onclick="deleteKey()">⌫</button>
+	  </div>
+	</div>
+
+	
 </div>
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >ホームページ</button>
@@ -1439,9 +1491,22 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(".container").style.display = "block";
   };
 });
+	function pressKey(num) {
+  const input = document.getElementById("input-amount");
+  input.value = (input.value + num).replace(/^0+(?!$)/, ""); // 去除前導 0
+  updateConversion("input");
+}
+
+function deleteKey() {
+  const input = document.getElementById("input-amount");
+  input.value = input.value.slice(0, -1);
+  updateConversion("input");
+}
+
 </script>
 </body>
 </html>
+
 
 
 

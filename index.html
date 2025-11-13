@@ -1343,103 +1343,79 @@ document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
 });
 </script>
+
+	
 <script>
 let jpyRate = null;
+let isJPYtoTWD = true; // true = JPY → TWD, false = TWD → JPY
 
+// 抓匯率
 async function getExchangeRate() {
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
     jpyRate = data.rates.TWD;
-    updateRateDisplay();
-    updateConversion("input");
+    document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
   } catch {
-    
+    document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗，請稍後再試";
   }
 }
 
-function updateRateDisplay() {
-  const rateInfo = document.getElementById("rate-info");
-  if (!rateInfo) return; // ✅ 如果找不到就跳過，避免錯誤
-
-  const inputCurr = document.getElementById("input-currency").value;
-  const outputCurr = document.getElementById("output-currency").value;
-
-  if (inputCurr === "JPY" && outputCurr === "TWD") {
-    rateInfo.textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
-  } else if (inputCurr === "TWD" && outputCurr === "JPY") {
-    rateInfo.textContent = `1 台幣 = ${(1 / jpyRate).toFixed(4)} 日圓`;
-  } else {
-    rateInfo.textContent = "⚠️ 幣別不支援";
-  }
-}
-
-
+// 更新轉換結果（依照 toggle 狀態）
 function updateConversion(source) {
   if (!jpyRate) return;
 
-  const inputEl = document.getElementById("input-amount");
-  const outputEl = document.getElementById("output-amount");
-  const inputVal = parseFloat(inputEl.value);
-  const outputVal = parseFloat(outputEl.value);
-  const inputCurr = document.getElementById("input-currency").value;
-  const outputCurr = document.getElementById("output-currency").value;
+  const inputVal = parseFloat(document.getElementById("input-amount").value);
+  const outputVal = parseFloat(document.getElementById("output-amount").value);
 
-  if (source === "input") {
-    if (!inputEl.value) {
-      outputEl.value = "";
-      return;
-    }
-    outputEl.value =
-      inputCurr === "JPY"
-        ? (inputVal * jpyRate).toFixed(1)
-        : (inputVal / jpyRate).toFixed(1);
-  } else if (source === "output") {
-    if (!outputEl.value) {
-      inputEl.value = "";
-      return;
-    }
-    inputEl.value =
-      outputCurr === "JPY"
-        ? (outputVal * jpyRate).toFixed(1)
-        : (outputVal / jpyRate).toFixed(1);
+  if (source === "input" && inputVal) {
+    document.getElementById("output-amount").value = isJPYtoTWD
+      ? (inputVal * jpyRate).toFixed(2)
+      : (inputVal / jpyRate).toFixed(2);
+  } else if (source === "output" && outputVal) {
+    document.getElementById("input-amount").value = isJPYtoTWD
+      ? (outputVal / jpyRate).toFixed(2)
+      : (outputVal * jpyRate).toFixed(2);
   }
 }
 
+// 開關切換幣別
 function swapCurrencies() {
   const toggle = document.getElementById("currencyToggle");
   const label = document.getElementById("toggle-label");
   const inputLabel = document.getElementById("input-label");
   const outputLabel = document.getElementById("output-label");
-  const inputEl = document.getElementById("input-amount");
-  const outputEl = document.getElementById("output-amount");
 
+  isJPYtoTWD = !isJPYtoTWD;
   toggle.classList.toggle("active");
 
-  const isJPYtoTWD = label.textContent.includes("JPY");
   if (isJPYtoTWD) {
-    label.textContent = "TWD → JPY";
-    inputLabel.textContent = "台幣";
-    outputLabel.textContent = "日圓";
-    if (inputEl.value) outputEl.value = (inputEl.value / jpyRate).toFixed(1);
-  } else {
     label.textContent = "JPY → TWD";
     inputLabel.textContent = "日圓";
     outputLabel.textContent = "台幣";
-    if (inputEl.value) outputEl.value = (inputEl.value * jpyRate).toFixed(1);
+  } else {
+    label.textContent = "TWD → JPY";
+    inputLabel.textContent = "台幣";
+    outputLabel.textContent = "日圓";
   }
+
+  // 重新計算一次（避免切換時顯示錯誤）
+  updateConversion("input");
 }
 
-
-  // 更新匯率顯示
-  updateRateDisplay();
-}
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
+// 顯示換算頁
+function showExchange() {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "block";
   getExchangeRate();
-});
+}
+
+// 返回首頁
+function backToMain() {
+  document.getElementById("exchange-page").style.display = "none";
+  document.querySelector(".container").style.display = "block";
+}
+
 </script>
 <script>
 	document.addEventListener("DOMContentLoaded", () => {
@@ -1459,6 +1435,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

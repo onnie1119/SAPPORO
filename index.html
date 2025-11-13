@@ -1364,18 +1364,29 @@ async function getExchangeRate() {
 // 更新轉換結果（依照 toggle 狀態）
 function updateConversion(source) {
   if (!jpyRate) return;
-
-  const inputVal = parseFloat(document.getElementById("input-amount").value);
-  const outputVal = parseFloat(document.getElementById("output-amount").value);
+  const inputField = document.getElementById("input-amount");
+  const outputField = document.getElementById("output-amount");
+  // 轉換前先把格式化逗號去掉
+  const inputVal = parseFloat(inputField.value.replace(/,/g, ""));
+  const outputVal = parseFloat(outputField.value.replace(/,/g, ""));
 
   if (source === "input" && inputVal) {
-    document.getElementById("output-amount").value = isJPYtoTWD
-      ? (inputVal * jpyRate).toFixed(0)
-      : (inputVal / jpyRate).toFixed(0);
+    const result = isJPYtoTWD
+      ? Math.round(inputVal * jpyRate)
+      : Math.round(inputVal / jpyRate);
+    outputField.value = result.toLocaleString("zh-TW");
   } else if (source === "output" && outputVal) {
-    document.getElementById("input-amount").value = isJPYtoTWD
-      ? (outputVal / jpyRate).toFixed(0)
-      : (outputVal * jpyRate).toFixed(0);
+    const result = isJPYtoTWD
+      ? Math.round(outputVal / jpyRate)
+      : Math.round(outputVal * jpyRate);
+    inputField.value = result.toLocaleString("zh-TW");
+  }
+
+  // 輸入框本身也加上格式化
+  if (source === "input" && inputVal) {
+    inputField.value = inputVal.toLocaleString("zh-TW");
+  } else if (source === "output" && outputVal) {
+    outputField.value = outputVal.toLocaleString("zh-TW");
   }
 }
 
@@ -1435,6 +1446,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

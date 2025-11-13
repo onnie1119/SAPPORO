@@ -503,19 +503,21 @@ select {
   background: #a3c1ff;
 }
 .input-wrapper {
-  width:100%;
+  width: calc(100% - 2rem); /* ✅ 左右各留 1rem */
+  margin: 0 auto;            /* ✅ 水平置中 */
   position: relative;
-  display: inline-block;
 }
 
 .input-wrapper input[type="number"] {
   width: 100%;
-  padding: 1rem 0rem 1rem 0rem;
+  padding: 1rem 3rem 1rem 0.5rem; /* ✅ 左右內距：右側留空給幣別提示 */
   font-size: 18px;
   text-align: right;
   border: 1px solid #ddd;
   border-radius: 8px;
+  box-sizing: border-box;
 }
+
 
 .currency-label {
   position: absolute;
@@ -1437,6 +1439,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

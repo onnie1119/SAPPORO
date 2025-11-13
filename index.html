@@ -1359,10 +1359,11 @@ async function getExchangeRate() {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
     jpyRate = data.rates.TWD;
-    document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
-  } catch {
-    document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗，請稍後再試";
-  }
+    const rateInfo = document.getElementById("rate-info");
+if (rateInfo) {
+  rateInfo.textContent = `1 日圓 = ${jpyRate} 台幣`;
+}
+
 }
 
 // 更新轉換結果（依照 toggle 狀態）
@@ -1439,6 +1440,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

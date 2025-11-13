@@ -1347,50 +1347,39 @@ document.addEventListener("DOMContentLoaded", () => {
 	
 <script>
 let jpyRate = null;
-let isJPYtoTWD = true; // true = 日圓→台幣, false = 台幣→日圓
+let isJPYtoTWD = true; // true = JPY → TWD, false = TWD → JPY
 
-// 抓即時匯率（使用 exchangerate.host）
+// 抓匯率
 async function getExchangeRate() {
   try {
-    const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
+    const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
     jpyRate = data.rates.TWD;
     document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
+  } catch {
+    document.getElementById("rate-info").textContent = "⚠️ 匯率載入失敗，請稍後再試";
   }
 }
 
-// 更新換算結果（整數 + 千分位）
+// 更新轉換結果（依照 toggle 狀態）
 function updateConversion(source) {
   if (!jpyRate) return;
 
-  const inputField = document.getElementById("input-amount");
-  const outputField = document.getElementById("output-amount");
-
-  // 把格式化的逗號移除再轉數字
-  const inputVal = parseFloat(inputField.value.replace(/,/g, ""));
-  const outputVal = parseFloat(outputField.value.replace(/,/g, ""));
+  const inputVal = parseFloat(document.getElementById("input-amount").value);
+  const outputVal = parseFloat(document.getElementById("output-amount").value);
 
   if (source === "input" && inputVal) {
-    const result = isJPYtoTWD
-      ? Math.round(inputVal * jpyRate)
-      : Math.round(inputVal / jpyRate);
-    outputField.value = result.toLocaleString("zh-TW");
+    document.getElementById("output-amount").value = isJPYtoTWD
+      ? (inputVal * jpyRate).toFixed(0)
+      : (inputVal / jpyRate).toFixed(0);
   } else if (source === "output" && outputVal) {
-    const result = isJPYtoTWD
-      ? Math.round(outputVal / jpyRate)
-      : Math.round(outputVal * jpyRate);
-    inputField.value = result.toLocaleString("zh-TW");
-  }
-
-  // 自動格式化使用者輸入
-  if (source === "input" && inputVal) {
-    inputField.value = inputVal.toLocaleString("zh-TW");
-  } else if (source === "output" && outputVal) {
-    outputField.value = outputVal.toLocaleString("zh-TW");
+    document.getElementById("input-amount").value = isJPYtoTWD
+      ? (outputVal / jpyRate).toFixed(0)
+      : (outputVal * jpyRate).toFixed(0);
   }
 }
 
-// 開關幣別切換
+// 開關切換幣別
 function swapCurrencies() {
   const toggle = document.getElementById("currencyToggle");
   const label = document.getElementById("toggle-label");
@@ -1410,6 +1399,7 @@ function swapCurrencies() {
     outputLabel.textContent = "日圓";
   }
 
+  // 重新計算一次（避免切換時顯示錯誤）
   updateConversion("input");
 }
 
@@ -1425,8 +1415,8 @@ function backToMain() {
   document.getElementById("exchange-page").style.display = "none";
   document.querySelector(".container").style.display = "block";
 }
-</script>
 
+</script>
 <script>
 	document.addEventListener("DOMContentLoaded", () => {
   window.showExchange = function () {
@@ -1445,7 +1435,6 @@ function backToMain() {
 </script>
 </body>
 </html>
-
 
 
 

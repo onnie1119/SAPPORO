@@ -1435,13 +1435,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.backToMain = function () {
     document.getElementById("backBtn").classList.remove("show");
-    document.getElementById("exchange-page").classList.remove("show");
+    document.getElementById("exchange-page").style.display = "none";
     document.querySelector(".container").style.display = "block";
   };
 });
 </script>
 </body>
 </html>
+
 
 
 

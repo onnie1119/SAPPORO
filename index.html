@@ -1370,12 +1370,12 @@ function updateConversion(source) {
 
   if (source === "input" && inputVal) {
     document.getElementById("output-amount").value = isJPYtoTWD
-      ? (inputVal * jpyRate).toFixed(1)
-      : (inputVal / jpyRate).toFixed(1);
+      ? (inputVal * jpyRate).toFixed(0)
+      : (inputVal / jpyRate).toFixed(0);
   } else if (source === "output" && outputVal) {
     document.getElementById("input-amount").value = isJPYtoTWD
-      ? (outputVal / jpyRate).toFixed(1)
-      : (outputVal * jpyRate).toFixed(1);
+      ? (outputVal / jpyRate).toFixed(0)
+      : (outputVal * jpyRate).toFixed(0);
   }
 }
 
@@ -1435,6 +1435,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

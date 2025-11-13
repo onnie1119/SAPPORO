@@ -1416,7 +1416,7 @@ function updateRateDisplay() {
 
 function updateConversion(source) {
   if (!jpyRate) return;
-
+  if (!inputEl || !outputEl) return;
   const inputEl = document.getElementById("input-amount");
   const outputEl = document.getElementById("output-amount");
   const inputVal = parseFloat(inputEl.value);
@@ -1496,10 +1496,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(".container").style.display = "block";
   };
 });
-	function pressKey(num) {
+	
+  function pressKey(num) {
   const input = document.getElementById("input-amount");
-  input.value = (input.value + num).replace(/^0+(?!$)/, ""); // 去除前導 0
+  if (!input) return;
+
+  input.value = (input.value + num).replace(/^0+(?!$)/, "");
   updateConversion("input");
+}
+
 }
 
 function deleteKey() {
@@ -1511,6 +1516,7 @@ function deleteKey() {
 </script>
 </body>
 </html>
+
 
 
 

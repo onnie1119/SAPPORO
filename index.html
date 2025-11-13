@@ -1347,35 +1347,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	
 <script>
 let jpyRate = null;
-let isJPYtoTWD = true; // true = JPY → TWD, false = TWD → JPY
+let isJPYtoTWD = true; // true = 日圓→台幣, false = 台幣→日圓
 
-// 🌏 自動偵測使用者所在地，決定預設方向
-async function detectLocationAndSetDirection() {
-  try {
-    // 根據時區判斷（快速又不需金鑰）
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    if (timezone.includes("Tokyo")) {
-      // 在日本 → 台幣 → 日圓
-      isJPYtoTWD = false;
-      document.getElementById("toggle-label").textContent = "TWD → JPY";
-      document.getElementById("input-label").textContent = "台幣";
-      document.getElementById("output-label").textContent = "日圓";
-      document.getElementById("currencyToggle").classList.add("active");
-    } else {
-      // 在台灣或其他地區 → 日圓 → 台幣
-      isJPYtoTWD = true;
-      document.getElementById("toggle-label").textContent = "JPY → TWD";
-      document.getElementById("input-label").textContent = "日圓";
-      document.getElementById("output-label").textContent = "台幣";
-      document.getElementById("currencyToggle").classList.remove("active");
-    }
-  } catch {
-    console.log("地區偵測失敗，預設為 JPY → TWD");
-  }
-}
-
-// 🏦 取得匯率（使用 exchangerate.host）
+// 抓即時匯率（使用 exchangerate.host）
 async function getExchangeRate() {
   try {
     const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
@@ -1387,13 +1361,14 @@ async function getExchangeRate() {
   }
 }
 
-// 💱 更新換算結果（整數 + 千分位）
+// 更新換算結果（整數 + 千分位）
 function updateConversion(source) {
   if (!jpyRate) return;
 
   const inputField = document.getElementById("input-amount");
   const outputField = document.getElementById("output-amount");
 
+  // 把格式化的逗號移除再轉數字
   const inputVal = parseFloat(inputField.value.replace(/,/g, ""));
   const outputVal = parseFloat(outputField.value.replace(/,/g, ""));
 
@@ -1409,6 +1384,7 @@ function updateConversion(source) {
     inputField.value = result.toLocaleString("zh-TW");
   }
 
+  // 自動格式化使用者輸入
   if (source === "input" && inputVal) {
     inputField.value = inputVal.toLocaleString("zh-TW");
   } else if (source === "output" && outputVal) {
@@ -1416,7 +1392,7 @@ function updateConversion(source) {
   }
 }
 
-// 🔁 幣別切換（手動）
+// 開關幣別切換
 function swapCurrencies() {
   const toggle = document.getElementById("currencyToggle");
   const label = document.getElementById("toggle-label");
@@ -1439,15 +1415,14 @@ function swapCurrencies() {
   updateConversion("input");
 }
 
-// 🎌 顯示換算頁
+// 顯示換算頁
 function showExchange() {
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
-  detectLocationAndSetDirection();
   getExchangeRate();
 }
 
-// ⬅️ 返回主頁
+// 返回首頁
 function backToMain() {
   document.getElementById("exchange-page").style.display = "none";
   document.querySelector(".container").style.display = "block";
@@ -1472,7 +1447,6 @@ function backToMain() {
 </script>
 </body>
 </html>
-
 
 
 

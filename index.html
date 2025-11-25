@@ -542,7 +542,7 @@ select {
 
 .key-row button {
   flex: 1;
-  padding: 12px;
+  padding: 14px;
   font-size: 18px;
   border: none;
   border-radius: 8px;
@@ -552,8 +552,10 @@ select {
 }
 
 .key-row button:hover {
-  background: #d0e0ff;
+  background: #3A7AFE;
+  color: #fff;
 }
+
 
 </style>
 </head>
@@ -1270,27 +1272,32 @@ select {
 		</div>
 	</div>
 	<div class="keypad">
-		  <div class="key-row">
-		    <button onclick="pressKey('1')">1</button>
-		    <button onclick="pressKey('2')">2</button>
-		    <button onclick="pressKey('3')">3</button>
-		  </div>
-		  <div class="key-row">
-		    <button onclick="pressKey('4')">4</button>
-		    <button onclick="pressKey('5')">5</button>
-		    <button onclick="pressKey('6')">6</button>
-		  </div>
-		  <div class="key-row">
-		    <button onclick="pressKey('7')">7</button>
-		    <button onclick="pressKey('8')">8</button>
-		    <button onclick="pressKey('9')">9</button>
-		  </div>
-		  <div class="key-row">
-		    <button onclick="pressKey('0')">0</button>
-		    <button onclick="pressKey('.')">.</button>
-		    <button onclick="deleteKey()">⌫</button>
-		  </div>
+  <div class="key-row">
+	    <button onclick="pressKey('1')">1</button>
+	    <button onclick="pressKey('2')">2</button>
+	    <button onclick="pressKey('3')">3</button>
+	    <button onclick="pressKey('+')">+</button>
+	  </div>
+	  <div class="key-row">
+	    <button onclick="pressKey('4')">4</button>
+	    <button onclick="pressKey('5')">5</button>
+	    <button onclick="pressKey('6')">6</button>
+	    <button onclick="pressKey('-')">-</button>
+	  </div>
+	  <div class="key-row">
+	    <button onclick="pressKey('7')">7</button>
+	    <button onclick="pressKey('8')">8</button>
+	    <button onclick="pressKey('9')">9</button>
+	    <button onclick="pressKey('*')">×</button>
+	  </div>
+	  <div class="key-row">
+	    <button onclick="pressKey('0')">0</button>
+	    <button onclick="deleteKey()">⌫</button>
+	    <button onclick="clearAll()">C</button>
+	    <button onclick="pressKey('/')">÷</button>
+	  </div>
 </div>
+
 </div>
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
@@ -1466,6 +1473,12 @@ function deleteKey() {
   input.value = input.value.slice(0, -1);
   updateConversion("input");
 }
+
+function clearAll() {
+  document.getElementById("input-amount").value = "";
+  document.getElementById("output-amount").value = "";
+}
+
 function updateConversion(source) {
   if (!jpyRate) return;
 
@@ -1525,6 +1538,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

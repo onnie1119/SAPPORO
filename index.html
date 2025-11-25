@@ -530,8 +530,8 @@ select {
   pointer-events: none;
 }
 .keypad {
-  display: grid;
-	width:100%;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   margin-top: 15px;
 }
@@ -544,29 +544,50 @@ select {
 .key-row button {
   flex: 1;
   padding: 14px;
-  font-size: 20px;
+  font-size: 18px;
   border: none;
   border-radius: 8px;
-  background: #f0f0f0;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.key-row button:hover {
-  background: #3A7AFE;
+/* 數字鍵：淺灰色 */
+.key-row button.num {
+  background: #e0e0e0;
+  color: #222;
+}
+.key-row button.num:hover {
+  background: #bdbdbd;
   color: #fff;
 }
-	  
-input[type=text] {
-  font-size: 20px;
-  width:100%;
-  text-align: left;   /* 模擬數字輸入的對齊 */
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  color: #222;
-  box-sizing: border-box;
+
+/* 運算符號：深灰色 */
+.key-row button.op {
+  background: #555;
+  color: #fff;
 }
+.key-row button.op:hover {
+  background: #333;
+}
+
+/* C：紅色 */
+.key-row button.clear {
+  background: #d32f2f;
+  color: #fff;
+}
+.key-row button.clear:hover {
+  background: #b71c1c;
+}
+
+/* ⌫：橘色 */
+.key-row button.delete {
+  background: #f57c00;
+  color: #fff;
+}
+.key-row button.delete:hover {
+  background: #e65100;
+}
+
 
 </style>
 </head>
@@ -1286,32 +1307,37 @@ input[type=text] {
     <div id="rate-info" style="margin-top:10px; font-size:14px; color:#666;"></div>
 
     <!-- 數字鍵盤 -->
-    <div class="keypad">
-      <div class="key-row">
-        <button onclick="pressKey('1')">1</button>
-        <button onclick="pressKey('2')">2</button>
-        <button onclick="pressKey('3')">3</button>
-        <button onclick="pressKey('+')">+</button>
-      </div>
-      <div class="key-row">
-        <button onclick="pressKey('4')">4</button>
-        <button onclick="pressKey('5')">5</button>
-        <button onclick="pressKey('6')">6</button>
-        <button onclick="pressKey('-')">-</button>
-      </div>
-      <div class="key-row">
-        <button onclick="pressKey('7')">7</button>
-        <button onclick="pressKey('8')">8</button>
-        <button onclick="pressKey('9')">9</button>
-        <button onclick="pressKey('*')">×</button>
-      </div>
-      <div class="key-row">
-        <button onclick="pressKey('0')">0</button>
-        <button onclick="deleteKey()">⌫</button>
-        <button onclick="clearAll()">C</button>
-        <button onclick="pressKey('/')">÷</button>
-      </div>
-    </div>
+   <div class="keypad">
+  <!-- 數字區塊 -->
+  <div class="key-row">
+    <button class="num" onclick="pressKey('7')">7</button>
+    <button class="num" onclick="pressKey('8')">8</button>
+    <button class="num" onclick="pressKey('9')">9</button>
+  </div>
+  <div class="key-row">
+    <button class="num" onclick="pressKey('4')">4</button>
+    <button class="num" onclick="pressKey('5')">5</button>
+    <button class="num" onclick="pressKey('6')">6</button>
+  </div>
+  <div class="key-row">
+    <button class="num" onclick="pressKey('1')">1</button>
+    <button class="num" onclick="pressKey('2')">2</button>
+    <button class="num" onclick="pressKey('3')">3</button>
+  </div>
+  <div class="key-row">
+    <button class="num" onclick="pressKey('0')">0</button>
+  </div>
+
+  <!-- 功能區塊 -->
+  <div class="key-row">
+    <button class="op" onclick="pressKey('+')">+</button>
+    <button class="op" onclick="pressKey('-')">-</button>
+    <button class="op" onclick="pressKey('*')">×</button>
+    <button class="op" onclick="pressKey('/')">÷</button>
+  </div>
+  <div class="key-row">
+    <button class="delete" onclick="deleteKey()">⌫</button>
+    <button class="clear" onclick="clearAll()">C</button>
   </div>
 </div>
 
@@ -1543,6 +1569,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

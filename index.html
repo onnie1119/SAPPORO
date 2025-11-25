@@ -1429,6 +1429,7 @@ async function getExchangeRate() {
     const data = await res.json();
     jpyRate = data.rates.TWD;
     document.getElementById("rate-info").textContent = `1 日圓 ≈ ${jpyRate.toFixed(4)} 台幣`;
+    autoCalculate(); // 更新匯率後即時重新計算
   } catch {
     document.getElementById("rate-info").textContent = "匯率取得失敗";
   }
@@ -1447,9 +1448,13 @@ function autoCalculate() {
       return;
     }
 
-    outputEl.value = isJPYtoTWD
-      ? (rawVal * jpyRate).toFixed(1)
-      : (rawVal / jpyRate).toFixed(1);
+    let result = isJPYtoTWD
+      ? rawVal * jpyRate
+      : rawVal / jpyRate;
+
+    // 如果是整數就顯示整數，否則顯示到一位小數
+    outputEl.value = Number.isInteger(result) ? result : result.toFixed(1);
+
   } catch {
     outputEl.value = "";
   }
@@ -1462,14 +1467,12 @@ function pressKey(val) {
   autoCalculate(); // 每次輸入即時計算
 }
 
-// 刪除最後一位
 function deleteKey() {
   const input = document.getElementById("input-amount");
   input.value = input.value.slice(0, -1);
   autoCalculate();
 }
 
-// 全清除
 function clearAll() {
   document.getElementById("input-amount").value = "";
   document.getElementById("output-amount").value = "";
@@ -1498,9 +1501,11 @@ function swapCurrencies() {
   clearAll();
 }
 
-// 初始化
+// 初始化 + 定時更新
 document.addEventListener("DOMContentLoaded", () => {
   getExchangeRate();
+  // 每 30 分鐘自動更新一次匯率
+  setInterval(getExchangeRate, 30 * 60 * 1000);
 });
 
 
@@ -1536,6 +1541,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1345,75 +1345,8 @@ select {
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>
-  <script>
-	  document.addEventListener("DOMContentLoaded", () => {
-  getExchangeRate();
-});
-
-    function showDay(day) {
-      document.querySelectorAll('.day-section').forEach(section => {
-        section.style.display = 'none';
-      });
-      document.getElementById('day-' + day).style.display = 'block';
-
-      document.querySelectorAll('.day-tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelectorAll('.day-tab')[day - 1].classList.add('active');
-    }
-  </script>
-  <script>
-	  const scrollEl = document.getElementById('dayTabsScroll');
-	  const arrowLeft = document.getElementById('arrowLeft');
-	  const arrowRight = document.getElementById('arrowRight');
-	
-	 function updateArrows() {
-	  const scrollEl = document.getElementById("dayTabsScroll");
-	  const arrowLeft = document.getElementById("arrowLeft");
-	  const arrowRight = document.getElementById("arrowRight");
-	
-	  if (!scrollEl || !arrowLeft || !arrowRight) return; // 防止錯誤
-	
-	  const scrollLeft = scrollEl.scrollLeft;
-	  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
-	
-	  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
-	  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
-	}
-	
-	
-	  scrollEl.addEventListener('scroll', updateArrows);
-	  window.addEventListener('resize', updateArrows);
-	  document.addEventListener('DOMContentLoaded', updateArrows);
-</script>
-<script>
-  document.getElementById('scrollToTop').addEventListener('click', function () {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  window.addEventListener('scroll', function () {
-  const btn = document.getElementById('scrollToTop');
-  btn.style.display = window.scrollY > 300 ? 'block' : 'none';
-});
-
-</script>
-<script>
-  const scrollBtn = document.getElementById('scrollToTop');
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-      scrollBtn.classList.add('show');
-    } else {
-      scrollBtn.classList.remove('show');
-    }
-  });
-
-  scrollBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-</script>
-
-<script>
-	
+ <script>
+// -------------------- Day 切換 --------------------
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
   const tabs = document.querySelectorAll(".day-tab");
@@ -1421,8 +1354,6 @@ function showDay(dayNumber) {
   sections.forEach((section, index) => {
     if (index === dayNumber - 1) {
       section.style.display = "block";
-
-      // 先確保 class 狀態正確
       requestAnimationFrame(() => {
         section.classList.add("fade-in");
       });
@@ -1436,78 +1367,123 @@ function showDay(dayNumber) {
     tab.classList.toggle("active", index === dayNumber - 1);
   });
 
-  // 可選：切換時自動滾回最上方（避開固定 topbar）
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// 頁面載入時自動顯示第一天
 document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
 });
 </script>
 
-	
 <script>
-let jpyRate = null;
-let isJPYtoTWD = true; // true = JPY → TWD, false = TWD → JPY
+// -------------------- Day Tabs Arrow --------------------
+function updateArrows() {
+  const scrollEl = document.getElementById("dayTabsScroll");
+  const arrowLeft = document.getElementById("arrowLeft");
+  const arrowRight = document.getElementById("arrowRight");
 
-// 抓匯率
+  if (!scrollEl || !arrowLeft || !arrowRight) return;
+
+  const scrollLeft = scrollEl.scrollLeft;
+  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+
+  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
+  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const scrollEl = document.getElementById("dayTabsScroll");
+  if (scrollEl) {
+    scrollEl.addEventListener("scroll", updateArrows);
+    window.addEventListener("resize", updateArrows);
+    updateArrows();
+  }
+});
+</script>
+
+<script>
+// -------------------- Scroll To Top --------------------
+const scrollBtn = document.getElementById("scrollToTop");
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    scrollBtn.classList.add("show");
+  } else {
+    scrollBtn.classList.remove("show");
+  }
+});
+
+scrollBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+
+<script>
+// -------------------- 匯率換算 --------------------
+let jpyRate = null;
+let isJPYtoTWD = true;
+
 async function getExchangeRate() {
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
     jpyRate = data.rates.TWD;
-    document.getElementById("rate-info").textContent = `1 日圓 ≈ ${jpyRate.toFixed(4)} 台幣`;
-    autoCalculate(); // 更新匯率後即時重新計算
+
+    const rateInfo = document.getElementById("rate-info");
+    if (rateInfo) {
+      rateInfo.textContent = `1 日圓 ≈ ${jpyRate.toFixed(4)} 台幣`;
+    }
+
+    autoCalculate();
   } catch {
-    document.getElementById("rate-info").textContent = "匯率取得失敗";
+    const rateInfo = document.getElementById("rate-info");
+    if (rateInfo) {
+      rateInfo.textContent = "匯率取得失敗";
+    }
   }
 }
 
-// 即時計算並換算
 function autoCalculate() {
   if (!jpyRate) return;
   const inputEl = document.getElementById("input-amount");
   const outputEl = document.getElementById("output-amount");
+  if (!inputEl || !outputEl) return;
 
   try {
-    const rawVal = eval(inputEl.value); // 計算輸入的算式
+    const rawVal = eval(inputEl.value);
     if (isNaN(rawVal)) {
       outputEl.value = "";
       return;
     }
 
-    let result = isJPYtoTWD
-      ? rawVal * jpyRate
-      : rawVal / jpyRate;
-
-    // 如果是整數就顯示整數，否則顯示到一位小數
+    let result = isJPYtoTWD ? rawVal * jpyRate : rawVal / jpyRate;
     outputEl.value = Number.isInteger(result) ? result : result.toFixed(1);
-
   } catch {
     outputEl.value = "";
   }
 }
 
-// 數字鍵盤輸入
 function pressKey(val) {
   const input = document.getElementById("input-amount");
+  if (!input) return;
   input.value += val;
-  autoCalculate(); // 每次輸入即時計算
+  autoCalculate();
 }
 
 function deleteKey() {
   const input = document.getElementById("input-amount");
+  if (!input) return;
   input.value = input.value.slice(0, -1);
   autoCalculate();
 }
 
 function clearAll() {
-  document.getElementById("input-amount").value = "";
-  document.getElementById("output-amount").value = "";
+  const input = document.getElementById("input-amount");
+  const output = document.getElementById("output-amount");
+  if (input) input.value = "";
+  if (output) output.value = "";
 }
 
-// 切換幣別
 function swapCurrencies() {
   const toggle = document.getElementById("currencyToggle");
   const label = document.getElementById("toggle-label");
@@ -1515,28 +1491,25 @@ function swapCurrencies() {
   const outputLabel = document.getElementById("output-label");
 
   isJPYtoTWD = !isJPYtoTWD;
-  toggle.classList.toggle("active");
+  if (toggle) toggle.classList.toggle("active");
 
   if (isJPYtoTWD) {
-    label.textContent = "JPY";
-    inputLabel.textContent = "｜ 日圓";
-    outputLabel.textContent = "｜ 台幣";
+    if (label) label.textContent = "JPY";
+    if (inputLabel) inputLabel.textContent = "｜ 日圓";
+    if (outputLabel) outputLabel.textContent = "｜ 台幣";
   } else {
-    label.textContent = "TWD";
-    inputLabel.textContent = "｜ 台幣";
-    outputLabel.textContent = "｜ 日圓";
+    if (label) label.textContent = "TWD";
+    if (inputLabel) inputLabel.textContent = "｜ 台幣";
+    if (outputLabel) outputLabel.textContent = "｜ 日圓";
   }
 
   clearAll();
 }
 
-// 初始化 + 定時更新
 document.addEventListener("DOMContentLoaded", () => {
   getExchangeRate();
-  // 每 30 分鐘自動更新一次匯率
   setInterval(getExchangeRate, 30 * 60 * 1000);
 });
-
 
 // 顯示換算頁
 function showExchange() {
@@ -1550,42 +1523,11 @@ function backToMain() {
   document.getElementById("exchange-page").style.display = "none";
   document.querySelector(".container").style.display = "block";
 }
-
 </script>
-<script>
-	document.addEventListener("DOMContentLoaded", () => {
-  window.showExchange = function () {
-    document.querySelector(".container").style.display = "none";
-    document.getElementById("exchange-page").style.display = "block";
-    document.getElementById("backBtn").classList.add("show");
-   
-  };
 
-  window.backToMain = function () {
-    document.getElementById("backBtn").classList.remove("show");
-    document.getElementById("exchange-page").style.display = "none";
-    document.querySelector(".container").style.display = "block";
-  };
-});
-
-	const scrollBtn = document.querySelector(".scroll-top-button");
-
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) { // 超過 300px 顯示
-    scrollBtn.classList.add("show");
-  } else {
-    scrollBtn.classList.remove("show");
-  }
-});
-
-// 點擊按鈕回到頂部
-scrollBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
-
-</script>
 </body>
 </html>
+
 
 
 

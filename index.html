@@ -1549,9 +1549,28 @@ function backToMain() {
     document.querySelector(".container").style.display = "block";
   };
 });
+	function updateRateTime(utcString) {
+  const utcDate = new Date(utcString);
+
+  const taiwanDate = new Date(
+    utcDate.toLocaleString("en-US", { timeZone: "Asia/Taipei" })
+  );
+
+  const y = taiwanDate.getFullYear();
+  const m = String(taiwanDate.getMonth() + 1).padStart(2, "0");
+  const d = String(taiwanDate.getDate()).padStart(2, "0");
+  const hh = String(taiwanDate.getHours()).padStart(2, "0");
+  const mm = String(taiwanDate.getMinutes()).padStart(2, "0");
+
+  // ⭐ 改成 rate-info（你的 HTML 寫的）
+  document.getElementById("rate-info").textContent =
+    `最後更新：${y}/${m}/${d} ${hh}:${mm}（台灣時間）`;
+}
+
 </script>
 </body>
 </html>
+
 
 
 

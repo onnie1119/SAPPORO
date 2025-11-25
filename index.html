@@ -1309,12 +1309,10 @@ input[type=text] {
         <button onclick="clearAll()">C</button>
         <button onclick="pressKey('/')">÷</button>
       </div>
-      <div class="key-row">
-        <button onclick="calculate()">＝</button>
-      </div>
     </div>
   </div>
 </div>
+
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>
@@ -1436,26 +1434,8 @@ async function getExchangeRate() {
   }
 }
 
-// 數字鍵盤輸入
-function pressKey(val) {
-  const input = document.getElementById("input-amount");
-  input.value += val;
-}
-
-// 刪除最後一位
-function deleteKey() {
-  const input = document.getElementById("input-amount");
-  input.value = input.value.slice(0, -1);
-}
-
-// 全清除
-function clearAll() {
-  document.getElementById("input-amount").value = "";
-  document.getElementById("output-amount").value = "";
-}
-
-// 計算並換算
-function calculate() {
+// 即時計算並換算
+function autoCalculate() {
   if (!jpyRate) return;
   const inputEl = document.getElementById("input-amount");
   const outputEl = document.getElementById("output-amount");
@@ -1463,7 +1443,7 @@ function calculate() {
   try {
     const rawVal = eval(inputEl.value); // 計算輸入的算式
     if (isNaN(rawVal)) {
-      outputEl.value = "錯誤";
+      outputEl.value = "";
       return;
     }
 
@@ -1471,8 +1451,28 @@ function calculate() {
       ? (rawVal * jpyRate).toFixed(1)
       : (rawVal / jpyRate).toFixed(1);
   } catch {
-    outputEl.value = "錯誤";
+    outputEl.value = "";
   }
+}
+
+// 數字鍵盤輸入
+function pressKey(val) {
+  const input = document.getElementById("input-amount");
+  input.value += val;
+  autoCalculate(); // 每次輸入即時計算
+}
+
+// 刪除最後一位
+function deleteKey() {
+  const input = document.getElementById("input-amount");
+  input.value = input.value.slice(0, -1);
+  autoCalculate();
+}
+
+// 全清除
+function clearAll() {
+  document.getElementById("input-amount").value = "";
+  document.getElementById("output-amount").value = "";
 }
 
 // 切換幣別
@@ -1502,6 +1502,7 @@ function swapCurrencies() {
 document.addEventListener("DOMContentLoaded", () => {
   getExchangeRate();
 });
+
 
 // 顯示換算頁
 function showExchange() {
@@ -1535,6 +1536,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

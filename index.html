@@ -1375,13 +1375,31 @@ window.backToMain = function () {
   document.getElementById("backBtn").classList.remove("show");
 };
 
+<script>
 // =========================
-//     5. 匯率換算系統
+//     匯率換算頁切換
+// =========================
+window.showExchange = function () {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "block";
+  document.getElementById("backBtn").classList.add("show");
+  getExchangeRate();
+};
+
+window.backToMain = function () {
+  document.getElementById("exchange-page").style.display = "none";
+  document.querySelector(".container").style.display = "block";
+  document.getElementById("backBtn").classList.remove("show");
+};
+
+
+// =========================
+//     匯率換算系統
 // =========================
 let currentRate = 0;
 let isJPYtoTWD = true;
 
-const inputField = document.getElementById("input-amount");
+const inputField  = document.getElementById("input-amount");
 const outputField = document.getElementById("output-amount");
 
 const toggleSwitch = document.getElementById("currencyToggle");
@@ -1389,18 +1407,22 @@ const toggleLabel  = document.getElementById("toggle-label");
 const inputLabel   = document.getElementById("input-label");
 const outputLabel  = document.getElementById("output-label");
 
-// ⭐ 取得最新匯率
+
+// ⭐ 使用可用的匯率 API
 async function getExchangeRate() {
   try {
-    const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
+    const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
 
     currentRate = data.rates.TWD;
+    console.log("取得匯率:", currentRate);
+
     updateConversion();
   } catch (e) {
     console.error("匯率抓取失敗", e);
   }
 }
+
 
 // ⭐ 幣別切換
 function swapCurrencies() {
@@ -1416,8 +1438,13 @@ function swapCurrencies() {
     inputLabel.textContent  = "｜   台幣";
     outputLabel.textContent = "｜   日圓";
   }
+
   updateConversion();
 }
+
+// 綁定切換事件
+toggleSwitch.addEventListener("click", swapCurrencies);
+
 
 // ⭐ 即時計算
 function updateConversion() {
@@ -1428,10 +1455,11 @@ function updateConversion() {
     return;
   }
 
-  outputField.value = isJPYtoTWD ?
-    (v * currentRate).toFixed(2) :
-    (v / currentRate).toFixed(2);
+  outputField.value = isJPYtoTWD
+    ? (v * currentRate).toFixed(2)
+    : (v / currentRate).toFixed(2);
 }
+
 
 // ⭐ 數字鍵盤功能
 document.querySelectorAll(".key").forEach(btn => {
@@ -1446,21 +1474,23 @@ document.querySelectorAll(".key").forEach(btn => {
     } else {
       inputField.value += v;
     }
+
     updateConversion();
   });
 });
 
-// ⭐ 直接輸入也要即時計算
+
+// ⭐ 使用鍵盤輸入也要更新
 inputField.addEventListener("input", updateConversion);
 
-// =========================
-//         END
-// =========================
+
+
 </script>
 
 
 </body>
 </html>
+
 
 
 

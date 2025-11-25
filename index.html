@@ -1254,53 +1254,71 @@ select {
 	</div>
 </div>
 	
+<!-- ================================
+       匯率換算頁面（整理後）
+================================ -->
 <div id="exchange-page" class="exchange-page">
-	<div class="converter">
-		<div class="toggle-switch" onclick="swapCurrencies()" id="currencyToggle">
-		  <div class="toggle-track">
-		    <div class="toggle-thumb"></div>
-		  </div>
-		  <span class="toggle-label" id="toggle-label">JPY</span>
-		</div>
 
+  <div class="converter">
 
-		
-	   <div class="input-group">
-		    <div class="input-wrapper">
-		      <input type="text" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
-		      <span class="currency-label" id="input-label">｜   日圓</span>
-		    </div>
-	  </div>
+    <!-- ⭐ 幣別切換開關 -->
+    <div class="toggle-switch" id="currencyToggle">
+      <div class="toggle-track">
+        <div class="toggle-thumb"></div>
+      </div>
+      <span class="toggle-label" id="toggle-label">JPY</span>
+    </div>
 
-	  <div class="input-group">
-		    <div class="input-wrapper">
-		      <input type="text" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
-		      <span class="currency-label" id="output-label">｜   台幣</span>
-		    </div>
-		  </div>
-		</div>
-		
-	</div>
-	<!-- 數字鍵盤 -->
-	<div class="num-pad">
-		  <button class="key">1</button>
-		  <button class="key">2</button>
-		  <button class="key">3</button>
-		
-		  <button class="key">4</button>
-		  <button class="key">5</button>
-		  <button class="key">6</button>
-		
-		  <button class="key">7</button>
-		  <button class="key">8</button>
-		  <button class="key">9</button>
-		
-		  <button class="key gray">0</button>
-		  <button class="key orange">C</button>
-		  <button class="key orange">←</button>
-	</div>
+    <!-- ⭐ 輸入金額 -->
+    <div class="input-group">
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          id="input-amount" 
+          placeholder="輸入金額"
+          inputmode="numeric"
+          autocomplete="off"
+        >
+        <span class="currency-label" id="input-label">｜ 日圓</span>
+      </div>
+    </div>
+
+    <!-- ⭐ 換算結果（唯讀，不可輸入） -->
+    <div class="input-group">
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          id="output-amount" 
+          placeholder="換算結果" 
+          readonly
+        >
+        <span class="currency-label" id="output-label">｜ 台幣</span>
+      </div>
+    </div>
+
+  </div> <!-- converter end -->
+
+  <!-- ⭐ 數字鍵盤（整理後） -->
+  <div class="num-pad">
+    <button class="key">1</button>
+    <button class="key">2</button>
+    <button class="key">3</button>
+
+    <button class="key">4</button>
+    <button class="key">5</button>
+    <button class="key">6</button>
+
+    <button class="key">7</button>
+    <button class="key">8</button>
+    <button class="key">9</button>
+
+    <button class="key gray">0</button>
+    <button class="key orange">C</button>
+    <button class="key orange">←</button>
+  </div>
 
 </div>
+
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>
@@ -1576,6 +1594,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

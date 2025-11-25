@@ -529,31 +529,6 @@ select {
   color: #888;
   pointer-events: none;
 }
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.key {
-  padding: 14px 0;
-  font-size: 22px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-}
-
-.key.gray {
-  background: #e5e5e5;
-  color: #333;
-}
-
-.key.orange {
-  background: #ff8c42;
-  color: white;
-  font-weight: bold;
-}
 
 </style>
 </head>
@@ -1244,72 +1219,118 @@ select {
 </div>
 	
 <div id="exchange-page" class="exchange-page">
-  <div class="converter">
+	<div class="converter">
+		<div class="toggle-switch" onclick="swapCurrencies()" id="currencyToggle">
+		  <div class="toggle-track">
+		    <div class="toggle-thumb"></div>
+		  </div>
+		  <span class="toggle-label" id="toggle-label">JPY</span>
+		</div>
 
-    <!-- 幣別切換開關 -->
-    <div class="toggle-switch" id="currencyToggle">
-      <div class="toggle-track">
-        <div class="toggle-thumb"></div>
-      </div>
-      <span class="toggle-label" id="toggle-label">JPY</span>
-    </div>
 
-    <!-- 輸入金額 -->
-    <div class="input-group">
-      <div class="input-wrapper">
-        <input type="number" id="input-amount" placeholder="輸入金額">
-        <span class="currency-label" id="input-label">｜   日圓</span>
-      </div>
-    </div>
+		
+	   <div class="input-group">
+		    <div class="input-wrapper">
+		      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
+		      <span class="currency-label" id="input-label">｜   日圓</span>
+		    </div>
+	  </div>
 
-    <!-- 換算結果 -->
-    <div class="input-group">
-      <div class="input-wrapper">
-        <input type="number" id="output-amount" placeholder="換算結果" readonly>
-        <span class="currency-label" id="output-label">｜   台幣</span>
-      </div>
-    </div>
-
-  </div>
+	  <div class="input-group">
+		    <div class="input-wrapper">
+		      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
+		      <span class="currency-label" id="output-label">｜   台幣</span>
+		    </div>
+		  </div>
+		</div>
+	</div>
 </div>
-
-<!-- 數字鍵盤 -->
-<div class="keypad">
-  <button class="key gray">1</button>
-  <button class="key gray">2</button>
-  <button class="key gray">3</button>
-
-  <button class="key gray">4</button>
-  <button class="key gray">5</button>
-  <button class="key gray">6</button>
-
-  <button class="key gray">7</button>
-  <button class="key gray">8</button>
-  <button class="key gray">9</button>
-
-  <button class="key orange">C</button>
-  <button class="key gray">0</button>
-  <button class="key orange">←</button>
-</div>
-
-<button class="back-btn" id="backBtn" onclick="backToMain()">HOME</button>
+	
+<button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>
+  <script>
+	  document.addEventListener("DOMContentLoaded", () => {
+  getExchangeRate();
+});
+
+    function showDay(day) {
+      document.querySelectorAll('.day-section').forEach(section => {
+        section.style.display = 'none';
+      });
+      document.getElementById('day-' + day).style.display = 'block';
+
+      document.querySelectorAll('.day-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.day-tab')[day - 1].classList.add('active');
+    }
+  </script>
+  <script>
+	  const scrollEl = document.getElementById('dayTabsScroll');
+	  const arrowLeft = document.getElementById('arrowLeft');
+	  const arrowRight = document.getElementById('arrowRight');
+	
+	 function updateArrows() {
+	  const scrollEl = document.getElementById("dayTabsScroll");
+	  const arrowLeft = document.getElementById("arrowLeft");
+	  const arrowRight = document.getElementById("arrowRight");
+	
+	  if (!scrollEl || !arrowLeft || !arrowRight) return; // 防止錯誤
+	
+	  const scrollLeft = scrollEl.scrollLeft;
+	  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+	
+	  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
+	  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
+	}
+	
+	
+	  scrollEl.addEventListener('scroll', updateArrows);
+	  window.addEventListener('resize', updateArrows);
+	  document.addEventListener('DOMContentLoaded', updateArrows);
+</script>
+<script>
+  document.getElementById('scrollToTop').addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  window.addEventListener('scroll', function () {
+  const btn = document.getElementById('scrollToTop');
+  btn.style.display = window.scrollY > 300 ? 'block' : 'none';
+});
+
+</script>
+<script>
+  const scrollBtn = document.getElementById('scrollToTop');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+      scrollBtn.classList.add('show');
+    } else {
+      scrollBtn.classList.remove('show');
+    }
+  });
+
+  scrollBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
 
 <script>
-// =========================
-//        1.  DAY 切換
-// =========================
+	
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
   const tabs = document.querySelectorAll(".day-tab");
 
   sections.forEach((section, index) => {
-    const isCurrent = index === dayNumber - 1;
-    section.style.display = isCurrent ? "block" : "none";
+    if (index === dayNumber - 1) {
+      section.style.display = "block";
 
-    if (isCurrent) {
-      requestAnimationFrame(() => section.classList.add("fade-in"));
+      // 先確保 class 狀態正確
+      requestAnimationFrame(() => {
+        section.classList.add("fade-in");
+      });
     } else {
+      section.style.display = "none";
       section.classList.remove("fade-in");
     }
   });
@@ -1318,264 +1339,104 @@ function showDay(dayNumber) {
     tab.classList.toggle("active", index === dayNumber - 1);
   });
 
+  // 可選：切換時自動滾回最上方（避開固定 topbar）
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// 頁面載入時自動顯示第一天
 document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
-  updateArrows();
 });
+</script>
 
-// =========================
-//     2. DayTabs 滑動箭頭
-// =========================
-function updateArrows() {
-  const scrollEl = document.getElementById("dayTabsScroll");
-  const arrowLeft = document.getElementById("arrowLeft");
-  const arrowRight = document.getElementById("arrowRight");
-
-  if (!scrollEl) return;
-
-  const scrollLeft = scrollEl.scrollLeft;
-  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
-
-  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
-  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
-}
-
-document.getElementById("dayTabsScroll").addEventListener("scroll", updateArrows);
-window.addEventListener("resize", updateArrows);
-
-// =========================
-//     3. TOP 回頂部按鈕
-// =========================
-const scrollBtn = document.getElementById('scrollToTop');
-
-window.addEventListener('scroll', () => {
-  scrollBtn.classList.toggle('show', window.scrollY > 300);
-});
-
-scrollBtn.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-// =========================
-//     4. 匯率換算頁切換
-// =========================
-window.showExchange = function () {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
-  document.getElementById("backBtn").classList.add("show");
-  getExchangeRate();
-};
-
-window.backToMain = function () {
-  document.getElementById("exchange-page").style.display = "none";
-  document.querySelector(".container").style.display = "block";
-  document.getElementById("backBtn").classList.remove("show");
-};
-
+	
 <script>
-// =========================
-//     匯率換算頁切換
-// =========================
-window.showExchange = function () {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
-  document.getElementById("backBtn").classList.add("show");
-  getExchangeRate();
-};
+let jpyRate = null;
+let isJPYtoTWD = true; // true = JPY → TWD, false = TWD → JPY
 
-window.backToMain = function () {
-  document.getElementById("exchange-page").style.display = "none";
-  document.querySelector(".container").style.display = "block";
-  document.getElementById("backBtn").classList.remove("show");
-};
-
-
-// =========================
-//     匯率換算系統
-// =========================
-let currentRate = 0;
-let isJPYtoTWD = true;
-
-const inputField  = document.getElementById("input-amount");
-const outputField = document.getElementById("output-amount");
-
-const toggleSwitch = document.getElementById("currencyToggle");
-const toggleLabel  = document.getElementById("toggle-label");
-const inputLabel   = document.getElementById("input-label");
-const outputLabel  = document.getElementById("output-label");
-
-
-// ⭐ 使用可用的匯率 API
+// 抓匯率
 async function getExchangeRate() {
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
-
-    currentRate = data.rates.TWD;
-    console.log("取得匯率:", currentRate);
-
-    updateConversion();
-  } catch (e) {
-    console.error("匯率抓取失敗", e);
+    jpyRate = data.rates.TWD;
+    document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
+  } catch {
+    
   }
 }
 
+// 更新轉換結果（依照 toggle 狀態）
+function updateConversion(source) {
+  if (!jpyRate) return;
 
-// ⭐ 幣別切換
+  const inputVal = parseFloat(document.getElementById("input-amount").value);
+  const outputVal = parseFloat(document.getElementById("output-amount").value);
+
+  if (source === "input" && inputVal) {
+    document.getElementById("output-amount").value = isJPYtoTWD
+      ? (inputVal * jpyRate).toFixed(1)
+      : (inputVal / jpyRate).toFixed(1);
+  } else if (source === "output" && outputVal) {
+    document.getElementById("input-amount").value = isJPYtoTWD
+      ? (outputVal / jpyRate).toFixed(1)
+      : (outputVal * jpyRate).toFixed(1);
+  }
+}
+
+// 開關切換幣別
 function swapCurrencies() {
+  const toggle = document.getElementById("currencyToggle");
+  const label = document.getElementById("toggle-label");
+  const inputLabel = document.getElementById("input-label");
+  const outputLabel = document.getElementById("output-label");
+
   isJPYtoTWD = !isJPYtoTWD;
-  toggleSwitch.classList.toggle("active", !isJPYtoTWD);
+  toggle.classList.toggle("active");
 
   if (isJPYtoTWD) {
-    toggleLabel.textContent = "JPY";
-    inputLabel.textContent  = "｜   日圓";
-    outputLabel.textContent = "｜   台幣";
+    label.textContent = "JPY";
+    inputLabel.textContent = "｜  日圓";
+    outputLabel.textContent = "｜  台幣";
   } else {
-    toggleLabel.textContent = "TWD";
-    inputLabel.textContent  = "｜   台幣";
-    outputLabel.textContent = "｜   日圓";
+    label.textContent = "TWD";
+    inputLabel.textContent = "｜  台幣";
+    outputLabel.textContent = "｜  日圓";
   }
 
-  updateConversion();
+  // 重新計算一次（避免切換時顯示錯誤）
+  updateConversion("input");
 }
 
-// 綁定切換事件
-toggleSwitch.addEventListener("click", swapCurrencies);
-
-
-// ⭐ 即時計算
-function updateConversion() {
-  const v = parseFloat(inputField.value);
-
-  if (isNaN(v) || !currentRate) {
-    outputField.value = "";
-    return;
-  }
-
-  outputField.value = isJPYtoTWD
-    ? (v * currentRate).toFixed(2)
-    : (v / currentRate).toFixed(2);
+// 顯示換算頁
+function showExchange() {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "block";
+  getExchangeRate();
 }
 
-
-// ⭐ 數字鍵盤功能
-document.querySelectorAll(".key").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const v = btn.textContent;
-
-    if (v === "C") {
-      inputField.value = "";
-      outputField.value = "";
-    } else if (v === "←") {
-      inputField.value = inputField.value.slice(0, -1);
-    } else {
-      inputField.value += v;
-    }
-
-    updateConversion();
-  });
-});
-
-
-// ⭐ 使用鍵盤輸入也要更新
-inputField.addEventListener("input", updateConversion);
-
-
+// 返回首頁
+function backToMain() {
+  document.getElementById("exchange-page").style.display = "none";
+  document.querySelector(".container").style.display = "block";
+}
 
 </script>
+<script>
+	document.addEventListener("DOMContentLoaded", () => {
+  window.showExchange = function () {
+    document.querySelector(".container").style.display = "none";
+    document.getElementById("exchange-page").style.display = "block";
+    document.getElementById("backBtn").classList.add("show");
+   
+  };
 
-
+  window.backToMain = function () {
+    document.getElementById("backBtn").classList.remove("show");
+    document.getElementById("exchange-page").style.display = "none";
+    document.querySelector(".container").style.display = "block";
+  };
+});
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

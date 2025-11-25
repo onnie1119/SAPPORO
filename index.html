@@ -565,7 +565,55 @@ select {
 .num-pad .key:active {
   transform: scale(0.95);
 }
+/* ============================
+     匯率換算輸入框（修正版）
+============================ */
 
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 14px 16px;
+  padding-right: 70px; /* ⭐ 預留右邊空間給「｜幣別」 */
+  font-size: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  box-sizing: border-box;
+
+  /* ⭐ 讓 text 與 number 呈現效果一致 */
+  -moz-appearance: textfield;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: #3A7AFE;
+  box-shadow: 0 0 0 2px rgba(58,122,254,0.15);
+}
+
+/* 移除 number 的上下箭頭（避免某些瀏覽器強制出現） */
+input[type="text"]::-webkit-inner-spin-button,
+input[type="text"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* 幣別文字（右邊） */
+.currency-label {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #888;
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
@@ -1269,11 +1317,11 @@ select {
       <span class="toggle-label" id="toggle-label">JPY</span>
     </div>
 
-    <!-- ⭐ 輸入金額 -->
+    <!-- ⭐ 輸入金額（已修正） -->
     <div class="input-group">
       <div class="input-wrapper">
         <input 
-          type="number" 
+          type="text" 
           id="input-amount" 
           placeholder="輸入金額"
           inputmode="numeric"
@@ -1283,11 +1331,11 @@ select {
       </div>
     </div>
 
-    <!-- ⭐ 換算結果（唯讀，不可輸入） -->
+    <!-- ⭐ 換算結果（已修正） -->
     <div class="input-group">
       <div class="input-wrapper">
         <input 
-          type="number" 
+          type="text" 
           id="output-amount" 
           placeholder="換算結果" 
           readonly
@@ -1296,9 +1344,9 @@ select {
       </div>
     </div>
 
-  </div> <!-- converter end -->
+  </div>
 
-  <!-- ⭐ 數字鍵盤（整理後） -->
+  <!-- ⭐ 數字鍵盤 -->
   <div class="num-pad">
     <button class="key">1</button>
     <button class="key">2</button>
@@ -1579,6 +1627,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

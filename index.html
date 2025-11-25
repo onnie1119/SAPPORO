@@ -645,88 +645,131 @@ ease;
 /* 行李清單頁面 */
 .packing-page {
   padding: 20px;
-  max-width: 500px;
-  margin: 80px auto;
+  margin-top: 80px;
 }
 
-.packing-page .title {
-  font-size: 28px;
+/* 標題 */
+.title {
+  font-size: 26px;
+  font-weight: 600;
   margin-bottom: 20px;
 }
 
-.add-item-box {
+/* iOS 卡片基底 */
+.ios-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+}
+
+/* 格狀卡片布局 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 14px;
+}
+
+/* 單一卡片 */
+.card-item {
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px 12px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  font-size: 15px;
+  position: relative;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.card-item:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+}
+
+/* 已完成卡片 */
+.card-item.done {
+  background: #e8f8e4;
+  text-decoration: line-through;
+  color: #3a6b2e;
+}
+
+/* 編輯刪除按鈕 */
+.card-actions {
+  position: absolute;
+  top: 6px;
+  right: 8px;
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 6px;
 }
 
-.add-item-box input {
-  flex: 1;
-  padding: 10px;
-  font-size: 16px;
-}
-
-.add-item-box button {
-  padding: 10px 16px;
-  background: #ff8c42;
-  color: #fff;
+.card-actions button {
   border: none;
+  background: #ddd;
+  font-size: 12px;
+  padding: 3px 6px;
   border-radius: 6px;
+}
+
+.card-actions .delete-btn {
+  background: #ff5757;
+  color: #fff;
+}
+
+/* + 新增卡 */
+.add-card {
+  background: #f3f4f6;
+  border-radius: 18px;
+  padding: 40px 0;
+  text-align: center;
+  font-size: 28px;
+  color: #999;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
   cursor: pointer;
 }
 
-.packing-section {
-  margin-top: 25px;
+/* 新增 modal */
+.add-modal.hidden {
+  display: none;
 }
 
-.packing-section h3 {
-  margin-bottom: 10px;
-}
-
-.packing-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.packing-item {
-  background: #f8f8f8;
-  padding: 12px 14px;
-  border-radius: 8px;
-  margin-bottom: 8px;
+.add-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  z-index: 999;
 }
 
-/* 左邊文字 */
-.packing-item .text {
-  flex: 1;
-}
-
-/* 按鈕們 */
-.item-buttons {
+.modal-card {
+  width: 260px;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.item-buttons button {
-  padding: 4px 8px;
-  font-size: 14px;
+.modal-card input {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+}
+
+.modal-card button {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 14px;
   border: none;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.edit-btn {
-  background: #3a7afe;
+  background: #007aff;
   color: white;
 }
 
-.delete-btn {
-  background: #e53935;
-  color: white;
+.modal-card .cancel {
+  background: #bbb;
 }
+
 
 </style>
 </head>
@@ -1487,25 +1530,25 @@ ease;
 
   <h2 class="title">行李清單</h2>
 
-  <!-- 新增物品 -->
-  <div class="add-item-box">
-    <input type="text" id="newItemInput" placeholder="新增物品...">
-    <button id="addItemBtn">新增</button>
-  </div>
-
   <!-- 未準備 -->
-  <div class="packing-section">
-    <h3>未準備</h3>
-    <ul id="todo-list" class="packing-list"></ul>
-  </div>
+  <h3 class="section-title">未準備</h3>
+  <div id="todo-cards" class="card-grid"></div>
 
   <!-- 已準備 -->
-  <div class="packing-section">
-    <h3>已準備</h3>
-    <ul id="done-list" class="packing-list"></ul>
+  <h3 class="section-title">已準備</h3>
+  <div id="done-cards" class="card-grid"></div>
+
+  <!-- 新增物品彈出層 -->
+  <div id="addModal" class="add-modal hidden">
+    <div class="modal-card ios-card">
+      <input type="text" id="newItemInput" placeholder="請輸入物品名稱">
+      <button id="confirmAddBtn">加入清單</button>
+      <button id="cancelAddBtn" class="cancel">取消</button>
+    </div>
   </div>
 
 </div>
+
 
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
@@ -1768,96 +1811,113 @@ function backToMain() {
 /* ================================
       行李清單功能
 ================================ */
-function showPacking() {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "block";
-}
+/* ================================
+        行李清單卡片系統
+================================ */
+let packData = JSON.parse(localStorage.getItem("packing") || "[]");
 
-let todoListEl = document.getElementById("todo-list");
-let doneListEl = document.getElementById("done-list");
+const todoEl = document.getElementById("todo-cards");
+const doneEl = document.getElementById("done-cards");
+const addModal = document.getElementById("addModal");
+const newItemInput = document.getElementById("newItemInput");
 
-let items = JSON.parse(localStorage.getItem("packingItems") || "[]");
+renderPacking();
 
-// 初始化
-renderItems();
+/* ---------- 渲染卡片 ---------- */
+function renderPacking() {
+  todoEl.innerHTML = "";
+  doneEl.innerHTML = "";
 
-// 新增物品
-document.getElementById("addItemBtn").addEventListener("click", () => {
-  const input = document.getElementById("newItemInput");
-  const text = input.value.trim();
-  if (!text) return;
-
-  items.push({ text, done: false });
-  input.value = "";
-
-  saveItems();
-  renderItems();
-});
-
-// 更新畫面
-function renderItems() {
-  todoListEl.innerHTML = "";
-  doneListEl.innerHTML = "";
-
-  items.forEach((item, index) => {
-    const li = document.createElement("li");
-    li.className = "packing-item";
-
-    li.innerHTML = `
-      <span class="text">${item.text}</span>
-      <div class="item-buttons">
-        <button class="edit-btn" onclick="editItem(${index})">編輯</button>
-        <button class="delete-btn" onclick="deleteItem(${index})">刪除</button>
+  packData.forEach((item, i) => {
+    const card = document.createElement("div");
+    card.className = "card-item" + (item.done ? " done" : "");
+    card.innerHTML = `
+      <div class="card-actions">
+        <button onclick="editItem(${i})">編</button>
+        <button class="delete-btn" onclick="deleteItem(${i})">刪</button>
       </div>
+      ${item.text}
     `;
 
-    // 點整個項目切換狀態
-    li.querySelector(".text").addEventListener("click", () => toggleDone(index));
+    card.addEventListener("click", e => {
+      if (e.target.tagName === "BUTTON") return;
+      toggleItem(i);
+    });
 
-    if (item.done) {
-      doneListEl.appendChild(li);
-    } else {
-      todoListEl.appendChild(li);
-    }
+    item.done ? doneEl.appendChild(card) : todoEl.appendChild(card);
   });
+
+  addAddCard(todoEl);
 }
 
-// 切換準備狀態
-function toggleDone(index) {
-  items[index].done = !items[index].done;
-  saveItems();
-  renderItems();
+/* ---------- 最後一格 + 卡片 ---------- */
+function addAddCard(parent) {
+  const addCard = document.createElement("div");
+  addCard.className = "add-card";
+  addCard.textContent = "+";
+  addCard.addEventListener("click", openAddModal);
+  parent.appendChild(addCard);
 }
 
-// 編輯項目
-function editItem(index) {
-  const newText = prompt("修改內容：", items[index].text);
-  if (newText !== null && newText.trim() !== "") {
-    items[index].text = newText.trim();
-    saveItems();
-    renderItems();
+/* ---------- 開啟新增 modal ---------- */
+function openAddModal() {
+  newItemInput.value = "";
+  addModal.classList.remove("hidden");
+  newItemInput.focus();
+}
+
+/* ---------- 關閉 modal ---------- */
+document.getElementById("cancelAddBtn").onclick = () => {
+  addModal.classList.add("hidden");
+};
+
+/* ---------- 確認新增 ---------- */
+document.getElementById("confirmAddBtn").onclick = () => {
+  const txt = newItemInput.value.trim();
+  if (!txt) return;
+
+  packData.push({ text: txt, done: false });
+  savePacking();
+  renderPacking();
+  addModal.classList.add("hidden");
+};
+
+/* ---------- 切換完成狀態 ---------- */
+function toggleItem(i) {
+  packData[i].done = !packData[i].done;
+  savePacking();
+  renderPacking();
+}
+
+/* ---------- 編輯 ---------- */
+function editItem(i) {
+  const text = prompt("編輯內容：", packData[i].text);
+  if (text !== null) {
+    packData[i].text = text.trim();
+    savePacking();
+    renderPacking();
   }
 }
 
-// 刪除項目
-function deleteItem(index) {
-  if (confirm("確定要刪除嗎？")) {
-    items.splice(index, 1);
-    saveItems();
-    renderItems();
-  }
+/* ---------- 刪除 ---------- */
+function deleteItem(i) {
+  if (!confirm("確定刪除？")) return;
+  packData.splice(i, 1);
+  savePacking();
+  renderPacking();
 }
 
-// 儲存到 localStorage
-function saveItems() {
-  localStorage.setItem("packingItems", JSON.stringify(items));
+/* ---------- 儲存 ---------- */
+function savePacking() {
+  localStorage.setItem("packing", JSON.stringify(packData));
 }
+
 
 
 </script>
 </body>
 </html>
+
 
 
 

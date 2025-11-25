@@ -1258,14 +1258,14 @@ select {
 		
 	   <div class="input-group">
 		    <div class="input-wrapper">
-		      <input type="text" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
+		      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
 		      <span class="currency-label" id="input-label">｜   日圓</span>
 		    </div>
 	  </div>
 
 	  <div class="input-group">
 		    <div class="input-wrapper">
-		      <input type="text" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
+		      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
 		      <span class="currency-label" id="output-label">｜   台幣</span>
 		    </div>
 		  </div>
@@ -1538,6 +1538,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

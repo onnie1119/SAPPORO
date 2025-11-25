@@ -55,6 +55,11 @@
 	  .scroll-top-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3A7AFE; color: #fff; border: none; border-radius: 50px; padding: 6px 18px; font-size: 12px; cursor: pointer; box-shadow: 0 2px 2px rgba(0,0,0,0.2); transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.3s ease, background 0.3s ease; z-index: 999; opacity: 0; /* 預設透明 */ visibility: hidden; /* 預設不可見 */ pointer-events: none;/* 預設不可點 */ }
 	  .scroll-top-button.show { opacity: 1; visibility: visible; pointer-events: auto; }
 	  .scroll-top-button :hover{opacity:0.8;}
+	  .scroll-top-button {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 	  .day-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; }
 	  .day-section.fade-in { opacity: 1; transform: translateY(0); }
 	  .exchange-page { margin-top:80px; display: none; text-align: center; padding: 40px 20px; animation: fadeIn 0.4s ease; }
@@ -1018,6 +1023,7 @@ function backToMain() {
 
 </body>
 </html>
+
 
 
 

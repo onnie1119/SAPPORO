@@ -1408,11 +1408,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	
 <script>
 /* ================================
-      匯率換算 — 完整新版 Script
+      匯率換算 — 含千分位輸入版
 ================================ */
 
-let currentRate = 0;          // 即時匯率
-let isJPYtoTWD = true;        // true = 日圓換台幣, false = 台幣換日圓
+let currentRate = 0;
+let isJPYtoTWD = true;
 
 const inputField  = document.getElementById("input-amount");
 const outputField = document.getElementById("output-amount");
@@ -1421,55 +1421,77 @@ const toggleSwitch = document.getElementById("currencyToggle");
 const toggleLabel  = document.getElementById("toggle-label");
 const inputLabel   = document.getElementById("input-label");
 const outputLabel  = document.getElementById("output-label");
+const rateTimeText = document.getElementById("rate-update-time");
 
-/* --------------------------
-    取得最新即時匯率
---------------------------- */
+
+/* ---- 取得匯率 ---- */
 async function getExchangeRate() {
   try {
+    rateTimeText.textContent = "取得匯率中…";
+
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
 
-    currentRate = data.rates.TWD;   // ⭐只有這個才是正確的匯率來源
+    currentRate = data.rates.TWD;
 
-    // 更新換算
     updateConversion();
 
-    // 顯示最後更新時間（如果你有用）
     if (data.time_last_update_utc) {
       updateRateTime(data.time_last_update_utc);
     }
 
   } catch (err) {
-    console.error("匯率抓取失敗", err);
+    console.error(err);
+    rateTimeText.textContent = "匯率取得失敗";
   }
 }
 
-/* --------------------------
-      即時換算邏輯（核心）
---------------------------- */
+
+/* ---- 更新匯率時間 ---- */
+function updateRateTime(utcString) {
+  const date = new Date(utcString);
+  const local = date.toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    hour12: false
+  });
+
+  rateTimeText.textContent = `上次更新：${local}`;
+}
+
+
+/* ---- 數字格式化（整數 + 千分位） ---- */
+function addComma(number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/* ---- 去除輸入框中的千分位 ---- */
+function removeComma(str) {
+  return str.replace(/,/g, "");
+}
+
+
+/* ---- 即時換算 ---- */
 function updateConversion() {
   if (!currentRate) return;
 
-  const val = parseFloat(inputField.value);
+  const raw = removeComma(inputField.value);
+  const val = parseFloat(raw);
 
   if (isNaN(val)) {
     outputField.value = "";
     return;
   }
 
-  if (isJPYtoTWD) {
-    // ⭐ 日幣 → 台幣：乘以匯率
-    outputField.value = (val * currentRate).toFixed(0);
-  } else {
-    // ⭐ 台幣 → 日幣：除以匯率
-    outputField.value = (val / currentRate).toFixed(0);
-  }
+  let result = isJPYtoTWD
+    ? val * currentRate
+    : val / currentRate;
+
+  result = Math.round(result);  // ⭐ 整數
+  outputField.value = addComma(result);
 }
 
-/* --------------------------
-      幣別切換
---------------------------- */
+
+/* ---- 幣別切換 ---- */
 toggleSwitch.addEventListener("click", () => {
   isJPYtoTWD = !isJPYtoTWD;
 
@@ -1477,49 +1499,61 @@ toggleSwitch.addEventListener("click", () => {
 
   if (isJPYtoTWD) {
     toggleLabel.textContent = "JPY";
-    inputLabel.textContent  = "｜ 日圓";
-    outputLabel.textContent = "｜ 台幣";
+    inputLabel.textContent  = "｜   日圓";
+    outputLabel.textContent = "｜   台幣";
   } else {
     toggleLabel.textContent = "TWD";
-    inputLabel.textContent  = "｜ 台幣";
-    outputLabel.textContent = "｜ 日圓";
+    inputLabel.textContent  = "｜   台幣";
+    outputLabel.textContent = "｜   日圓";
   }
 
   updateConversion();
 });
 
-/* --------------------------
-      手動輸入
---------------------------- */
+
+/* ---- 手動輸入（自動加千分位） ---- */
 inputField.addEventListener("input", () => {
+  let raw = removeComma(inputField.value);
+
+  if (raw === "" || isNaN(raw)) {
+    inputField.value = "";
+    outputField.value = "";
+    return;
+  }
+
+  inputField.value = addComma(raw);
   updateConversion();
 });
 
-/* --------------------------
-      數字鍵盤
---------------------------- */
+
+/* ---- 數字鍵盤 ---- */
 document.querySelectorAll(".key").forEach(btn => {
   btn.addEventListener("click", () => {
-    const v = btn.textContent;
+    let raw = removeComma(inputField.value);
+    const key = btn.textContent;
 
-    if (v === "C") {
+    if (key === "C") {
       inputField.value = "";
       outputField.value = "";
-    } 
-    else if (v === "←") {
-      inputField.value = inputField.value.slice(0, -1);
-    } 
-    else {
-      inputField.value += v;
+      return;
     }
 
+    if (key === "←") {
+      raw = raw.slice(0, -1);
+      inputField.value = raw ? addComma(raw) : "";
+      updateConversion();
+      return;
+    }
+
+    // 數字鍵
+    raw += key;
+    inputField.value = addComma(raw);
     updateConversion();
   });
 });
 
-/* --------------------------
-    頁面開啟就抓匯率一次
---------------------------- */
+
+/* ---- 頁面載入先抓匯率 ---- */
 document.addEventListener("DOMContentLoaded", getExchangeRate);
 
 
@@ -1558,6 +1592,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

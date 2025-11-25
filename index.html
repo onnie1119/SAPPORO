@@ -642,6 +642,92 @@ ease;
   overflow: hidden;   /* ⭐ 不讓匯率頁滾動 */
   padding-bottom: 0 !important;  /* ⭐ 確保底部沒有空白 */
 }
+/* 行李清單頁面 */
+.packing-page {
+  padding: 20px;
+  max-width: 500px;
+  margin: 80px auto;
+}
+
+.packing-page .title {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.add-item-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-item-box input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.add-item-box button {
+  padding: 10px 16px;
+  background: #ff8c42;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.packing-section {
+  margin-top: 25px;
+}
+
+.packing-section h3 {
+  margin-bottom: 10px;
+}
+
+.packing-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.packing-item {
+  background: #f8f8f8;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 左邊文字 */
+.packing-item .text {
+  flex: 1;
+}
+
+/* 按鈕們 */
+.item-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.item-buttons button {
+  padding: 4px 8px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.edit-btn {
+  background: #3a7afe;
+  color: white;
+}
+
+.delete-btn {
+  background: #e53935;
+  color: white;
+}
+
 </style>
 </head>
 <body>
@@ -650,7 +736,7 @@ ease;
 		<div class="trip-title">北海道の旅</div>
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
 		<div class="top-buttons">
-			<button>行李清單</button>
+			<button onclick="showPacking()">行李清單</button>
 			<button>電子憑證</button>
  			<button onclick="showExchange()">匯率換算</button>
 		</div>
@@ -1394,6 +1480,32 @@ ease;
 	  </div>
 	</div>
 </div>
+<!-- ================================
+      行李清單頁面
+================================ -->
+<div id="packing-page" class="packing-page" style="display:none;">
+
+  <h2 class="title">行李清單</h2>
+
+  <!-- 新增物品 -->
+  <div class="add-item-box">
+    <input type="text" id="newItemInput" placeholder="新增物品...">
+    <button id="addItemBtn">新增</button>
+  </div>
+
+  <!-- 未準備 -->
+  <div class="packing-section">
+    <h3>未準備</h3>
+    <ul id="todo-list" class="packing-list"></ul>
+  </div>
+
+  <!-- 已準備 -->
+  <div class="packing-section">
+    <h3>已準備</h3>
+    <ul id="done-list" class="packing-list"></ul>
+  </div>
+
+</div>
 
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
@@ -1653,11 +1765,100 @@ function backToMain() {
     document.querySelector(".container").style.display = "block";
   };
 });
+/* ================================
+      行李清單功能
+================================ */
+function showPacking() {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "none";
+  document.getElementById("packing-page").style.display = "block";
+}
+
+let todoListEl = document.getElementById("todo-list");
+let doneListEl = document.getElementById("done-list");
+
+let items = JSON.parse(localStorage.getItem("packingItems") || "[]");
+
+// 初始化
+renderItems();
+
+// 新增物品
+document.getElementById("addItemBtn").addEventListener("click", () => {
+  const input = document.getElementById("newItemInput");
+  const text = input.value.trim();
+  if (!text) return;
+
+  items.push({ text, done: false });
+  input.value = "";
+
+  saveItems();
+  renderItems();
+});
+
+// 更新畫面
+function renderItems() {
+  todoListEl.innerHTML = "";
+  doneListEl.innerHTML = "";
+
+  items.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.className = "packing-item";
+
+    li.innerHTML = `
+      <span class="text">${item.text}</span>
+      <div class="item-buttons">
+        <button class="edit-btn" onclick="editItem(${index})">編輯</button>
+        <button class="delete-btn" onclick="deleteItem(${index})">刪除</button>
+      </div>
+    `;
+
+    // 點整個項目切換狀態
+    li.querySelector(".text").addEventListener("click", () => toggleDone(index));
+
+    if (item.done) {
+      doneListEl.appendChild(li);
+    } else {
+      todoListEl.appendChild(li);
+    }
+  });
+}
+
+// 切換準備狀態
+function toggleDone(index) {
+  items[index].done = !items[index].done;
+  saveItems();
+  renderItems();
+}
+
+// 編輯項目
+function editItem(index) {
+  const newText = prompt("修改內容：", items[index].text);
+  if (newText !== null && newText.trim() !== "") {
+    items[index].text = newText.trim();
+    saveItems();
+    renderItems();
+  }
+}
+
+// 刪除項目
+function deleteItem(index) {
+  if (confirm("確定要刪除嗎？")) {
+    items.splice(index, 1);
+    saveItems();
+    renderItems();
+  }
+}
+
+// 儲存到 localStorage
+function saveItems() {
+  localStorage.setItem("packingItems", JSON.stringify(items));
+}
 
 
 </script>
 </body>
 </html>
+
 
 
 

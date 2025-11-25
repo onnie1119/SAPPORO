@@ -642,36 +642,35 @@ ease;
   overflow: hidden;   /* ⭐ 不讓匯率頁滾動 */
   padding-bottom: 0 !important;  /* ⭐ 確保底部沒有空白 */
 }
-/* 行李清單頁面 */
+/* 整頁 */
 .packing-page {
   padding: 20px;
   margin-top: 80px;
 }
 
 /* 標題 */
-.title1 {
+.packing-title {
   font-size: 26px;
   font-weight: 600;
   margin-bottom: 20px;
 }
 
-/* iOS 卡片基底 */
-.ios-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 16px;
-  box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+/* 區塊 */
+.packing-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 20px 0 10px;
 }
 
-/* 格狀卡片布局 */
-.card-grid {
+/* 卡片排列 */
+.packing-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 14px;
 }
 
 /* 單一卡片 */
-.card-item {
+.packing-card-item {
   background: #fff;
   border-radius: 18px;
   padding: 20px 12px;
@@ -679,45 +678,22 @@ ease;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   font-size: 15px;
   position: relative;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform .2s ease, opacity .2s ease;
 }
 
-.card-item:active {
+.packing-card-item:active {
   transform: scale(0.95);
   opacity: 0.7;
 }
 
-/* 已完成卡片 */
-.card-item.done {
+.packing-card-item.done {
   background: #e8f8e4;
   text-decoration: line-through;
   color: #3a6b2e;
 }
 
-/* 編輯刪除按鈕 */
-.card-actions {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  display: flex;
-  gap: 6px;
-}
-
-.card-actions button {
-  border: none;
-  background: #ddd;
-  font-size: 12px;
-  padding: 3px 6px;
-  border-radius: 6px;
-}
-
-.card-actions .delete-btn {
-  background: #ff5757;
-  color: #fff;
-}
-
 /* + 新增卡 */
-.add-card {
+.packing-add-card {
   background: #f3f4f6;
   border-radius: 18px;
   padding: 40px 0;
@@ -728,12 +704,34 @@ ease;
   cursor: pointer;
 }
 
-/* 新增 modal */
-.add-modal.hidden {
+/* 編輯刪除按鈕 */
+.packing-actions {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.packing-actions button {
+  border: none;
+  background: #ddd;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+.packing-actions .delete-btn {
+  background: #ff5757;
+  color: white;
+}
+
+/* popup */
+.packing-add-modal.hidden {
   display: none;
 }
 
-.add-modal {
+.packing-add-modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.25);
@@ -743,21 +741,25 @@ ease;
   z-index: 999;
 }
 
-.modal-card {
+.packing-modal-card {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
   width: 260px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.modal-card input {
+.packing-modal-card input {
   padding: 12px;
   font-size: 16px;
   border-radius: 14px;
   border: 1px solid #ddd;
 }
 
-.modal-card button {
+.packing-modal-card button {
   padding: 12px;
   font-size: 16px;
   border-radius: 14px;
@@ -766,9 +768,10 @@ ease;
   color: white;
 }
 
-.modal-card .cancel {
+.packing-modal-card .cancel {
   background: #bbb;
 }
+
 
 
 </style>
@@ -1528,26 +1531,27 @@ ease;
 ================================ -->
 <div id="packing-page" class="packing-page" style="display:none;">
 
-  <h2 class="title1">行李清單</h2>
+  <h2 class="packing-title">行李清單</h2>
 
   <!-- 未準備 -->
-  <h3 class="section-title">未準備</h3>
-  <div id="todo-cards" class="card-grid"></div>
+  <h3 class="packing-section-title">未準備</h3>
+  <div id="packing-todo" class="packing-card-grid"></div>
 
   <!-- 已準備 -->
-  <h3 class="section-title">已準備</h3>
-  <div id="done-cards" class="card-grid"></div>
+  <h3 class="packing-section-title">已準備</h3>
+  <div id="packing-done" class="packing-card-grid"></div>
 
-  <!-- 新增物品彈出層 -->
-  <div id="addModal" class="add-modal hidden">
-    <div class="modal-card ios-card">
-      <input type="text" id="newItemInput" placeholder="請輸入物品名稱">
-      <button id="confirmAddBtn">加入清單</button>
-      <button id="cancelAddBtn" class="cancel">取消</button>
+  <!-- 新增物品 popup -->
+  <div id="packing-add-modal" class="packing-add-modal hidden">
+    <div class="packing-modal-card">
+      <input type="text" id="packing-new-input" placeholder="請輸入物品名稱">
+      <button id="packing-confirm">加入清單</button>
+      <button id="packing-cancel" class="cancel">取消</button>
     </div>
   </div>
 
 </div>
+
 
 
 	
@@ -1917,6 +1921,7 @@ function savePacking() {
 </script>
 </body>
 </html>
+
 
 
 

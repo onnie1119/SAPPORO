@@ -555,7 +555,16 @@ select {
   background: #3A7AFE;
   color: #fff;
 }
-
+	  
+input[type=text] {
+  font-size: 20px;
+  text-align: right;   /* 模擬數字輸入的對齊 */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #222;
+  box-sizing: border-box;
+}
 
 </style>
 </head>
@@ -1258,14 +1267,14 @@ select {
 		
 	   <div class="input-group">
 		    <div class="input-wrapper">
-		      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
+		      <input type="text" id="input-amount" placeholder="輸入金額" oninput="sanitizeInput()">
 		      <span class="currency-label" id="input-label">｜   日圓</span>
 		    </div>
 	  </div>
 
 	  <div class="input-group">
 		    <div class="input-wrapper">
-		      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
+		      <input type="text" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
 		      <span class="currency-label" id="output-label">｜   台幣</span>
 		    </div>
 		  </div>
@@ -1465,8 +1474,12 @@ function swapCurrencies() {
 function pressKey(val) {
   const input = document.getElementById("input-amount");
   input.value += val;
-  updateConversion("input"); // 即時更新換算
 }
+function sanitizeInput() {
+  const input = document.getElementById("input-amount");
+  input.value = input.value.replace(/[^0-9+\-*/]/g, "");
+}
+
 
 function deleteKey() {
   const input = document.getElementById("input-amount");
@@ -1538,6 +1551,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

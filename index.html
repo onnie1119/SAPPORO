@@ -8,7 +8,87 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&display=swap" as="style">
 
-  <style> html { margin: 0; padding: 0; } body { margin: 0; background: #FAFAF7; font-family: 'Noto Sans TC', sans-serif; color: #444; padding-bottom: 120px; } .topbar { background: #3A7AFE; color: #fff; padding: 25px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; } .trip-title { font-size: 20px; } .trip-date { font-size: 10px; letter-spacing: 1px; } .top-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; } .top-buttons button { background: #ffffff30; color: #ffffff; border: none; border-radius: 20px; padding: 5px 14px; font-size: 12px; letter-spacing: 1.5px; cursor: pointer; transition: background 0.2s ease; } .top-buttons button:hover { background: #f0f4ff; color: #3A7AFE; } .container { padding: 0 20px; max-width: 600px; margin: 0 auto; margin-top: 145px; position: relative; } .day-tabs { display: flex; gap: 5px; border-bottom: 1px solid #e0e0e0; margin-bottom: 20px; } .day-tab { background: none; border: none; font-size: 11px; color: #999; padding: 5px 6px; cursor: pointer; position: relative; transition: color 0.2s ease; } .day-tab:hover { color: #3A7AFE; } .day-tab.active { color: #3A7AFE; font-weight: 600; } .day-tab.active::after { content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: #3A7AFE; border-radius: 1px; } .day-section { display: none; } .day-label { font-size: 12px; color: #999; margin-bottom: 0.5rem; padding-left: 0.3rem; letter-spacing: 1.2px; pointer-events: none; } .activity-card { display: flex; align-items: center; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 6px; margin-bottom: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; } .activity-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); background: #fdfdfc; } .activity-card img { width: 90px; height: 90px; border-radius: 7px; object-fit: cover; margin-right: 15px; background: #ddd; } .info { flex: 1; display: flex; flex-direction: column; } .title { font-size: 16px; font-weight: 600; color: #222; margin-bottom: 5px; } .time { font-size: 14px; color: #a87f30; margin-bottom: 5px; } .note { font-size: 12px; color: #999; letter-spacing: 0.5px; } .transport-info { display: flex; align-items: flex-end; gap: 6px; font-size: 12px; color: #999; margin: 15px 0 15px 40px; position: relative; letter-spacing: 1px; } .transport-info::before { content: ""; position: absolute; left: -20px; top: -8px; bottom: -8px; width: 1px; background: repeating-linear-gradient( to bottom, #ccc, #ccc 2px, transparent 2px, transparent 4px ); } a { text-decoration: none; display: block; } .scroll-end-message { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; text-align: center; font-size: 13px; color: #3A7AFE; margin-top: 40px; padding-bottom: 20px; } .scroll-end-message.visible { opacity: 1; transform: translateY(0); } .day-tabs-wrapper { position: relative; } .day-tabs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; } .day-tabs-scroll::-webkit-scrollbar { display: none; } .day-tabs { display: flex; gap: 5px; padding-bottom: 6px; min-width: max-content; } .day-tab { white-space: nowrap; flex-shrink: 0; background: none; border: none; font-size: 12px; color: #999; padding: 5px 15px; cursor: pointer; position: relative; transition: color 0.2s ease; } .day-tab:hover { color: #3A7AFE; } .day-tab.active { color: #3A7AFE; font-weight: 600; } .day-tab.active::after { content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 1.5px; background: #3A7AFE; border-radius: 1px; } .day-tabs-arrow { position: absolute; top: 0; bottom: 0; width: 30px; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 16px; pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.3s ease; } .day-tabs-arrow.left { left: 0; } .day-tabs-arrow.right { right: 0; } .day-tabs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; /* iOS 慣性滾動 */ scroll-behavior: auto; /* 對手指滑動無效，可省略 */ touch-action: pan-x; /* 明確允許水平滑動 */ } .day-tab.active::after { content: ""; position: absolute; bottom: -7px; /* 對齊灰底線 */ left: 0; width: 100%; height: 2px; background: #3A7AFE; border-radius: 1px; } .day-tab::after { transition: all 0.3s ease; } .day-tabs-scroll { scroll-snap-type: x mandatory; } .day-tab { scroll-snap-align: start; } .scroll-top-button:hover { background: #2a5edb; transform: translateX(-50%) scale(1.05); } .scroll-top-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3A7AFE; color: #fff; border: none; border-radius: 50px; padding: 6px 18px; font-size: 12px; cursor: pointer; box-shadow: 0 2px 2px rgba(0,0,0,0.2); transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.3s ease, background 0.3s ease; z-index: 999; opacity: 0; /* 預設透明 */ visibility: hidden; /* 預設不可見 */ pointer-events: none;/* 預設不可點 */ } .scroll-top-button.show { opacity: 1; visibility: visible; pointer-events: auto; } .scroll-top-button :hover{opacity:0.8;} .day-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; } .day-section.fade-in { opacity: 1; transform: translateY(0); } .exchange-page { margin-top:80px; display: none; text-align: center; padding: 40px 20px; animation: fadeIn 0.4s ease; } .converter { margin-top: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; } .input-group { width:100%; display: flex; align-items: center; gap: 10px; } input[type="number"] { width: 180px; padding: 8px; font-size: 18px; text-align: right; } select { padding: 8px; font-size: 16px; } #swap-btn { font-size: 22px; border: none; background: #3a7afe; color: #fff; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; transition: transform 0.2s ease; } #swap-btn:hover { transform: rotate(180deg); } .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3A7AFE; color: #fff; border: none; border-radius: 50px; padding: 6px 18px; font-size: 12px; cursor: pointer; box-shadow: 0 2px 2px rgba(0,0,0,0.2); z-index: 999; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease, visibility 0.3s ease; } .back-btn.show { opacity: 1; visibility: visible; pointer-events: auto; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .toggle-switch { display: flex; align-items: center; gap: 10px; font-size:13px; cursor: pointer; margin: 10px 0; } .toggle-track { position: relative; width: 35px; height: 20px; background: #ccc; border-radius: 15px; transition: background 0.3s ease; } .toggle-thumb { position: absolute; top: 0px; left: 0px; width: 19px; height: 19px; background: #3a7afe; border-radius: 50%; transition: left 0.3s ease; } .toggle-switch.active .toggle-thumb { left: 15px; } .toggle-switch.active .toggle-track { background: #a3c1ff; } .input-wrapper { width: calc(100%); /* ✅ 左右各留 1rem */ margin: 0 auto; /* ✅ 水平置中 */ position: relative; } .input-wrapper input[type="number"] { width: 100%; padding: 1rem; /* ✅ 左右內距：右側留空給幣別提示 */ font-size: 20px; text-align: left; border: 1px solid #ddd; color:#222; border-radius: 8px; box-sizing: border-box; } .currency-label { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #888; pointer-events: none; } .keypad { display: flex; width:100%; flex-direction: column; gap: 5px; margin-top: 15px; } .key-row { display: flex; gap: 8px; } .key-row button { flex: 1; padding: 14px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; } /* 數字鍵：淺灰色 */ .key-row button.num { background: #e0e0e0; color: #222; } .key-row button.num:hover { background: #bdbdbd; color: #fff; } /* 運算符號：深灰色 */ .key-row button.op { background: #8f8f8f; color: #fff; } .key-row button.op:hover { background: #333; } /* C：紅色 */ .key-row button.clear { background: #e74460; color: #fff; } .key-row button.clear:hover { background: #b71c1c; } /* ⌫：橘色 */ .key-row button.delete { background: #ffb40b; color: #fff; } .key-row button.delete:hover { background: #e65100; } .input-wrapper input[type="text"], .input-wrapper input[type="number"] { width: 100%; padding: 1.2rem; font-size: 22px; text-align: left; /* 或 left，看你要的對齊方式 */ border: 1px solid #ddd; border-radius: 8px; color: #222; box-sizing: border-box; }</style>
+  <style>
+	  html { margin: 0; padding: 0; }
+	  body { margin: 0; background: #FAFAF7; font-family: 'Noto Sans TC', sans-serif; color: #444; padding-bottom: 120px; }
+	  .topbar { background: #3A7AFE; color: #fff; padding: 25px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+	  .trip-title { font-size: 20px; }
+	  .trip-date { font-size: 10px; letter-spacing: 1px; }
+	  .top-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+	  .top-buttons button { background: #ffffff30; color: #ffffff; border: none; border-radius: 20px; padding: 5px 14px; font-size: 12px; letter-spacing: 1.5px; cursor: pointer; transition: background 0.2s ease; }
+	  .top-buttons button:hover { background: #f0f4ff; color: #3A7AFE; }
+	  .container { padding: 0 20px; max-width: 600px; margin: 0 auto; margin-top: 145px; position: relative; }
+	  .day-tabs { display: flex; gap: 5px; border-bottom: 1px solid #e0e0e0; margin-bottom: 20px; }
+	  .day-tab { background: none; border: none; font-size: 11px; color: #999; padding: 5px 6px; cursor: pointer; position: relative; transition: color 0.2s ease; }
+	  .day-tab:hover { color: #3A7AFE; } .day-tab.active { color: #3A7AFE; font-weight: 600; }
+	  .day-tab.active::after { content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: #3A7AFE; border-radius: 1px; }
+	  .day-section { display: none; } .day-label { font-size: 12px; color: #999; margin-bottom: 0.5rem; padding-left: 0.3rem; letter-spacing: 1.2px; pointer-events: none; }
+	  .activity-card { display: flex; align-items: center; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 6px; margin-bottom: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; }
+	  .activity-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); background: #fdfdfc; }
+	  .activity-card img { width: 90px; height: 90px; border-radius: 7px; object-fit: cover; margin-right: 15px; background: #ddd; }
+	  .info { flex: 1; display: flex; flex-direction: column; }
+	  .title { font-size: 16px; font-weight: 600; color: #222; margin-bottom: 5px; }
+	  .time { font-size: 14px; color: #a87f30; margin-bottom: 5px; }
+	  .note { font-size: 12px; color: #999; letter-spacing: 0.5px; }
+	  .transport-info { display: flex; align-items: flex-end; gap: 6px; font-size: 12px; color: #999; margin: 15px 0 15px 40px; position: relative; letter-spacing: 1px; }
+	  .transport-info::before { content: ""; position: absolute; left: -20px; top: -8px; bottom: -8px; width: 1px; background: repeating-linear-gradient( to bottom, #ccc, #ccc 2px, transparent 2px, transparent 4px ); }
+	  a { text-decoration: none; display: block; }
+	  .scroll-end-message { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; text-align: center; font-size: 13px; color: #3A7AFE; margin-top: 40px; padding-bottom: 20px; }
+	  .scroll-end-message.visible { opacity: 1; transform: translateY(0); }
+	  .day-tabs-wrapper { position: relative; }
+	  .day-tabs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+	  .day-tabs-scroll::-webkit-scrollbar { display: none; }
+	  .day-tabs { display: flex; gap: 5px; padding-bottom: 6px; min-width: max-content; }
+	  .day-tab { white-space: nowrap; flex-shrink: 0; background: none; border: none; font-size: 12px; color: #999; padding: 5px 15px; cursor: pointer; position: relative; transition: color 0.2s ease; }
+	  .day-tab:hover { color: #3A7AFE; }
+	  .day-tab.active { color: #3A7AFE; font-weight: 600; }
+	  .day-tab.active::after { content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 1.5px; background: #3A7AFE; border-radius: 1px; }
+	  .day-tabs-arrow { position: absolute; top: 0; bottom: 0; width: 30px; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 16px; pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.3s ease; }
+	  .day-tabs-arrow.left { left: 0; }
+	  .day-tabs-arrow.right { right: 0; }
+	  .day-tabs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; /* iOS 慣性滾動 */ scroll-behavior: auto; /* 對手指滑動無效，可省略 */ touch-action: pan-x; /* 明確允許水平滑動 */ }
+	  .day-tab.active::after { content: ""; position: absolute; bottom: -7px; /* 對齊灰底線 */ left: 0; width: 100%; height: 2px; background: #3A7AFE; border-radius: 1px; }
+	  .day-tab::after { transition: all 0.3s ease; }
+	  .day-tabs-scroll { scroll-snap-type: x mandatory; }
+	  .day-tab { scroll-snap-align: start; }
+	  .scroll-top-button:hover { background: #2a5edb; transform: translateX(-50%) scale(1.05); }
+	  .scroll-top-button { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3A7AFE; color: #fff; border: none; border-radius: 50px; padding: 6px 18px; font-size: 12px; cursor: pointer; box-shadow: 0 2px 2px rgba(0,0,0,0.2); transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.3s ease, background 0.3s ease; z-index: 999; opacity: 0; /* 預設透明 */ visibility: hidden; /* 預設不可見 */ pointer-events: none;/* 預設不可點 */ }
+	  .scroll-top-button.show { opacity: 1; visibility: visible; pointer-events: auto; }
+	  .scroll-top-button :hover{opacity:0.8;}
+	  .day-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; }
+	  .day-section.fade-in { opacity: 1; transform: translateY(0); }
+	  .exchange-page { margin-top:80px; display: none; text-align: center; padding: 40px 20px; animation: fadeIn 0.4s ease; }
+	  .converter { margin-top: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+	  .input-group { width:100%; display: flex; align-items: center; gap: 10px; }
+	  input[type="number"] { width: 180px; padding: 8px; font-size: 18px; text-align: right; }
+	  select { padding: 8px; font-size: 16px; }
+	  #swap-btn { font-size: 22px; border: none; background: #3a7afe; color: #fff; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; transition: transform 0.2s ease; }
+	  #swap-btn:hover { transform: rotate(180deg); }
+	  .back-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3A7AFE; color: #fff; border: none; border-radius: 50px; padding: 6px 18px; font-size: 12px; cursor: pointer; box-shadow: 0 2px 2px rgba(0,0,0,0.2); z-index: 999; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease, visibility 0.3s ease; }
+	  .back-btn.show { opacity: 1; visibility: visible; pointer-events: auto; }
+	  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+	  .toggle-switch { display: flex; align-items: center; gap: 10px; font-size:13px; cursor: pointer; margin: 10px 0; }
+	  .toggle-track { position: relative; width: 35px; height: 20px; background: #ccc; border-radius: 15px; transition: background 0.3s ease; }
+	  .toggle-thumb { position: absolute; top: 0px; left: 0px; width: 19px; height: 19px; background: #3a7afe; border-radius: 50%; transition: left 0.3s ease; }
+	  .toggle-switch.active .toggle-thumb { left: 15px; }
+	  .toggle-switch.active .toggle-track { background: #a3c1ff; }
+	  .input-wrapper { width: calc(100%); /* ✅ 左右各留 1rem */ margin: 0 auto; /* ✅ 水平置中 */ position: relative; }
+	  .input-wrapper input[type="number"] { width: 100%; padding: 1rem; /* ✅ 左右內距：右側留空給幣別提示 */ font-size: 20px; text-align: left; border: 1px solid #ddd; color:#222; border-radius: 8px; box-sizing: border-box; }
+	  .currency-label { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #888; pointer-events: none; }
+	  .keypad { display: flex; width:100%; flex-direction: column; gap: 5px; margin-top: 15px; }
+	  .key-row { display: flex; gap: 8px; }
+	  .key-row button { flex: 1; padding: 14px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; } /* 數字鍵：淺灰色 */
+	  .key-row button.num { background: #e0e0e0; color: #222; } 
+	  .key-row button.num:hover { background: #bdbdbd; color: #fff; } /* 運算符號：深灰色 */
+	  .key-row button.op { background: #8f8f8f; color: #fff; }
+	  .key-row button.op:hover { background: #333; } /* C：紅色 */ 
+	  .key-row button.clear { background: #e74460; color: #fff; } 
+	  .key-row button.clear:hover { background: #b71c1c; } /* ⌫：橘色 */
+	  .key-row button.delete { background: #ffb40b; color: #fff; }
+	  .key-row button.delete:hover { background: #e65100; } 
+	  .input-wrapper input[type="text"], 
+	  .input-wrapper input[type="number"] { width: 100%; padding: 1.2rem; font-size: 22px; text-align: left; /* 或 left，看你要的對齊方式 */ border: 1px solid #ddd; border-radius: 8px; color: #222; box-sizing: border-box; }
+  </style>
 </head>
 <body>
 
@@ -938,6 +1018,7 @@ function backToMain() {
 
 </body>
 </html>
+
 
 
 

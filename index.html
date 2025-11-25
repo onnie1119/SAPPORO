@@ -1393,66 +1393,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	
 <script>
+let currentRate = 0;
+let isJPYtoTWD = true; // true: 日圓→台幣；false: 台幣→日圓
+
 const inputField = document.getElementById("input-amount");
 const outputField = document.getElementById("output-amount");
-const toggle = document.getElementById("exchangeToggle"); // 台幣 ↔ 日幣切換
+const toggleSwitch = document.getElementById("currencyToggle");
+const toggleLabel = document.getElementById("toggle-label");
+const inputLabel = document.getElementById("input-label");
+const outputLabel = document.getElementById("output-label");
 
-let currentRate = 0; // 即時匯率（日幣 → 台幣）
-
-// ⭐ 取得最新匯率（免費 API）
-async function fetchRate() {
+// 取得最新匯率
+async function getExchangeRate() {
   try {
     const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
     const data = await res.json();
     currentRate = data.rates.TWD;
-    updateExchange();
   } catch (e) {
-    console.error("匯率抓取失敗", e);
+    console.error("❌ 匯率抓取失敗", e);
   }
 }
 
-// ⭐ 更新匯率結果
-function updateExchange() {
-  const val = Number(inputField.value);
-  if (!val) {
-    outputField.innerText = "";
+// 幣別切換
+function swapCurrencies() {
+  isJPYtoTWD = !isJPYtoTWD;
+  toggleSwitch.classList.toggle("active", !isJPYtoTWD);
+
+  if (isJPYtoTWD) {
+    toggleLabel.textContent = "JPY";
+    inputLabel.textContent = "｜   日圓";
+    outputLabel.textContent = "｜   台幣";
+  } else {
+    toggleLabel.textContent = "TWD";
+    inputLabel.textContent = "｜   台幣";
+    outputLabel.textContent = "｜   日圓";
+  }
+
+  updateConversion();
+}
+
+// 即時計算
+function updateConversion() {
+  const val = parseFloat(inputField.value);
+  if (isNaN(val)) {
+    outputField.value = "";
     return;
   }
 
-  if (toggle.checked) {
-    // 台幣 → 日幣
-    outputField.innerText = Math.floor(val / currentRate);
+  if (isJPYtoTWD) {
+    outputField.value = (val * currentRate).toFixed(2);
   } else {
-    // 日幣 → 台幣
-    outputField.innerText = Math.floor(val * currentRate);
+    outputField.value = (val / currentRate).toFixed(2);
   }
 }
 
-// ⭐ 數字鍵盤操作
+// 數字鍵盤功能
 document.querySelectorAll(".key").forEach(key => {
   key.addEventListener("click", () => {
-    let value = key.innerText;
-
-    if (value === "C") {
+    const val = key.textContent;
+    if (val === "C") {
       inputField.value = "";
-      outputField.innerText = "";
-    } 
-    else if (value === "←") {
+      outputField.value = "";
+    } else if (val === "←") {
       inputField.value = inputField.value.slice(0, -1);
-      updateExchange();
-    } 
-    else {
-      inputField.value += value;
-      updateExchange();
+    } else {
+      inputField.value += val;
     }
+    updateConversion();
   });
 });
 
-// ⭐ 開關切換時重新計算
-toggle.addEventListener("change", updateExchange);
+// 輸入即時計算
+inputField.addEventListener("input", updateConversion);
 
-// ⭐ 一進到匯率頁就抓最新匯率
-fetchRate();
+// 初始執行
+document.addEventListener("DOMContentLoaded", getExchangeRate);
+
+
 
 
 // 顯示換算頁
@@ -1487,6 +1504,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

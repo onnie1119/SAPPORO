@@ -93,6 +93,11 @@
 	  .key-row button.delete:hover { background: #e65100; } 
 	  .input-wrapper input[type="text"], 
 	  .input-wrapper input[type="number"] { width: 100%; padding: 1.2rem; font-size: 22px; text-align: left; /* 或 left，看你要的對齊方式 */ border: 1px solid #ddd; border-radius: 8px; color: #222; box-sizing: border-box; }
+	  .scroll-top-button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
   </style>
 </head>
 <body>
@@ -901,17 +906,11 @@ document.addEventListener("DOMContentLoaded", () => {
 // -------------------- Scroll To Top --------------------
 const scrollBtn = document.getElementById("scrollToTop");
 
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) {
-    scrollBtn.classList.add("show");
-  } else {
-    scrollBtn.classList.remove("show");
-  }
-});
+
 
 scrollBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
-});
+});//
 </script>
 
 <script>
@@ -1023,6 +1022,7 @@ function backToMain() {
 
 </body>
 </html>
+
 
 
 

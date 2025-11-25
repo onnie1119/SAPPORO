@@ -1460,10 +1460,10 @@ function updateConversion() {
 
   if (isJPYtoTWD) {
     // ⭐ 日幣 → 台幣：乘以匯率
-    outputField.value = (val * currentRate).toFixed(1);
+    outputField.value = (val * currentRate).toFixed(0);
   } else {
     // ⭐ 台幣 → 日幣：除以匯率
-    outputField.value = (val / currentRate).toFixed(1);
+    outputField.value = (val / currentRate).toFixed(0);
   }
 }
 
@@ -1558,6 +1558,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

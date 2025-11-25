@@ -1275,6 +1275,7 @@ select {
 		    </div>
 		  </div>
 		</div>
+		<div id="rate-update-time" style="font-size: 12px;color: #666;margin-top: 6px;text-align: left;padding-left: 4px;">取得匯率中…</div>
 	</div>
 	<!-- 數字鍵盤 -->
 	<div class="num-pad">
@@ -1410,12 +1411,36 @@ async function getExchangeRate() {
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
-    jpyRate = data.rates.TWD;
-    document.getElementById("rate-info").textContent = `1 日圓 = ${jpyRate.toFixed(4)} 台幣`;
-  } catch {
-    
+
+    currentRate = data.rates.TWD;
+
+    // 顯示最後更新時間
+    if (data.time_last_update_utc) {
+      updateRateTime(data.time_last_update_utc);
+    }
+
+    updateConversion();
+  } catch (e) {
+    console.error("匯率抓取失敗", e);
+    document.getElementById("rate-update-time").textContent = "匯率更新失敗";
   }
 }
+	function updateRateTime(utcString) {
+  const utcDate = new Date(utcString);
+  
+  // 轉為台灣時區
+  const taiwanDate = new Date(utcDate.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+
+  const y = taiwanDate.getFullYear();
+  const m = String(taiwanDate.getMonth() + 1).padStart(2, "0");
+  const d = String(taiwanDate.getDate()).padStart(2, "0");
+  const hh = String(taiwanDate.getHours()).padStart(2, "0");
+  const mm = String(taiwanDate.getMinutes()).padStart(2, "0");
+
+  document.getElementById("rate-update-time").textContent =
+    `最後更新：${y}/${m}/${d} ${hh}:${mm}（台灣時間）`;
+}
+
 
 // 更新轉換結果（依照 toggle 狀態）
 function updateConversion(source) {
@@ -1512,4 +1537,5 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 

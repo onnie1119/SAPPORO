@@ -531,6 +531,7 @@ select {
 }
 .keypad {
   display: flex;
+	width:100%;
   flex-direction: column;
   gap: 8px;
   margin-top: 15px;
@@ -563,7 +564,7 @@ select {
 
 /* 運算符號：深灰色 */
 .key-row button.op {
-  background: #555;
+  background: #8f8f8f;
   color: #fff;
 }
 .key-row button.op:hover {
@@ -572,7 +573,7 @@ select {
 
 /* C：紅色 */
 .key-row button.clear {
-  background: #d32f2f;
+  background: #e74460;
   color: #fff;
 }
 .key-row button.clear:hover {
@@ -581,7 +582,7 @@ select {
 
 /* ⌫：橘色 */
 .key-row button.delete {
-  background: #f57c00;
+  background: #ffb40b;
   color: #fff;
 }
 .key-row button.delete:hover {
@@ -593,7 +594,7 @@ select {
   width: 100%;
   padding: 1.2rem;
   font-size: 22px;
-  text-align: right;   /* 或 left，看你要的對齊方式 */
+  text-align: left;   /* 或 left，看你要的對齊方式 */
   border: 1px solid #ddd;
   border-radius: 8px;
   color: #222;
@@ -1323,25 +1324,25 @@ select {
     <button class="num" onclick="pressKey('7')">7</button>
     <button class="num" onclick="pressKey('8')">8</button>
     <button class="num" onclick="pressKey('9')">9</button>
-    <button class="op" onclick="pressKey('+')">+</button>
+    <button class="op" onclick="pressKey('+')" style="font-family:math;">+</button>
   </div>
   <div class="key-row">
     <button class="num" onclick="pressKey('4')">4</button>
     <button class="num" onclick="pressKey('5')">5</button>
     <button class="num" onclick="pressKey('6')">6</button>
-    <button class="op" onclick="pressKey('-')">-</button>
+    <button class="op" onclick="pressKey('-')" style="font-family:math;">-</button>
   </div>
   <div class="key-row">
     <button class="num" onclick="pressKey('1')">1</button>
     <button class="num" onclick="pressKey('2')">2</button>
     <button class="num" onclick="pressKey('3')">3</button>
-    <button class="op" onclick="pressKey('*')">×</button>
+    <button class="op" onclick="pressKey('*')" style="font-family:math;">×</button>
   </div>
   <div class="key-row">
     <button class="num" onclick="pressKey('0')">0</button>
-    <button class="clear" onclick="clearAll()">C</button>
-    <button class="delete" onclick="deleteKey()">⌫</button>
-    <button class="op" onclick="pressKey('/')">÷</button>
+    <button class="clear" onclick="clearAll()" style="font-family:math;">C</button>
+    <button class="delete" onclick="deleteKey()" style="font-family:math;">⌫</button>
+    <button class="op" onclick="pressKey('/')" style="font-family:math;">÷</button>
   </div>
 </div>
 
@@ -1574,6 +1575,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

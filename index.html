@@ -631,6 +631,11 @@ input[type="text"]::-webkit-outer-spin-button {
   max-width: 500px;
   margin: 0 auto;
 }
+#exchange-page {
+  height: auto;
+  overflow: hidden;   /* ⭐ 不讓匯率頁滾動 */
+  padding-bottom: 0 !important;  /* ⭐ 確保底部沒有空白 */
+}
 </style>
 </head>
 <body>
@@ -1647,6 +1652,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

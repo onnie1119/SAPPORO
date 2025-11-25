@@ -1394,7 +1394,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	
 <script>
 let currentRate = 0;
-let isJPYtoTWD = true; // true: 日圓→台幣；false: 台幣→日圓
+let isJPYtoTWD = true;
 
 const inputField = document.getElementById("input-amount");
 const outputField = document.getElementById("output-amount");
@@ -1403,20 +1403,23 @@ const toggleLabel = document.getElementById("toggle-label");
 const inputLabel = document.getElementById("input-label");
 const outputLabel = document.getElementById("output-label");
 
-// 取得最新匯率
+// ⭐ 正確的匯率函式
 async function getExchangeRate() {
   try {
     const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
     const data = await res.json();
-    currentRate = data.rates.TWD;
+
+    currentRate = data.rates.TWD; // ← 正確寫到 currentRate
+    updateConversion();           // ← 一載入匯率就重算
   } catch (e) {
-    console.error("❌ 匯率抓取失敗", e);
+    console.error("匯率抓取失敗", e);
   }
 }
 
-// 幣別切換
+// ⭐ 幣別切換
 function swapCurrencies() {
   isJPYtoTWD = !isJPYtoTWD;
+
   toggleSwitch.classList.toggle("active", !isJPYtoTWD);
 
   if (isJPYtoTWD) {
@@ -1432,13 +1435,16 @@ function swapCurrencies() {
   updateConversion();
 }
 
-// 即時計算
+// ⭐ 即時計算
 function updateConversion() {
   const val = parseFloat(inputField.value);
+
   if (isNaN(val)) {
     outputField.value = "";
     return;
   }
+
+  if (currentRate === 0) return; // ← 匯率尚未抓到先不算
 
   if (isJPYtoTWD) {
     outputField.value = (val * currentRate).toFixed(2);
@@ -1447,27 +1453,30 @@ function updateConversion() {
   }
 }
 
-// 數字鍵盤功能
-document.querySelectorAll(".key").forEach(key => {
-  key.addEventListener("click", () => {
-    const val = key.textContent;
-    if (val === "C") {
+// ⭐ 數字鍵盤
+document.querySelectorAll(".key").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const v = btn.textContent;
+
+    if (v === "C") {
       inputField.value = "";
       outputField.value = "";
-    } else if (val === "←") {
+    } else if (v === "←") {
       inputField.value = inputField.value.slice(0, -1);
     } else {
-      inputField.value += val;
+      inputField.value += v;
     }
     updateConversion();
   });
 });
 
-// 輸入即時計算
+// ⭐ 輸入時即時換算
 inputField.addEventListener("input", updateConversion);
 
-// 初始執行
+// ⭐ 進入匯率頁面自動抓匯率
 document.addEventListener("DOMContentLoaded", getExchangeRate);
+
+
 
 
 
@@ -1504,6 +1513,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

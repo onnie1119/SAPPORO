@@ -1290,89 +1290,22 @@ select {
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>
-  <script>
-	  document.addEventListener("DOMContentLoaded", () => {
-  getExchangeRate();
-});
-
-    function showDay(day) {
-      document.querySelectorAll('.day-section').forEach(section => {
-        section.style.display = 'none';
-      });
-      document.getElementById('day-' + day).style.display = 'block';
-
-      document.querySelectorAll('.day-tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelectorAll('.day-tab')[day - 1].classList.add('active');
-    }
-  </script>
-  <script>
-	  const scrollEl = document.getElementById('dayTabsScroll');
-	  const arrowLeft = document.getElementById('arrowLeft');
-	  const arrowRight = document.getElementById('arrowRight');
-	
-	 function updateArrows() {
-	  const scrollEl = document.getElementById("dayTabsScroll");
-	  const arrowLeft = document.getElementById("arrowLeft");
-	  const arrowRight = document.getElementById("arrowRight");
-	
-	  if (!scrollEl || !arrowLeft || !arrowRight) return; // 防止錯誤
-	
-	  const scrollLeft = scrollEl.scrollLeft;
-	  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
-	
-	  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
-	  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
-	}
-	
-	
-	  scrollEl.addEventListener('scroll', updateArrows);
-	  window.addEventListener('resize', updateArrows);
-	  document.addEventListener('DOMContentLoaded', updateArrows);
-</script>
-<script>
-  document.getElementById('scrollToTop').addEventListener('click', function () {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  window.addEventListener('scroll', function () {
-  const btn = document.getElementById('scrollToTop');
-  btn.style.display = window.scrollY > 300 ? 'block' : 'none';
-});
-
-</script>
-<script>
-  const scrollBtn = document.getElementById('scrollToTop');
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-      scrollBtn.classList.add('show');
-    } else {
-      scrollBtn.classList.remove('show');
-    }
-  });
-
-  scrollBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-</script>
 
 <script>
-	
+// =========================
+//        1.  DAY 切換
+// =========================
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
   const tabs = document.querySelectorAll(".day-tab");
 
   sections.forEach((section, index) => {
-    if (index === dayNumber - 1) {
-      section.style.display = "block";
+    const isCurrent = index === dayNumber - 1;
+    section.style.display = isCurrent ? "block" : "none";
 
-      // 先確保 class 狀態正確
-      requestAnimationFrame(() => {
-        section.classList.add("fade-in");
-      });
+    if (isCurrent) {
+      requestAnimationFrame(() => section.classList.add("fade-in"));
     } else {
-      section.style.display = "none";
       section.classList.remove("fade-in");
     }
   });
@@ -1381,76 +1314,85 @@ function showDay(dayNumber) {
     tab.classList.toggle("active", index === dayNumber - 1);
   });
 
-  // 可選：切換時自動滾回最上方（避開固定 topbar）
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// 頁面載入時自動顯示第一天
 document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
+  updateArrows();
 });
-</script>
 
-	
-<script>
+// =========================
+//     2. DayTabs 滑動箭頭
+// =========================
+function updateArrows() {
+  const scrollEl = document.getElementById("dayTabsScroll");
+  const arrowLeft = document.getElementById("arrowLeft");
+  const arrowRight = document.getElementById("arrowRight");
 
+  if (!scrollEl) return;
 
+  const scrollLeft = scrollEl.scrollLeft;
+  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
 
+  arrowLeft.style.opacity = scrollLeft > 10 ? "1" : "0";
+  arrowRight.style.opacity = scrollLeft < maxScroll - 10 ? "1" : "0";
+}
 
+document.getElementById("dayTabsScroll").addEventListener("scroll", updateArrows);
+window.addEventListener("resize", updateArrows);
 
+// =========================
+//     3. TOP 回頂部按鈕
+// =========================
+const scrollBtn = document.getElementById('scrollToTop');
 
+window.addEventListener('scroll', () => {
+  scrollBtn.classList.toggle('show', window.scrollY > 300);
+});
 
-// 顯示換算頁
-function showExchange() {
+scrollBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// =========================
+//     4. 匯率換算頁切換
+// =========================
+window.showExchange = function () {
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
+  document.getElementById("backBtn").classList.add("show");
   getExchangeRate();
-}
+};
 
-// 返回首頁
-function backToMain() {
+window.backToMain = function () {
   document.getElementById("exchange-page").style.display = "none";
   document.querySelector(".container").style.display = "block";
-}
+  document.getElementById("backBtn").classList.remove("show");
+};
 
-</script>
-<script>
-	document.addEventListener("DOMContentLoaded", () => {
-  window.showExchange = function () {
-    document.querySelector(".container").style.display = "none";
-    document.getElementById("exchange-page").style.display = "block";
-    document.getElementById("backBtn").classList.add("show");
-   
-  };
-
-  window.backToMain = function () {
-    document.getElementById("backBtn").classList.remove("show");
-    document.getElementById("exchange-page").style.display = "none";
-    document.querySelector(".container").style.display = "block";
-  };
-});
-</script>
-<script>
+// =========================
+//     5. 匯率換算系統
+// =========================
 let currentRate = 0;
 let isJPYtoTWD = true;
 
-// 取得欄位
 const inputField = document.getElementById("input-amount");
 const outputField = document.getElementById("output-amount");
 
 const toggleSwitch = document.getElementById("currencyToggle");
-const toggleLabel = document.getElementById("toggle-label");
-const inputLabel = document.getElementById("input-label");
-const outputLabel = document.getElementById("output-label");
+const toggleLabel  = document.getElementById("toggle-label");
+const inputLabel   = document.getElementById("input-label");
+const outputLabel  = document.getElementById("output-label");
 
-// ⭐ 正確取得匯率
+// ⭐ 取得最新匯率
 async function getExchangeRate() {
   try {
     const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
     const data = await res.json();
-    currentRate = data.rates.TWD;
 
-    updateConversion(); // 匯率抓到後立刻計算
+    currentRate = data.rates.TWD;
+    updateConversion();
   } catch (e) {
     console.error("匯率抓取失敗", e);
   }
@@ -1459,39 +1401,35 @@ async function getExchangeRate() {
 // ⭐ 幣別切換
 function swapCurrencies() {
   isJPYtoTWD = !isJPYtoTWD;
-
   toggleSwitch.classList.toggle("active", !isJPYtoTWD);
 
   if (isJPYtoTWD) {
     toggleLabel.textContent = "JPY";
-    inputLabel.textContent = "｜   日圓";
+    inputLabel.textContent  = "｜   日圓";
     outputLabel.textContent = "｜   台幣";
   } else {
     toggleLabel.textContent = "TWD";
-    inputLabel.textContent = "｜   台幣";
+    inputLabel.textContent  = "｜   台幣";
     outputLabel.textContent = "｜   日圓";
   }
-
   updateConversion();
 }
 
 // ⭐ 即時計算
 function updateConversion() {
-  const val = parseFloat(inputField.value);
+  const v = parseFloat(inputField.value);
 
-  if (isNaN(val) || !currentRate) {
+  if (isNaN(v) || !currentRate) {
     outputField.value = "";
     return;
   }
 
-  if (isJPYtoTWD) {
-    outputField.value = (val * currentRate).toFixed(2);
-  } else {
-    outputField.value = (val / currentRate).toFixed(2);
-  }
+  outputField.value = isJPYtoTWD ?
+    (v * currentRate).toFixed(2) :
+    (v / currentRate).toFixed(2);
 }
 
-// ⭐ 數字鍵盤
+// ⭐ 數字鍵盤功能
 document.querySelectorAll(".key").forEach(btn => {
   btn.addEventListener("click", () => {
     const v = btn.textContent;
@@ -1504,25 +1442,22 @@ document.querySelectorAll(".key").forEach(btn => {
     } else {
       inputField.value += v;
     }
-
     updateConversion();
   });
 });
 
-// ⭐ input 打字即時計算
+// ⭐ 直接輸入也要即時計算
 inputField.addEventListener("input", updateConversion);
 
-// ⭐ 進入匯率頁時抓匯率
-document.addEventListener("DOMContentLoaded", () => {
-  getExchangeRate();
-});
-
-// ⭐ 綁定切換事件（你的 HTML 已經有 onclick 了，但補一次保險）
-toggleSwitch.addEventListener("click", swapCurrencies);
+// =========================
+//         END
+// =========================
 </script>
+
 
 </body>
 </html>
+
 
 
 

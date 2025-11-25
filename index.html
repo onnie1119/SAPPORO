@@ -1393,88 +1393,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	
 <script>
-let currentRate = 0;
-let isJPYtoTWD = true;
 
-const inputField = document.getElementById("input-amount");
-const outputField = document.getElementById("output-amount");
-const toggleSwitch = document.getElementById("currencyToggle");
-const toggleLabel = document.getElementById("toggle-label");
-const inputLabel = document.getElementById("input-label");
-const outputLabel = document.getElementById("output-label");
-
-// ⭐ 正確的匯率函式
-async function getExchangeRate() {
-  try {
-    const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
-    const data = await res.json();
-
-    currentRate = data.rates.TWD; // ← 正確寫到 currentRate
-    updateConversion();           // ← 一載入匯率就重算
-  } catch (e) {
-    console.error("匯率抓取失敗", e);
-  }
-}
-
-// ⭐ 幣別切換
-function swapCurrencies() {
-  isJPYtoTWD = !isJPYtoTWD;
-
-  toggleSwitch.classList.toggle("active", !isJPYtoTWD);
-
-  if (isJPYtoTWD) {
-    toggleLabel.textContent = "JPY";
-    inputLabel.textContent = "｜   日圓";
-    outputLabel.textContent = "｜   台幣";
-  } else {
-    toggleLabel.textContent = "TWD";
-    inputLabel.textContent = "｜   台幣";
-    outputLabel.textContent = "｜   日圓";
-  }
-
-  updateConversion();
-}
-
-// ⭐ 即時計算
-function updateConversion() {
-  const val = parseFloat(inputField.value);
-
-  if (isNaN(val)) {
-    outputField.value = "";
-    return;
-  }
-
-  if (currentRate === 0) return; // ← 匯率尚未抓到先不算
-
-  if (isJPYtoTWD) {
-    outputField.value = (val * currentRate).toFixed(2);
-  } else {
-    outputField.value = (val / currentRate).toFixed(2);
-  }
-}
-
-// ⭐ 數字鍵盤
-document.querySelectorAll(".key").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const v = btn.textContent;
-
-    if (v === "C") {
-      inputField.value = "";
-      outputField.value = "";
-    } else if (v === "←") {
-      inputField.value = inputField.value.slice(0, -1);
-    } else {
-      inputField.value += v;
-    }
-    updateConversion();
-  });
-});
-
-// ⭐ 輸入時即時換算
-inputField.addEventListener("input", updateConversion);
-
-// ⭐ 進入匯率頁面自動抓匯率
-document.addEventListener("DOMContentLoaded", getExchangeRate);
 
 
 
@@ -1511,8 +1430,100 @@ function backToMain() {
   };
 });
 </script>
+<script>
+let currentRate = 0;
+let isJPYtoTWD = true;
+
+// 取得欄位
+const inputField = document.getElementById("input-amount");
+const outputField = document.getElementById("output-amount");
+
+const toggleSwitch = document.getElementById("currencyToggle");
+const toggleLabel = document.getElementById("toggle-label");
+const inputLabel = document.getElementById("input-label");
+const outputLabel = document.getElementById("output-label");
+
+// ⭐ 正確取得匯率
+async function getExchangeRate() {
+  try {
+    const res = await fetch("https://api.exchangerate.host/latest?base=JPY&symbols=TWD");
+    const data = await res.json();
+    currentRate = data.rates.TWD;
+
+    updateConversion(); // 匯率抓到後立刻計算
+  } catch (e) {
+    console.error("匯率抓取失敗", e);
+  }
+}
+
+// ⭐ 幣別切換
+function swapCurrencies() {
+  isJPYtoTWD = !isJPYtoTWD;
+
+  toggleSwitch.classList.toggle("active", !isJPYtoTWD);
+
+  if (isJPYtoTWD) {
+    toggleLabel.textContent = "JPY";
+    inputLabel.textContent = "｜   日圓";
+    outputLabel.textContent = "｜   台幣";
+  } else {
+    toggleLabel.textContent = "TWD";
+    inputLabel.textContent = "｜   台幣";
+    outputLabel.textContent = "｜   日圓";
+  }
+
+  updateConversion();
+}
+
+// ⭐ 即時計算
+function updateConversion() {
+  const val = parseFloat(inputField.value);
+
+  if (isNaN(val) || !currentRate) {
+    outputField.value = "";
+    return;
+  }
+
+  if (isJPYtoTWD) {
+    outputField.value = (val * currentRate).toFixed(2);
+  } else {
+    outputField.value = (val / currentRate).toFixed(2);
+  }
+}
+
+// ⭐ 數字鍵盤
+document.querySelectorAll(".key").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const v = btn.textContent;
+
+    if (v === "C") {
+      inputField.value = "";
+      outputField.value = "";
+    } else if (v === "←") {
+      inputField.value = inputField.value.slice(0, -1);
+    } else {
+      inputField.value += v;
+    }
+
+    updateConversion();
+  });
+});
+
+// ⭐ input 打字即時計算
+inputField.addEventListener("input", updateConversion);
+
+// ⭐ 進入匯率頁時抓匯率
+document.addEventListener("DOMContentLoaded", () => {
+  getExchangeRate();
+});
+
+// ⭐ 綁定切換事件（你的 HTML 已經有 onclick 了，但補一次保險）
+toggleSwitch.addEventListener("click", swapCurrencies);
+</script>
+
 </body>
 </html>
+
 
 
 

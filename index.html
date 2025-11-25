@@ -529,6 +529,38 @@ select {
   color: #888;
   pointer-events: none;
 }
+.num-pad {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.num-pad .key {
+  padding: 14px 0;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  background: #e6e6e6;
+  color: #333;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.num-pad .key.gray {
+  background: #d0d0d0;
+}
+
+.num-pad .key.orange {
+  background: #ff9f47;
+  color: white;
+  font-weight: bold;
+}
+
+.num-pad .key:active {
+  transform: scale(0.95);
+}
 
 </style>
 </head>
@@ -1244,6 +1276,25 @@ select {
 		  </div>
 		</div>
 	</div>
+	<!-- 數字鍵盤 -->
+	<div class="num-pad">
+		  <button class="key">1</button>
+		  <button class="key">2</button>
+		  <button class="key">3</button>
+		
+		  <button class="key">4</button>
+		  <button class="key">5</button>
+		  <button class="key">6</button>
+		
+		  <button class="key">7</button>
+		  <button class="key">8</button>
+		  <button class="key">9</button>
+		
+		  <button class="key gray">0</button>
+		  <button class="key orange">C</button>
+		  <button class="key orange">←</button>
+	</div>
+
 </div>
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
@@ -1407,6 +1458,27 @@ function swapCurrencies() {
   // 重新計算一次（避免切換時顯示錯誤）
   updateConversion("input");
 }
+	
+// 數字鍵盤功能
+document.querySelectorAll(".num-pad .key").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const v = btn.textContent;
+    const input = document.getElementById("input-amount");
+
+    if (v === "C") {
+      input.value = "";
+      document.getElementById("output-amount").value = "";
+    } 
+    else if (v === "←") {
+      input.value = input.value.slice(0, -1);
+    } 
+    else {
+      input.value += v;
+    }
+
+    updateConversion("input");
+  });
+});
 
 // 顯示換算頁
 function showExchange() {
@@ -1440,3 +1512,4 @@ function backToMain() {
 </script>
 </body>
 </html>
+

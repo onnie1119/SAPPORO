@@ -21,9 +21,11 @@
       padding-bottom: 120px;
     }
 body.exchange-mode {
-   height: 20vh;          /* ⭐ 你可以改高度 */
-  overflow-y: auto;         /* ⭐ 防止卡住 */
-  padding-bottom: 0px;     /* ⭐ 可以不同背景 */
+	margin: 0;
+  background-color: #FAFAF7;    /* 你要改什麼都可以 */
+  font-family: 'Noto Sans TC', sans-serif; 
+	color: #444;/* 或是 100vh、120vh 都能用 */
+  padding-bottom: 0px;      /* 你可以調整 */
 }
     .topbar {
       background: #3A7AFE;
@@ -1599,7 +1601,7 @@ document.addEventListener("DOMContentLoaded", getExchangeRate);
 
 // 顯示換算頁
 function showExchange() {
-	document.body.classList.add("exchange-mode");  // ⭐ 套用專用 body 樣式
+  document.body.classList.add("exchange-mode");  // ⭐ 套用新的 body 樣式
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
   getExchangeRate();
@@ -1607,7 +1609,7 @@ function showExchange() {
 
 // 返回首頁
 function backToMain() {
-document.body.classList.remove("exchange-mode"); // ⭐ 回到原本 body
+  document.body.classList.remove("exchange-mode"); // ⭐ 回到原本 body 樣式
   document.getElementById("exchange-page").style.display = "none";
   document.querySelector(".container").style.display = "block";
 }
@@ -1634,6 +1636,7 @@ document.body.classList.remove("exchange-mode"); // ⭐ 回到原本 body
 </script>
 </body>
 </html>
+
 
 
 

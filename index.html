@@ -529,6 +529,31 @@ select {
   color: #888;
   pointer-events: none;
 }
+.keypad {
+  display: grid;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.key-row {
+  display: flex;
+  gap: 8px;
+}
+
+.key-row button {
+  flex: 1;
+  padding: 12px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.key-row button:hover {
+  background: #d0e0ff;
+}
 
 </style>
 </head>
@@ -1244,6 +1269,28 @@ select {
 		  </div>
 		</div>
 	</div>
+	<div class="keypad">
+		  <div class="key-row">
+		    <button onclick="pressKey('1')">1</button>
+		    <button onclick="pressKey('2')">2</button>
+		    <button onclick="pressKey('3')">3</button>
+		  </div>
+		  <div class="key-row">
+		    <button onclick="pressKey('4')">4</button>
+		    <button onclick="pressKey('5')">5</button>
+		    <button onclick="pressKey('6')">6</button>
+		  </div>
+		  <div class="key-row">
+		    <button onclick="pressKey('7')">7</button>
+		    <button onclick="pressKey('8')">8</button>
+		    <button onclick="pressKey('9')">9</button>
+		  </div>
+		  <div class="key-row">
+		    <button onclick="pressKey('0')">0</button>
+		    <button onclick="pressKey('.')">.</button>
+		    <button onclick="deleteKey()">⌫</button>
+		  </div>
+</div>
 </div>
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
@@ -1407,6 +1454,18 @@ function swapCurrencies() {
   // 重新計算一次（避免切換時顯示錯誤）
   updateConversion("input");
 }
+	
+function pressKey(val) {
+  const input = document.getElementById("input-amount");
+  input.value += val;
+  updateConversion("input"); // 即時更新換算
+}
+
+function deleteKey() {
+  const input = document.getElementById("input-amount");
+  input.value = input.value.slice(0, -1);
+  updateConversion("input");
+}
 
 // 顯示換算頁
 function showExchange() {
@@ -1440,6 +1499,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1403,113 +1403,121 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	
 <script>
-let jpyRate = null;
-let isJPYtoTWD = true; // true = JPY → TWD, false = TWD → JPY
+/* ================================
+      匯率換算 — 完整新版 Script
+================================ */
 
-// 抓匯率
+let currentRate = 0;          // 即時匯率
+let isJPYtoTWD = true;        // true = 日圓換台幣, false = 台幣換日圓
+
+const inputField  = document.getElementById("input-amount");
+const outputField = document.getElementById("output-amount");
+
+const toggleSwitch = document.getElementById("currencyToggle");
+const toggleLabel  = document.getElementById("toggle-label");
+const inputLabel   = document.getElementById("input-label");
+const outputLabel  = document.getElementById("output-label");
+
+/* --------------------------
+    取得最新即時匯率
+--------------------------- */
 async function getExchangeRate() {
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/JPY");
     const data = await res.json();
 
-    // ⭐ 這行很關鍵，你原本沒有寫
-    jpyRate = data.rates.TWD;
+    currentRate = data.rates.TWD;   // ⭐只有這個才是正確的匯率來源
 
-    // 顯示時間
+    // 更新換算
+    updateConversion();
+
+    // 顯示最後更新時間（如果你有用）
     if (data.time_last_update_utc) {
       updateRateTime(data.time_last_update_utc);
     }
 
-    updateConversion("input");
-
-  } catch (e) {
-    console.error("匯率抓取失敗", e);
-    document.getElementById("rate-update-time").textContent = "匯率更新失敗";
+  } catch (err) {
+    console.error("匯率抓取失敗", err);
   }
 }
 
-	function updateRateTime(utcString) {
-  const utcDate = new Date(utcString);
-  
-  // 轉為台灣時區
-  const taiwanDate = new Date(utcDate.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+/* --------------------------
+      即時換算邏輯（核心）
+--------------------------- */
+function updateConversion() {
+  if (!currentRate) return;
 
-  const y = taiwanDate.getFullYear();
-  const m = String(taiwanDate.getMonth() + 1).padStart(2, "0");
-  const d = String(taiwanDate.getDate()).padStart(2, "0");
-  const hh = String(taiwanDate.getHours()).padStart(2, "0");
-  const mm = String(taiwanDate.getMinutes()).padStart(2, "0");
+  const val = parseFloat(inputField.value);
 
-  document.getElementById("rate-update-time").textContent =
-    `最後更新：${y}/${m}/${d} ${hh}:${mm}（台灣時間）`;
-}
-
-
-// 更新轉換結果（依照 toggle 狀態）
-function updateConversion(source) {
-  if (!jpyRate) return;
-
-  const inputVal = parseFloat(document.getElementById("input-amount").value);
-  const outputVal = parseFloat(document.getElementById("output-amount").value);
-
-  if (source === "input" && !isNaN(inputVal)) {
-    document.getElementById("output-amount").value = isJPYtoTWD
-      ? (inputVal * jpyRate).toFixed(1)
-      : (inputVal / jpyRate).toFixed(1);
+  if (isNaN(val)) {
+    outputField.value = "";
+    return;
   }
-
-  if (source === "output" && !isNaN(outputVal)) {
-    document.getElementById("input-amount").value = isJPYtoTWD
-      ? (outputVal / jpyRate).toFixed(1)
-      : (outputVal * jpyRate).toFixed(1);
-  }
-}
-
-
-// 開關切換幣別
-function swapCurrencies() {
-  const toggle = document.getElementById("currencyToggle");
-  const label = document.getElementById("toggle-label");
-  const inputLabel = document.getElementById("input-label");
-  const outputLabel = document.getElementById("output-label");
-
-  isJPYtoTWD = !isJPYtoTWD;
-  toggle.classList.toggle("active");
 
   if (isJPYtoTWD) {
-    label.textContent = "JPY";
-    inputLabel.textContent = "｜  日圓";
-    outputLabel.textContent = "｜  台幣";
+    // ⭐ 日幣 → 台幣：乘以匯率
+    outputField.value = (val * currentRate).toFixed(2);
   } else {
-    label.textContent = "TWD";
-    inputLabel.textContent = "｜  台幣";
-    outputLabel.textContent = "｜  日圓";
+    // ⭐ 台幣 → 日幣：除以匯率
+    outputField.value = (val / currentRate).toFixed(2);
+  }
+}
+
+/* --------------------------
+      幣別切換
+--------------------------- */
+toggleSwitch.addEventListener("click", () => {
+  isJPYtoTWD = !isJPYtoTWD;
+
+  toggleSwitch.classList.toggle("active", !isJPYtoTWD);
+
+  if (isJPYtoTWD) {
+    toggleLabel.textContent = "JPY";
+    inputLabel.textContent  = "｜ 日圓";
+    outputLabel.textContent = "｜ 台幣";
+  } else {
+    toggleLabel.textContent = "TWD";
+    inputLabel.textContent  = "｜ 台幣";
+    outputLabel.textContent = "｜ 日圓";
   }
 
-  // 重新計算一次（避免切換時顯示錯誤）
-  updateConversion("input");
-}
-	
-// 數字鍵盤功能
-document.querySelectorAll(".num-pad .key").forEach(btn => {
+  updateConversion();
+});
+
+/* --------------------------
+      手動輸入
+--------------------------- */
+inputField.addEventListener("input", () => {
+  updateConversion();
+});
+
+/* --------------------------
+      數字鍵盤
+--------------------------- */
+document.querySelectorAll(".key").forEach(btn => {
   btn.addEventListener("click", () => {
     const v = btn.textContent;
-    const input = document.getElementById("input-amount");
 
     if (v === "C") {
-      input.value = "";
-      document.getElementById("output-amount").value = "";
+      inputField.value = "";
+      outputField.value = "";
     } 
     else if (v === "←") {
-      input.value = input.value.slice(0, -1);
+      inputField.value = inputField.value.slice(0, -1);
     } 
     else {
-      input.value += v;
+      inputField.value += v;
     }
 
-    updateConversion(); // ⭐不能傳參數
+    updateConversion();
   });
 });
+
+/* --------------------------
+    頁面開啟就抓匯率一次
+--------------------------- */
+document.addEventListener("DOMContentLoaded", getExchangeRate);
+
 
 
 // 顯示換算頁
@@ -1544,6 +1552,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

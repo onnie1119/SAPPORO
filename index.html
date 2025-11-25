@@ -1501,9 +1501,10 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
       input.value += v;
     }
 
-    updateConversion("input");
+    updateConversion(); // ⭐不能傳參數
   });
 });
+
 
 // 顯示換算頁
 function showExchange() {
@@ -1537,5 +1538,6 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 

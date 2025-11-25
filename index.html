@@ -1244,51 +1244,55 @@ select {
 </div>
 	
 <div id="exchange-page" class="exchange-page">
-	<div class="converter">
-		<div class="toggle-switch" onclick="swapCurrencies()" id="currencyToggle">
-		  <div class="toggle-track">
-		    <div class="toggle-thumb"></div>
-		  </div>
-		  <span class="toggle-label" id="toggle-label">JPY</span>
-		</div>
+  <div class="converter">
 
+    <!-- 幣別切換開關 -->
+    <div class="toggle-switch" id="currencyToggle">
+      <div class="toggle-track">
+        <div class="toggle-thumb"></div>
+      </div>
+      <span class="toggle-label" id="toggle-label">JPY</span>
+    </div>
 
-		
-	   <div class="input-group">
-		    <div class="input-wrapper">
-		      <input type="number" id="input-amount" placeholder="輸入金額" oninput="updateConversion('input')">
-		      <span class="currency-label" id="input-label">｜   日圓</span>
-		    </div>
-	  </div>
+    <!-- 輸入金額 -->
+    <div class="input-group">
+      <div class="input-wrapper">
+        <input type="number" id="input-amount" placeholder="輸入金額">
+        <span class="currency-label" id="input-label">｜   日圓</span>
+      </div>
+    </div>
 
-	  <div class="input-group">
-		    <div class="input-wrapper">
-		      <input type="number" id="output-amount" placeholder="換算結果" oninput="updateConversion('output')">
-		      <span class="currency-label" id="output-label">｜   台幣</span>
-		    </div>
-		  </div>
-		</div>
-	</div>
-	<div class="keypad">
-	  <button class="key gray">1</button>
-	  <button class="key gray">2</button>
-	  <button class="key gray">3</button>
-	
-	  <button class="key gray">4</button>
-	  <button class="key gray">5</button>
-	  <button class="key gray">6</button>
-	
-	  <button class="key gray">7</button>
-	  <button class="key gray">8</button>
-	  <button class="key gray">9</button>
-	
-	  <button class="key orange">C</button>
-	  <button class="key gray">0</button>
-	  <button class="key orange">←</button>
+    <!-- 換算結果 -->
+    <div class="input-group">
+      <div class="input-wrapper">
+        <input type="number" id="output-amount" placeholder="換算結果" readonly>
+        <span class="currency-label" id="output-label">｜   台幣</span>
+      </div>
+    </div>
+
+  </div>
 </div>
+
+<!-- 數字鍵盤 -->
+<div class="keypad">
+  <button class="key gray">1</button>
+  <button class="key gray">2</button>
+  <button class="key gray">3</button>
+
+  <button class="key gray">4</button>
+  <button class="key gray">5</button>
+  <button class="key gray">6</button>
+
+  <button class="key gray">7</button>
+  <button class="key gray">8</button>
+  <button class="key gray">9</button>
+
+  <button class="key orange">C</button>
+  <button class="key gray">0</button>
+  <button class="key orange">←</button>
 </div>
-	
-<button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
+
+<button class="back-btn" id="backBtn" onclick="backToMain()">HOME</button>
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>
 
 <script>
@@ -1457,6 +1461,7 @@ inputField.addEventListener("input", updateConversion);
 
 </body>
 </html>
+
 
 
 

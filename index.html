@@ -1307,39 +1307,34 @@ select {
     <div id="rate-info" style="margin-top:10px; font-size:14px; color:#666;"></div>
 
     <!-- 數字鍵盤 -->
-   <div class="keypad">
+  <div class="keypad">
   <!-- 數字區塊 -->
   <div class="key-row">
     <button class="num" onclick="pressKey('7')">7</button>
     <button class="num" onclick="pressKey('8')">8</button>
     <button class="num" onclick="pressKey('9')">9</button>
+    <button class="op" onclick="pressKey('+')">+</button>
   </div>
   <div class="key-row">
     <button class="num" onclick="pressKey('4')">4</button>
     <button class="num" onclick="pressKey('5')">5</button>
     <button class="num" onclick="pressKey('6')">6</button>
+    <button class="op" onclick="pressKey('-')">-</button>
   </div>
   <div class="key-row">
     <button class="num" onclick="pressKey('1')">1</button>
     <button class="num" onclick="pressKey('2')">2</button>
     <button class="num" onclick="pressKey('3')">3</button>
+    <button class="op" onclick="pressKey('*')">×</button>
   </div>
   <div class="key-row">
     <button class="num" onclick="pressKey('0')">0</button>
-  </div>
-
-  <!-- 功能區塊 -->
-  <div class="key-row">
-    <button class="op" onclick="pressKey('+')">+</button>
-    <button class="op" onclick="pressKey('-')">-</button>
-    <button class="op" onclick="pressKey('*')">×</button>
+    <button class="clear" onclick="clearAll()">C</button>
+    <button class="delete" onclick="deleteKey()">⌫</button>
     <button class="op" onclick="pressKey('/')">÷</button>
   </div>
-  <div class="key-row">
-    <button class="delete" onclick="deleteKey()">⌫</button>
-    <button class="clear" onclick="clearAll()">C</button>
-  </div>
 </div>
+
 
 	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
@@ -1569,6 +1564,7 @@ function backToMain() {
 </script>
 </body>
 </html>
+
 
 
 

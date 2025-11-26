@@ -1848,12 +1848,34 @@ function savePacking() {
 
 renderPacking();
 
+/* =======================================
+   TOP 置頂鍵（最終修正）
+======================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const scrollBtn = document.getElementById("scrollToTop");
+
+  // 確認成功抓到按鈕
+  console.log("TOP btn =", scrollBtn);
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      scrollBtn.classList.add("show");
+    } else {
+      scrollBtn.classList.remove("show");
+    }
+  });
+
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+});
 	  
 
 
 </script>
 </body>
 </html>
+
 
 
 

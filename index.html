@@ -772,9 +772,11 @@ ease;
   background: #bbb;
 }
 
+/* ========== TOP 按鈕最終統一版本 ========== */
+
 .scroll-top-button {
   position: fixed;
-  right: 20px;
+  right: 20px;   /* 最後位置以右側為主 */
   bottom: 60px;
   padding: 12px 14px;
   background: #444;
@@ -783,37 +785,23 @@ ease;
   font-size: 14px;
   border: none;
   cursor: pointer;
+  z-index: 9999;
 
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: 0.3s ease;
-}
-
-/* TOP 按鈕初始狀態：隱藏 */
-.scroll-top-button {
-  position: fixed;
-  right: 20px;
-  bottom: 60px;
-  padding: 12px 14px;
-  background: #444;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-size: 14px;
-  cursor: pointer;
-
-  opacity: 0;               /* ⭐ 必須有 */
-  pointer-events: none;     /* ⭐ 必須有 */
-  transition: opacity .3s ease;
-
-  z-index: 9999;            /* ⭐ 防止被匯率頁擋住 */
+  transition: opacity .3s ease, visibility .3s ease;
 }
 
 /* 顯示狀態 */
 .scroll-top-button.show {
-  opacity: 1;               /* ⭐ 顯示 */
-  pointer-events: auto;     /* ⭐ 可點擊 */
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
+
+
+
 
 
 </style>
@@ -1931,6 +1919,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

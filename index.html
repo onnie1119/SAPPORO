@@ -789,11 +789,7 @@ ease;
   transition: 0.3s ease;
 }
 
-/* 顯示狀態 */
-.scroll-top-button.show {
-  opacity: 1;
-  pointer-events: auto;
-}
+/* TOP 按鈕初始狀態：隱藏 */
 .scroll-top-button {
   position: fixed;
   right: 20px;
@@ -801,16 +797,22 @@ ease;
   padding: 12px 14px;
   background: #444;
   color: #fff;
+  border: none;
   border-radius: 50px;
   font-size: 14px;
-  border: none;
   cursor: pointer;
 
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.3s ease;
+  opacity: 0;               /* ⭐ 必須有 */
+  pointer-events: none;     /* ⭐ 必須有 */
+  transition: opacity .3s ease;
 
-  z-index: 9999;   /* ⭐ 加這行！ */
+  z-index: 9999;            /* ⭐ 防止被匯率頁擋住 */
+}
+
+/* 顯示狀態 */
+.scroll-top-button.show {
+  opacity: 1;               /* ⭐ 顯示 */
+  pointer-events: auto;     /* ⭐ 可點擊 */
 }
 
 
@@ -1892,10 +1894,8 @@ renderPacking();
    TOP 置頂鍵（最終修正版）
 ======================================= */
 document.addEventListener("DOMContentLoaded", () => {
-
   const scrollBtn = document.getElementById("scrollToTop");
 
-  // 監聽卷軸
   window.addEventListener("scroll", () => {
     if (window.scrollY > 300) {
       scrollBtn.classList.add("show");
@@ -1904,11 +1904,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 點擊回頂部
   scrollBtn.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 });
+
 
 	  
 
@@ -1916,6 +1916,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

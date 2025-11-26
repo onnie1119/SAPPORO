@@ -794,6 +794,24 @@ ease;
   opacity: 1;
   pointer-events: auto;
 }
+.scroll-top-button {
+  position: fixed;
+  right: 20px;
+  bottom: 60px;
+  padding: 12px 14px;
+  background: #444;
+  color: #fff;
+  border-radius: 50px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s ease;
+
+  z-index: 9999;   /* ⭐ 加這行！ */
+}
 
 
 </style>
@@ -1898,6 +1916,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

@@ -772,6 +772,28 @@ ease;
   background: #bbb;
 }
 
+.scroll-top-button {
+  position: fixed;
+  right: 20px;
+  bottom: 60px;
+  padding: 12px 14px;
+  background: #444;
+  color: #fff;
+  border-radius: 50px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s ease;
+}
+
+/* 顯示狀態 */
+.scroll-top-button.show {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 
 </style>
@@ -1849,14 +1871,13 @@ function savePacking() {
 renderPacking();
 
 /* =======================================
-   TOP 置頂鍵（最終修正）
+   TOP 置頂鍵（最終修正版）
 ======================================= */
 document.addEventListener("DOMContentLoaded", () => {
+
   const scrollBtn = document.getElementById("scrollToTop");
 
-  // 確認成功抓到按鈕
-  console.log("TOP btn =", scrollBtn);
-
+  // 監聽卷軸
   window.addEventListener("scroll", () => {
     if (window.scrollY > 300) {
       scrollBtn.classList.add("show");
@@ -1865,16 +1886,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // 點擊回頂部
   scrollBtn.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 });
+
 	  
 
 
 </script>
 </body>
 </html>
+
 
 
 

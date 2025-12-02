@@ -1568,20 +1568,20 @@ ease;
 
 
 	
+
 <script>
-/* =======================================
-   DOM Ready
-======================================= */
+// ===========================
+// 頁面初始化
+// ===========================
 document.addEventListener("DOMContentLoaded", () => {
-  getExchangeRate();
-  showDay(1);
-  updateArrows();
-  renderPacking();
+  getExchangeRate();   // 抓匯率
+  showDay(1);          // 預設顯示第 1 天
+  updateArrows();      // 初始化 day-tab 左右箭頭
 });
 
-/* =======================================
-   1. 行程天數切換
-======================================= */
+// ===========================
+// 1. 行程天數切換
+// ===========================
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
   const tabs = document.querySelectorAll(".day-tab");
@@ -1589,6 +1589,7 @@ function showDay(dayNumber) {
   sections.forEach((section, index) => {
     if (index === dayNumber - 1) {
       section.style.display = "block";
+      // 加入淡入效果
       requestAnimationFrame(() => section.classList.add("fade-in"));
     } else {
       section.style.display = "none";
@@ -1603,42 +1604,54 @@ function showDay(dayNumber) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/* =======================================
-   2. Tabs 左右箭頭
-======================================= */
-const scrollEl   = document.getElementById("dayTabsScroll");
-const arrowLeft  = document.getElementById("arrow-left");
+// ===========================
+// 2. Day Tabs 左右箭頭控制
+// ===========================
+const scrollEl  = document.getElementById("dayTabsScroll");
+const arrowLeft = document.getElementById("arrow-left");
 const arrowRight = document.getElementById("arrow-right");
 
 function updateArrows() {
-  if (!scrollEl) return;
-  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+  // 防呆：沒這些元素就直接跳出，不要報錯
+  if (!scrollEl || !arrowLeft || !arrowRight) return;
 
-  arrowLeft.style.opacity  = scrollEl.scrollLeft > 10 ? "1" : "0";
-  arrowRight.style.opacity = scrollEl.scrollLeft < maxScroll - 10 ? "1" : "0";
+  const scrollLeft = scrollEl.scrollLeft;
+  const maxScroll  = scrollEl.scrollWidth - scrollEl.clientWidth;
+
+  arrowLeft.style.opacity  = scrollLeft > 10            ? "1" : "0";
+  arrowRight.style.opacity = scrollLeft < maxScroll-10 ? "1" : "0";
 }
 
-scrollEl.addEventListener("scroll", updateArrows);
-window.addEventListener("resize", updateArrows);
+if (scrollEl) {
+  scrollEl.addEventListener("scroll", updateArrows);
+  window.addEventListener("resize", updateArrows);
+}
 
-/* =======================================
-   3. TOP 置頂鍵（單一版本）
-======================================= */
-const scrollBtn = document.getElementById("scrollToTop");
+// ===========================
+// 3. TOP 置頂鍵（有就啟動，沒有就略過）
+// ===========================
+(function setupScrollTop() {
+  const scrollBtn = document.getElementById("scrollToTop");
+  if (!scrollBtn) return; // 目前沒 TOP 按鈕就不啟動這段
 
-window.addEventListener("scroll", () => {
-  scrollBtn.classList.toggle("show", window.scrollY > 300);
-});
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      scrollBtn.classList.add("show");
+    } else {
+      scrollBtn.classList.remove("show");
+    }
+  });
 
-scrollBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+})();
 
-/* =======================================
-   4. 匯率換算 + 數字鍵盤
-======================================= */
-let currentRate = 0;
-let isJPYtoTWD = true;
+// ===========================
+// 4. 匯率換算
+// ===========================
+let currentRate = 0;     // JPY -> TWD 匯率
+let isJPYtoTWD = true;   // true: 日圓換台幣, false: 台幣換日圓
 
 const inputField  = document.getElementById("input-amount");
 const outputField = document.getElementById("output-amount");
@@ -1648,10 +1661,14 @@ const toggleLabel = document.getElementById("toggle-label");
 const inputLabel  = document.getElementById("input-label");
 const outputLabel = document.getElementById("output-label");
 
-function addComma(numStr) { return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
-function removeComma(numStr) { return numStr.replace(/,/g, ""); }
+function addComma(numStr) {
+  return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function removeComma(numStr) {
+  return numStr.replace(/,/g, "");
+}
 
-/* 抓匯率 */
+// 抓 JPY 匯率
 async function getExchangeRate() {
   try {
     const res  = await fetch("https://open.er-api.com/v6/latest/JPY");
@@ -1663,9 +1680,10 @@ async function getExchangeRate() {
   }
 }
 
-/* 計算結果 */
+// 計算換匯
 function updateConversion() {
   if (!currentRate) return;
+  if (!inputField || !outputField) return;
 
   let raw = removeComma(inputField.value);
   if (!raw || isNaN(raw)) {
@@ -1673,48 +1691,52 @@ function updateConversion() {
     return;
   }
 
-  let amount = parseInt(raw);
-  let result = isJPYtoTWD ? amount * currentRate : amount / currentRate;
-
+  let val = parseInt(raw, 10);
+  let result = isJPYtoTWD ? val * currentRate : val / currentRate;
   outputField.value = addComma(Math.round(result).toString());
 }
 
-/* 幣別切換（左右滑動） */
-toggleBtn.addEventListener("click", () => {
-  isJPYtoTWD = !isJPYtoTWD;
+// 幣別切換開關
+if (toggleBtn) {
+  toggleBtn.addEventListener("click", () => {
+    isJPYtoTWD = !isJPYtoTWD;
 
-  toggleBtn.classList.toggle("active", !isJPYtoTWD);
+    toggleBtn.classList.toggle("active", !isJPYtoTWD);
 
-  if (isJPYtoTWD) {
-    toggleLabel.textContent = "JPY";
-    inputLabel.textContent  = "｜ 日圓";
-    outputLabel.textContent = "｜ 台幣";
-  } else {
-    toggleLabel.textContent = "TWD";
-    inputLabel.textContent  = "｜ 台幣";
-    outputLabel.textContent = "｜ 日圓";
-  }
+    if (isJPYtoTWD) {
+      toggleLabel.textContent = "JPY";
+      inputLabel.textContent  = "｜ 日圓";
+      outputLabel.textContent = "｜ 台幣";
+    } else {
+      toggleLabel.textContent = "TWD";
+      inputLabel.textContent  = "｜ 台幣";
+      outputLabel.textContent = "｜ 日圓";
+    }
 
-  updateConversion();
-});
+    updateConversion();
+  });
+}
 
-/* 手動輸入 */
-inputField.addEventListener("input", () => {
-  let raw = removeComma(inputField.value);
+// 輸入框：自動加千分位＋即時換算
+if (inputField) {
+  inputField.addEventListener("input", () => {
+    let raw = removeComma(inputField.value);
+    if (!raw || isNaN(raw)) {
+      inputField.value = "";
+      outputField.value = "";
+      return;
+    }
 
-  if (!raw || isNaN(raw)) {
-    inputField.value = "";
-    outputField.value = "";
-    return;
-  }
+    inputField.value = addComma(raw);
+    updateConversion();
+  });
+}
 
-  inputField.value = addComma(raw);
-  updateConversion();
-});
-
-/* 數字鍵盤 */
-document.querySelectorAll(".key").forEach(btn => {
+// 自訂數字鍵盤
+document.querySelectorAll(".num-pad .key").forEach(btn => {
   btn.addEventListener("click", () => {
+    if (!inputField) return;
+
     let raw = removeComma(inputField.value);
     const key = btn.textContent;
 
@@ -1731,57 +1753,81 @@ document.querySelectorAll(".key").forEach(btn => {
       return;
     }
 
+    // 0~9
     raw += key;
+    // 去掉前導 0
+    raw = raw.replace(/^0+/, "");
+    if (!raw) raw = "0";
+
     inputField.value = addComma(raw);
     updateConversion();
   });
 });
 
-/* =======================================
-   5. 三頁切換功能
-======================================= */
+// ===========================
+// 5. 三個頁面切換（首頁 / 匯率 / 行李清單）
+// ===========================
 function showExchange() {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
+  const container = document.querySelector(".container");
+  const exchange  = document.getElementById("exchange-page");
+  const packing   = document.getElementById("packing-page");
+  const backBtn   = document.getElementById("backBtn");
 
-  document.getElementById("backBtn").classList.add("show");
-}
+  if (container) container.style.display = "none";
+  if (exchange)  exchange.style.display  = "block";
+  if (packing)   packing.style.display   = "none";
+  if (backBtn)   backBtn.classList.add("show");
 
-function showPacking() {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "block";
-
-  document.getElementById("backBtn").classList.add("show");
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
 function backToMain() {
-  document.querySelector(".container").style.display = "block";
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
+  const container = document.querySelector(".container");
+  const exchange  = document.getElementById("exchange-page");
+  const packing   = document.getElementById("packing-page");
+  const backBtn   = document.getElementById("backBtn");
 
-  document.getElementById("backBtn").classList.remove("show");
+  if (exchange)  exchange.style.display  = "none";
+  if (packing)   packing.style.display   = "none";
+  if (container) container.style.display = "block";
+  if (backBtn)   backBtn.classList.remove("show");
+
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
-/* =======================================
-   6. 行李清單系統（localStorage）
-======================================= */
+function showPacking() {
+  const container = document.querySelector(".container");
+  const exchange  = document.getElementById("exchange-page");
+  const packing   = document.getElementById("packing-page");
+  const backBtn   = document.getElementById("backBtn");
+
+  if (container) container.style.display = "none";
+  if (exchange)  exchange.style.display  = "none";
+  if (packing)   packing.style.display   = "block";
+  if (backBtn)   backBtn.classList.add("show");
+
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+// ===========================
+// 6. 行李清單系統
+// ===========================
 let packData = JSON.parse(localStorage.getItem("packing") || "[]");
 
-const todoEl = document.getElementById("packing-todo");
-const doneEl = document.getElementById("packing-done");
+const todoEl   = document.getElementById("packing-todo");
+const doneEl   = document.getElementById("packing-done");
 const addModal = document.getElementById("packing-add-modal");
 const newItemInput = document.getElementById("packing-new-input");
 
 function renderPacking() {
+  if (!todoEl || !doneEl) return;
+
   todoEl.innerHTML = "";
   doneEl.innerHTML = "";
 
   packData.forEach((item, i) => {
     const card = document.createElement("div");
     card.className = "packing-card-item" + (item.done ? " done" : "");
-
     card.innerHTML = `
       <div class="packing-actions">
         <button onclick="editItem(${i})">編</button>
@@ -1791,11 +1837,16 @@ function renderPacking() {
     `;
 
     card.addEventListener("click", e => {
+      // 點到按鈕不要觸發完成切換
       if (e.target.tagName === "BUTTON") return;
       toggleItem(i);
     });
 
-    item.done ? doneEl.appendChild(card) : todoEl.appendChild(card);
+    if (item.done) {
+      doneEl.appendChild(card);
+    } else {
+      todoEl.appendChild(card);
+    }
   });
 
   addAddCard(todoEl);
@@ -1810,24 +1861,30 @@ function addAddCard(parent) {
 }
 
 function openAddModal() {
+  if (!addModal || !newItemInput) return;
   newItemInput.value = "";
   addModal.classList.remove("hidden");
   newItemInput.focus();
 }
 
-document.getElementById("packing-cancel").onclick = () => {
-  addModal.classList.add("hidden");
-};
+const cancelBtn  = document.getElementById("packing-cancel");
+const confirmBtn = document.getElementById("packing-confirm");
 
-document.getElementById("packing-confirm").onclick = () => {
-  const txt = newItemInput.value.trim();
-  if (!txt) return;
+if (cancelBtn && addModal) {
+  cancelBtn.onclick = () => addModal.classList.add("hidden");
+}
 
-  packData.push({ text: txt, done: false });
-  savePacking();
-  renderPacking();
-  addModal.classList.add("hidden");
-};
+if (confirmBtn && addModal && newItemInput) {
+  confirmBtn.onclick = () => {
+    const txt = newItemInput.value.trim();
+    if (!txt) return;
+
+    packData.push({ text: txt, done: false });
+    savePacking();
+    renderPacking();
+    addModal.classList.add("hidden");
+  };
+}
 
 function toggleItem(i) {
   packData[i].done = !packData[i].done;
@@ -1855,9 +1912,15 @@ function savePacking() {
   localStorage.setItem("packing", JSON.stringify(packData));
 }
 
+// 頁面載入後先畫一次行李清單
+renderPacking();
+
+
+
 </script>
 </body>
 </html>
+
 
 
 

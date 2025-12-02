@@ -2365,24 +2365,25 @@ function renderPackingPage() {
         <button class="item-delete-btn">×</button>
       `;
 
-      /* checkbox */
-      li.querySelector(".packing-checkbox").onclick = (e) => {
-        e.stopPropagation();          // ⭐ 阻止冒泡
-        item.done = !item.done;
-        savePacking();
-        renderPackingPage();
-      };
+     // ⭐⭐⭐ 就加在這裡！！（最重要）
+  // 勾選
+  li.querySelector(".packing-checkbox").onclick = (e) => {
+    e.stopPropagation();
+    item.done = !item.done;
+    savePacking();
+    renderPackingPage();
+  };
 
-      /* 刪除小項目 */
-      li.querySelector(".item-delete-btn").onclick = (e) => {
-        e.stopPropagation();          // ⭐ 阻止冒泡
-        packingData.groups[key].items.splice(idx, 1);
-        savePacking();
-        renderPackingPage();
-      };
+  // 刪除項目
+  li.querySelector(".item-delete-btn").onclick = (e) => {
+    e.stopPropagation();
+    packingData.groups[key].items.splice(index, 1);
+    savePacking();
+    renderPackingPage();
+  };
 
-      ul.appendChild(li);
-    });
+  ul.appendChild(li);
+});
 
     // 預設收起
     ul.style.display = "none";
@@ -2397,27 +2398,24 @@ function renderPackingPage() {
 ============================================================ */
 function attachEvents() {
 
-  /* 展開/收合分類 */
-  document.querySelectorAll(".packing-group-header").forEach(header => {
-    header.onclick = (e) => {
+ // ⭐ 編輯模式：點擊箭頭（X）刪除分類
+document.querySelectorAll(".packing-group .arrow").forEach(arrow => {
+  arrow.onclick = (e) => {
+    if (!isPackingEditing) return;   // 非編輯模式 → 箭頭用來展開，不刪除
 
-      if (isPackingEditing) return;
+    e.stopPropagation();             // 避免觸發展開合起來
+    const groupEl = arrow.closest(".packing-group");
+    const groupKey = groupEl.dataset.group;
+    const groupName = packingData.groups[groupKey].name;
 
-      const group = header.parentElement;
-      const list = group.querySelector(".packing-list");
-      const addBtn = group.querySelector(".add-item-btn");
+    if (confirm(`確定刪除「${groupName}」分類？`)) {
+      delete packingData.groups[groupKey];
+      savePacking();
+      renderPackingPage();
+    }
+  };
+});
 
-      group.classList.toggle("open");
-
-      if (group.classList.contains("open")) {
-        list.style.display = "block";
-        addBtn.style.display = "block";
-      } else {
-        list.style.display = "none";
-        addBtn.style.display = "none";
-      }
-    };
-  });
 
   /* 新增項目 */
   document.querySelectorAll(".add-item-btn").forEach(btn => {
@@ -2512,6 +2510,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

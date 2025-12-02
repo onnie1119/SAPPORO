@@ -984,6 +984,41 @@ ease;
   color: #fff;
 }
 
+/* 右上角「編輯」按鈕 */
+.packing-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 4px 15px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.packing-edit-btn {
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: #3a7afe;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* 預設刪除按鈕隱藏 */
+.delete-item {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+
+/* 編輯模式：顯示刪除按鈕 */
+.edit-mode .delete-item {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.edit-mode .packing-edit-btn {
+  color: #d95380;  /* 編輯中變紅色比較有感覺 */
+}
 
 
 </style>
@@ -1742,7 +1777,10 @@ ease;
       行李清單頁面
 ================================ -->
 <div id="packing-page" class="packing-page" style="display:none;">
-
+<div class="packing-title-bar">
+  <span>行李清單</span>
+  <button id="packingEditBtn" class="packing-edit-btn">編輯</button>
+</div>
   <div class="packing-group">
     <div class="packing-group-header">
       <span>重要證件 <span id="count-status">0/5</span></span>
@@ -2073,10 +2111,30 @@ packingOK.onclick = () => {
   renderPackingList();
   closePackingModal();
 };
+// ===============================
+// 編輯模式（顯示刪除鍵）
+// ===============================
+let packingEditMode = false;
+const packingEditBtn = document.getElementById("packingEditBtn");
+
+packingEditBtn.addEventListener("click", () => {
+  packingEditMode = !packingEditMode;
+
+  const page = document.getElementById("packing-page");
+
+  if (packingEditMode) {
+    page.classList.add("edit-mode");
+    packingEditBtn.textContent = "完成";
+  } else {
+    page.classList.remove("edit-mode");
+    packingEditBtn.textContent = "編輯";
+  }
+});
 
 </script>
 </body>
 </html>
+
 
 
 

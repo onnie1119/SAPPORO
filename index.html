@@ -2194,6 +2194,14 @@ function deleteItem(group, index) {
   packingData[group].splice(index, 1);
   renderPackingGroup(document.querySelector(`.packing-group[data-group='${group}']`));
 }
+
+// 頁面載入後先畫一次行李清單
+renderPacking();
+
+
+
+</script>
+<script>
 // 大類資料
 let packingData = {
   documents: [
@@ -2252,14 +2260,10 @@ document.getElementById("add-category").addEventListener("click", () => {
 });
 
 
-// 頁面載入後先畫一次行李清單
-renderPacking();
-
-
-
 </script>
 </body>
 </html>
+
 
 
 

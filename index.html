@@ -928,6 +928,17 @@ ease;
 body.packing-mode {
   background: #f1f1f1 !important;
 }
+.add-category {
+  background: #fff;
+  border-radius: 14px;
+  padding: 15px 18px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin: 20px 0;
+  text-align: center;
+  font-size: 15px;
+  color: #d95380;
+  cursor: pointer;
+}
 
 </style>
 </head>
@@ -1721,7 +1732,7 @@ body.packing-mode {
     <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
-
+<div id="add-category" class="add-category">＋ 新增分類</div>
 </div>
 
 
@@ -2183,6 +2194,62 @@ function deleteItem(group, index) {
   packingData[group].splice(index, 1);
   renderPackingGroup(document.querySelector(`.packing-group[data-group='${group}']`));
 }
+// 大類資料
+let packingData = {
+  documents: [
+    { text: "護照", done: false },
+    { text: "信用卡", done: false },
+  ],
+  clothes: [],
+  personal: [],
+  electronics: []
+};
+
+const packingPage = document.getElementById("packing-page");
+
+/* =====================
+   重新渲染所有分類
+===================== */
+function renderAllGroups() {
+  const groups = packingPage.querySelectorAll(".packing-group");
+  groups.forEach(group => renderPackingGroup(group));
+}
+
+/* =====================
+   新增分類
+===================== */
+document.getElementById("add-category").addEventListener("click", () => {
+  const name = prompt("請輸入分類名稱（例如：保養品）：");
+  if (!name) return;
+
+  // 製作新的 key
+  const key = "cat_" + Date.now();
+  packingData[key] = [];
+
+  // 建立分類 HTML
+  const groupHTML = document.createElement("div");
+  groupHTML.className = "packing-group";
+  groupHTML.dataset.group = key;
+
+  groupHTML.innerHTML = `
+    <div class="packing-group-header">
+      <span>${name} <span class="count-status">0/0</span></span>
+      <span class="arrow">▾</span>
+    </div>
+    <ul class="packing-list"></ul>
+  `;
+
+  // ⭐ 讓整塊可展開
+  groupHTML.querySelector(".packing-group-header").addEventListener("click", () => {
+    groupHTML.classList.toggle("open");
+  });
+
+  // 插入到新增按鈕上方
+  packingPage.insertBefore(groupHTML, document.getElementById("add-category"));
+
+  // 渲染
+  renderPackingGroup(groupHTML);
+});
 
 
 // 頁面載入後先畫一次行李清單
@@ -2193,6 +2260,7 @@ renderPacking();
 </script>
 </body>
 </html>
+
 
 
 

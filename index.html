@@ -860,6 +860,14 @@ ease;
   margin: 0;
 }
 
+.packing-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 4px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
 .packing-item:last-child {
   border-bottom: none;
 }
@@ -2357,25 +2365,24 @@ function renderPackingPage() {
         <button class="item-delete-btn">×</button>
       `;
 
-     // ⭐⭐⭐ 就加在這裡！！（最重要）
-  // 勾選
- li.querySelector(".packing-checkbox").onclick = (e) => {
-  e.stopImmediatePropagation();   // ⭐ 最強阻斷
-  item.done = !item.done;
-  savePacking();
-  renderPackingPage();
-};
+      /* checkbox */
+      li.querySelector(".packing-checkbox").onclick = (e) => {
+        e.stopPropagation();          // ⭐ 阻止冒泡
+        item.done = !item.done;
+        savePacking();
+        renderPackingPage();
+      };
 
-li.querySelector(".item-delete-btn").onclick = (e) => {
-  e.stopImmediatePropagation();   // ⭐ 最強阻斷
-  packingData.groups[key].items.splice(index, 1);
-  savePacking();
-  renderPackingPage();
-};
+      /* 刪除小項目 */
+      li.querySelector(".item-delete-btn").onclick = (e) => {
+        e.stopPropagation();          // ⭐ 阻止冒泡
+        packingData.groups[key].items.splice(idx, 1);
+        savePacking();
+        renderPackingPage();
+      };
 
-
-  ul.appendChild(li);
-});
+      ul.appendChild(li);
+    });
 
     // 預設收起
     ul.style.display = "none";
@@ -2390,81 +2397,27 @@ li.querySelector(".item-delete-btn").onclick = (e) => {
 ============================================================ */
 function attachEvents() {
 
- // ⭐ 編輯模式：點擊箭頭（X）刪除分類
-document.querySelectorAll(".packing-group .arrow").forEach(arrow => {
-  arrow.onclick = (e) => {
-    if (!isPackingEditing) return;   // 非編輯模式 → 箭頭用來展開，不刪除
+  /* 展開/收合分類 */
+  document.querySelectorAll(".packing-group-header").forEach(header => {
+    header.onclick = (e) => {
 
-    e.stopPropagation();             // 避免觸發展開合起來
-    const groupEl = arrow.closest(".packing-group");
-    const groupKey = groupEl.dataset.group;
-    const groupName = packingData.groups[groupKey].name;
+      if (isPackingEditing) return;
 
-    if (confirm(`確定刪除「${groupName}」分類？`)) {
-      delete packingData.groups[groupKey];
-      savePacking();
-      renderPackingPage();
-    }
-  };
-});
-/* --- 展開 / 收合分類 --- */
-document.querySelectorAll(".packing-group-header").forEach(header => {
-  header.onclick = (e) => {
+      const group = header.parentElement;
+      const list = group.querySelector(".packing-list");
+      const addBtn = group.querySelector(".add-item-btn");
 
-    // ⭐ 編輯模式時不做展開/收合
-    if (isPackingEditing) {
-      return;
-    }
+      group.classList.toggle("open");
 
-    e.stopPropagation(); // 避免子層事件亂觸發
-
-    const group = header.closest(".packing-group");
-    const list = group.querySelector(".packing-list");
-    const addBtn = group.querySelector(".add-item-btn");
-
-    const isOpen = group.classList.toggle("open");
-
-    if (isOpen) {
-      list.style.display = "block";
-      addBtn.style.display = "block";
-    } else {
-      list.style.display = "none";
-      addBtn.style.display = "none";
-    }
-  };
-});
-// ✅ 控制收合/展開
-document.querySelectorAll('.packing-group-header').forEach(header => {
-  header.addEventListener('click', function(e) {
-    // 如果點擊的是 checkbox 或刪除鍵，就不要收合
-    if (e.target.classList.contains('packing-checkbox') || 
-        e.target.classList.contains('item-delete-btn')) {
-      return;
-    }
-
-    const group = this.closest('.packing-group');
-    group.classList.toggle('open');
-
-    const list = group.querySelector('.packing-list');
-    if (list) {
-      if (group.classList.contains('open')) {
-        list.style.display = 'block';   // 展開
+      if (group.classList.contains("open")) {
+        list.style.display = "block";
+        addBtn.style.display = "block";
       } else {
-        list.style.display = 'none';    // 收合
+        list.style.display = "none";
+        addBtn.style.display = "none";
       }
-    }
+    };
   });
-});
-
-// ✅ 控制 checkbox 勾選，不影響收合
-document.querySelectorAll('.packing-checkbox').forEach(cb => {
-  cb.addEventListener('click', function(e) {
-    e.stopPropagation(); // 阻止事件冒泡到 header
-    this.classList.toggle('checked');
-  });
-});
-
-
 
   /* 新增項目 */
   document.querySelectorAll(".add-item-btn").forEach(btn => {
@@ -2559,12 +2512,6 @@ renderPackingPage();
 </script>
 </body>
 </html>
-
-
-
-
-
-
 
 
 

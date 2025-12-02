@@ -1806,17 +1806,24 @@ body.packing-mode {
       <span>重要文件 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
+
     <ul class="packing-list">
-      <!-- 小項目結構（動態產生）
+      <!-- 小項目會由 JS 動態產生，結構如下：
       <li class="packing-item">
-        <div class="item-content">護照</div>
-        <div class="item-actions">
-          <button class="edit-btn">編輯</button>
-          <button class="delete-btn">刪除</button>
+        <div class="packing-swipe">
+          <div class="packing-content">
+            <div class="packing-checkbox"></div>
+            <span class="item-text">護照</span>
+          </div>
+          <div class="packing-actions">
+            <button class="edit-btn">編輯</button>
+            <button class="delete-btn">刪除</button>
+          </div>
         </div>
       </li>
       -->
     </ul>
+
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
 
@@ -1826,6 +1833,7 @@ body.packing-mode {
       <span>服裝用品 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
+
     <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
@@ -1836,6 +1844,7 @@ body.packing-mode {
       <span>個人用品 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
+
     <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
@@ -1846,6 +1855,7 @@ body.packing-mode {
       <span>3C 設備 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
+
     <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
@@ -1868,6 +1878,7 @@ body.packing-mode {
   </div>
 
 </div>
+
 
 
 
@@ -2284,7 +2295,6 @@ const modalCancel = document.getElementById("modal-cancel");
 
 let modalCallback = null;
 
-// 開啟
 function openModal(title, placeholder, callback) {
   modalTitle.textContent = title;
   modalInput.placeholder = placeholder;
@@ -2307,16 +2317,15 @@ modalOk.onclick = () => {
 
 modalCancel.onclick = closeModal;
 
-
 /* =====================================================
-   🧩 渲染單一大類項目
+   🔧 渲染單一大類
 ===================================================== */
 function renderPackingGroup(groupEl) {
   const groupKey = groupEl.dataset.group;
-  const items = packingData[groupKey];
   const listEl = groupEl.querySelector(".packing-list");
   const countEl = groupEl.querySelector(".count-status");
 
+  const items = packingData[groupKey];
   listEl.innerHTML = "";
 
   items.forEach((item, i) => {
@@ -2324,28 +2333,33 @@ function renderPackingGroup(groupEl) {
     li.className = "packing-item";
 
     li.innerHTML = `
-      <div class="item-content">${item.text}</div>
+      <div class="packing-swipe">
+        <div class="packing-content">
+          <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
+          <span class="item-text">${item.text}</span>
+        </div>
 
-      <div class="item-actions">
-        <button class="edit-btn">編輯</button>
-        <button class="delete-btn">刪除</button>
+        <div class="packing-actions">
+          <button class="edit-btn">編輯</button>
+          <button class="delete-btn">刪除</button>
+        </div>
       </div>
     `;
 
-    /* 點擊切換完成狀態 */
-    li.querySelector(".item-content").addEventListener("click", () => {
+    const swipeBox = li.querySelector(".packing-swipe");
+    const checkbox = li.querySelector(".packing-checkbox");
+    const editBtn = li.querySelector(".edit-btn");
+    const deleteBtn = li.querySelector(".delete-btn");
+
+    /* 勾選切換 */
+    checkbox.addEventListener("click", () => {
       packingData[groupKey][i].done = !packingData[groupKey][i].done;
       renderPackingGroup(groupEl);
     });
 
-    /* 點擊刪除 */
-    li.querySelector(".delete-btn").addEventListener("click", () => {
-      packingData[groupKey].splice(i, 1);
-      renderPackingGroup(groupEl);
-    });
-
-    /* 點擊編輯 */
-    li.querySelector(".edit-btn").addEventListener("click", () => {
+    /* 編輯 */
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
       openModal("編輯項目", "輸入新名稱…", (val) => {
         if (!val) return;
         packingData[groupKey][i].text = val;
@@ -2353,10 +2367,16 @@ function renderPackingGroup(groupEl) {
       });
     });
 
+    /* 刪除 */
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      packingData[groupKey].splice(i, 1);
+      renderPackingGroup(groupEl);
+    });
+
     /* 套用左滑功能 */
     enableSwipe(li);
 
-    /* 加到列表 */
     listEl.appendChild(li);
   });
 
@@ -2364,57 +2384,62 @@ function renderPackingGroup(groupEl) {
   countEl.textContent = `${doneCount}/${items.length}`;
 }
 
-
 /* =====================================================
-   ✋ 左滑 — 顯示編輯/刪除
+   ✋ 左滑功能
 ===================================================== */
 let touchStartX = 0;
 let activeItem = null;
+let isSwiping = false;
 
 function enableSwipe(item) {
+  const moveArea = item.querySelector(".packing-swipe");
+
   item.addEventListener("touchstart", e => {
     touchStartX = e.touches[0].clientX;
     activeItem = item;
+    isSwiping = true;
   });
 
   item.addEventListener("touchmove", e => {
-    if (!activeItem) return;
-    const deltaX = e.touches[0].clientX - touchStartX;
+    if (!isSwiping) return;
 
-    if (deltaX < -40) {
-      activeItem.classList.add("swiped");
+    let deltaX = e.touches[0].clientX - touchStartX;
+
+    if (deltaX < -30) {
+      item.classList.add("swiped");
     }
-    if (deltaX > 40) {
-      activeItem.classList.remove("swiped");
+    if (deltaX > 30) {
+      item.classList.remove("swiped");
     }
   });
 
-  // 點到其他地方就收回
+  item.addEventListener("touchend", () => {
+    isSwiping = false;
+  });
+
+  /* 點擊其他項目自動關閉 */
   item.addEventListener("click", () => {
-    document.querySelectorAll(".packing-item.swiped").forEach(i => {
-      if (i !== item) i.classList.remove("swiped");
+    document.querySelectorAll(".packing-item.swiped").forEach(el => {
+      if (el !== item) el.classList.remove("swiped");
     });
   });
 }
 
-
 /* =====================================================
-   🔽 初始化每一個大類
+   🔽 初始化所有大類
 ===================================================== */
 document.querySelectorAll(".packing-group").forEach(groupEl => {
+
   const header = groupEl.querySelector(".packing-group-header");
 
-  // 展開/收合
   header.addEventListener("click", () => {
     groupEl.classList.toggle("open");
     renderPackingGroup(groupEl);
   });
 
-  // 新增小項目
   const addBtn = groupEl.querySelector(".add-item-btn");
   addBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-
     openModal("新增項目", "輸入項目名稱…", (val) => {
       if (!val) return;
       packingData[groupEl.dataset.group].push({ text: val, done: false });
@@ -2422,10 +2447,8 @@ document.querySelectorAll(".packing-group").forEach(groupEl => {
     });
   });
 
-  // 初次渲染
   renderPackingGroup(groupEl);
 });
-
 
 /* =====================================================
    ➕ 新增分類（大類）
@@ -2450,13 +2473,11 @@ document.getElementById("add-category").addEventListener("click", () => {
       <button class="add-item-btn">＋ 新增項目</button>
     `;
 
-    /* 綁展開 */
     newGroup.querySelector(".packing-group-header").addEventListener("click", () => {
       newGroup.classList.toggle("open");
       renderPackingGroup(newGroup);
     });
 
-    /* 新增小項 */
     newGroup.querySelector(".add-item-btn").addEventListener("click", (e) => {
       e.stopPropagation();
       openModal("新增項目", "輸入項目名稱…", (val) => {
@@ -2466,13 +2487,10 @@ document.getElementById("add-category").addEventListener("click", () => {
       });
     });
 
-    /* 加入頁面 */
     packingPage.insertBefore(newGroup, document.getElementById("add-category"));
-
     renderPackingGroup(newGroup);
   });
 });
-
 
 // 頁面載入後先畫一次行李清單
 renderPacking();
@@ -2483,6 +2501,7 @@ renderPacking();
 
 </body>
 </html>
+
 
 
 

@@ -1225,6 +1225,16 @@ body.packing-mode {
 
 #modalCancel { background: #ddd; }
 #modalOK { background: #d95380; color: white; }
+.add-category {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #d95380;
+  padding: 15px 18px;
+  color: #d95380;
+  text-align: center;
+  margin: 20px 0;
+  cursor: pointer;
+}
 
 
 </style>
@@ -2273,6 +2283,11 @@ function renderPackingPage() {
     container.innerHTML += createGroupDOM(key, packingData.groups[key]);
   });
 
+  // ⭐ 最底部插入新增分類
+  container.innerHTML += `
+    <div id="add-category" class="add-category">＋ 新增分類</div>
+  `;
+
   // 生成小項目
   document.querySelectorAll(".packing-group").forEach(groupEl => {
     const key = groupEl.dataset.group;
@@ -2306,6 +2321,7 @@ function renderPackingPage() {
     });
   });
 
+  // ⭐ 綁定事件（包含新增分類的監聽）
   attachEvents();
 }
 
@@ -2412,6 +2428,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

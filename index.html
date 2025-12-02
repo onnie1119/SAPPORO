@@ -769,19 +769,23 @@ ease;
 
 .scroll-top-button {
   position: fixed;
-  bottom: 30px;
-  right: 20px;
-  padding: 10px 14px;
-  font-size: 14px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  font-size: 12px;
   border: none;
-  background: #444;
+  background: #3A7AFE;
   color: white;
   border-radius: 50px;
   opacity: 0;
   pointer-events: none;
   transition: 0.3s ease;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
-
+  
 .scroll-top-button.show {
   opacity: 1;
   pointer-events: auto;
@@ -1949,6 +1953,7 @@ renderPacking();
 </script>
 </body>
 </html>
+
 
 
 

@@ -924,7 +924,9 @@ ease;
 .packing-group.open .add-item-btn {
   display: block;
 }
-
+body.packing-mode {
+  background: #f1f1f1 !important;
+}
 
 </style>
 </head>
@@ -2083,7 +2085,8 @@ function showPacking() {
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "block";
-
+  // ⭐ 加上行李頁背景色
+  document.body.classList.add("packing-mode");
   scrollBtn.classList.remove("show");
   homeBtn.classList.add("show");
 }
@@ -2094,7 +2097,8 @@ function backToMain() {
   document.querySelector(".container").style.display = "block";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
-
+ // ⭐ 移除行李頁背景色
+  document.body.classList.remove("packing-mode");
   homeBtn.classList.remove("show");
 
   if (window.scrollY > 300) {
@@ -2188,6 +2192,7 @@ renderPacking();
 </script>
 </body>
 </html>
+
 
 
 

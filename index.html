@@ -2367,20 +2367,20 @@ function renderPackingPage() {
 
      // ⭐⭐⭐ 就加在這裡！！（最重要）
   // 勾選
-  li.querySelector(".packing-checkbox").onclick = (e) => {
-    e.stopPropagation();
-    item.done = !item.done;
-    savePacking();
-    renderPackingPage();
-  };
+ li.querySelector(".packing-checkbox").onclick = (e) => {
+  e.stopImmediatePropagation();   // ⭐ 最強阻斷
+  item.done = !item.done;
+  savePacking();
+  renderPackingPage();
+};
 
-  // 刪除項目
-  li.querySelector(".item-delete-btn").onclick = (e) => {
-    e.stopPropagation();
-    packingData.groups[key].items.splice(index, 1);
-    savePacking();
-    renderPackingPage();
-  };
+li.querySelector(".item-delete-btn").onclick = (e) => {
+  e.stopImmediatePropagation();   // ⭐ 最強阻斷
+  packingData.groups[key].items.splice(index, 1);
+  savePacking();
+  renderPackingPage();
+};
+
 
   ul.appendChild(li);
 });
@@ -2536,6 +2536,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

@@ -822,13 +822,14 @@ ease;
   pointer-events: auto;
 }
 
-/* 整體外框 */
+/* 卡片整體 */
 .packing-group {
   background: #fff;
   border-radius: 14px;
   padding: 15px 18px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  margin-top: 20px;
+  margin: 20px 0;
+  cursor: pointer; /* ⭐整塊大類可被點擊 */
 }
 
 /* 標題列 */
@@ -837,35 +838,37 @@ ease;
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
-  margin-bottom: 12px;
+  font-size: 16px;
 }
 
-.packing-group-actions {
-  display: flex;
-  gap: 10px;
+/* 展開箭頭 */
+.arrow {
+  font-size: 16px;
+  transition: transform .25s;
 }
 
-.icon-btn {
-  background: none;
-  border: none;
-  color: #d95380;
-  font-size: 13px;
-  cursor: pointer;
+.packing-group.open .arrow {
+  transform: rotate(180deg);
 }
 
-/* 列表 */
+/* 列表（預設收起） */
 .packing-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 10px 0 0;
+  display: none;
 }
 
+.packing-group.open .packing-list {
+  display: block;
+}
+
+/* 單列 */
 .packing-item {
   display: flex;
   align-items: center;
   padding: 10px 4px;
   border-bottom: 1px solid #eee;
-  font-size: 15px;
 }
 
 .packing-item:last-child {
@@ -906,7 +909,7 @@ ease;
   cursor: pointer;
 }
 
-/* 新增按鈕 */
+/* 新增項目按鈕 */
 .add-item-btn {
   width: 100%;
   background: none;
@@ -915,9 +918,12 @@ ease;
   color: #d95380;
   padding: 12px 0 5px;
   cursor: pointer;
+  display: none;
 }
 
-
+.packing-group.open .add-item-btn {
+  display: block;
+}
 
 
 </style>
@@ -1677,20 +1683,40 @@ ease;
 ================================ -->
 <div id="packing-page" class="packing-page" style="display:none;">
 
-  <div class="packing-group">
+  <div class="packing-group" data-group="documents">
     <div class="packing-group-header">
-      <span>重要證件 <span id="count-status">0/5</span></span>
-      <div class="packing-group-actions">
-        <button id="clearDoneBtn" class="icon-btn">取消已選取項目</button>
-        <button id="toggleBtn" class="icon-btn">▾</button>
-      </div>
+      <span>重要文件 <span class="count-status">0/0</span></span>
+      <span class="arrow">▾</span>
     </div>
+    <ul class="packing-list"></ul>
+    <button class="add-item-btn">＋ 新增項目</button>
+  </div>
 
-    <ul id="packing-list" class="packing-list">
-      <!-- JS 產生項目 -->
-    </ul>
+  <div class="packing-group" data-group="clothes">
+    <div class="packing-group-header">
+      <span>服裝用品 <span class="count-status">0/0</span></span>
+      <span class="arrow">▾</span>
+    </div>
+    <ul class="packing-list"></ul>
+    <button class="add-item-btn">＋ 新增項目</button>
+  </div>
 
-    <button id="addItemBtn" class="add-item-btn">＋ 新增項目</button>
+  <div class="packing-group" data-group="personal">
+    <div class="packing-group-header">
+      <span>個人用品 <span class="count-status">0/0</span></span>
+      <span class="arrow">▾</span>
+    </div>
+    <ul class="packing-list"></ul>
+    <button class="add-item-btn">＋ 新增項目</button>
+  </div>
+
+  <div class="packing-group" data-group="electronics">
+    <div class="packing-group-header">
+      <span>3C 設備 <span class="count-status">0/0</span></span>
+      <span class="arrow">▾</span>
+    </div>
+    <ul class="packing-list"></ul>
+    <button class="add-item-btn">＋ 新增項目</button>
   </div>
 
 </div>
@@ -2078,68 +2104,81 @@ function backToMain() {
   }
 }
 
-let packingItems = [
-  { text: "護照", done: false },
-  { text: "信用卡", done: false },
-  { text: "外幣", done: false },
-  { text: "國際駕照", done: false },
-  { text: "台灣駕照", done: false }
-];
+/* 四大類資料 */
+let packingData = {
+  documents: [
+    { text: "護照", done: false },
+    { text: "信用卡", done: false },
+    { text: "外幣", done: false },
+    { text: "國際駕照", done: false },
+    { text: "台灣駕照", done: false }
+  ],
+  clothes: [],
+  personal: [],
+  electronics: []
+};
 
-const listEl = document.getElementById("packing-list");
-const countStatus = document.getElementById("count-status");
+/* 渲染每個分類 */
+function renderPackingGroup(groupEl) {
+  const groupKey = groupEl.dataset.group;
+  const listEl = groupEl.querySelector(".packing-list");
+  const countEl = groupEl.querySelector(".count-status");
 
-/* 渲染 */
-function renderPackingList() {
+  let items = packingData[groupKey];
+
   listEl.innerHTML = "";
 
-  packingItems.forEach((item, i) => {
-    let li = document.createElement("li");
+  items.forEach((item, i) => {
+    const li = document.createElement("li");
     li.className = "packing-item";
 
     li.innerHTML = `
-      <div class="packing-checkbox ${item.done ? "checked" : ""}" onclick="toggleItem(${i})"></div>
+      <div class="packing-checkbox ${item.done ? "checked" : ""}" onclick="toggleItem('${groupKey}', ${i})"></div>
       <span>${item.text}</span>
-      <button class="delete-item" onclick="deleteItem(${i})">×</button>
+      <button class="delete-item" onclick="deleteItem('${groupKey}', ${i})">×</button>
     `;
 
     listEl.appendChild(li);
   });
 
-  updateCount();
+  const doneCount = items.filter(i => i.done).length;
+  countEl.textContent = `${doneCount}/${items.length}`;
 }
 
-function toggleItem(i) {
-  packingItems[i].done = !packingItems[i].done;
-  renderPackingList();
+/* 展開大類（整塊可點） */
+document.querySelectorAll(".packing-group").forEach(groupEl => {
+  const header = groupEl.querySelector(".packing-group-header");
+
+  header.addEventListener("click", () => {
+    groupEl.classList.toggle("open");
+  });
+
+  /* 新增項目 */
+  const addBtn = groupEl.querySelector(".add-item-btn");
+  addBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // 不要觸發收合
+    let name = prompt("輸入項目名稱：");
+    if (!name) return;
+
+    packingData[groupEl.dataset.group].push({ text: name, done: false });
+    renderPackingGroup(groupEl);
+  });
+
+  renderPackingGroup(groupEl);
+});
+
+/* 勾選/取消 */
+function toggleItem(group, index) {
+  packingData[group][index].done = !packingData[group][index].done;
+  renderPackingGroup(document.querySelector(`.packing-group[data-group='${group}']`));
 }
 
-function deleteItem(i) {
-  packingItems.splice(i, 1);
-  renderPackingList();
+/* 刪除 */
+function deleteItem(group, index) {
+  packingData[group].splice(index, 1);
+  renderPackingGroup(document.querySelector(`.packing-group[data-group='${group}']`));
 }
 
-function updateCount() {
-  let done = packingItems.filter(i => i.done).length;
-  countStatus.textContent = `${done}/${packingItems.length}`;
-}
-
-/* 新增項目 */
-document.getElementById("addItemBtn").onclick = () => {
-  let name = prompt("輸入項目名稱：");
-  if (!name) return;
-  packingItems.push({ text: name, done: false });
-  renderPackingList();
-};
-
-/* 取消已選 */
-document.getElementById("clearDoneBtn").onclick = () => {
-  packingItems.forEach(i => i.done = false);
-  renderPackingList();
-};
-
-/* 初始載入 */
-renderPackingList();
 
 // 頁面載入後先畫一次行李清單
 renderPacking();
@@ -2149,6 +2188,7 @@ renderPacking();
 </script>
 </body>
 </html>
+
 
 
 

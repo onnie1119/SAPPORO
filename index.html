@@ -2415,6 +2415,32 @@ document.querySelectorAll(".packing-group .arrow").forEach(arrow => {
     }
   };
 });
+/* --- 展開 / 收合分類 --- */
+document.querySelectorAll(".packing-group-header").forEach(header => {
+  header.onclick = (e) => {
+
+    // ⭐ 編輯模式時不做展開/收合
+    if (isPackingEditing) {
+      return;
+    }
+
+    e.stopPropagation(); // 避免子層事件亂觸發
+
+    const group = header.closest(".packing-group");
+    const list = group.querySelector(".packing-list");
+    const addBtn = group.querySelector(".add-item-btn");
+
+    const isOpen = group.classList.toggle("open");
+
+    if (isOpen) {
+      list.style.display = "block";
+      addBtn.style.display = "block";
+    } else {
+      list.style.display = "none";
+      addBtn.style.display = "none";
+    }
+  };
+});
 
 
   /* 新增項目 */
@@ -2510,6 +2536,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

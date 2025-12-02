@@ -1243,6 +1243,20 @@ body.packing-mode {
   margin: 20px 0;
   cursor: pointer;
 }
+/* 分類刪除鍵（默認隱藏） */
+.delete-group-btn {
+  background: none;
+  border: none;
+  color: #d95380;
+  font-size: 20px;
+  cursor: pointer;
+  display: none;   /* ⭐ 預設隱藏 */
+}
+
+/* 編輯模式下才顯示 */
+.packing-edit-mode .delete-group-btn {
+  display: block;
+}
 
 
 </style>
@@ -2001,7 +2015,19 @@ body.packing-mode {
       行李清單頁面
 ================================ -->
 <div id="packing-page" class="packing-page" style="display:none;"></div>
-
+<div id="packing-edit-bar" style="
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:10px;
+">
+  <button id="packing-edit-btn" style="
+    background:none;
+    border:none;
+    color:#3A7AFE;
+    font-size:15px;
+    cursor:pointer;
+  ">編輯</button>
+</div>
 <!-- === 新增項目用的 Modal === -->
 <div id="itemModal" class="modal-overlay">
   <div class="modal-box">
@@ -2429,6 +2455,22 @@ modalOK.onclick = () => {
   renderPackingPage();
   closeModal();
 };
+// ===== 編輯模式控制 =====
+let isPackingEditing = false;
+
+document.getElementById("packing-edit-btn").addEventListener("click", () => {
+  isPackingEditing = !isPackingEditing;
+
+  const page = document.getElementById("packing-page");
+
+  if (isPackingEditing) {
+    page.classList.add("packing-edit-mode");
+    document.getElementById("packing-edit-btn").textContent = "完成";
+  } else {
+    page.classList.remove("packing-edit-mode");
+    document.getElementById("packing-edit-btn").textContent = "編輯";
+  }
+});
 
 /* ============================================================
    初始化
@@ -2438,6 +2480,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

@@ -1262,6 +1262,28 @@ body.packing-mode {
   font-size: 18px;
   color: #d95380;
 }
+.packing-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 右邊箭頭固定在最右 */
+  gap: 6px;
+}
+
+.packing-group-header .left-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.packing-group-header .title {
+  flex-shrink: 0;
+}
+
+.packing-group-header .count-status {
+  font-size: 12px;
+  color: #999;
+  flex-shrink: 0;
+}
 
 </style>
 </head>
@@ -2293,10 +2315,13 @@ function createGroupDOM(key, group) {
   return `
     <div class="packing-group" data-group="${key}">
       <div class="packing-group-header">
-        <span class="title">${group.name}</span>
-        <span class="count-status">${group.items.filter(i => i.done).length}/${group.items.length}</span>
-        <span class="arrow">▾</span>
-      </div>
+		  <div class="left-group">
+		    <span class="title">${group.name}</span>
+		    <span class="count-status">${group.items.filter(i => i.done).length}/${group.items.length}</span>
+		  </div>
+		  <span class="arrow">▾</span>
+		</div>
+
       <ul class="packing-list"></ul>
       <button class="add-item-btn">＋ 新增項目</button>
     </div>
@@ -2530,6 +2555,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

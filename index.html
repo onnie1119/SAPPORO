@@ -984,40 +984,70 @@ ease;
   color: #fff;
 }
 
-/* 右上角「編輯」按鈕 */
-.packing-title-bar {
+/* 每個項目 */
+.packing-item {
+  position: relative;
+  padding: 14px 14px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 10px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 4px 15px;
-  font-size: 18px;
-  font-weight: 600;
+  gap: 12px;
 }
 
-.packing-edit-btn {
+/* 編輯按鈕（每一項目的右上角） */
+.item-edit-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 13px;
   background: none;
-  border: none;
-  font-size: 15px;
   color: #3a7afe;
-  padding: 4px 8px;
+  border: none;
   cursor: pointer;
+  padding: 2px 5px;
 }
 
-/* 預設刪除按鈕隱藏 */
+/* 刪除按鈕（只有進入編輯後才會出現） */
 .delete-item {
+  margin-left: auto;
   opacity: 0;
   pointer-events: none;
   transition: opacity .25s ease;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #e95959;
+  cursor: pointer;
 }
 
-/* 編輯模式：顯示刪除按鈕 */
-.edit-mode .delete-item {
+.packing-item.edit-mode .delete-item {
   opacity: 1;
   pointer-events: auto;
 }
 
-.edit-mode .packing-edit-btn {
-  color: #d95380;  /* 編輯中變紅色比較有感覺 */
+/* checkbox */
+.packing-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d95380;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+.packing-checkbox.checked {
+  background: #d95380;
+}
+
+.packing-checkbox.checked::after {
+  content: "✓";
+  color: #fff;
+  font-size: 14px;
+  position: absolute;
+  left: 4px;
+  top: -1px;
 }
 
 
@@ -2130,10 +2160,94 @@ packingEditBtn.addEventListener("click", () => {
     packingEditBtn.textContent = "編輯";
   }
 });
+// ===============================
+// ★★ 行李清單（每項獨立編輯 + 自動儲存）
+// ===============================
+
+// 讀取儲存資料（若無則使用預設）
+let packingItems = JSON.parse(localStorage.getItem("packingItems")) || [
+  { text: "護照", done: false },
+  { text: "信用卡", done: false },
+  { text: "外幣", done: false },
+  { text: "國際駕照", done: false }
+];
+
+const listEl = document.getElementById("packing-list");
+const countStatus = document.getElementById("count-status");
+
+// 儲存
+function savePacking() {
+  localStorage.setItem("packingItems", JSON.stringify(packingItems));
+}
+
+// 渲染畫面
+function renderPackingList() {
+  listEl.innerHTML = "";
+
+  packingItems.forEach((item, index) => {
+    let li = document.createElement("li");
+    li.className = "packing-item";
+
+    li.innerHTML = `
+      <button class="item-edit-btn">編輯</button>
+      <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
+      <span>${item.text}</span>
+      <button class="delete-item">×</button>
+    `;
+
+    // 打勾
+    li.querySelector(".packing-checkbox").onclick = () => {
+      item.done = !item.done;
+      savePacking();
+      renderPackingList();
+    };
+
+    // 編輯開關（單一項目）
+    li.querySelector(".item-edit-btn").onclick = () => {
+      li.classList.toggle("edit-mode");
+    };
+
+    // 刪除
+    li.querySelector(".delete-item").onclick = () => {
+      packingItems.splice(index, 1);
+      savePacking();
+      renderPackingList();
+    };
+
+    listEl.appendChild(li);
+  });
+
+  updateCount();
+}
+
+// 計算完成/總數
+function updateCount() {
+  let done = packingItems.filter(i => i.done).length;
+  countStatus.textContent = `${done}/${packingItems.length}`;
+}
+
+// 新增項目（此處保留你 Modal 的版本）
+document.getElementById("addItemBtn").onclick = () => {
+  openPackingModal();
+};
+
+packingOK.onclick = () => {
+  let name = packingInput.value.trim();
+  if (!name) { closePackingModal(); return; }
+
+  packingItems.push({ text: name, done: false });
+  savePacking();
+  renderPackingList();
+  closePackingModal();
+};
+
+// 初始化
+renderPackingList();
 
 </script>
 </body>
 </html>
+
 
 
 

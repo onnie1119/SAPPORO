@@ -823,8 +823,15 @@ ease;
 }
 
 /* =============================
-   大類卡片（Group）
+   Packing Page 主區
 ============================= */
+
+.packing-page {
+  padding: 20px;
+  margin-top: 120px;
+}
+
+/* 大分類卡片 */
 .packing-group {
   background: #fff;
   border-radius: 8px;
@@ -840,11 +847,9 @@ ease;
   align-items: center;
   font-weight: 600;
   font-size: 16px;
-  color: #222;
   cursor: pointer;
 }
 
-/* 展開箭頭 */
 .arrow {
   font-size: 16px;
   transition: transform .25s ease;
@@ -854,7 +859,7 @@ ease;
   transform: rotate(180deg);
 }
 
-/* 小項目列表（預設收合） */
+/* 小項列表 */
 .packing-list {
   list-style: none;
   padding: 0;
@@ -867,61 +872,47 @@ ease;
 }
 
 /* =============================
-   小項目（Item）＋ 左滑功能結構
+   小項目（含左滑功能）
 ============================= */
 .packing-item {
   position: relative;
   overflow: hidden;
-
   background: #fff;
   padding: 14px 16px;
   border-bottom: 1px solid #eee;
   border-radius: 6px;
-
   display: flex;
   align-items: center;
-  transition: transform .2s ease;
   touch-action: pan-y;
 }
 
-.packing-item:last-child {
-  border-bottom: none;
-}
-
-/* 小項目文字 */
 .item-content {
   flex: 1;
   font-size: 15px;
   color: #444;
+  transition: transform .25s ease;
 }
 
-/* 滑出按鈕區域 */
 .item-actions {
   position: absolute;
   top: 0;
-  right: -140px; /* 預設隱藏 */
+  right: -140px;
   height: 100%;
   display: flex;
   transition: right .25s ease;
 }
 
-/* 按鈕 */
 .item-actions button {
   width: 70px;
   border: none;
-  color: #fff;
   font-size: 14px;
+  color: #fff;
 }
 
-.edit-btn {
-  background: #888;
-}
+.edit-btn { background: #666; }
+.delete-btn { background: #e95959; }
 
-.delete-btn {
-  background: #e95959;
-}
-
-/* ⭐ 左滑後狀態 */
+/* 左滑時 */
 .packing-item.swiped .item-actions {
   right: 0;
 }
@@ -930,9 +921,7 @@ ease;
   transform: translateX(-140px);
 }
 
-/* =============================
-   新增項目按鈕
-============================= */
+/* 新增項目按鈕 */
 .add-item-btn {
   width: 100%;
   background: none;
@@ -940,20 +929,15 @@ ease;
   font-size: 15px;
   color: #3a7afe;
   padding: 14px 0 4px;
+  text-align: left;
   cursor: pointer;
   display: none;
-  text-align: left;
 }
+.packing-group.open .add-item-btn { display: block; }
 
-.packing-group.open .add-item-btn {
-  display: block;
-}
-
-/* =============================
-   新增分類按鈕
-============================= */
+/* 新增分類 */
 .add-category {
-  background: #ffffff;
+  background: #fff;
   border-radius: 6px;
   border: 1px solid #3a7afe;
   padding: 15px 18px;
@@ -965,14 +949,7 @@ ease;
   box-shadow: 0px 1px 2px rgba(0,0,0,0.08);
 }
 
-/* packing 模式背景 */
-body.packing-mode {
-  background: #f1f1f1 !important;
-}
-
-/* =============================
-   Modal：新增分類 / 新增項目
-============================= */
+/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -993,61 +970,33 @@ body.packing-mode {
   text-align: center;
   animation: modalPop .25s ease;
 }
-
 @keyframes modalPop {
   from { transform: scale(0.9); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
+  to   { transform: scale(1); opacity: 1; }
 }
 
-.modal-box h3 {
-  margin: 0 0 14px;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.modal-box input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 15px;
-  margin-bottom: 15px;
-
-  box-sizing: border-box;
-  outline: none;
-}
-
-/* Modal 按鈕區 */
 .modal-buttons {
   display: flex;
-  justify-content: space-between;
   gap: 10px;
 }
 
 .modal-buttons button {
   flex: 1;
   padding: 12px 0;
-  border-radius: 8px;
   border: none;
+  border-radius: 8px;
   font-size: 15px;
   cursor: pointer;
 }
 
-#modal-cancel {
-  background: #ddd;
-}
+#modal-cancel { background: #ccc; }
+#modal-ok { background: #d95380; color: #fff; }
 
-#modal-ok {
-  background: #d95380;
-  color: #fff;
-}
-
-/* 解鎖行李清單頁的滑動能力 */
+/* 解除禁止滑動 */
 #packing-page {
-  position: relative !important;
   overflow: visible !important;
-  height: auto !important;
 }
+
 </style>
 </head>
 <body>
@@ -1801,66 +1750,46 @@ body.packing-mode {
 	</div>
 </div>
 <!-- ================================
-      行李清單頁面
+      行李清單頁面（完整可左滑）
 ================================ -->
 <div id="packing-page" class="packing-page" style="display:none;">
 
-  <!-- ========== 大類：重要文件 ========== -->
+  <!-- ========== 預設分類：重要文件 ========== -->
   <div class="packing-group" data-group="documents">
     <div class="packing-group-header">
       <span>重要文件 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
-
-    <ul class="packing-list">
-      <!-- 小項目會由 JS 動態產生，結構如下：
-      <li class="packing-item">
-        <div class="packing-swipe">
-          <div class="packing-content">
-            <div class="packing-checkbox"></div>
-            <span class="item-text">護照</span>
-          </div>
-          <div class="packing-actions">
-            <button class="edit-btn">編輯</button>
-            <button class="delete-btn">刪除</button>
-          </div>
-        </div>
-      </li>
-      -->
-    </ul>
-
+    <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
 
-  <!-- ========== 大類：服裝用品 ========== -->
+  <!-- ========== 預設分類：服裝用品 ========== -->
   <div class="packing-group" data-group="clothes">
     <div class="packing-group-header">
       <span>服裝用品 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
-
     <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
 
-  <!-- ========== 大類：個人用品 ========== -->
+  <!-- ========== 預設分類：個人用品 ========== -->
   <div class="packing-group" data-group="personal">
     <div class="packing-group-header">
       <span>個人用品 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
-
     <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
 
-  <!-- ========== 大類：3C 設備 ========== -->
+  <!-- ========== 預設分類：3C 設備 ========== -->
   <div class="packing-group" data-group="electronics">
     <div class="packing-group-header">
       <span>3C 設備 <span class="count-status">0/0</span></span>
       <span class="arrow">▾</span>
     </div>
-
     <ul class="packing-list"></ul>
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
@@ -1869,7 +1798,7 @@ body.packing-mode {
   <div id="add-category" class="add-category">＋ 新增分類</div>
 
   <!-- =====================
-       通用 Modal（新增項目 / 新增分類）
+       Modal（新增項目/分類）
   ====================== -->
   <div id="modal-overlay" class="modal-overlay">
     <div class="modal-box">
@@ -1883,7 +1812,6 @@ body.packing-mode {
   </div>
 
 </div>
-
 
 
 
@@ -2272,18 +2200,8 @@ function backToMain() {
 }
 
 /* =====================================
-   行李清單 — 完整可左滑版本
+   Packing — localStorage 結構
 ===================================== */
-
-/* ★ 1. localStorage 結構
-packingData = {
-  documents: [ {text:"護照", done:false}, ... ],
-  clothes: [],
-  personal: [],
-  electronics: [],
-  ...
-}
-*/
 let packingData = JSON.parse(localStorage.getItem("packingData")) || {
   documents: [],
   clothes: [],
@@ -2291,20 +2209,16 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
   electronics: []
 };
 
-const packingPage      = document.getElementById("packing-page");
-const modalOverlay     = document.getElementById("modal-overlay");
-const modalTitle       = document.getElementById("modal-title");
-const modalInput       = document.getElementById("modal-input");
-const modalOk          = document.getElementById("modal-ok");
-const modalCancel      = document.getElementById("modal-cancel");
-const addCategoryBtn   = document.getElementById("add-category");
+const modalOverlay = document.getElementById("modal-overlay");
+const modalTitle   = document.getElementById("modal-title");
+const modalInput   = document.getElementById("modal-input");
+const modalOk      = document.getElementById("modal-ok");
+const modalCancel  = document.getElementById("modal-cancel");
+const addCategory  = document.getElementById("add-category");
 
-let currentGroup = null;     // 目前操作的大類
-let currentEdit  = null;     // 正在編輯的小項 index（若為 null = 新增）
+let currentGroup = null;
+let currentEdit  = null;
 
-/* =====================================
-   儲存
-===================================== */
 function savePacking() {
   localStorage.setItem("packingData", JSON.stringify(packingData));
 }
@@ -2315,7 +2229,6 @@ function savePacking() {
 function openModal(title, placeholder, group, editIndex=null){
   modalTitle.textContent = title;
   modalInput.placeholder = placeholder;
-  modalOverlay.style.display = "flex";
   modalInput.value = "";
 
   currentGroup = group;
@@ -2325,19 +2238,14 @@ function openModal(title, placeholder, group, editIndex=null){
     modalInput.value = packingData[group][editIndex].text;
   }
 
+  modalOverlay.style.display = "flex";
   setTimeout(()=> modalInput.focus(), 80);
 }
-
 function closeModal(){
   modalOverlay.style.display = "none";
 }
 
-/* =====================================
-   新增分類
-===================================== */
-addCategoryBtn.addEventListener("click", ()=>{
-  openModal("新增分類", "輸入分類名稱…", "add-category");
-});
+modalCancel.addEventListener("click", closeModal);
 
 modalOk.addEventListener("click", ()=>{
   let val = modalInput.value.trim();
@@ -2347,9 +2255,8 @@ modalOk.addEventListener("click", ()=>{
     let key = "cat_" + Date.now();
     packingData[key] = [];
   } else {
-    // 新增小項
     if(currentEdit === null){
-      packingData[currentGroup].push({text:val, done:false});
+      packingData[currentGroup].push({text: val, done:false});
     } else {
       packingData[currentGroup][currentEdit].text = val;
     }
@@ -2360,24 +2267,19 @@ modalOk.addEventListener("click", ()=>{
   closeModal();
 });
 
-modalCancel.addEventListener("click", closeModal);
-
 /* =====================================
-   產生 HTML（大類 + 小項目）
+   產生列表
 ===================================== */
 function renderPacking(){
-  const groups = document.querySelectorAll(".packing-group");
-
-  groups.forEach(groupEl=>{
-    let group = groupEl.dataset.group;
-    let listEl = groupEl.querySelector(".packing-list");
-    let countEl = groupEl.querySelector(".count-status");
-    let addBtn = groupEl.querySelector(".add-item-btn");
+  document.querySelectorAll(".packing-group").forEach(groupEl=>{
+    let groupKey = groupEl.dataset.group;
+    let listEl   = groupEl.querySelector(".packing-list");
+    let btnAdd   = groupEl.querySelector(".add-item-btn");
+    let countEl  = groupEl.querySelector(".count-status");
 
     listEl.innerHTML = "";
 
-    let arr = packingData[group] || [];
-
+    let arr = packingData[groupKey] || [];
     let doneCount = arr.filter(i=>i.done).length;
     countEl.textContent = `${doneCount}/${arr.length}`;
 
@@ -2385,79 +2287,64 @@ function renderPacking(){
       let li = document.createElement("li");
       li.className = "packing-item";
       li.innerHTML = `
-        <div class="item-content ${item.done ? "checked":""}">
-            ${item.text}
-        </div>
+        <div class="item-content ${item.done ? "checked":""}">${item.text}</div>
         <div class="item-actions">
           <button class="edit-btn">編輯</button>
           <button class="delete-btn">刪除</button>
         </div>
       `;
 
-      /* 點擊切換完成 */
+      // 切換完成
       li.querySelector(".item-content").addEventListener("click", ()=>{
         item.done = !item.done;
         savePacking();
         renderPacking();
       });
 
-      /* 編輯 */
-      li.querySelector(".edit-btn").addEventListener("click", (e)=>{
+      // 編輯
+      li.querySelector(".edit-btn").addEventListener("click", e=>{
         e.stopPropagation();
-        openModal("編輯項目", "輸入名稱…", group, index);
+        openModal("編輯項目", "輸入名稱…", groupKey, index);
       });
 
-      /* 刪除 */
-      li.querySelector(".delete-btn").addEventListener("click", (e)=>{
+      // 刪除
+      li.querySelector(".delete-btn").addEventListener("click", e=>{
         e.stopPropagation();
         if(confirm("確定刪除？")){
-          packingData[group].splice(index,1);
+          packingData[groupKey].splice(index,1);
           savePacking();
           renderPacking();
         }
       });
 
-      /* 套用左滑功能 */
       enableSwipe(li);
-
       listEl.appendChild(li);
     });
 
-    /* 新增項目 */
-    addBtn.onclick = ()=> openModal("新增項目", "輸入項目名稱…", group);
+    // 新增項目按鈕
+    btnAdd.onclick = ()=> openModal("新增項目", "輸入項目…", groupKey);
   });
 }
 
 /* =====================================
-   左滑（iOS / Android可用）
+   左滑（完整、不卡）
 ===================================== */
 function enableSwipe(item){
   let startX = 0;
-  let currentX = 0;
-  let moved = false;
 
-  item.addEventListener("touchstart", (e)=>{
+  item.addEventListener("touchstart", e=>{
     startX = e.touches[0].clientX;
-    moved = false;
     item.classList.remove("swiped");
   });
 
-  item.addEventListener("touchmove", (e)=>{
-    currentX = e.touches[0].clientX;
-    let diff = currentX - startX;
+  item.addEventListener("touchmove", e=>{
+    let diff = e.touches[0].clientX - startX;
 
-    if(diff < -30){
-      moved = true;
+    if(diff < -40){
       item.classList.add("swiped");
-    }
-    if(diff > 30){
-      moved = true;
+    } else if(diff > 40){
       item.classList.remove("swiped");
     }
-  });
-
-  item.addEventListener("touchend", ()=>{
-    if(!moved) item.classList.toggle("swiped");
   });
 }
 
@@ -2466,15 +2353,20 @@ function enableSwipe(item){
 ===================================== */
 document.querySelectorAll(".packing-group-header").forEach(h=>{
   h.addEventListener("click", ()=>{
-    let g = h.parentElement;
-    g.classList.toggle("open");
+    h.parentElement.classList.toggle("open");
   });
 });
 
 /* =====================================
-   最後：初始化
+   新增分類
 ===================================== */
+addCategory.addEventListener("click", ()=>{
+  openModal("新增分類", "輸入分類名稱…", "add-category");
+});
+
+/* 初始化 */
 renderPacking();
+
 
 
 
@@ -2482,6 +2374,7 @@ renderPacking();
 
 </body>
 </html>
+
 
 
 

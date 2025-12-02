@@ -2289,37 +2289,39 @@ function renderPackingPage() {
   `;
 
   // 生成小項目
-  document.querySelectorAll(".packing-group").forEach(groupEl => {
-    const key = groupEl.dataset.group;
-    const ul = groupEl.querySelector(".packing-list");
+ document.querySelectorAll(".packing-group").forEach(groupEl => {
+  const key = groupEl.dataset.group;
+  const ul = groupEl.querySelector(".packing-list");
 
-    packingData.groups[key].items.forEach((item, index) => {
-      const li = document.createElement("li");
-      li.className = "packing-item";
+  packingData.groups[key].items.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.className = "packing-item";
 
-      li.innerHTML = `
-        <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
-        <span>${item.text}</span>
-        <button class="item-delete-btn">×</button>
-      `;
+    li.innerHTML = `
+      <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
+      <span>${item.text}</span>
+      <button class="item-delete-btn">×</button>
+    `;
 
-      // 勾選
-      li.querySelector(".packing-checkbox").onclick = () => {
-        item.done = !item.done;
-        savePacking();
-        renderPackingPage();
-      };
+    li.querySelector(".packing-checkbox").onclick = () => {
+      item.done = !item.done;
+      savePacking();
+      renderPackingPage();
+    };
 
-      // 刪除項目
-      li.querySelector(".item-delete-btn").onclick = () => {
-        packingData.groups[key].items.splice(index, 1);
-        savePacking();
-        renderPackingPage();
-      };
+    li.querySelector(".item-delete-btn").onclick = () => {
+      packingData.groups[key].items.splice(index, 1);
+      savePacking();
+      renderPackingPage();
+    };
 
-      ul.appendChild(li);
-    });
+    ul.appendChild(li);
   });
+
+  // ⭐ 預設全部收起來
+  ul.style.display = "none";
+  groupEl.querySelector(".add-item-btn").style.display = "none";
+});
 
   // ⭐ 綁定事件（包含新增分類的監聽）
   attachEvents();
@@ -2428,6 +2430,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

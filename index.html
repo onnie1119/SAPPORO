@@ -2293,7 +2293,7 @@ function createGroupDOM(key, group) {
   return `
     <div class="packing-group" data-group="${key}">
       <div class="packing-group-header">
-        <span class="title">${key}</span>
+        <span class="title">${group.name}</span>
         <span class="count-status">${group.items.filter(i => i.done).length}/${group.items.length}</span>
         <span class="arrow">▾</span>
       </div>
@@ -2302,17 +2302,20 @@ function createGroupDOM(key, group) {
     </div>
   `;
 }
+
 document.querySelectorAll(".packing-group .arrow").forEach(arrow => {
   arrow.onclick = (e) => {
     if (!isPackingEditing) return; // 普通模式下是展開用
 
     const groupKey = arrow.closest(".packing-group").dataset.group;
+const groupName = packingData.groups[groupKey].name;
 
-    if (confirm(`確定刪除「${groupKey}」分類？`)) {
-      delete packingData.groups[groupKey];
-      savePacking();
-      renderPackingPage();
-    }
+if (confirm(`確定刪除「${groupName}」分類？`)) {
+    delete packingData.groups[groupKey];
+    savePacking();
+    renderPackingPage();
+}
+
 
     e.stopPropagation();
   };
@@ -2512,6 +2515,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

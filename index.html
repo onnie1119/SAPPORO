@@ -1257,7 +1257,11 @@ body.packing-mode {
 .packing-edit-mode .delete-group-btn {
   display: block;
 }
-
+/* 編輯模式時，箭頭變成 X 的視覺 */
+.packing-edit-mode .arrow {
+  font-size: 18px;
+  color: #d95380;
+}
 
 </style>
 </head>
@@ -2368,24 +2372,29 @@ function attachEvents() {
 
   /* 展開/收合分類 */
   document.querySelectorAll(".packing-group-header").forEach(header => {
-    header.onclick = (e) => {
-      if (e.target.classList.contains("delete-group-btn")) return;
+  header.onclick = (e) => {
 
-      const group = header.parentElement;
-      const list = group.querySelector(".packing-list");
-      const addBtn = group.querySelector(".add-item-btn");
+    // ⭐ 編輯模式時禁用展開/收合
+    if (isPackingEditing) return;
 
-      group.classList.toggle("open");
+    if (e.target.classList.contains("delete-group-btn")) return;
 
-      if (group.classList.contains("open")) {
-        list.style.display = "block";
-        addBtn.style.display = "block";
-      } else {
-        list.style.display = "none";
-        addBtn.style.display = "none";
-      }
-    };
-  });
+    const group = header.parentElement;
+    const list = group.querySelector(".packing-list");
+    const addBtn = group.querySelector(".add-item-btn");
+
+    group.classList.toggle("open");
+
+    if (group.classList.contains("open")) {
+      list.style.display = "block";
+      addBtn.style.display = "block";
+    } else {
+      list.style.display = "none";
+      addBtn.style.display = "none";
+    }
+  };
+});
+
 
   /* 刪除整個分類 */
   document.querySelectorAll(".delete-group-btn").forEach(btn => {
@@ -2462,15 +2471,28 @@ document.getElementById("packing-edit-btn").addEventListener("click", () => {
   isPackingEditing = !isPackingEditing;
 
   const page = document.getElementById("packing-page");
+  const arrows = document.querySelectorAll(".packing-group .arrow");
 
   if (isPackingEditing) {
     page.classList.add("packing-edit-mode");
     document.getElementById("packing-edit-btn").textContent = "完成";
+
+    // ⭐ 編輯模式：箭頭 → X
+    arrows.forEach(arrow => {
+      arrow.textContent = "×";
+    });
+
   } else {
     page.classList.remove("packing-edit-mode");
     document.getElementById("packing-edit-btn").textContent = "編輯";
+
+    // ⭐ 回到一般模式：X → ▾
+    arrows.forEach(arrow => {
+      arrow.textContent = "▾";
+    });
   }
 });
+
 
 /* ============================================================
    初始化
@@ -2480,6 +2502,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

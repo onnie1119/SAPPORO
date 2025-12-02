@@ -2328,23 +2328,7 @@ function createGroupDOM(key, group) {
   `;
 }
 
-document.querySelectorAll(".packing-group .arrow").forEach(arrow => {
-  arrow.onclick = (e) => {
-    if (!isPackingEditing) return; // 普通模式下是展開用
 
-    const groupKey = arrow.closest(".packing-group").dataset.group;
-const groupName = packingData.groups[groupKey].name;
-
-if (confirm(`確定刪除「${groupName}」分類？`)) {
-    delete packingData.groups[groupKey];
-    savePacking();
-    renderPackingPage();
-}
-
-
-    e.stopPropagation();
-  };
-});
 
 
 /* ============================================================
@@ -2446,7 +2430,29 @@ function attachEvents() {
     }
   };
 });
+/* 編輯模式切換 */
+const editBtn = document.getElementById("packing-edit-btn");
+if (editBtn) {
+  editBtn.onclick = () => {
+    isPackingEditing = !isPackingEditing;
 
+    const page = document.getElementById("packing-page");
+    const arrows = document.querySelectorAll(".packing-group .arrow");
+
+    if (isPackingEditing) {
+      page.classList.add("packing-edit-mode");
+      editBtn.textContent = "完成";
+
+      arrows.forEach(arrow => arrow.textContent = "×");
+
+    } else {
+      page.classList.remove("packing-edit-mode");
+      editBtn.textContent = "編輯";
+
+      arrows.forEach(arrow => arrow.textContent = "▾");
+    }
+  };
+}
 
   /* 刪除整個分類 */
   document.querySelectorAll(".delete-group-btn").forEach(btn => {
@@ -2555,6 +2561,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

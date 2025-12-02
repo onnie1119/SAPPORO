@@ -929,15 +929,16 @@ body.packing-mode {
   background: #f1f1f1 !important;
 }
 .add-category {
-  background: #fff;
-  border-radius: 14px;
-  padding: 15px 18px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  margin: 20px 0;
-  text-align: center;
-  font-size: 15px;
-  color: #d95380;
-  cursor: pointer;
+  background: #ffffff52;
+    border-radius: 5px;
+    border: 1px solid #3a7afe;
+    padding: 15px 18px;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+    margin: 20px 0;
+    text-align: center;
+    font-size: 15px;
+    color: #3a7afe;
+    cursor: pointer;
 }
 
 </style>
@@ -2120,28 +2121,33 @@ function backToMain() {
   }
 }
 
-/* 四大類資料 */
+/* =====================================================
+   行李清單資料結構（預設四大類）
+===================================================== */
 let packingData = {
   documents: [
     { text: "護照", done: false },
     { text: "信用卡", done: false },
     { text: "外幣", done: false },
     { text: "國際駕照", done: false },
-    { text: "台灣駕照", done: false }
+    { text: "台灣駕照", done: false },
   ],
   clothes: [],
   personal: [],
   electronics: []
 };
 
-/* 渲染每個分類 */
+const packingPage = document.getElementById("packing-page");
+
+/* =====================================================
+   渲染單一分類（大類）
+===================================================== */
 function renderPackingGroup(groupEl) {
   const groupKey = groupEl.dataset.group;
   const listEl = groupEl.querySelector(".packing-list");
   const countEl = groupEl.querySelector(".count-status");
 
-  let items = packingData[groupKey];
-
+  const items = packingData[groupKey];
   listEl.innerHTML = "";
 
   items.forEach((item, i) => {
@@ -2157,43 +2163,109 @@ function renderPackingGroup(groupEl) {
     listEl.appendChild(li);
   });
 
-  const doneCount = items.filter(i => i.done).length;
-  countEl.textContent = `${doneCount}/${items.length}`;
+  // 更新計數
+  const done = items.filter(i => i.done).length;
+  countEl.textContent = `${done}/${items.length}`;
 }
 
-/* 展開大類（整塊可點） */
+/* =====================================================
+   初始化所有大類（展開事件 + 新增小項）
+===================================================== */
 document.querySelectorAll(".packing-group").forEach(groupEl => {
-  const header = groupEl.querySelector(".packing-group-header");
 
+  // ⭐ 點擊整塊標題展開/收合
+  const header = groupEl.querySelector(".packing-group-header");
   header.addEventListener("click", () => {
     groupEl.classList.toggle("open");
+    renderPackingGroup(groupEl);
   });
 
-  /* 新增項目 */
+  // ⭐ 新增小項目
   const addBtn = groupEl.querySelector(".add-item-btn");
   addBtn.addEventListener("click", (e) => {
     e.stopPropagation(); // 不要觸發收合
-    let name = prompt("輸入項目名稱：");
+    const name = prompt("輸入項目名稱：");
     if (!name) return;
 
     packingData[groupEl.dataset.group].push({ text: name, done: false });
     renderPackingGroup(groupEl);
   });
 
+  // 初始渲染
   renderPackingGroup(groupEl);
 });
 
-/* 勾選/取消 */
+/* =====================================================
+   勾選 / 取消小項
+===================================================== */
 function toggleItem(group, index) {
   packingData[group][index].done = !packingData[group][index].done;
-  renderPackingGroup(document.querySelector(`.packing-group[data-group='${group}']`));
+
+  const groupEl = document.querySelector(`.packing-group[data-group='${group}']`);
+  renderPackingGroup(groupEl);
 }
 
-/* 刪除 */
+/* =====================================================
+   刪除小項目
+===================================================== */
 function deleteItem(group, index) {
   packingData[group].splice(index, 1);
-  renderPackingGroup(document.querySelector(`.packing-group[data-group='${group}']`));
+
+  const groupEl = document.querySelector(`.packing-group[data-group='${group}']`);
+  renderPackingGroup(groupEl);
 }
+
+/* =====================================================
+   新增「大類（分類）」
+===================================================== */
+document.getElementById("add-category").addEventListener("click", () => {
+  const name = prompt("請輸入分類名稱：");
+  if (!name) return;
+
+  // 生成分類 Key
+  const key = "cat_" + Date.now();
+  packingData[key] = [];
+
+  // 建立分類 DOM
+  const newGroup = document.createElement("div");
+  newGroup.className = "packing-group";
+  newGroup.dataset.group = key;
+
+  newGroup.innerHTML = `
+    <div class="packing-group-header">
+      <span>${name} <span class="count-status">0/0</span></span>
+      <span class="arrow">▾</span>
+    </div>
+    <ul class="packing-list"></ul>
+    <button class="add-item-btn">＋ 新增項目</button>
+  `;
+
+  // 整塊可展開
+  const header = newGroup.querySelector(".packing-group-header");
+  header.addEventListener("click", () => {
+    newGroup.classList.toggle("open");
+    renderPackingGroup(newGroup);
+  });
+
+  // 新增小項
+  const addBtn = newGroup.querySelector(".add-item-btn");
+  addBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const itemName = prompt("輸入項目名稱：");
+    if (!itemName) return;
+
+    packingData[key].push({ text: itemName, done: false });
+    renderPackingGroup(newGroup);
+  });
+
+  // 插入新增分類按鈕上方
+  const addCategoryBtn = document.getElementById("add-category");
+  packingPage.insertBefore(newGroup, addCategoryBtn);
+
+  // 初次渲染
+  renderPackingGroup(newGroup);
+});
+
 
 // 頁面載入後先畫一次行李清單
 renderPacking();
@@ -2201,68 +2273,10 @@ renderPacking();
 
 
 </script>
-<script>
-// 大類資料
-let packingData = {
-  documents: [
-    { text: "護照", done: false },
-    { text: "信用卡", done: false },
-  ],
-  clothes: [],
-  personal: [],
-  electronics: []
-};
 
-const packingPage = document.getElementById("packing-page");
-
-/* =====================
-   重新渲染所有分類
-===================== */
-function renderAllGroups() {
-  const groups = packingPage.querySelectorAll(".packing-group");
-  groups.forEach(group => renderPackingGroup(group));
-}
-
-/* =====================
-   新增分類
-===================== */
-document.getElementById("add-category").addEventListener("click", () => {
-  const name = prompt("請輸入分類名稱（例如：保養品）：");
-  if (!name) return;
-
-  // 製作新的 key
-  const key = "cat_" + Date.now();
-  packingData[key] = [];
-
-  // 建立分類 HTML
-  const groupHTML = document.createElement("div");
-  groupHTML.className = "packing-group";
-  groupHTML.dataset.group = key;
-
-  groupHTML.innerHTML = `
-    <div class="packing-group-header">
-      <span>${name} <span class="count-status">0/0</span></span>
-      <span class="arrow">▾</span>
-    </div>
-    <ul class="packing-list"></ul>
-  `;
-
-  // ⭐ 讓整塊可展開
-  groupHTML.querySelector(".packing-group-header").addEventListener("click", () => {
-    groupHTML.classList.toggle("open");
-  });
-
-  // 插入到新增按鈕上方
-  packingPage.insertBefore(groupHTML, document.getElementById("add-category"));
-
-  // 渲染
-  renderPackingGroup(groupHTML);
-});
-
-
-</script>
 </body>
 </html>
+
 
 
 

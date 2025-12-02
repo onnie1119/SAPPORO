@@ -1570,16 +1570,17 @@ ease;
 	
 <script>
 /* =======================================
-   頁面載入初始化
+   DOM Ready
 ======================================= */
 document.addEventListener("DOMContentLoaded", () => {
   getExchangeRate();
   showDay(1);
   updateArrows();
+  renderPacking();
 });
 
 /* =======================================
-   1. 行程天數切換（含動畫）
+   1. 行程天數切換
 ======================================= */
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
@@ -1603,33 +1604,30 @@ function showDay(dayNumber) {
 }
 
 /* =======================================
-   2. DayTabs 左右箭頭
+   2. Tabs 左右箭頭
 ======================================= */
 const scrollEl   = document.getElementById("dayTabsScroll");
-const arrowLeft  = document.getElementById("arrowLeft");
-const arrowRight = document.getElementById("arrowRight");
+const arrowLeft  = document.getElementById("arrow-left");
+const arrowRight = document.getElementById("arrow-right");
 
 function updateArrows() {
   if (!scrollEl) return;
+  const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
 
-  const scrollLeft = scrollEl.scrollLeft;
-  const maxScroll  = scrollEl.scrollWidth - scrollEl.clientWidth;
-
-  arrowLeft.style.opacity  = scrollLeft > 10           ? "1" : "0";
-  arrowRight.style.opacity = scrollLeft < maxScroll-10 ? "1" : "0";
+  arrowLeft.style.opacity  = scrollEl.scrollLeft > 10 ? "1" : "0";
+  arrowRight.style.opacity = scrollEl.scrollLeft < maxScroll - 10 ? "1" : "0";
 }
 
-scrollEl?.addEventListener("scroll", updateArrows);
+scrollEl.addEventListener("scroll", updateArrows);
 window.addEventListener("resize", updateArrows);
 
 /* =======================================
-   3. TOP 置頂鍵
+   3. TOP 置頂鍵（單一版本）
 ======================================= */
 const scrollBtn = document.getElementById("scrollToTop");
 
 window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) scrollBtn.classList.add("show");
-  else scrollBtn.classList.remove("show");
+  scrollBtn.classList.toggle("show", window.scrollY > 300);
 });
 
 scrollBtn.addEventListener("click", () => {
@@ -1637,7 +1635,7 @@ scrollBtn.addEventListener("click", () => {
 });
 
 /* =======================================
-   4. 匯率換算功能
+   4. 匯率換算 + 數字鍵盤
 ======================================= */
 let currentRate = 0;
 let isJPYtoTWD = true;
@@ -1665,7 +1663,7 @@ async function getExchangeRate() {
   }
 }
 
-/* 計算 */
+/* 計算結果 */
 function updateConversion() {
   if (!currentRate) return;
 
@@ -1675,12 +1673,13 @@ function updateConversion() {
     return;
   }
 
-  let val = parseInt(raw);
-  let result = isJPYtoTWD ? val * currentRate : val / currentRate;
+  let amount = parseInt(raw);
+  let result = isJPYtoTWD ? amount * currentRate : amount / currentRate;
+
   outputField.value = addComma(Math.round(result).toString());
 }
 
-/* 幣別切換 */
+/* 幣別切換（左右滑動） */
 toggleBtn.addEventListener("click", () => {
   isJPYtoTWD = !isJPYtoTWD;
 
@@ -1699,9 +1698,10 @@ toggleBtn.addEventListener("click", () => {
   updateConversion();
 });
 
-/* 自動格式化 + 即時計算 */
+/* 手動輸入 */
 inputField.addEventListener("input", () => {
   let raw = removeComma(inputField.value);
+
   if (!raw || isNaN(raw)) {
     inputField.value = "";
     outputField.value = "";
@@ -1712,7 +1712,7 @@ inputField.addEventListener("input", () => {
   updateConversion();
 });
 
-/* 自訂數字鍵盤 */
+/* 數字鍵盤 */
 document.querySelectorAll(".key").forEach(btn => {
   btn.addEventListener("click", () => {
     let raw = removeComma(inputField.value);
@@ -1738,22 +1738,14 @@ document.querySelectorAll(".key").forEach(btn => {
 });
 
 /* =======================================
-   5. 三頁切換（首頁 / 匯率 / 行李清單）
+   5. 三頁切換功能
 ======================================= */
 function showExchange() {
   document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
   document.getElementById("packing-page").style.display = "none";
+  document.getElementById("exchange-page").style.display = "block";
 
   document.getElementById("backBtn").classList.add("show");
-}
-
-function backToMain() {
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
-  document.querySelector(".container").style.display = "block";
-
-  document.getElementById("backBtn").classList.remove("show");
 }
 
 function showPacking() {
@@ -1764,13 +1756,21 @@ function showPacking() {
   document.getElementById("backBtn").classList.add("show");
 }
 
+function backToMain() {
+  document.querySelector(".container").style.display = "block";
+  document.getElementById("exchange-page").style.display = "none";
+  document.getElementById("packing-page").style.display = "none";
+
+  document.getElementById("backBtn").classList.remove("show");
+}
+
 /* =======================================
-   6. 行李清單系統
+   6. 行李清單系統（localStorage）
 ======================================= */
 let packData = JSON.parse(localStorage.getItem("packing") || "[]");
 
-const todoEl   = document.getElementById("packing-todo");
-const doneEl   = document.getElementById("packing-done");
+const todoEl = document.getElementById("packing-todo");
+const doneEl = document.getElementById("packing-done");
 const addModal = document.getElementById("packing-add-modal");
 const newItemInput = document.getElementById("packing-new-input");
 
@@ -1780,9 +1780,10 @@ function renderPacking() {
 
   packData.forEach((item, i) => {
     const card = document.createElement("div");
-    card.className = "card-item" + (item.done ? " done" : "");
+    card.className = "packing-card-item" + (item.done ? " done" : "");
+
     card.innerHTML = `
-      <div class="card-actions">
+      <div class="packing-actions">
         <button onclick="editItem(${i})">編</button>
         <button class="delete-btn" onclick="deleteItem(${i})">刪</button>
       </div>
@@ -1802,7 +1803,7 @@ function renderPacking() {
 
 function addAddCard(parent) {
   const addCard = document.createElement("div");
-  addCard.className = "add-card";
+  addCard.className = "packing-add-card";
   addCard.textContent = "+";
   addCard.addEventListener("click", openAddModal);
   parent.appendChild(addCard);
@@ -1854,49 +1855,10 @@ function savePacking() {
   localStorage.setItem("packing", JSON.stringify(packData));
 }
 
-renderPacking();
-
-/* =======================================
-   TOP 置頂鍵（最終修正版）
-======================================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const scrollBtn = document.getElementById("scrollToTop");
-
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      scrollBtn.classList.add("show");
-    } else {
-      scrollBtn.classList.remove("show");
-    }
-  });
-
-  scrollBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-});
-
-
-	  
-
-
-</script>
-	<script>
-  const scrollBtn = document.getElementById('scrollToTop');
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-      scrollBtn.classList.add('show');
-    } else {
-      scrollBtn.classList.remove('show');
-    }
-  });
-
-  scrollBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
 </script>
 </body>
 </html>
+
 
 
 

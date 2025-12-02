@@ -917,6 +917,72 @@ ease;
   cursor: pointer;
 }
 
+/* ==========================
+   行李清單 Modal（置中）
+========================== */
+.packing-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;               /* 初始隱藏 */
+  justify-content: center;     /* 水平置中 */
+  align-items: center;         /* 垂直置中 */
+  z-index: 3000;
+}
+
+.packing-modal {
+  background: #fff;
+  width: 80%;
+  max-width: 300px;
+  padding: 25px 20px;
+  border-radius: 14px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.20);
+  text-align: center;
+  animation: modalPop .25s ease;
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.packing-modal h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.packing-modal input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.packing-modal-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.packing-modal-btns button {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+#packingCancel {
+  background: #ccc;
+}
+
+#packingOK {
+  background: #d95380;
+  color: #fff;
+}
 
 
 
@@ -1692,6 +1758,17 @@ ease;
 
     <button id="addItemBtn" class="add-item-btn">＋ 新增項目</button>
   </div>
+<!-- 新增項目 Modal -->
+<div id="packingModal" class="packing-modal-overlay">
+  <div class="packing-modal">
+    <h3>新增項目</h3>
+    <input type="text" id="packingInput" placeholder="輸入項目名稱…" />
+    <div class="packing-modal-btns">
+      <button id="packingCancel">取消</button>
+      <button id="packingOK">確定</button>
+    </div>
+  </div>
+</div>
 
 </div>
 
@@ -1956,9 +2033,50 @@ document.getElementById("clearDoneBtn").onclick = () => {
 };
 
 renderPackingList();
+// ===============================
+// Modal 控制
+// ===============================
+const packingModal = document.getElementById("packingModal");
+const packingInput = document.getElementById("packingInput");
+const packingCancel = document.getElementById("packingCancel");
+const packingOK = document.getElementById("packingOK");
+
+function openPackingModal() {
+  packingModal.style.display = "flex";
+  packingInput.value = "";
+  setTimeout(() => packingInput.focus(), 50);
+}
+
+function closePackingModal() {
+  packingModal.style.display = "none";
+}
+
+packingCancel.onclick = closePackingModal;
+
+
+// ===============================
+// 修改原本新增項目的功能
+// ===============================
+document.getElementById("addItemBtn").onclick = () => {
+  openPackingModal();
+};
+
+// 按下「確定」後新增
+packingOK.onclick = () => {
+  let name = packingInput.value.trim();
+  if (!name) {
+    closePackingModal();
+    return;
+  }
+
+  packingItems.push({ text: name, done: false });
+  renderPackingList();
+  closePackingModal();
+};
 
 </script>
 </body>
 </html>
+
 
 

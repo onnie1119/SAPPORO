@@ -2481,12 +2481,28 @@ loadPackingData();
 // 頁面載入後先畫一次行李清單
 renderPacking();
 
+/* ==============================
+   允許行李項目滑動，不阻止左滑
+============================== */
+function allowSwipeInPacking(e){
+  if(e.target.closest(".packing-item")){
+    return; // ★ 不阻止
+  }
+  e.preventDefault(); // ★ 其他地方仍禁止滾動（如果你有需要）
+}
+
+/* 停用舊的阻止滑動事件（若有） */
+document.body.style.overflow = ""; // 清除 overflow:hidden
+
+// 綁定新策略
+document.addEventListener("touchmove", allowSwipeInPacking, { passive:false });
 
 
 </script>
 
 </body>
 </html>
+
 
 
 

@@ -2436,14 +2436,22 @@ document.querySelectorAll(".packing-group-header").forEach(header => {
 // ✅ 控制收合/展開
 document.querySelectorAll('.packing-group-header').forEach(header => {
   header.addEventListener('click', function(e) {
-    // 如果點擊的是 checkbox，就不要收合
-    if (e.target.classList.contains('packing-checkbox')) return;
+    // 如果點擊的是 checkbox 或刪除鍵，就不要收合
+    if (e.target.classList.contains('packing-checkbox') || 
+        e.target.classList.contains('item-delete-btn')) {
+      return;
+    }
 
     const group = this.closest('.packing-group');
     group.classList.toggle('open');
+
     const list = group.querySelector('.packing-list');
     if (list) {
-      list.style.display = group.classList.contains('open') ? 'block' : 'none';
+      if (group.classList.contains('open')) {
+        list.style.display = 'block';   // 展開
+      } else {
+        list.style.display = 'none';    // 收合
+      }
     }
   });
 });
@@ -2451,10 +2459,11 @@ document.querySelectorAll('.packing-group-header').forEach(header => {
 // ✅ 控制 checkbox 勾選，不影響收合
 document.querySelectorAll('.packing-checkbox').forEach(cb => {
   cb.addEventListener('click', function(e) {
-    e.stopPropagation(); // 阻止事件往上冒泡
+    e.stopPropagation(); // 阻止事件冒泡到 header
     this.classList.toggle('checked');
   });
 });
+
 
 
   /* 新增項目 */
@@ -2550,6 +2559,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

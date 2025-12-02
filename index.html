@@ -791,6 +791,35 @@ ease;
   pointer-events: auto;
 }
 
+/* 兩顆按鈕統一造型 */
+.scroll-top-button,
+.back-btn {
+  position: fixed;
+  bottom: 20px;             /* ⭐ 兩顆按鈕同一高度 */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3A7AFE;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* 顯示狀態 */
+.scroll-top-button.show,
+.back-btn.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 
 
 
@@ -1644,20 +1673,7 @@ if (scrollEl) {
 // 3. TOP 置頂鍵（有就啟動，沒有就略過）
 // ===========================
 (function setupScrollTop() {
-  const scrollBtn = document.getElementById("scrollToTop");
-  if (!scrollBtn) return; // 目前沒 TOP 按鈕就不啟動這段
-
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      scrollBtn.classList.add("show");
-    } else {
-      scrollBtn.classList.remove("show");
-    }
-  });
-
-  scrollBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+ 
 })();
 
 // ===========================
@@ -1780,47 +1796,7 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
 // ===========================
 // 5. 三個頁面切換（首頁 / 匯率 / 行李清單）
 // ===========================
-function showExchange() {
-  const container = document.querySelector(".container");
-  const exchange  = document.getElementById("exchange-page");
-  const packing   = document.getElementById("packing-page");
-  const backBtn   = document.getElementById("backBtn");
 
-  if (container) container.style.display = "none";
-  if (exchange)  exchange.style.display  = "block";
-  if (packing)   packing.style.display   = "none";
-  if (backBtn)   backBtn.classList.add("show");
-
-  window.scrollTo({ top: 0, behavior: "auto" });
-}
-
-function backToMain() {
-  const container = document.querySelector(".container");
-  const exchange  = document.getElementById("exchange-page");
-  const packing   = document.getElementById("packing-page");
-  const backBtn   = document.getElementById("backBtn");
-
-  if (exchange)  exchange.style.display  = "none";
-  if (packing)   packing.style.display   = "none";
-  if (container) container.style.display = "block";
-  if (backBtn)   backBtn.classList.remove("show");
-
-  window.scrollTo({ top: 0, behavior: "auto" });
-}
-
-function showPacking() {
-  const container = document.querySelector(".container");
-  const exchange  = document.getElementById("exchange-page");
-  const packing   = document.getElementById("packing-page");
-  const backBtn   = document.getElementById("backBtn");
-
-  if (container) container.style.display = "none";
-  if (exchange)  exchange.style.display  = "none";
-  if (packing)   packing.style.display   = "block";
-  if (backBtn)   backBtn.classList.add("show");
-
-  window.scrollTo({ top: 0, behavior: "auto" });
-}
 
 // ===========================
 // 6. 行李清單系統
@@ -1944,6 +1920,70 @@ function savePacking() {
   });
 })();
 
+const scrollBtn = document.getElementById("scrollToTop");
+const homeBtn   = document.getElementById("backBtn");
+
+/* ⭐ 預設：在首頁才使用 TOP 邏輯 */
+let isMainPage = true;
+
+/* ========================
+     1. TOP 按鈕 scroll 控制
+======================== */
+window.addEventListener("scroll", () => {
+  if (!isMainPage) return;             // 不是首頁 → 不顯示 TOP
+
+  if (window.scrollY > 300) {
+    scrollBtn.classList.add("show");
+  } else {
+    scrollBtn.classList.remove("show");
+  }
+});
+
+/* TOP 點擊捲動 */
+scrollBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ========================
+     2. 三頁切換
+======================== */
+function showExchange() {
+  isMainPage = false;
+
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "block";
+  document.getElementById("packing-page").style.display = "none";
+
+  scrollBtn.classList.remove("show");  // 匯率頁不顯示 TOP
+  homeBtn.classList.add("show");       // 顯示 HOME
+}
+
+function showPacking() {
+  isMainPage = false;
+
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "none";
+  document.getElementById("packing-page").style.display = "block";
+
+  scrollBtn.classList.remove("show");
+  homeBtn.classList.add("show");
+}
+
+function backToMain() {
+  isMainPage = true;
+
+  document.querySelector(".container").style.display = "block";
+  document.getElementById("exchange-page").style.display = "none";
+  document.getElementById("packing-page").style.display = "none";
+
+  homeBtn.classList.remove("show");
+
+  if (window.scrollY > 300) {
+    scrollBtn.classList.add("show");
+  } else {
+    scrollBtn.classList.remove("show");
+  }
+}
 	
 // 頁面載入後先畫一次行李清單
 renderPacking();
@@ -1953,6 +1993,7 @@ renderPacking();
 </script>
 </body>
 </html>
+
 
 
 

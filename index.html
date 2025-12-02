@@ -940,6 +940,67 @@ body.packing-mode {
     color: #3a7afe;
     cursor: pointer;
 }
+/* 背景遮罩 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* Modal 主體 */
+.modal-box {
+  background: #fff;
+  width: 80%;
+  max-width: 320px;
+  padding: 20px 18px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.modal-box h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-box input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  margin-bottom: 15px;
+}
+
+/* 按鈕區 */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+#modal-cancel {
+  background: #ddd;
+}
+
+#modal-ok {
+  background: #d95380;
+  color: #fff;
+}
 
 </style>
 </head>
@@ -1734,6 +1795,19 @@ body.packing-mode {
     <button class="add-item-btn">＋ 新增項目</button>
   </div>
 <div id="add-category" class="add-category">＋ 新增分類</div>
+	<!-- =====================
+     通用新增項目 Modal
+====================== -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-box">
+    <h3 id="modal-title">新增項目</h3>
+    <input id="modal-input" type="text" placeholder="輸入名稱…" />
+    <div class="modal-buttons">
+      <button id="modal-cancel">取消</button>
+      <button id="modal-ok">確定</button>
+    </div>
+  </div>
+</div>
 </div>
 
 
@@ -2122,7 +2196,7 @@ function backToMain() {
 }
 
 /* =====================================================
-   行李清單資料結構（預設四大類）
+   🧳 行李清單資料結構（預設四大類）
 ===================================================== */
 let packingData = {
   documents: [
@@ -2140,7 +2214,42 @@ let packingData = {
 const packingPage = document.getElementById("packing-page");
 
 /* =====================================================
-   渲染單一分類（大類）
+   🪄 通用 Modal（新增分類 / 新增項目）
+===================================================== */
+const modal = document.getElementById("modal-overlay");
+const modalTitle = document.getElementById("modal-title");
+const modalInput = document.getElementById("modal-input");
+const modalOk = document.getElementById("modal-ok");
+const modalCancel = document.getElementById("modal-cancel");
+
+let modalCallback = null;
+
+// 開啟 Modal
+function openModal(title, placeholder, callback) {
+  modalTitle.textContent = title;
+  modalInput.placeholder = placeholder;
+  modalInput.value = "";
+  modalCallback = callback;
+
+  modal.style.display = "flex";
+  modalInput.focus();
+}
+
+// 關閉 Modal
+function closeModal() {
+  modal.style.display = "none";
+  modalCallback = null;
+}
+
+modalOk.onclick = () => {
+  if (modalCallback) modalCallback(modalInput.value.trim());
+  closeModal();
+};
+
+modalCancel.onclick = closeModal;
+
+/* =====================================================
+   🧩 渲染單一大類（項目、小項狀態、計數）
 ===================================================== */
 function renderPackingGroup(groupEl) {
   const groupKey = groupEl.dataset.group;
@@ -2155,7 +2264,8 @@ function renderPackingGroup(groupEl) {
     li.className = "packing-item";
 
     li.innerHTML = `
-      <div class="packing-checkbox ${item.done ? "checked" : ""}" onclick="toggleItem('${groupKey}', ${i})"></div>
+      <div class="packing-checkbox ${item.done ? "checked" : ""}"
+           onclick="toggleItem('${groupKey}', ${i})"></div>
       <span>${item.text}</span>
       <button class="delete-item" onclick="deleteItem('${groupKey}', ${i})">×</button>
     `;
@@ -2163,109 +2273,104 @@ function renderPackingGroup(groupEl) {
     listEl.appendChild(li);
   });
 
-  // 更新計數
+  // 計數更新
   const done = items.filter(i => i.done).length;
   countEl.textContent = `${done}/${items.length}`;
 }
 
 /* =====================================================
-   初始化所有大類（展開事件 + 新增小項）
+   🔽 初始化四大類（展開 & 新增項目）
 ===================================================== */
 document.querySelectorAll(".packing-group").forEach(groupEl => {
 
-  // ⭐ 點擊整塊標題展開/收合
+  // 點擊整塊展開/收合
   const header = groupEl.querySelector(".packing-group-header");
   header.addEventListener("click", () => {
     groupEl.classList.toggle("open");
     renderPackingGroup(groupEl);
   });
 
-  // ⭐ 新增小項目
+  // 新增小項目
   const addBtn = groupEl.querySelector(".add-item-btn");
   addBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); // 不要觸發收合
-    const name = prompt("輸入項目名稱：");
-    if (!name) return;
-
-    packingData[groupEl.dataset.group].push({ text: name, done: false });
-    renderPackingGroup(groupEl);
+    e.stopPropagation();
+    openModal("新增項目", "輸入項目名稱…", (value) => {
+      if (!value) return;
+      packingData[groupEl.dataset.group].push({ text: value, done: false });
+      renderPackingGroup(groupEl);
+    });
   });
 
-  // 初始渲染
+  // 一開始渲染
   renderPackingGroup(groupEl);
 });
 
 /* =====================================================
-   勾選 / 取消小項
+   ✔ 勾選 / 取消小項目
 ===================================================== */
 function toggleItem(group, index) {
   packingData[group][index].done = !packingData[group][index].done;
-
   const groupEl = document.querySelector(`.packing-group[data-group='${group}']`);
   renderPackingGroup(groupEl);
 }
 
 /* =====================================================
-   刪除小項目
+   ❌ 刪除小項目
 ===================================================== */
 function deleteItem(group, index) {
   packingData[group].splice(index, 1);
-
   const groupEl = document.querySelector(`.packing-group[data-group='${group}']`);
   renderPackingGroup(groupEl);
 }
 
 /* =====================================================
-   新增「大類（分類）」
+   ➕ 新增「分類（大類）」
 ===================================================== */
 document.getElementById("add-category").addEventListener("click", () => {
-  const name = prompt("請輸入分類名稱：");
-  if (!name) return;
+  openModal("新增分類", "輸入分類名稱…", (name) => {
+    if (!name) return;
 
-  // 生成分類 Key
-  const key = "cat_" + Date.now();
-  packingData[key] = [];
+    const key = "cat_" + Date.now();
+    packingData[key] = [];
 
-  // 建立分類 DOM
-  const newGroup = document.createElement("div");
-  newGroup.className = "packing-group";
-  newGroup.dataset.group = key;
+    // 建立新分類 DOM
+    const newGroup = document.createElement("div");
+    newGroup.className = "packing-group";
+    newGroup.dataset.group = key;
 
-  newGroup.innerHTML = `
-    <div class="packing-group-header">
-      <span>${name} <span class="count-status">0/0</span></span>
-      <span class="arrow">▾</span>
-    </div>
-    <ul class="packing-list"></ul>
-    <button class="add-item-btn">＋ 新增項目</button>
-  `;
+    newGroup.innerHTML = `
+      <div class="packing-group-header">
+        <span>${name} <span class="count-status">0/0</span></span>
+        <span class="arrow">▾</span>
+      </div>
+      <ul class="packing-list"></ul>
+      <button class="add-item-btn">＋ 新增項目</button>
+    `;
 
-  // 整塊可展開
-  const header = newGroup.querySelector(".packing-group-header");
-  header.addEventListener("click", () => {
-    newGroup.classList.toggle("open");
+    // 綁定展開/收合
+    newGroup.querySelector(".packing-group-header").addEventListener("click", () => {
+      newGroup.classList.toggle("open");
+      renderPackingGroup(newGroup);
+    });
+
+    // 綁定新增小項
+    newGroup.querySelector(".add-item-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      openModal("新增項目", "輸入項目名稱…", (value) => {
+        if (!value) return;
+        packingData[key].push({ text: value, done: false });
+        renderPackingGroup(newGroup);
+      });
+    });
+
+    // 插入到新增分類按鈕上方
+    const addCategoryBtn = document.getElementById("add-category");
+    packingPage.insertBefore(newGroup, addCategoryBtn);
+
+    // 初次渲染
     renderPackingGroup(newGroup);
   });
-
-  // 新增小項
-  const addBtn = newGroup.querySelector(".add-item-btn");
-  addBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const itemName = prompt("輸入項目名稱：");
-    if (!itemName) return;
-
-    packingData[key].push({ text: itemName, done: false });
-    renderPackingGroup(newGroup);
-  });
-
-  // 插入新增分類按鈕上方
-  const addCategoryBtn = document.getElementById("add-category");
-  packingPage.insertBefore(newGroup, addCategoryBtn);
-
-  // 初次渲染
-  renderPackingGroup(newGroup);
 });
-
 
 // 頁面載入後先畫一次行李清單
 renderPacking();
@@ -2276,6 +2381,7 @@ renderPacking();
 
 </body>
 </html>
+
 
 
 

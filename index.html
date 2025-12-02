@@ -1709,13 +1709,13 @@ ease;
 // 頁面初始化
 // ===========================
 document.addEventListener("DOMContentLoaded", () => {
-  getExchangeRate();   // 抓匯率
-  showDay(1);          // 預設顯示第 1 天
-  updateArrows();      // 初始化 day-tab 左右箭頭
+  getExchangeRate();
+  showDay(1);
+  updateArrows();
 });
 
 // ===========================
-// 1. 行程天數切換
+// 1. 行程切換
 // ===========================
 function showDay(dayNumber) {
   const sections = document.querySelectorAll(".day-section");
@@ -1724,7 +1724,6 @@ function showDay(dayNumber) {
   sections.forEach((section, index) => {
     if (index === dayNumber - 1) {
       section.style.display = "block";
-      // 加入淡入效果
       requestAnimationFrame(() => section.classList.add("fade-in"));
     } else {
       section.style.display = "none";
@@ -1740,21 +1739,18 @@ function showDay(dayNumber) {
 }
 
 // ===========================
-// 2. Day Tabs 左右箭頭控制
+// 2. Day Tabs 左右箭頭
 // ===========================
 const scrollEl  = document.getElementById("dayTabsScroll");
 const arrowLeft = document.getElementById("arrow-left");
 const arrowRight = document.getElementById("arrow-right");
 
 function updateArrows() {
-  // 防呆：沒這些元素就直接跳出，不要報錯
-  if (!scrollEl || !arrowLeft || !arrowRight) return;
+  if (!scrollEl) return;
+  const max = scrollEl.scrollWidth - scrollEl.clientWidth;
 
-  const scrollLeft = scrollEl.scrollLeft;
-  const maxScroll  = scrollEl.scrollWidth - scrollEl.clientWidth;
-
-  arrowLeft.style.opacity  = scrollLeft > 10            ? "1" : "0";
-  arrowRight.style.opacity = scrollLeft < maxScroll-10 ? "1" : "0";
+  arrowLeft.style.opacity  = scrollEl.scrollLeft > 10 ? "1" : "0";
+  arrowRight.style.opacity = scrollEl.scrollLeft < max - 10 ? "1" : "0";
 }
 
 if (scrollEl) {
@@ -1763,34 +1759,35 @@ if (scrollEl) {
 }
 
 // ===========================
-// 3. TOP 置頂鍵（有就啟動，沒有就略過）
+// 3. TOP 按鈕
 // ===========================
-(function setupScrollTop() {
- 
-})();
+const scrollBtn = document.getElementById("scrollToTop");
+const homeBtn = document.getElementById("backBtn");
+let isMainPage = true;
+
+window.addEventListener("scroll", () => {
+  if (!isMainPage) return;
+  if (window.scrollY > 300) scrollBtn.classList.add("show");
+  else scrollBtn.classList.remove("show");
+});
+
+scrollBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
 
 // ===========================
 // 4. 匯率換算
 // ===========================
-let currentRate = 0;     // JPY -> TWD 匯率
-let isJPYtoTWD = true;   // true: 日圓換台幣, false: 台幣換日圓
+let currentRate = 0;
+let isJPYtoTWD = true;
 
 const inputField  = document.getElementById("input-amount");
 const outputField = document.getElementById("output-amount");
-
 const toggleBtn   = document.getElementById("currencyToggle");
 const toggleLabel = document.getElementById("toggle-label");
 const inputLabel  = document.getElementById("input-label");
 const outputLabel = document.getElementById("output-label");
 
-function addComma(numStr) {
-  return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-function removeComma(numStr) {
-  return numStr.replace(/,/g, "");
-}
-
-// 抓 JPY 匯率
 async function getExchangeRate() {
   try {
     const res  = await fetch("https://open.er-api.com/v6/latest/JPY");
@@ -1802,63 +1799,44 @@ async function getExchangeRate() {
   }
 }
 
-// 計算換匯
+function addComma(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function removeComma(s) { return s.replace(/,/g, ""); }
+
 function updateConversion() {
   if (!currentRate) return;
-  if (!inputField || !outputField) return;
-
   let raw = removeComma(inputField.value);
   if (!raw || isNaN(raw)) {
     outputField.value = "";
     return;
   }
-
   let val = parseInt(raw, 10);
   let result = isJPYtoTWD ? val * currentRate : val / currentRate;
   outputField.value = addComma(Math.round(result).toString());
 }
 
-// 幣別切換開關
-if (toggleBtn) {
-  toggleBtn.addEventListener("click", () => {
-    isJPYtoTWD = !isJPYtoTWD;
+toggleBtn.addEventListener("click", () => {
+  isJPYtoTWD = !isJPYtoTWD;
+  toggleBtn.classList.toggle("active", !isJPYtoTWD);
+  toggleLabel.textContent = isJPYtoTWD ? "JPY" : "TWD";
+  inputLabel.textContent  = isJPYtoTWD ? "｜ 日圓" : "｜ 台幣";
+  outputLabel.textContent = isJPYtoTWD ? "｜ 台幣" : "｜ 日圓";
+  updateConversion();
+});
 
-    toggleBtn.classList.toggle("active", !isJPYtoTWD);
+inputField.addEventListener("input", () => {
+  let raw = removeComma(inputField.value);
+  if (!raw || isNaN(raw)) {
+    inputField.value = "";
+    outputField.value = "";
+    return;
+  }
+  inputField.value = addComma(raw);
+  updateConversion();
+});
 
-    if (isJPYtoTWD) {
-      toggleLabel.textContent = "JPY";
-      inputLabel.textContent  = "｜ 日圓";
-      outputLabel.textContent = "｜ 台幣";
-    } else {
-      toggleLabel.textContent = "TWD";
-      inputLabel.textContent  = "｜ 台幣";
-      outputLabel.textContent = "｜ 日圓";
-    }
-
-    updateConversion();
-  });
-}
-
-// 輸入框：自動加千分位＋即時換算
-if (inputField) {
-  inputField.addEventListener("input", () => {
-    let raw = removeComma(inputField.value);
-    if (!raw || isNaN(raw)) {
-      inputField.value = "";
-      outputField.value = "";
-      return;
-    }
-
-    inputField.value = addComma(raw);
-    updateConversion();
-  });
-}
-
-// 自訂數字鍵盤
+// 數字鍵盤
 document.querySelectorAll(".num-pad .key").forEach(btn => {
   btn.addEventListener("click", () => {
-    if (!inputField) return;
-
     let raw = removeComma(inputField.value);
     const key = btn.textContent;
 
@@ -1875,9 +1853,7 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
       return;
     }
 
-    // 0~9
     raw += key;
-    // 去掉前導 0
     raw = raw.replace(/^0+/, "");
     if (!raw) raw = "0";
 
@@ -1887,173 +1863,20 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
 });
 
 // ===========================
-// 5. 三個頁面切換（首頁 / 匯率 / 行李清單）
+// 5. 三頁切換
 // ===========================
-
-
-// ===========================
-// 6. 行李清單系統
-// ===========================
-let packData = JSON.parse(localStorage.getItem("packing") || "[]");
-
-const todoEl   = document.getElementById("packing-todo");
-const doneEl   = document.getElementById("packing-done");
-const addModal = document.getElementById("packing-add-modal");
-const newItemInput = document.getElementById("packing-new-input");
-
-function renderPacking() {
-  if (!todoEl || !doneEl) return;
-
-  todoEl.innerHTML = "";
-  doneEl.innerHTML = "";
-
-  packData.forEach((item, i) => {
-    const card = document.createElement("div");
-    card.className = "packing-card-item" + (item.done ? " done" : "");
-    card.innerHTML = `
-      <div class="packing-actions">
-        <button onclick="editItem(${i})">編</button>
-        <button class="delete-btn" onclick="deleteItem(${i})">刪</button>
-      </div>
-      ${item.text}
-    `;
-
-    card.addEventListener("click", e => {
-      // 點到按鈕不要觸發完成切換
-      if (e.target.tagName === "BUTTON") return;
-      toggleItem(i);
-    });
-
-    if (item.done) {
-      doneEl.appendChild(card);
-    } else {
-      todoEl.appendChild(card);
-    }
-  });
-
-  addAddCard(todoEl);
-}
-
-function addAddCard(parent) {
-  const addCard = document.createElement("div");
-  addCard.className = "packing-add-card";
-  addCard.textContent = "+";
-  addCard.addEventListener("click", openAddModal);
-  parent.appendChild(addCard);
-}
-
-function openAddModal() {
-  if (!addModal || !newItemInput) return;
-  newItemInput.value = "";
-  addModal.classList.remove("hidden");
-  newItemInput.focus();
-}
-
-const cancelBtn  = document.getElementById("packing-cancel");
-const confirmBtn = document.getElementById("packing-confirm");
-
-if (cancelBtn && addModal) {
-  cancelBtn.onclick = () => addModal.classList.add("hidden");
-}
-
-if (confirmBtn && addModal && newItemInput) {
-  confirmBtn.onclick = () => {
-    const txt = newItemInput.value.trim();
-    if (!txt) return;
-
-    packData.push({ text: txt, done: false });
-    savePacking();
-    renderPacking();
-    addModal.classList.add("hidden");
-  };
-}
-
-function toggleItem(i) {
-  packData[i].done = !packData[i].done;
-  savePacking();
-  renderPacking();
-}
-
-function editItem(i) {
-  const text = prompt("編輯內容：", packData[i].text);
-  if (text !== null) {
-    packData[i].text = text.trim();
-    savePacking();
-    renderPacking();
-  }
-}
-
-function deleteItem(i) {
-  if (!confirm("確定刪除？")) return;
-  packData.splice(i, 1);
-  savePacking();
-  renderPacking();
-}
-
-function savePacking() {
-  localStorage.setItem("packing", JSON.stringify(packData));
-}
-
-
-// TOP 按鈕（有存在才啟動）
-(function setupTopButton() {
-  const topBtn = document.getElementById("scrollToTop");
-  if (!topBtn) return; // 防呆：沒有按鈕就不跑這段
-
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      topBtn.classList.add("show");
-    } else {
-      topBtn.classList.remove("show");
-    }
-  });
-
-  topBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-})();
-
-const scrollBtn = document.getElementById("scrollToTop");
-const homeBtn   = document.getElementById("backBtn");
-
-/* ⭐ 預設：在首頁才使用 TOP 邏輯 */
-let isMainPage = true;
-
-/* ========================
-     1. TOP 按鈕 scroll 控制
-======================== */
-window.addEventListener("scroll", () => {
-  if (!isMainPage) return;             // 不是首頁 → 不顯示 TOP
-
-  if (window.scrollY > 300) {
-    scrollBtn.classList.add("show");
-  } else {
-    scrollBtn.classList.remove("show");
-  }
-});
-
-/* TOP 點擊捲動 */
-scrollBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
-
-/* ========================
-     2. 三頁切換
-======================== */
 function showExchange() {
   isMainPage = false;
-
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
   document.getElementById("packing-page").style.display = "none";
 
-  scrollBtn.classList.remove("show");  // 匯率頁不顯示 TOP
-  homeBtn.classList.add("show");       // 顯示 HOME
+  scrollBtn.classList.remove("show");
+  homeBtn.classList.add("show");
 }
 
 function showPacking() {
   isMainPage = false;
-
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "block";
@@ -2064,20 +1887,19 @@ function showPacking() {
 
 function backToMain() {
   isMainPage = true;
-
   document.querySelector(".container").style.display = "block";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
 
   homeBtn.classList.remove("show");
 
-  if (window.scrollY > 300) {
-    scrollBtn.classList.add("show");
-  } else {
-    scrollBtn.classList.remove("show");
-  }
+  if (window.scrollY > 300) scrollBtn.classList.add("show");
+  else scrollBtn.classList.remove("show");
 }
 
+// ===========================
+// 6. 原始「checkbox 版」行李清單
+// ===========================
 let packingItems = [
   { text: "護照", done: false },
   { text: "信用卡", done: false },
@@ -2089,20 +1911,17 @@ let packingItems = [
 const listEl = document.getElementById("packing-list");
 const countStatus = document.getElementById("count-status");
 
-/* 渲染 */
 function renderPackingList() {
   listEl.innerHTML = "";
 
   packingItems.forEach((item, i) => {
     let li = document.createElement("li");
     li.className = "packing-item";
-
     li.innerHTML = `
       <div class="packing-checkbox ${item.done ? "checked" : ""}" onclick="toggleItem(${i})"></div>
       <span>${item.text}</span>
       <button class="delete-item" onclick="deleteItem(${i})">×</button>
     `;
-
     listEl.appendChild(li);
   });
 
@@ -2124,7 +1943,6 @@ function updateCount() {
   countStatus.textContent = `${done}/${packingItems.length}`;
 }
 
-/* 新增項目 */
 document.getElementById("addItemBtn").onclick = () => {
   let name = prompt("輸入項目名稱：");
   if (!name) return;
@@ -2132,21 +1950,15 @@ document.getElementById("addItemBtn").onclick = () => {
   renderPackingList();
 };
 
-/* 取消已選 */
 document.getElementById("clearDoneBtn").onclick = () => {
   packingItems.forEach(i => i.done = false);
   renderPackingList();
 };
 
-/* 初始載入 */
 renderPackingList();
-
-// 頁面載入後先畫一次行李清單
-renderPacking();
-
-
 
 </script>
 </body>
 </html>
+
 

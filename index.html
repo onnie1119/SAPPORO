@@ -2045,208 +2045,183 @@ function backToMain() {
 // ===========================
 // 6. 原始「checkbox 版」行李清單
 // ===========================
-let packingItems = [
-  { text: "護照", done: false },
-  { text: "信用卡", done: false },
-  { text: "外幣", done: false },
-  { text: "國際駕照", done: false },
-  { text: "台灣駕照", done: false }
-];
+/* ============================================================
+   行李清單資料（讀取 localStorage）
+============================================================ */
+let packingData = JSON.parse(localStorage.getItem("packingData")) || {
+  groups: {
+    documents: {
+      name: "重要證件",
+      items: [
+        { text: "護照", done: false },
+        { text: "信用卡", done: false },
+        { text: "外幣", done: false },
+        { text: "國際駕照", done: false },
+      ]
+    },
+    clothes: { name: "服裝用品", items: [] },
+    personal: { name: "個人用品", items: [] },
+    electronics: { name: "3C 設備", items: [] }
+  }
+};
 
-const listEl = document.getElementById("packing-list");
-const countStatus = document.getElementById("count-status");
+/* 儲存 */
+function savePacking() {
+  localStorage.setItem("packingData", JSON.stringify(packingData));
+}
 
-function renderPackingList() {
-  listEl.innerHTML = "";
+/* ============================================================
+   渲染全部大分類
+============================================================ */
+function renderPackingPage() {
+  const groups = packingData.groups;
+  const container = document.querySelector("#packing-page");
 
-  packingItems.forEach((item, i) => {
-    let li = document.createElement("li");
-    li.className = "packing-item";
-    li.innerHTML = `
-      <div class="packing-checkbox ${item.done ? "checked" : ""}" onclick="toggleItem(${i})"></div>
-      <span>${item.text}</span>
-      <button class="delete-item" onclick="deleteItem(${i})">×</button>
-    `;
-    listEl.appendChild(li);
+  Object.keys(groups).forEach(groupKey => {
+    const groupEl = document.querySelector(`.packing-group[data-group="${groupKey}"]`);
+    if (!groupEl) return;
+
+    const ul = groupEl.querySelector(".packing-list");
+    const items = groups[groupKey].items;
+
+    ul.innerHTML = "";
+
+    items.forEach((item, index) => {
+      const li = document.createElement("li");
+      li.className = "packing-item";
+
+      li.innerHTML = `
+        <button class="item-edit-btn">編輯</button>
+        <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
+        <span class="item-text">${item.text}</span>
+        <button class="delete-item">×</button>
+      `;
+
+      /* 勾選 */
+      li.querySelector(".packing-checkbox").onclick = () => {
+        item.done = !item.done;
+        savePacking();
+        renderPackingPage();
+      };
+
+      /* 編輯模式切換 */
+      li.querySelector(".item-edit-btn").onclick = () => {
+        li.classList.toggle("edit-mode");
+      };
+
+      /* 刪除 */
+      li.querySelector(".delete-item").onclick = () => {
+        items.splice(index, 1);
+        savePacking();
+        renderPackingPage();
+      };
+
+      ul.appendChild(li);
+    });
+
+    /* 更新完成比 */
+    const doneCount = items.filter(i => i.done).length;
+    const countStatus = groupEl.querySelector(".count-status");
+    countStatus.textContent = `${doneCount}/${items.length}`;
   });
-
-  updateCount();
 }
 
-function toggleItem(i) {
-  packingItems[i].done = !packingItems[i].done;
-  renderPackingList();
+/* ============================================================
+   大類展開/收合
+============================================================ */
+document.querySelectorAll(".packing-group-header").forEach(header => {
+  header.addEventListener("click", () => {
+    const group = header.parentElement;
+    group.classList.toggle("open");
+
+    const list = group.querySelector(".packing-list");
+    const addBtn = group.querySelector(".add-item-btn");
+
+    if (group.classList.contains("open")) {
+      list.style.display = "block";
+      addBtn.style.display = "block";
+    } else {
+      list.style.display = "none";
+      addBtn.style.display = "none";
+    }
+  });
+});
+
+/* ============================================================
+   新增項目 Modal
+============================================================ */
+let currentGroupKey = null;
+
+const modal = document.getElementById("packingModal");
+const modalInput = document.getElementById("packingInput");
+const modalOK = document.getElementById("packingOK");
+const modalCancel = document.getElementById("packingCancel");
+
+function openAddItemModal(groupKey) {
+  currentGroupKey = groupKey;
+  modal.style.display = "flex";
+  modalInput.value = "";
+  setTimeout(() => modalInput.focus(), 50);
 }
 
-function deleteItem(i) {
-  packingItems.splice(i, 1);
-  renderPackingList();
+function closeAddItemModal() {
+  modal.style.display = "none";
 }
 
-function updateCount() {
-  let done = packingItems.filter(i => i.done).length;
-  countStatus.textContent = `${done}/${packingItems.length}`;
-}
+modalCancel.onclick = closeAddItemModal;
 
-document.getElementById("addItemBtn").onclick = () => {
-  let name = prompt("輸入項目名稱：");
-  if (!name) return;
-  packingItems.push({ text: name, done: false });
-  renderPackingList();
-};
+/* 按分類的新增按鈕 */
+document.querySelectorAll(".add-item-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const groupEl = btn.closest(".packing-group");
+    const groupKey = groupEl.dataset.group;
+    openAddItemModal(groupKey);
+  });
+});
 
-document.getElementById("clearDoneBtn").onclick = () => {
-  packingItems.forEach(i => i.done = false);
-  renderPackingList();
-};
-
-renderPackingList();
-// ===============================
-// Modal 控制
-// ===============================
-const packingModal = document.getElementById("packingModal");
-const packingInput = document.getElementById("packingInput");
-const packingCancel = document.getElementById("packingCancel");
-const packingOK = document.getElementById("packingOK");
-
-function openPackingModal() {
-  packingModal.style.display = "flex";
-  packingInput.value = "";
-  setTimeout(() => packingInput.focus(), 50);
-}
-
-function closePackingModal() {
-  packingModal.style.display = "none";
-}
-
-packingCancel.onclick = closePackingModal;
-
-
-// ===============================
-// 修改原本新增項目的功能
-// ===============================
-document.getElementById("addItemBtn").onclick = () => {
-  openPackingModal();
-};
-
-// 按下「確定」後新增
-packingOK.onclick = () => {
-  let name = packingInput.value.trim();
-  if (!name) {
-    closePackingModal();
+/* Modal 按下確定 → 新增 */
+modalOK.onclick = () => {
+  const name = modalInput.value.trim();
+  if (!name || !currentGroupKey) {
+    closeAddItemModal();
     return;
   }
 
-  packingItems.push({ text: name, done: false });
-  renderPackingList();
-  closePackingModal();
-};
-// ===============================
-// 編輯模式（顯示刪除鍵）
-// ===============================
-let packingEditMode = false;
-const packingEditBtn = document.getElementById("packingEditBtn");
-
-packingEditBtn.addEventListener("click", () => {
-  packingEditMode = !packingEditMode;
-
-  const page = document.getElementById("packing-page");
-
-  if (packingEditMode) {
-    page.classList.add("edit-mode");
-    packingEditBtn.textContent = "完成";
-  } else {
-    page.classList.remove("edit-mode");
-    packingEditBtn.textContent = "編輯";
-  }
-});
-// ===============================
-// ★★ 行李清單（每項獨立編輯 + 自動儲存）
-// ===============================
-
-// 讀取儲存資料（若無則使用預設）
-let packingItems = JSON.parse(localStorage.getItem("packingItems")) || [
-  { text: "護照", done: false },
-  { text: "信用卡", done: false },
-  { text: "外幣", done: false },
-  { text: "國際駕照", done: false }
-];
-
-const listEl = document.getElementById("packing-list");
-const countStatus = document.getElementById("count-status");
-
-// 儲存
-function savePacking() {
-  localStorage.setItem("packingItems", JSON.stringify(packingItems));
-}
-
-// 渲染畫面
-function renderPackingList() {
-  listEl.innerHTML = "";
-
-  packingItems.forEach((item, index) => {
-    let li = document.createElement("li");
-    li.className = "packing-item";
-
-    li.innerHTML = `
-      <button class="item-edit-btn">編輯</button>
-      <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
-      <span>${item.text}</span>
-      <button class="delete-item">×</button>
-    `;
-
-    // 打勾
-    li.querySelector(".packing-checkbox").onclick = () => {
-      item.done = !item.done;
-      savePacking();
-      renderPackingList();
-    };
-
-    // 編輯開關（單一項目）
-    li.querySelector(".item-edit-btn").onclick = () => {
-      li.classList.toggle("edit-mode");
-    };
-
-    // 刪除
-    li.querySelector(".delete-item").onclick = () => {
-      packingItems.splice(index, 1);
-      savePacking();
-      renderPackingList();
-    };
-
-    listEl.appendChild(li);
-  });
-
-  updateCount();
-}
-
-// 計算完成/總數
-function updateCount() {
-  let done = packingItems.filter(i => i.done).length;
-  countStatus.textContent = `${done}/${packingItems.length}`;
-}
-
-// 新增項目（此處保留你 Modal 的版本）
-document.getElementById("addItemBtn").onclick = () => {
-  openPackingModal();
-};
-
-packingOK.onclick = () => {
-  let name = packingInput.value.trim();
-  if (!name) { closePackingModal(); return; }
-
-  packingItems.push({ text: name, done: false });
+  packingData.groups[currentGroupKey].items.push({ text: name, done: false });
   savePacking();
-  renderPackingList();
-  closePackingModal();
+  renderPackingPage();
+  closeAddItemModal();
 };
 
-// 初始化
-renderPackingList();
+/* ============================================================
+   新增分類
+============================================================ */
+document.getElementById("add-category").addEventListener("click", () => {
+  const name = prompt("輸入新的分類名稱：");
+  if (!name) return;
+
+  const id = "cat" + Date.now();
+  packingData.groups[id] = {
+    name,
+    items: []
+  };
+
+  savePacking();
+
+  /* 你若需要同時動態新增 HTML，可以再告訴我，我幫你補生成卡片 */
+  alert("分類已新增，但 HTML 尚未自動加入，若要自動生成我可幫你補上。");
+});
+
+/* ============================================================
+   初始化
+============================================================ */
+renderPackingPage();
+
 
 </script>
 </body>
 </html>
+
 
 
 

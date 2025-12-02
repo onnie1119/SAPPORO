@@ -2327,7 +2327,21 @@ if (confirm(`確定刪除「${groupName}」分類？`)) {
 ============================================================ */
 function renderPackingPage() {
   const container = document.getElementById("packing-page");
-  container.innerHTML = "";
+   container.innerHTML = `
+    <div id="packing-edit-bar" style="
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:10px;
+    ">
+      <button id="packing-edit-btn" style="
+        background:none;
+        border:none;
+        color:#3A7AFE;
+        font-size:15px;
+        cursor:pointer;
+      ">編輯</button>
+    </div>
+  `;
 
   // 生成所有分類
   Object.keys(packingData.groups).forEach(key => {
@@ -2478,33 +2492,34 @@ modalOK.onclick = () => {
   closeModal();
 };
 // ===== 編輯模式控制 =====
-let isPackingEditing = false;
+let editBtn = document.getElementById("packing-edit-btn");
+if (editBtn) {
+  editBtn.onclick = () => {
+    isPackingEditing = !isPackingEditing;
 
-document.getElementById("packing-edit-btn").addEventListener("click", () => {
-  isPackingEditing = !isPackingEditing;
+    const page = document.getElementById("packing-page");
+    const arrows = document.querySelectorAll(".packing-group .arrow");
 
-  const page = document.getElementById("packing-page");
-  const arrows = document.querySelectorAll(".packing-group .arrow");
+    if (isPackingEditing) {
+      page.classList.add("packing-edit-mode");
+      editBtn.textContent = "完成";
 
-  if (isPackingEditing) {
-    page.classList.add("packing-edit-mode");
-    document.getElementById("packing-edit-btn").textContent = "完成";
+      // 編輯模式：箭頭 → X
+      arrows.forEach(arrow => {
+        arrow.textContent = "×";
+      });
 
-    // ⭐ 編輯模式：箭頭 → X
-    arrows.forEach(arrow => {
-      arrow.textContent = "×";
-    });
+    } else {
+      page.classList.remove("packing-edit-mode");
+      editBtn.textContent = "編輯";
 
-  } else {
-    page.classList.remove("packing-edit-mode");
-    document.getElementById("packing-edit-btn").textContent = "編輯";
-
-    // ⭐ 回到一般模式：X → ▾
-    arrows.forEach(arrow => {
-      arrow.textContent = "▾";
-    });
-  }
-});
+      // 完成模式：X → ▾
+      arrows.forEach(arrow => {
+        arrow.textContent = "▾";
+      });
+    }
+  };
+}
 
 
 /* ============================================================
@@ -2515,6 +2530,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

@@ -2373,11 +2373,13 @@ function renderPackingPage() {
       `;
 
       // 勾選項目
-      li.querySelector(".packing-checkbox").onclick = () => {
-        item.done = !item.done;
-        savePacking();
-        renderPackingPage();
-      };
+     li.querySelector(".packing-checkbox").onclick = (e) => {
+  e.stopPropagation();   // ⭐ 阻止冒泡！！
+  item.done = !item.done;
+  savePacking();
+  renderPackingPage();
+};
+
 
       // 刪除項目
       li.querySelector(".item-delete-btn").onclick = () => {
@@ -2547,6 +2549,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

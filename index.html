@@ -2354,21 +2354,7 @@ function renderPackingPage() {
         <button class="item-delete-btn">×</button>
       `;
 
-      /* checkbox */
-      li.querySelector(".packing-checkbox").onclick = (e) => {
-        e.stopPropagation();          // ⭐ 阻止冒泡
-        item.done = !item.done;
-        savePacking();
-        renderPackingPage();
-      };
-
-      /* 刪除小項目 */
-      li.querySelector(".item-delete-btn").onclick = (e) => {
-        e.stopPropagation();          // ⭐ 阻止冒泡
-        packingData.groups[key].items.splice(idx, 1);
-        savePacking();
-        renderPackingPage();
-      };
+    
 
       ul.appendChild(li);
     });
@@ -2380,6 +2366,33 @@ function renderPackingPage() {
 
   attachEvents();
 }
+document.addEventListener("click", function(e) {
+  // ---- 點 checkbox ----
+  if (e.target.classList.contains("packing-checkbox")) {
+    e.stopPropagation(); // ⭐ 阻止 header 收合
+    const li = e.target.closest(".packing-item");
+    const groupKey = li.closest(".packing-group").dataset.group;
+    const index = Array.from(li.parentElement.children).indexOf(li);
+
+    const item = packingData.groups[groupKey].items[index];
+    item.done = !item.done;
+
+    savePacking();
+    renderPackingPage();
+  }
+});
+document.addEventListener("click", function(e) {
+  if (e.target.classList.contains("item-delete-btn")) {
+    e.stopPropagation(); 
+    const li = e.target.closest(".packing-item");
+    const groupKey = li.closest(".packing-group").dataset.group;
+    const index = Array.from(li.parentElement.children).indexOf(li);
+
+    packingData.groups[groupKey].items.splice(index, 1);
+    savePacking();
+    renderPackingPage();
+  }
+});
 
 /* ============================================================
    綁定事件（展開 / 新增 / 刪除）
@@ -2501,6 +2514,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

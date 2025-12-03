@@ -2282,10 +2282,7 @@ function backToMain() {
 
 
 /* ============================================================
-   行李清單資料（localStorage）
-============================================================ */
-/* ============================================================
-   🎒 全展開穩定版（不會事件重複綁定）
+   🎒 三層行李清單（主分類永遠展開、中分類可收合）
 ============================================================ */
 
 let packingData = JSON.parse(localStorage.getItem("packingData")) || {
@@ -2297,9 +2294,15 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
         main: {
           name: "",
           items: [
-            "護照", "身分證", "Esim", "信用卡",
-            "交通卡", "台幣 / 日幣", "旅遊保險",
-            "電子憑證", "VJW / 機票 / 住宿 / 租車 / 行程"
+            { text: "護照", done: false },
+            { text: "身分證", done: false },
+            { text: "Esim", done: false },
+            { text: "信用卡", done: false },
+            { text: "交通卡", done: false },
+            { text: "台幣 / 日幣", done: false },
+            { text: "旅遊保險", done: false },
+            { text: "電子憑證", done: false },
+            { text: "VJW / 機票 / 住宿 / 租車 / 行程", done: false }
           ]
         }
       }
@@ -2311,9 +2314,12 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
         main: {
           name: "",
           items: [
-            "香水", "離子夾", "常備藥品",
-            "旅行洗漱包", "旅行化妝包",
-            "衛生紙 / 濕紙巾"
+            { text: "香水", done: false },
+            { text: "離子夾", done: false },
+            { text: "常備藥品", done: false },
+            { text: "旅行洗漱包", done: false },
+            { text: "旅行化妝包", done: false },
+            { text: "衛生紙 / 濕紙巾", done: false }
           ]
         }
       }
@@ -2324,15 +2330,27 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
       sub: {
         outer: {
           name: "外套",
-          items: ["大衣", "羽絨外套", "風衣"]
+          items: [
+            { text: "大衣", done: false },
+            { text: "羽絨外套", done: false },
+            { text: "風衣", done: false }
+          ]
         },
         tops: {
           name: "上身",
-          items: ["長袖", "毛衣", "發熱衣"]
+          items: [
+            { text: "長袖", done: false },
+            { text: "毛衣", done: false },
+            { text: "發熱衣", done: false }
+          ]
         },
         bottoms: {
           name: "下身",
-          items: ["褲子", "裙子", "發熱褲"]
+          items: [
+            { text: "褲子", done: false },
+            { text: "裙子", done: false },
+            { text: "發熱褲", done: false }
+          ]
         }
       }
     },
@@ -2343,18 +2361,21 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
         main: {
           name: "",
           items: [
-            "手機", "耳機", "腳架",
-            "充電器", "行動電源",
-            "相機 / 電池 / 記憶卡"
+            { text: "手機", done: false },
+            { text: "耳機", done: false },
+            { text: "腳架", done: false },
+            { text: "充電器", done: false },
+            { text: "行動電源", done: false },
+            { text: "相機 / 電池 / 記憶卡", done: false }
           ]
         }
       }
     }
+
   }
 };
 
-
-
+/* 儲存 */
 function savePacking() {
   localStorage.setItem("packingData", JSON.stringify(packingData));
 }
@@ -2364,207 +2385,7 @@ function qs(s, r=document){ return r.querySelector(s); }
 function qsa(s, r=document){ return [...r.querySelectorAll(s)]; }
 
 /* ============================================================
-   1. 建立分類 DOM
-============================================================ */
-function createGroupDOM(key, group) {
-  return `
-    <div class="packing-group" data-group="${key}">
-      <div class="packing-group-header">
-        <div class="left-group">
-          <span class="title">${group.name}</span>
-          <span class="count-status">${group.items.filter(i=>i.done).length}/${group.items.length}</span>
-        </div>
-        <button class="delete-group-btn">×</button>
-      </div>
-
-      <ul class="packing-list"></ul>
-
-      <button class="add-item-btn" data-additem="${key}">＋ 新增項目</button>
-    </div>
-  `;
-}
-
-/* ============================================================
-   2. 主渲染（永遠展開）
-============================================================ */
-function renderPackingPage() {
-  const container = qs("#packing-page");
-  container.innerHTML = "";
-
-  Object.keys(packingData.groups).forEach(key => {
-    container.innerHTML += createGroupDOM(key, packingData.groups[key]);
-  });
-
-  container.innerHTML += `<div id="add-category" class="add-category">＋ 新增分類</div>`;
-
-  fillItems();
-  bindEvents();
-}
-
-/* ============================================================
-   3. 填入項目（★ 不重新綁事件）
-============================================================ */
-function fillItems() {
-  qsa(".packing-group").forEach(groupEl => {
-    const key = groupEl.dataset.group;
-    const ul = qs(".packing-list", groupEl);
-
-    packingData.groups[key].items.forEach((item, idx) => {
-      const li = document.createElement("li");
-      li.className = "packing-item";
-      li.innerHTML = `
-        <div class="packing-checkbox ${item.done ? "checked" : ""}" data-index="${idx}"></div>
-        <span>${item.text}</span>
-        <button class="item-delete-btn" data-index="${idx}">×</button>
-      `;
-      ul.appendChild(li);
-    });
-
-    ul.style.display = "block";
-  });
-}
-
-/* ============================================================
-   4. 綁事件（★ 此版本不會重複綁定）
-============================================================ */
-function bindEvents() {
-
-  /* 勾選 */
-  qsa(".packing-checkbox").forEach(cb => {
-    cb.onclick = (e) => {
-      e.stopPropagation();
-
-      const li = e.target.closest(".packing-item");
-      const groupKey = li.closest(".packing-group").dataset.group;
-      const index = Number(e.target.dataset.index);
-
-      packingData.groups[groupKey].items[index].done =
-        !packingData.groups[groupKey].items[index].done;
-
-      savePacking();
-      renderPackingPage();
-    };
-  });
-
-  /* 刪除 */
-  qsa(".item-delete-btn").forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-
-      const li = e.target.closest(".packing-item");
-      const groupKey = li.closest(".packing-group").dataset.group;
-      const index = Number(e.target.dataset.index);
-
-      packingData.groups[groupKey].items.splice(index, 1);
-
-      savePacking();
-      renderPackingPage();
-    };
-  });
-
-  /* 新增項目 */
-  qsa(".add-item-btn").forEach(btn => {
-    btn.onclick = () => {
-      currentGroupKey = btn.dataset.additem;
-      openModal("新增項目");
-    };
-  });
-
-  /* 新增分類 */
-  qs("#add-category").onclick = () => {
-    currentGroupKey = null;
-    openModal("新增分類");
-  };
-
-  /* 刪除分類 */
-  qsa(".delete-group-btn").forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      const key = btn.closest(".packing-group").dataset.group;
-      delete packingData.groups[key];
-      savePacking();
-      renderPackingPage();
-    };
-  });
-}
-
-/* ============================================================
-   5. Modal
-============================================================ */
-
-let currentGroupKey = null;
-
-function openModal(title) {
-  const modal = qs("#itemModal");
-  const titleEl = qs("#modalTitle");
-  const input = qs("#modalInput");
-
-  if (title === "新增分類") {
-    titleEl.style.display = "none";
-  } else {
-    titleEl.style.display = "block";
-    titleEl.textContent = title;
-  }
-
-  modal.style.display = "flex";
-  input.value = "";
-  setTimeout(()=>input.focus(),50);
-}
-
-qs("#modalCancel").onclick = () => {
-  qs("#itemModal").style.display = "none";
-};
-
-qs("#modalOK").onclick = () => {
-  const val = qs("#modalInput").value.trim();
-  if (!val) return;
-
-  if (currentGroupKey) {
-    packingData.groups[currentGroupKey].items.push({ text: val, done: false });
-  }
-  else {
-    const id = "cat" + Date.now();
-    packingData.groups[id] = { name: val, items: [] };
-  }
-
-  savePacking();
-  renderPackingPage();
-  qs("#itemModal").style.display = "none";
-};
-
-/* 初始化 */
-renderPackingPage();
-/* ============================================================
-   🎒 三層行李清單（主分類永遠展開、中分類可收合）
-============================================================ */
-
-function normalize(data) {
-  Object.keys(data.groups).forEach(g => {
-    const group = data.groups[g];
-    Object.keys(group.sub).forEach(s => {
-      group.sub[s].items = group.sub[s].items.map(t => ({
-        text: t,
-        done: false
-      }));
-    });
-  });
-}
-
-let packingData = JSON.parse(localStorage.getItem("packingData"));
-if (!packingData) {
-  packingData = { groups: {} };
-}
-normalize(packingData);
-
-function savePacking() {
-  localStorage.setItem("packingData", JSON.stringify(packingData));
-}
-
-function qs(s, r=document){ return r.querySelector(s); }
-function qsa(s, r=document){ return [...r.querySelectorAll(s)]; }
-
-/* ============================================================
-   建立 DOM
+   建立主分類 DOM
 ============================================================ */
 function createGroupDOM(key, group) {
   return `
@@ -2603,7 +2424,6 @@ function fillSubGroups() {
 
     Object.keys(groupData.sub).forEach(subKey => {
       const sub = groupData.sub[subKey];
-
       const itemCount = `${sub.items.filter(i=>i.done).length}/${sub.items.length}`;
 
       wrap.innerHTML += `
@@ -2633,16 +2453,15 @@ function fillSubGroups() {
 ============================================================ */
 function bindEvents() {
 
-  /* 點中分類展開 / 收合 */
+  /* 展開 / 收合中分類 */
   qsa(".sub-header").forEach(header => {
-    header.onclick = (e) => {
+    header.onclick = () => {
       const subgroup = header.closest(".subgroup");
       subgroup.classList.toggle("open");
 
       const arrow = qs(".sub-arrow", header);
-      arrow.style.transform = subgroup.classList.contains("open")
-        ? "rotate(180deg)"
-        : "rotate(0deg)";
+      arrow.style.transform =
+        subgroup.classList.contains("open") ? "rotate(180deg)" : "rotate(0deg)";
     };
   });
 
@@ -2650,6 +2469,7 @@ function bindEvents() {
   qsa(".packing-checkbox").forEach(cb => {
     cb.onclick = (e) => {
       e.stopPropagation();
+
       const li = cb.closest(".packing-item");
       const idx = Number(li.dataset.index);
 
@@ -2664,6 +2484,7 @@ function bindEvents() {
       renderPackingPage();
     };
   });
+
 }
 
 /* ============================================================
@@ -2674,6 +2495,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

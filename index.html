@@ -2693,77 +2693,60 @@ qs("#modalOK").onclick = () => {
 renderPackingPage();
 
 // =============== 電子憑證分類內容 ===============
+function showTicket() {
+  isMainPage = false;
+
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "none";
+  document.getElementById("packing-page").style.display = "none";
+
+  document.getElementById("ticket-page").style.display = "block";
+
+  scrollBtn.classList.remove("show");
+  homeBtn.classList.add("show");
+}
 const ticketData = {
   hotel: {
     title: "住宿憑證",
-    body: `
-      <img src="images/hotel-voucher.jpg">
-      <p>入住：OOO飯店</p>
-      <p>Check-in：2025/xx/xx</p>
-      <p>Check-out：2025/xx/xx</p>
-    `
+    body: `<img src="images/hotel.jpg"><p>入住資訊…</p>`
   },
   flight: {
     title: "機票憑證",
-    body: `
-      <img src="images/flight-ticket.jpg">
-      <p>航空公司：XXX</p>
-      <p>航班：HD105 / MM556</p>
-    `
+    body: `<img src="images/flight.jpg"><p>航班資訊…</p>`
   },
-  schedule: {
-    title: "行程文件",
-    body: `
-      <img src="images/itinerary.jpg">
-      <p>DAY1 - 札幌</p>
-      <p>DAY2 - 小樽</p>
-    `
-  },
-  rentcar: {
-    title: "租車憑證",
-    body: `
-      <img src="images/rent-voucher.jpg">
-      <p>取車日期：xxxx</p>
-    `
-  },
-  entry: {
-    title: "入境審查文件",
-    body: `
-      <img src="images/entry-vjw.jpg">
-      <p>VJW 審查通過</p>
-    `
-  }
+  schedule: { title: "行程單", body: `<p>行程詳細資料...</p>` },
+  rentcar: { title: "租車文件", body: `<p>租車公司 / 取車資料...</p>` },
+  entry: { title: "入境審查", body: `<p>VJW / 入境條碼...</p>` }
 };
 
+// 點分類 → 顯示內容頁
+document.addEventListener("click", function(e){
+  const card = e.target.closest(".ticket-category");
+  if (!card) return;
 
-// =============== 點分類開啟內容 ===============
-document.querySelectorAll(".ticket-category").forEach(card => {
-  card.addEventListener("click", () => {
+  const key = card.dataset.target;
 
-    const key = card.dataset.target;
+  document.getElementById("ticketContentTitle").textContent =
+    ticketData[key].title;
 
-    document.getElementById("ticketContentTitle").textContent =
-      ticketData[key].title;
+  document.getElementById("ticketContentBody").innerHTML =
+    ticketData[key].body;
 
-    document.getElementById("ticketContentBody").innerHTML =
-      ticketData[key].body;
-
-    // 顯示內容、隱藏分類列表
-    document.querySelector(".ticket-category-list").style.display = "none";
-    document.getElementById("ticketContent").style.display = "block";
-  });
+  document.querySelector(".ticket-category-list").style.display = "none";
+  document.getElementById("ticketContent").style.display = "block";
 });
 
-
-// =============== 返回按鈕 ===============
-document.getElementById("ticketBack").addEventListener("click", () => {
+// 返回鍵
+document.getElementById("ticketBack").onclick = () => {
   document.getElementById("ticketContent").style.display = "none";
   document.querySelector(".ticket-category-list").style.display = "grid";
-});
+};
+
 
 </script>
 </body>
 </html>
+
 
 
 

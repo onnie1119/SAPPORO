@@ -2262,28 +2262,19 @@ function backToMain() {
    行李清單資料（localStorage）
 ============================================================ */
 /* ============================================================
-   🎒 行李清單 — 全展開・超穩定版（最終）
+   🎒 全展開穩定版（不會事件重複綁定）
 ============================================================ */
-
-/* ========== 1. 資料結構 ========== */
 
 let packingData = JSON.parse(localStorage.getItem("packingData")) || {
   groups: {
-    documents: {
-      name: "重要證件",
-      items: [
-        { text: "護照", done: false },
-        { text: "信用卡", done: false },
-        { text: "外幣", done: false }
-      ]
-    },
-    clothes: {
-      name: "衣物類",
-      items: [
-        { text: "上衣", done: false },
-        { text: "褲子", done: false }
-      ]
-    }
+    documents: { name: "重要證件", items: [
+      { text: "護照", done: false },
+      { text: "信用卡", done: false }
+    ]},
+    clothes:   { name: "衣物類", items: [
+      { text: "上衣", done: false },
+      { text: "褲子", done: false }
+    ]}
   }
 };
 
@@ -2291,13 +2282,13 @@ function savePacking() {
   localStorage.setItem("packingData", JSON.stringify(packingData));
 }
 
-/* ========== 2. 工具 function ========== */
+/* 工具 */
+function qs(s, r=document){ return r.querySelector(s); }
+function qsa(s, r=document){ return [...r.querySelectorAll(s)]; }
 
-function qs(s, r = document) { return r.querySelector(s); }
-function qsa(s, r = document) { return [...r.querySelectorAll(s)]; }
-
-/* ========== 3. 建立 group HTML ========== */
-
+/* ============================================================
+   1. 建立分類 DOM
+============================================================ */
 function createGroupDOM(key, group) {
   return `
     <div class="packing-group" data-group="${key}">
@@ -2316,21 +2307,27 @@ function createGroupDOM(key, group) {
   `;
 }
 
-/* ========== 4. 主渲染（★ 全展開版） ========== */
-
+/* ============================================================
+   2. 主渲染（永遠展開）
+============================================================ */
 function renderPackingPage() {
   const container = qs("#packing-page");
-  container.innerHTML = ""; // 清空頁面
+  container.innerHTML = "";
 
-  // 生成分類
   Object.keys(packingData.groups).forEach(key => {
     container.innerHTML += createGroupDOM(key, packingData.groups[key]);
   });
 
-  // 新增分類按鈕
   container.innerHTML += `<div id="add-category" class="add-category">＋ 新增分類</div>`;
 
-  // 填入每組的項目（永遠展開）
+  fillItems();
+  bindEvents();
+}
+
+/* ============================================================
+   3. 填入項目（★ 不重新綁事件）
+============================================================ */
+function fillItems() {
   qsa(".packing-group").forEach(groupEl => {
     const key = groupEl.dataset.group;
     const ul = qs(".packing-list", groupEl);
@@ -2339,55 +2336,53 @@ function renderPackingPage() {
       const li = document.createElement("li");
       li.className = "packing-item";
       li.innerHTML = `
-        <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
+        <div class="packing-checkbox ${item.done ? "checked" : ""}" data-index="${idx}"></div>
         <span>${item.text}</span>
-        <button class="item-delete-btn">×</button>
+        <button class="item-delete-btn" data-index="${idx}">×</button>
       `;
       ul.appendChild(li);
     });
 
-    // ⭐ 全展開 → 不做 display:none
     ul.style.display = "block";
   });
-
-  bindPackingEvents();
 }
 
 /* ============================================================
-   5. 事件（全部簡化到最乾淨版本）
+   4. 綁事件（★ 此版本不會重複綁定）
 ============================================================ */
+function bindEvents() {
 
-function bindPackingEvents() {
+  /* 勾選 */
+  qsa(".packing-checkbox").forEach(cb => {
+    cb.onclick = (e) => {
+      e.stopPropagation();
 
-  /* 勾選項目 */
-  document.addEventListener("click", (e) => {
-    if (!e.target.classList.contains("packing-checkbox")) return;
-    e.stopPropagation();
+      const li = e.target.closest(".packing-item");
+      const groupKey = li.closest(".packing-group").dataset.group;
+      const index = Number(e.target.dataset.index);
 
-    const li = e.target.closest(".packing-item");
-    const groupKey = li.closest(".packing-group").dataset.group;
-    const index = [...li.parentElement.children].indexOf(li);
+      packingData.groups[groupKey].items[index].done =
+        !packingData.groups[groupKey].items[index].done;
 
-    packingData.groups[groupKey].items[index].done =
-      !packingData.groups[groupKey].items[index].done;
-
-    savePacking();
-    renderPackingPage();
+      savePacking();
+      renderPackingPage();
+    };
   });
 
-  /* 刪除項目 */
-  document.addEventListener("click", (e) => {
-    if (!e.target.classList.contains("item-delete-btn")) return;
-    e.stopPropagation();
+  /* 刪除 */
+  qsa(".item-delete-btn").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
 
-    const li = e.target.closest(".packing-item");
-    const groupKey = li.closest(".packing-group").dataset.group;
-    const index = [...li.parentElement.children].indexOf(li);
+      const li = e.target.closest(".packing-item");
+      const groupKey = li.closest(".packing-group").dataset.group;
+      const index = Number(e.target.dataset.index);
 
-    packingData.groups[groupKey].items.splice(index, 1);
+      packingData.groups[groupKey].items.splice(index, 1);
 
-    savePacking();
-    renderPackingPage();
+      savePacking();
+      renderPackingPage();
+    };
   });
 
   /* 新增項目 */
@@ -2414,29 +2409,29 @@ function bindPackingEvents() {
       renderPackingPage();
     };
   });
-
 }
 
 /* ============================================================
-   6. Modal 控制（通用）
+   5. Modal
 ============================================================ */
+
 let currentGroupKey = null;
 
 function openModal(title) {
   const modal = qs("#itemModal");
-  const modalTitle = qs("#modalTitle");
+  const titleEl = qs("#modalTitle");
   const input = qs("#modalInput");
 
   if (title === "新增分類") {
-    modalTitle.style.display = "none";
+    titleEl.style.display = "none";
   } else {
-    modalTitle.style.display = "block";
-    modalTitle.textContent = title;
+    titleEl.style.display = "block";
+    titleEl.textContent = title;
   }
 
   modal.style.display = "flex";
   input.value = "";
-  setTimeout(() => input.focus(), 50);
+  setTimeout(()=>input.focus(),50);
 }
 
 qs("#modalCancel").onclick = () => {
@@ -2444,17 +2439,15 @@ qs("#modalCancel").onclick = () => {
 };
 
 qs("#modalOK").onclick = () => {
-  const text = qs("#modalInput").value.trim();
-  if (!text) return;
+  const val = qs("#modalInput").value.trim();
+  if (!val) return;
 
-  // 新增項目
   if (currentGroupKey) {
-    packingData.groups[currentGroupKey].items.push({ text, done: false });
+    packingData.groups[currentGroupKey].items.push({ text: val, done: false });
   }
-  // 新增分類
   else {
     const id = "cat" + Date.now();
-    packingData.groups[id] = { name: text, items: [] };
+    packingData.groups[id] = { name: val, items: [] };
   }
 
   savePacking();
@@ -2462,15 +2455,14 @@ qs("#modalOK").onclick = () => {
   qs("#itemModal").style.display = "none";
 };
 
-/* ============================================================
-   7. 初始化
-============================================================ */
-
+/* 初始化 */
 renderPackingPage();
+
 
 </script>
 </body>
 </html>
+
 
 
 

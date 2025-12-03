@@ -1286,15 +1286,6 @@ body.packing-mode {
   color: #999;
   flex-shrink: 0;
 }
-.packing-list {
-  display: none; /* 初始隱藏 */
-}
-.packing-group.open .packing-list {
-  display: block; /* 展開時顯示 */
-}
-.packing-group.open .arrow {
-  transform: rotate(180deg); /* 箭頭旋轉效果 */
-}
 
 </style>
 </head>
@@ -2517,45 +2508,10 @@ function openModal(title) {
    初始化
 ============================================================ */
 renderPackingPage();
-// 收合/展開：只針對 header 觸發
-document.querySelectorAll('.packing-group-header').forEach(header => {
-  header.addEventListener('click', function(e) {
-    // 如果點擊的是 checkbox 或刪除鍵，就不要收合
-    if (
-      e.target.classList.contains('packing-checkbox') ||
-      e.target.classList.contains('item-delete-btn')
-    ) {
-      return;
-    }
-
-    const group = this.closest('.packing-group');
-    group.classList.toggle('open'); // ✅ 只切換 class
-  });
-});
-
-// 勾選 checkbox：獨立事件，不影響收合
-document.querySelectorAll('.packing-checkbox').forEach(cb => {
-  cb.addEventListener('click', function(e) {
-    e.stopPropagation(); // 阻止冒泡
-    this.classList.toggle('checked');
-  });
-});
-
-// 刪除項目：獨立事件
-document.querySelectorAll('.item-delete-btn').forEach(btn => {
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    const item = this.closest('.packing-item');
-    if (item) item.remove();
-  });
-});
-
 
 </script>
 </body>
 </html>
-
-
 
 
 

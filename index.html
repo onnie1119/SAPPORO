@@ -1275,6 +1275,29 @@ body.packing-mode {
 
   font-size: 15px;
 }
+.sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 2px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sub-arrow {
+  transition: 0.25s;
+}
+
+.sub-list {
+  list-style: none;
+  padding-left: 12px;
+  margin-top: 4px;
+  display: none;
+}
+
+.subgroup.open .sub-list {
+  display: block;
+}
 
 </style>
 </head>
@@ -2267,60 +2290,204 @@ function backToMain() {
 
 let packingData = JSON.parse(localStorage.getItem("packingData")) || {
   groups: {
+
     documents: {
       name: "重要文件",
-      items: [
-        { text: "護照", done: false },
-        { text: "身分證", done: false },
-        { text: "Esim", done: false },
-        { text: "信用卡", done: false },
-        { text: "交通卡", done: false },
-        { text: "台幣 / 日幣", done: false },
-        { text: "旅遊保險", done: false }
-       
-      ]
+      sub: {
+        main: {
+          name: "",
+          items: [
+            "護照", "身分證", "Esim", "信用卡",
+            "交通卡", "台幣 / 日幣", "旅遊保險",
+            "電子憑證", "VJW / 機票 / 住宿 / 租車 / 行程"
+          ]
+        }
+      }
     },
 
     personal: {
       name: "個人用品",
-      items: [
-        { text: "香水", done: false },
-        { text: "離子夾", done: false },
-        { text: "常備藥品", done: false },
-        { text: "旅行洗漱包", done: false },
-        { text: "旅行化妝包", done: false },
-        { text: "衛生紙 / 濕紙巾", done: false }
-      ]
+      sub: {
+        main: {
+          name: "",
+          items: [
+            "香水", "離子夾", "常備藥品",
+            "旅行洗漱包", "旅行化妝包",
+            "衛生紙 / 濕紙巾"
+          ]
+        }
+      }
     },
 
     clothes: {
       name: "服裝用品",
-      items: [
-        { text: "中層外套", done: false },
-        { text: "免洗內衣褲", done: false },
-        { text: "睡衣 / 襪", done: false },
-        { text: "上裝 / 下裝", done: false },
-        { text: "發熱衣 / 褲", done: false },
-        { text: "羊毛襪 / 襪套", done: false },
-        { text: "大衣 / 羽絨外套", done: false },
-        { text: "毛帽 / 耳罩 / 口罩", done: false },
-        { text: "手套 / 圍巾 / 鞋子", done: false }
-      ]
+      sub: {
+        outer: {
+          name: "外套",
+          items: ["大衣", "羽絨外套", "風衣"]
+        },
+        tops: {
+          name: "上身",
+          items: ["長袖", "毛衣", "發熱衣"]
+        },
+        bottoms: {
+          name: "下身",
+          items: ["褲子", "裙子", "發熱褲"]
+        }
+      }
     },
 
     electronics: {
       name: "3C 設備",
-      items: [
-        { text: "手機", done: false },
-        { text: "耳機", done: false },
-        { text: "腳架", done: false },
-        { text: "充電器", done: false },
-        { text: "行動電源", done: false },
-        { text: "相機 / 電池 / 記憶卡", done: false }
-      ]
+      sub: {
+        main: {
+          name: "",
+          items: [
+            "手機", "耳機", "腳架",
+            "充電器", "行動電源",
+            "相機 / 電池 / 記憶卡"
+          ]
+        }
+      }
     }
   }
 };
+/* ============================================================
+   🎒 三層行李清單（主分類永遠展開、中分類可收合）
+============================================================ */
+
+function normalize(data) {
+  Object.keys(data.groups).forEach(g => {
+    const group = data.groups[g];
+    Object.keys(group.sub).forEach(s => {
+      group.sub[s].items = group.sub[s].items.map(t => ({
+        text: t,
+        done: false
+      }));
+    });
+  });
+}
+
+let packingData = JSON.parse(localStorage.getItem("packingData"));
+if (!packingData) {
+  packingData = { groups: {} };
+}
+normalize(packingData);
+
+function savePacking() {
+  localStorage.setItem("packingData", JSON.stringify(packingData));
+}
+
+function qs(s, r=document){ return r.querySelector(s); }
+function qsa(s, r=document){ return [...r.querySelectorAll(s)]; }
+
+/* ============================================================
+   建立 DOM
+============================================================ */
+function createGroupDOM(key, group) {
+  return `
+    <div class="packing-group" data-group="${key}">
+      <div class="packing-group-title">${group.name}</div>
+      <div class="subgroup-wrap"></div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   主渲染
+============================================================ */
+function renderPackingPage() {
+  const container = qs("#packing-page");
+  container.innerHTML = "";
+
+  Object.keys(packingData.groups).forEach(key => {
+    container.innerHTML += createGroupDOM(key, packingData.groups[key]);
+  });
+
+  fillSubGroups();
+  bindEvents();
+}
+
+/* ============================================================
+   填入中分類 + 項目
+============================================================ */
+function fillSubGroups() {
+  qsa(".packing-group").forEach(groupEl => {
+    const key = groupEl.dataset.group;
+    const groupData = packingData.groups[key];
+    const wrap = qs(".subgroup-wrap", groupEl);
+
+    wrap.innerHTML = "";
+
+    Object.keys(groupData.sub).forEach(subKey => {
+      const sub = groupData.sub[subKey];
+
+      const itemCount = `${sub.items.filter(i=>i.done).length}/${sub.items.length}`;
+
+      wrap.innerHTML += `
+        <div class="subgroup" data-sub="${subKey}">
+          <div class="sub-header">
+            <span class="sub-name">${sub.name}</span>
+            <span class="sub-count">${itemCount}</span>
+            <span class="sub-arrow">▾</span>
+          </div>
+
+          <ul class="sub-list">
+            ${sub.items.map((i, idx)=>`
+              <li class="packing-item" data-index="${idx}">
+                <div class="packing-checkbox ${i.done?"checked":""}"></div>
+                <span>${i.text}</span>
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+      `;
+    });
+  });
+}
+
+/* ============================================================
+   事件
+============================================================ */
+function bindEvents() {
+
+  /* 點中分類展開 / 收合 */
+  qsa(".sub-header").forEach(header => {
+    header.onclick = (e) => {
+      const subgroup = header.closest(".subgroup");
+      subgroup.classList.toggle("open");
+
+      const arrow = qs(".sub-arrow", header);
+      arrow.style.transform = subgroup.classList.contains("open")
+        ? "rotate(180deg)"
+        : "rotate(0deg)";
+    };
+  });
+
+  /* 勾選項目 */
+  qsa(".packing-checkbox").forEach(cb => {
+    cb.onclick = (e) => {
+      e.stopPropagation();
+      const li = cb.closest(".packing-item");
+      const idx = Number(li.dataset.index);
+
+      const subEl = cb.closest(".subgroup");
+      const groupKey = cb.closest(".packing-group").dataset.group;
+      const subKey = subEl.dataset.sub;
+
+      const item = packingData.groups[groupKey].sub[subKey].items[idx];
+      item.done = !item.done;
+
+      savePacking();
+      renderPackingPage();
+    };
+  });
+}
+
+/* ============================================================
+   初始化
+============================================================ */
+renderPackingPage();
 
 
 function savePacking() {
@@ -2507,6 +2674,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

@@ -2352,142 +2352,7 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
     }
   }
 };
-/* ============================================================
-   🎒 三層行李清單（主分類永遠展開、中分類可收合）
-============================================================ */
 
-function normalize(data) {
-  Object.keys(data.groups).forEach(g => {
-    const group = data.groups[g];
-    Object.keys(group.sub).forEach(s => {
-      group.sub[s].items = group.sub[s].items.map(t => ({
-        text: t,
-        done: false
-      }));
-    });
-  });
-}
-
-let packingData = JSON.parse(localStorage.getItem("packingData"));
-if (!packingData) {
-  packingData = { groups: {} };
-}
-normalize(packingData);
-
-function savePacking() {
-  localStorage.setItem("packingData", JSON.stringify(packingData));
-}
-
-function qs(s, r=document){ return r.querySelector(s); }
-function qsa(s, r=document){ return [...r.querySelectorAll(s)]; }
-
-/* ============================================================
-   建立 DOM
-============================================================ */
-function createGroupDOM(key, group) {
-  return `
-    <div class="packing-group" data-group="${key}">
-      <div class="packing-group-title">${group.name}</div>
-      <div class="subgroup-wrap"></div>
-    </div>
-  `;
-}
-
-/* ============================================================
-   主渲染
-============================================================ */
-function renderPackingPage() {
-  const container = qs("#packing-page");
-  container.innerHTML = "";
-
-  Object.keys(packingData.groups).forEach(key => {
-    container.innerHTML += createGroupDOM(key, packingData.groups[key]);
-  });
-
-  fillSubGroups();
-  bindEvents();
-}
-
-/* ============================================================
-   填入中分類 + 項目
-============================================================ */
-function fillSubGroups() {
-  qsa(".packing-group").forEach(groupEl => {
-    const key = groupEl.dataset.group;
-    const groupData = packingData.groups[key];
-    const wrap = qs(".subgroup-wrap", groupEl);
-
-    wrap.innerHTML = "";
-
-    Object.keys(groupData.sub).forEach(subKey => {
-      const sub = groupData.sub[subKey];
-
-      const itemCount = `${sub.items.filter(i=>i.done).length}/${sub.items.length}`;
-
-      wrap.innerHTML += `
-        <div class="subgroup" data-sub="${subKey}">
-          <div class="sub-header">
-            <span class="sub-name">${sub.name}</span>
-            <span class="sub-count">${itemCount}</span>
-            <span class="sub-arrow">▾</span>
-          </div>
-
-          <ul class="sub-list">
-            ${sub.items.map((i, idx)=>`
-              <li class="packing-item" data-index="${idx}">
-                <div class="packing-checkbox ${i.done?"checked":""}"></div>
-                <span>${i.text}</span>
-              </li>
-            `).join("")}
-          </ul>
-        </div>
-      `;
-    });
-  });
-}
-
-/* ============================================================
-   事件
-============================================================ */
-function bindEvents() {
-
-  /* 點中分類展開 / 收合 */
-  qsa(".sub-header").forEach(header => {
-    header.onclick = (e) => {
-      const subgroup = header.closest(".subgroup");
-      subgroup.classList.toggle("open");
-
-      const arrow = qs(".sub-arrow", header);
-      arrow.style.transform = subgroup.classList.contains("open")
-        ? "rotate(180deg)"
-        : "rotate(0deg)";
-    };
-  });
-
-  /* 勾選項目 */
-  qsa(".packing-checkbox").forEach(cb => {
-    cb.onclick = (e) => {
-      e.stopPropagation();
-      const li = cb.closest(".packing-item");
-      const idx = Number(li.dataset.index);
-
-      const subEl = cb.closest(".subgroup");
-      const groupKey = cb.closest(".packing-group").dataset.group;
-      const subKey = subEl.dataset.sub;
-
-      const item = packingData.groups[groupKey].sub[subKey].items[idx];
-      item.done = !item.done;
-
-      savePacking();
-      renderPackingPage();
-    };
-  });
-}
-
-/* ============================================================
-   初始化
-============================================================ */
-renderPackingPage();
 
 
 function savePacking() {
@@ -2669,11 +2534,147 @@ qs("#modalOK").onclick = () => {
 
 /* 初始化 */
 renderPackingPage();
+/* ============================================================
+   🎒 三層行李清單（主分類永遠展開、中分類可收合）
+============================================================ */
 
+function normalize(data) {
+  Object.keys(data.groups).forEach(g => {
+    const group = data.groups[g];
+    Object.keys(group.sub).forEach(s => {
+      group.sub[s].items = group.sub[s].items.map(t => ({
+        text: t,
+        done: false
+      }));
+    });
+  });
+}
+
+let packingData = JSON.parse(localStorage.getItem("packingData"));
+if (!packingData) {
+  packingData = { groups: {} };
+}
+normalize(packingData);
+
+function savePacking() {
+  localStorage.setItem("packingData", JSON.stringify(packingData));
+}
+
+function qs(s, r=document){ return r.querySelector(s); }
+function qsa(s, r=document){ return [...r.querySelectorAll(s)]; }
+
+/* ============================================================
+   建立 DOM
+============================================================ */
+function createGroupDOM(key, group) {
+  return `
+    <div class="packing-group" data-group="${key}">
+      <div class="packing-group-title">${group.name}</div>
+      <div class="subgroup-wrap"></div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   主渲染
+============================================================ */
+function renderPackingPage() {
+  const container = qs("#packing-page");
+  container.innerHTML = "";
+
+  Object.keys(packingData.groups).forEach(key => {
+    container.innerHTML += createGroupDOM(key, packingData.groups[key]);
+  });
+
+  fillSubGroups();
+  bindEvents();
+}
+
+/* ============================================================
+   填入中分類 + 項目
+============================================================ */
+function fillSubGroups() {
+  qsa(".packing-group").forEach(groupEl => {
+    const key = groupEl.dataset.group;
+    const groupData = packingData.groups[key];
+    const wrap = qs(".subgroup-wrap", groupEl);
+
+    wrap.innerHTML = "";
+
+    Object.keys(groupData.sub).forEach(subKey => {
+      const sub = groupData.sub[subKey];
+
+      const itemCount = `${sub.items.filter(i=>i.done).length}/${sub.items.length}`;
+
+      wrap.innerHTML += `
+        <div class="subgroup" data-sub="${subKey}">
+          <div class="sub-header">
+            <span class="sub-name">${sub.name}</span>
+            <span class="sub-count">${itemCount}</span>
+            <span class="sub-arrow">▾</span>
+          </div>
+
+          <ul class="sub-list">
+            ${sub.items.map((i, idx)=>`
+              <li class="packing-item" data-index="${idx}">
+                <div class="packing-checkbox ${i.done?"checked":""}"></div>
+                <span>${i.text}</span>
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+      `;
+    });
+  });
+}
+
+/* ============================================================
+   事件
+============================================================ */
+function bindEvents() {
+
+  /* 點中分類展開 / 收合 */
+  qsa(".sub-header").forEach(header => {
+    header.onclick = (e) => {
+      const subgroup = header.closest(".subgroup");
+      subgroup.classList.toggle("open");
+
+      const arrow = qs(".sub-arrow", header);
+      arrow.style.transform = subgroup.classList.contains("open")
+        ? "rotate(180deg)"
+        : "rotate(0deg)";
+    };
+  });
+
+  /* 勾選項目 */
+  qsa(".packing-checkbox").forEach(cb => {
+    cb.onclick = (e) => {
+      e.stopPropagation();
+      const li = cb.closest(".packing-item");
+      const idx = Number(li.dataset.index);
+
+      const subEl = cb.closest(".subgroup");
+      const groupKey = cb.closest(".packing-group").dataset.group;
+      const subKey = subEl.dataset.sub;
+
+      const item = packingData.groups[groupKey].sub[subKey].items[idx];
+      item.done = !item.done;
+
+      savePacking();
+      renderPackingPage();
+    };
+  });
+}
+
+/* ============================================================
+   初始化
+============================================================ */
+renderPackingPage();
 
 </script>
 </body>
 </html>
+
 
 
 

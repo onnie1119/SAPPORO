@@ -2086,7 +2086,7 @@ body.packing-mode {
 
 
 	
-
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 // ===========================
 // 頁面初始化
@@ -2404,6 +2404,29 @@ function renderPackingPage() {
   fillItems();
   bindEvents();
 }
+/* ============================================
+   🟦 啟用拖曳排序（每個分類各自獨立 sort）
+============================================ */
+function enableDrag() {
+  qsa(".packing-list").forEach(ul => {
+    const groupKey = ul.closest(".packing-group").dataset.group;
+
+    Sortable.create(ul, {
+      animation: 150,
+      ghostClass: "drag-ghost",   // 拖曳時的透明外框
+      onEnd: function (evt) {
+        const items = packingData.groups[groupKey].items;
+
+        // 依拖曳後順序重排資料
+        const movedItem = items.splice(evt.oldIndex, 1)[0];
+        items.splice(evt.newIndex, 0, movedItem);
+
+        savePacking();
+        renderPackingPage(); // 重新渲染
+      }
+    });
+  });
+}
 
 /* ============================================================
    填入項目
@@ -2554,4 +2577,5 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 

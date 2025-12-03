@@ -2301,15 +2301,14 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
         { text: "信用卡", done: false },
         { text: "交通卡", done: false },
         { text: "台幣 / 日幣", done: false },
-        { text: "旅遊保險", done: false },
-        { text: "電子憑證", done: false },
-        { text: "VJW / 機票 / 住宿 / 租車 / 行程", done: false }
+        { text: "旅遊保險", done: false }
       ]
     },
 
     personal: {
       name: "個人用品",
       items: [
+		{ text: "口罩", done: false },
         { text: "香水", done: false },
         { text: "離子夾", done: false },
         { text: "常備藥品", done: false },
@@ -2322,15 +2321,22 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
     clothes: {
       name: "服裝用品",
       items: [
-        { text: "中層外套", done: false },
-        { text: "免洗內衣褲", done: false },
-        { text: "睡衣 / 褲", done: false },
-        { text: "上裝 / 下裝", done: false },
-        { text: "發熱衣 / 褲", done: false },
-        { text: "羊毛襪 / 襪套", done: false },
-        { text: "大衣 / 羽絨外套", done: false },
-        { text: "毛帽 / 耳罩 / 口罩", done: false },
-        { text: "手套 / 圍巾 / 鞋子", done: false }
+        { text: "免洗內衣褲*6", done: false },
+        { text: "睡衣褲*1", done: false },
+		{ text: "發熱衣*2", done: false },
+        { text: "上衣*4", done: false },
+		{ text: "中層外套*1", done: false },
+		{ text: "下身*5", done: false },
+		{ text: "疊穿裙*3", done: false },
+		{ text: "內搭褲*2", done: false },
+		{ text: "發熱褲*2", done: false },
+        { text: "外套*3", done: false },
+		{ text: "羊毛襪*3", done: false },
+		{ text: "襪套*2", done: false },
+        { text: "鞋子*2", done: false },
+        { text: "帽子*3", done: false },
+		{ text: "手套*2", done: false },
+		{ text: "圍巾*3", done: false }   
       ]
     },
 
@@ -2338,6 +2344,7 @@ let packingData = JSON.parse(localStorage.getItem("packingData")) || {
       name: "3C 設備",
       items: [
         { text: "手機", done: false },
+		{ text: "手機掛繩", done: false },
         { text: "耳機", done: false },
         { text: "腳架", done: false },
         { text: "充電器", done: false },
@@ -2547,6 +2554,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

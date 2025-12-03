@@ -2267,16 +2267,61 @@ function backToMain() {
 
 let packingData = JSON.parse(localStorage.getItem("packingData")) || {
   groups: {
-    documents: { name: "重要文件", items: [
-      { text: "護照", done: false },
-      { text: "信用卡", done: false }
-    ]},
-    clothes:   { name: "服裝用品", items: [
-      { text: "上衣", done: false },
-      { text: "褲子", done: false }
-    ]}
+    documents: {
+      name: "重要文件",
+      items: [
+        { text: "護照", done: false },
+        { text: "身分證", done: false },
+        { text: "Esim", done: false },
+        { text: "信用卡", done: false },
+        { text: "交通卡", done: false },
+        { text: "台幣 / 日幣", done: false },
+        { text: "旅遊保險", done: false }
+       
+      ]
+    },
+
+    personal: {
+      name: "個人用品",
+      items: [
+        { text: "香水", done: false },
+        { text: "離子夾", done: false },
+        { text: "常備藥品", done: false },
+        { text: "旅行洗漱包", done: false },
+        { text: "旅行化妝包", done: false },
+        { text: "衛生紙 / 濕紙巾", done: false }
+      ]
+    },
+
+    clothes: {
+      name: "服裝用品",
+      items: [
+        { text: "中層外套", done: false },
+        { text: "免洗內衣褲", done: false },
+        { text: "睡衣 / 襪", done: false },
+        { text: "上裝 / 下裝", done: false },
+        { text: "發熱衣 / 褲", done: false },
+        { text: "羊毛襪 / 襪套", done: false },
+        { text: "大衣 / 羽絨外套", done: false },
+        { text: "毛帽 / 耳罩 / 口罩", done: false },
+        { text: "手套 / 圍巾 / 鞋子", done: false }
+      ]
+    },
+
+    electronics: {
+      name: "3C 設備",
+      items: [
+        { text: "手機", done: false },
+        { text: "耳機", done: false },
+        { text: "腳架", done: false },
+        { text: "充電器", done: false },
+        { text: "行動電源", done: false },
+        { text: "相機 / 電池 / 記憶卡", done: false }
+      ]
+    }
   }
 };
+
 
 function savePacking() {
   localStorage.setItem("packingData", JSON.stringify(packingData));

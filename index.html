@@ -1303,6 +1303,81 @@ body.packing-mode {
   opacity: 0.3;
   background: #f7f7f7 !important;
 }
+
+.ticket-page {
+  padding: 20px;
+  margin-top: 140px;
+}
+
+/* 標題 */
+.ticket-title {
+  font-size: 22px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+/* 類別區塊 */
+.ticket-category-list {
+  display: grid;
+  gap: 16px;
+}
+
+/* 單一卡片 */
+.ticket-category {
+  position: relative;
+  padding: 60px 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+/* 黑底背景圖片 */
+.ticket-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.35);
+  z-index: 1;
+}
+.ticket-category span {
+  position: relative;
+  z-index: 2;
+}
+
+/* 不同分類的背景（自行換） */
+.bg-hotel { background-image: url('images/hotel.jpg'); }
+.bg-flight { background-image: url('images/flight.jpg'); }
+.bg-schedule { background-image: url('images/schedule.jpg'); }
+.bg-rent { background-image: url('images/rent.jpg'); }
+.bg-entry { background-image: url('images/entry.jpg'); }
+
+
+/* 內容頁 */
+.ticket-content.hidden {
+  display: none;
+}
+.ticket-content {
+  margin-top: 20px;
+}
+.ticket-back {
+  background: none;
+  border: none;
+  font-size: 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.ticket-content img {
+  width: 100%;
+  border-radius: 12px;
+  margin: 12px 0;
+}
+
 </style>
 </head>
 <body>
@@ -1312,7 +1387,7 @@ body.packing-mode {
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
 		<div class="top-buttons">
 			<button onclick="showPacking()">行李清單</button>
-			<button>電子憑證</button>
+			<button onclick="itemModal()">電子憑證</button>
  			<button onclick="showExchange()">匯率換算</button>
 		</div>
 	</div>
@@ -2079,6 +2154,52 @@ body.packing-mode {
   </div>
 </div>
 
+<div id="ticket-page" class="ticket-page">
+
+  <h2 class="ticket-title">電子憑證</h2>
+
+  <div class="ticket-category-list">
+
+    <!-- 住宿 -->
+    <div class="ticket-category" data-target="hotel">
+      <div class="ticket-bg bg-hotel"></div>
+      <span>住宿</span>
+    </div>
+
+    <!-- 機票 -->
+    <div class="ticket-category" data-target="flight">
+      <div class="ticket-bg bg-flight"></div>
+      <span>機票</span>
+    </div>
+
+    <!-- 行程 -->
+    <div class="ticket-category" data-target="schedule">
+      <div class="ticket-bg bg-schedule"></div>
+      <span>行程</span>
+    </div>
+
+    <!-- 租車 -->
+    <div class="ticket-category" data-target="rentcar">
+      <div class="ticket-bg bg-rent"></div>
+      <span>租車</span>
+    </div>
+
+    <!-- 入境審查 -->
+    <div class="ticket-category" data-target="entry">
+      <div class="ticket-bg bg-entry"></div>
+      <span>入境審查</span>
+    </div>
+
+  </div>
+
+  <!-- 內容頁（預設隱藏） -->
+  <div id="ticketContent" class="ticket-content hidden">
+    <button id="ticketBack" class="ticket-back">← 返回</button>
+    <h3 id="ticketContentTitle"></h3>
+    <div id="ticketContentBody"></div>
+  </div>
+
+</div>
 
 
 
@@ -2579,10 +2700,79 @@ qs("#modalOK").onclick = () => {
 /* 初始化 */
 renderPackingPage();
 
+// =============== 電子憑證分類內容 ===============
+const ticketData = {
+  hotel: {
+    title: "住宿憑證",
+    body: `
+      <img src="images/hotel-voucher.jpg">
+      <p>入住：OOO飯店</p>
+      <p>Check-in：2025/xx/xx</p>
+      <p>Check-out：2025/xx/xx</p>
+    `
+  },
+  flight: {
+    title: "機票憑證",
+    body: `
+      <img src="images/flight-ticket.jpg">
+      <p>航空公司：XXX</p>
+      <p>航班：HD105 / MM556</p>
+    `
+  },
+  schedule: {
+    title: "行程文件",
+    body: `
+      <img src="images/itinerary.jpg">
+      <p>DAY1 - 札幌</p>
+      <p>DAY2 - 小樽</p>
+    `
+  },
+  rentcar: {
+    title: "租車憑證",
+    body: `
+      <img src="images/rent-voucher.jpg">
+      <p>取車日期：xxxx</p>
+    `
+  },
+  entry: {
+    title: "入境審查文件",
+    body: `
+      <img src="images/entry-vjw.jpg">
+      <p>VJW 審查通過</p>
+    `
+  }
+};
+
+
+// =============== 點分類開啟內容 ===============
+document.querySelectorAll(".ticket-category").forEach(card => {
+  card.addEventListener("click", () => {
+
+    const key = card.dataset.target;
+
+    document.getElementById("ticketContentTitle").textContent =
+      ticketData[key].title;
+
+    document.getElementById("ticketContentBody").innerHTML =
+      ticketData[key].body;
+
+    // 顯示內容、隱藏分類列表
+    document.querySelector(".ticket-category-list").style.display = "none";
+    document.getElementById("ticketContent").style.display = "block";
+  });
+});
+
+
+// =============== 返回按鈕 ===============
+document.getElementById("ticketBack").addEventListener("click", () => {
+  document.getElementById("ticketContent").style.display = "none";
+  document.querySelector(".ticket-category-list").style.display = "grid";
+});
 
 </script>
 </body>
 </html>
+
 
 
 

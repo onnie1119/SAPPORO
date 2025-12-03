@@ -1298,7 +1298,12 @@ body.packing-mode {
 .subgroup.open .sub-list {
   display: block;
 }
-
+.nav-btn.active {
+  background: #3A7AFE;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(58,122,254,0.35);
+}
 </style>
 </head>
 <body>
@@ -2279,6 +2284,24 @@ function backToMain() {
   if (window.scrollY > 300) scrollBtn.classList.add("show");
   else scrollBtn.classList.remove("show");
 }
+function setActiveNav(id) {
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  document.getElementById(id).classList.add("active");
+}
+document.getElementById("btnPacking").onclick = () => {
+  showPacking();        // 你原本的切頁功能
+  setActiveNav("btnPacking");
+};
+document.getElementById("btnTicket").onclick = () => {
+  showTicket();         // 你原本的切頁功能
+  setActiveNav("btnTicket");
+};
+document.getElementById("btnExchange").onclick = () => {
+  showExchange();       // 你原本的切頁功能
+  setActiveNav("btnExchange");
+};
 
 
 /* ============================================================
@@ -2554,6 +2577,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

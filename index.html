@@ -2282,122 +2282,107 @@ function backToMain() {
 
 
 /* ============================================================
-   🎒 三層行李清單（主分類永遠展開、中分類可收合）
+   🎒 恢復原本的二層行李清單（分類 → 項目）
+   ✔ 全展開
+   ✔ 可新增分類 / 項目
+   ✔ 可刪除
+   ✔ checkbox 正常
+   ✔ 不分外套/上衣等細類
 ============================================================ */
 
 let packingData = JSON.parse(localStorage.getItem("packingData")) || {
   groups: {
-
     documents: {
       name: "重要文件",
-      sub: {
-        main: {
-          name: "",
-          items: [
-            { text: "護照", done: false },
-            { text: "身分證", done: false },
-            { text: "Esim", done: false },
-            { text: "信用卡", done: false },
-            { text: "交通卡", done: false },
-            { text: "台幣 / 日幣", done: false },
-            { text: "旅遊保險", done: false },
-            { text: "電子憑證", done: false },
-            { text: "VJW / 機票 / 住宿 / 租車 / 行程", done: false }
-          ]
-        }
-      }
+      items: [
+        { text: "護照", done: false },
+        { text: "身分證", done: false },
+        { text: "Esim", done: false },
+        { text: "信用卡", done: false },
+        { text: "交通卡", done: false },
+        { text: "台幣 / 日幣", done: false },
+        { text: "旅遊保險", done: false },
+        { text: "電子憑證", done: false },
+        { text: "VJW / 機票 / 住宿 / 租車 / 行程", done: false }
+      ]
     },
 
     personal: {
       name: "個人用品",
-      sub: {
-        main: {
-          name: "",
-          items: [
-            { text: "香水", done: false },
-            { text: "離子夾", done: false },
-            { text: "常備藥品", done: false },
-            { text: "旅行洗漱包", done: false },
-            { text: "旅行化妝包", done: false },
-            { text: "衛生紙 / 濕紙巾", done: false }
-          ]
-        }
-      }
+      items: [
+        { text: "香水", done: false },
+        { text: "離子夾", done: false },
+        { text: "常備藥品", done: false },
+        { text: "旅行洗漱包", done: false },
+        { text: "旅行化妝包", done: false },
+        { text: "衛生紙 / 濕紙巾", done: false }
+      ]
     },
 
     clothes: {
       name: "服裝用品",
-      sub: {
-        outer: {
-          name: "外套",
-          items: [
-            { text: "大衣", done: false },
-            { text: "羽絨外套", done: false },
-            { text: "風衣", done: false }
-          ]
-        },
-        tops: {
-          name: "上身",
-          items: [
-            { text: "長袖", done: false },
-            { text: "毛衣", done: false },
-            { text: "發熱衣", done: false }
-          ]
-        },
-        bottoms: {
-          name: "下身",
-          items: [
-            { text: "褲子", done: false },
-            { text: "裙子", done: false },
-            { text: "發熱褲", done: false }
-          ]
-        }
-      }
+      items: [
+        { text: "中層外套", done: false },
+        { text: "免洗內衣褲", done: false },
+        { text: "睡衣 / 褲", done: false },
+        { text: "上裝 / 下裝", done: false },
+        { text: "發熱衣 / 褲", done: false },
+        { text: "羊毛襪 / 襪套", done: false },
+        { text: "大衣 / 羽絨外套", done: false },
+        { text: "毛帽 / 耳罩 / 口罩", done: false },
+        { text: "手套 / 圍巾 / 鞋子", done: false }
+      ]
     },
 
     electronics: {
       name: "3C 設備",
-      sub: {
-        main: {
-          name: "",
-          items: [
-            { text: "手機", done: false },
-            { text: "耳機", done: false },
-            { text: "腳架", done: false },
-            { text: "充電器", done: false },
-            { text: "行動電源", done: false },
-            { text: "相機 / 電池 / 記憶卡", done: false }
-          ]
-        }
-      }
+      items: [
+        { text: "手機", done: false },
+        { text: "耳機", done: false },
+        { text: "腳架", done: false },
+        { text: "充電器", done: false },
+        { text: "行動電源", done: false },
+        { text: "相機 / 電池 / 記憶卡", done: false }
+      ]
     }
-
   }
 };
+
 
 /* 儲存 */
 function savePacking() {
   localStorage.setItem("packingData", JSON.stringify(packingData));
 }
 
-/* 工具 */
+/* 快速選取 */
 function qs(s, r=document){ return r.querySelector(s); }
 function qsa(s, r=document){ return [...r.querySelectorAll(s)]; }
 
 /* ============================================================
-   建立主分類 DOM
+   建立分類 DOM
 ============================================================ */
 function createGroupDOM(key, group) {
   return `
     <div class="packing-group" data-group="${key}">
-      <div class="packing-group-title">${group.name}</div>
-      <div class="subgroup-wrap"></div>
+      <div class="packing-group-header">
+        <div class="left-group">
+          <span class="title">${group.name}</span>
+          <span class="count-status">
+            ${group.items.filter(i=>i.done).length}/${group.items.length}
+          </span>
+        </div>
+        <button class="delete-group-btn">×</button>
+      </div>
+
+      <ul class="packing-list"></ul>
+
+      <button class="add-item-btn" data-additem="${key}">＋ 新增項目</button>
     </div>
   `;
 }
 
 /* ============================================================
-   主渲染
+   主渲染（永遠展開）
 ============================================================ */
 function renderPackingPage() {
   const container = qs("#packing-page");
@@ -2407,94 +2392,162 @@ function renderPackingPage() {
     container.innerHTML += createGroupDOM(key, packingData.groups[key]);
   });
 
-  fillSubGroups();
+  container.innerHTML += `<div id="add-category" class="add-category">＋ 新增分類</div>`;
+
+  fillItems();
   bindEvents();
 }
 
 /* ============================================================
-   填入中分類 + 項目
+   填入項目
 ============================================================ */
-function fillSubGroups() {
+function fillItems() {
   qsa(".packing-group").forEach(groupEl => {
     const key = groupEl.dataset.group;
-    const groupData = packingData.groups[key];
-    const wrap = qs(".subgroup-wrap", groupEl);
+    const ul = qs(".packing-list", groupEl);
 
-    wrap.innerHTML = "";
+    ul.innerHTML = "";
 
-    Object.keys(groupData.sub).forEach(subKey => {
-      const sub = groupData.sub[subKey];
-      const itemCount = `${sub.items.filter(i=>i.done).length}/${sub.items.length}`;
-
-      wrap.innerHTML += `
-        <div class="subgroup" data-sub="${subKey}">
-          <div class="sub-header">
-            <span class="sub-name">${sub.name}</span>
-            <span class="sub-count">${itemCount}</span>
-            <span class="sub-arrow">▾</span>
-          </div>
-
-          <ul class="sub-list">
-            ${sub.items.map((i, idx)=>`
-              <li class="packing-item" data-index="${idx}">
-                <div class="packing-checkbox ${i.done?"checked":""}"></div>
-                <span>${i.text}</span>
-              </li>
-            `).join("")}
-          </ul>
-        </div>
+    packingData.groups[key].items.forEach((item, idx) => {
+      const li = document.createElement("li");
+      li.className = "packing-item";
+      li.innerHTML = `
+        <div class="packing-checkbox ${item.done ? "checked" : ""}" data-index="${idx}"></div>
+        <span>${item.text}</span>
+        <button class="item-delete-btn" data-index="${idx}">×</button>
       `;
+      ul.appendChild(li);
     });
+
+    ul.style.display = "block";
   });
 }
 
 /* ============================================================
-   事件
+   所有事件
 ============================================================ */
 function bindEvents() {
 
-  /* 展開 / 收合中分類 */
-  qsa(".sub-header").forEach(header => {
-    header.onclick = () => {
-      const subgroup = header.closest(".subgroup");
-      subgroup.classList.toggle("open");
-
-      const arrow = qs(".sub-arrow", header);
-      arrow.style.transform =
-        subgroup.classList.contains("open") ? "rotate(180deg)" : "rotate(0deg)";
-    };
-  });
-
-  /* 勾選項目 */
+  /* 勾選 */
   qsa(".packing-checkbox").forEach(cb => {
     cb.onclick = (e) => {
       e.stopPropagation();
 
       const li = cb.closest(".packing-item");
-      const idx = Number(li.dataset.index);
+      const groupKey = li.closest(".packing-group").dataset.group;
+      const index = Number(cb.dataset.index);
 
-      const subEl = cb.closest(".subgroup");
-      const groupKey = cb.closest(".packing-group").dataset.group;
-      const subKey = subEl.dataset.sub;
-
-      const item = packingData.groups[groupKey].sub[subKey].items[idx];
-      item.done = !item.done;
+      packingData.groups[groupKey].items[index].done =
+        !packingData.groups[groupKey].items[index].done;
 
       savePacking();
       renderPackingPage();
     };
   });
 
+  /* 刪除項目 */
+  qsa(".item-delete-btn").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+
+      const li = btn.closest(".packing-item");
+      const groupKey = li.closest(".packing-group").dataset.group;
+      const index = Number(btn.dataset.index);
+
+      packingData.groups[groupKey].items.splice(index, 1);
+
+      savePacking();
+      renderPackingPage();
+    };
+  });
+
+  /* 新增項目 */
+  qsa(".add-item-btn").forEach(btn => {
+    btn.onclick = () => {
+      currentGroupKey = btn.dataset.additem;
+      openModal("新增項目");
+    };
+  });
+
+  /* 新增分類 */
+  qs("#add-category").onclick = () => {
+    currentGroupKey = null;
+    openModal("新增分類");
+  };
+
+  /* 刪除分類 */
+  qsa(".delete-group-btn").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+
+      const key = btn.closest(".packing-group").dataset.group;
+      delete packingData.groups[key];
+
+      savePacking();
+      renderPackingPage();
+    };
+  });
 }
 
 /* ============================================================
-   初始化
+   Modal
 ============================================================ */
+
+let currentGroupKey = null;
+
+function openModal(title) {
+  const modal = qs("#itemModal");
+  const titleEl = qs("#modalTitle");
+  const input = qs("#modalInput");
+
+  if (title === "新增分類") {
+    titleEl.style.display = "none";
+  } else {
+    titleEl.style.display = "block";
+    titleEl.textContent = title;
+  }
+
+  modal.style.display = "flex";
+  input.value = "";
+  setTimeout(()=>input.focus(),50);
+}
+
+qs("#modalCancel").onclick = () => {
+  qs("#itemModal").style.display = "none";
+};
+
+qs("#modalOK").onclick = () => {
+  const val = qs("#modalInput").value.trim();
+  if (!val) return;
+
+  if (currentGroupKey) {
+    /* 新增項目 */
+    packingData.groups[currentGroupKey].items.push({
+      text: val,
+      done: false
+    });
+  } else {
+    /* 新增分類 */
+    const id = "cat" + Date.now();
+    packingData.groups[id] = {
+      name: val,
+      items: []
+    };
+  }
+
+  savePacking();
+  renderPackingPage();
+  qs("#itemModal").style.display = "none";
+};
+
+/* 初始化 */
 renderPackingPage();
+
 
 </script>
 </body>
 </html>
+
 
 
 

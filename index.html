@@ -2401,25 +2401,29 @@ function attachEvents() {
 
   /* 展開/收合分類 */
   document.querySelectorAll(".packing-group-header").forEach(header => {
-    header.onclick = (e) => {
+  header.onclick = (e) => {
 
-      if (isPackingEditing) return;
+    // ❗ checkbox / delete-btn 點擊時，不處理 header
+    if (e.target.classList.contains("packing-checkbox")) return;
+    if (e.target.classList.contains("item-delete-btn")) return;
 
-      const group = header.parentElement;
-      const list = group.querySelector(".packing-list");
-      const addBtn = group.querySelector(".add-item-btn");
+    if (isPackingEditing) return;
 
-      group.classList.toggle("open");
+    const group = header.parentElement;
+    const list = group.querySelector(".packing-list");
+    const addBtn = group.querySelector(".add-item-btn");
 
-      if (group.classList.contains("open")) {
-        list.style.display = "block";
-        addBtn.style.display = "block";
-      } else {
-        list.style.display = "none";
-        addBtn.style.display = "none";
-      }
-    };
-  });
+    group.classList.toggle("open");
+
+    if (group.classList.contains("open")) {
+      list.style.display = "block";
+      addBtn.style.display = "block";
+    } else {
+      list.style.display = "none";
+      addBtn.style.display = "none";
+    }
+  };
+});
 
   /* 新增項目 */
   document.querySelectorAll(".add-item-btn").forEach(btn => {
@@ -2514,6 +2518,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

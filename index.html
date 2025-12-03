@@ -2267,11 +2267,11 @@ function backToMain() {
 
 let packingData = JSON.parse(localStorage.getItem("packingData")) || {
   groups: {
-    documents: { name: "重要證件", items: [
+    documents: { name: "重要文件", items: [
       { text: "護照", done: false },
       { text: "信用卡", done: false }
     ]},
-    clothes:   { name: "衣物類", items: [
+    clothes:   { name: "服裝用品", items: [
       { text: "上衣", done: false },
       { text: "褲子", done: false }
     ]}
@@ -2462,6 +2462,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

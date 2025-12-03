@@ -1312,9 +1312,9 @@ body.packing-mode {
 		<div class="trip-title">北海道の旅</div>
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
 		<div class="top-buttons">
-			<button onclick="showPacking()">行李清單</button>
-			<button>電子憑證</button>
- 			<button onclick="showExchange()">匯率換算</button>
+			<button class="nav-btn" id="btnPacking" onclick="showPacking()">行李清單</button>
+			<button class="nav-btn" id="btnTicket">電子憑證</button>
+ 			<button class="nav-btn" id="btnExchange" onclick="showExchange()">匯率換算</button>
 		</div>
 	</div>
 
@@ -2541,6 +2541,7 @@ qs("#modalOK").onclick = () => {
 </script>
 </body>
 </html>
+
 
 
 

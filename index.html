@@ -2262,7 +2262,7 @@ function backToMain() {
    行李清單資料（localStorage）
 ============================================================ */
 /* ============================================================
-   🎒 行李清單 — 完整優化版（Rosie 最終版）
+   🎒 行李清單 — 全展開・超穩定版（最終）
 ============================================================ */
 
 /* ========== 1. 資料結構 ========== */
@@ -2291,35 +2291,22 @@ function savePacking() {
   localStorage.setItem("packingData", JSON.stringify(packingData));
 }
 
-/* ========== 2. 狀態 ========== */
+/* ========== 2. 工具 function ========== */
 
-let isPackingEditing = false;  // 編輯模式
-let currentGroupKey = null;    // 用於新增項目/分類的 modal 狀態
+function qs(s, r = document) { return r.querySelector(s); }
+function qsa(s, r = document) { return [...r.querySelectorAll(s)]; }
 
-/* ========== 3. 工具 function ========== */
-
-function qs(selector, root = document) {
-  return root.querySelector(selector);
-}
-
-function qsa(selector, root = document) {
-  return [...root.querySelectorAll(selector)];
-}
-
-/* ========== 4. 渲染 group HTML ========== */
+/* ========== 3. 建立 group HTML ========== */
 
 function createGroupDOM(key, group) {
   return `
     <div class="packing-group" data-group="${key}">
-      
       <div class="packing-group-header">
         <div class="left-group">
           <span class="title">${group.name}</span>
-          <span class="count-status">${group.items.filter(i => i.done).length}/${group.items.length}</span>
+          <span class="count-status">${group.items.filter(i=>i.done).length}/${group.items.length}</span>
         </div>
-
         <button class="delete-group-btn">×</button>
-        <span class="arrow">▾</span>
       </div>
 
       <ul class="packing-list"></ul>
@@ -2329,28 +2316,21 @@ function createGroupDOM(key, group) {
   `;
 }
 
-/* ========== 5. 主渲染 ========== */
+/* ========== 4. 主渲染（★ 全展開版） ========== */
 
 function renderPackingPage() {
   const container = qs("#packing-page");
-  container.innerHTML = `
-    <button id="packing-edit-btn"
-      style="background:none;border:none;color:#3A7AFE;font-size:15px;position:fixed;top:9rem;right:1rem;">
-      編輯
-    </button>
-  `;
+  container.innerHTML = ""; // 清空頁面
 
-  // 插入分類
+  // 生成分類
   Object.keys(packingData.groups).forEach(key => {
     container.innerHTML += createGroupDOM(key, packingData.groups[key]);
   });
 
-  // 最底部新增分類按鈕
-  container.innerHTML += `
-    <div id="add-category" class="add-category">＋ 新增分類</div>
-  `;
+  // 新增分類按鈕
+  container.innerHTML += `<div id="add-category" class="add-category">＋ 新增分類</div>`;
 
-  // 填入每一組的項目
+  // 填入每組的項目（永遠展開）
   qsa(".packing-group").forEach(groupEl => {
     const key = groupEl.dataset.group;
     const ul = qs(".packing-list", groupEl);
@@ -2358,63 +2338,30 @@ function renderPackingPage() {
     packingData.groups[key].items.forEach((item, idx) => {
       const li = document.createElement("li");
       li.className = "packing-item";
-
       li.innerHTML = `
         <div class="packing-checkbox ${item.done ? "checked" : ""}"></div>
         <span>${item.text}</span>
         <button class="item-delete-btn">×</button>
       `;
-
       ul.appendChild(li);
     });
 
-    // 預設收起
-    ul.style.display = "none";
-    qs(".add-item-btn", groupEl).style.display = "none";
+    // ⭐ 全展開 → 不做 display:none
+    ul.style.display = "block";
   });
 
   bindPackingEvents();
 }
 
 /* ============================================================
-   🎯 6. 事件綁定（完全優化、不再誤觸）
+   5. 事件（全部簡化到最乾淨版本）
 ============================================================ */
+
 function bindPackingEvents() {
 
-  /* -----------------------------------------
-    (A) 展開 / 收合 — 只有點到 header 本體才觸發
-  ----------------------------------------- */
-  qsa(".packing-group-header").forEach(header => {
-    header.addEventListener("click", (e) => {
-
-      // ⭐ 僅允許點到 header 或箭頭
-      if (e.currentTarget !== e.target && !e.target.classList.contains("arrow")) {
-        return;
-      }
-      if (isPackingEditing) return;
-
-      const group = header.parentElement;
-      const list = qs(".packing-list", group);
-      const addBtn = qs(".add-item-btn", group);
-
-      group.classList.toggle("open");
-
-      if (group.classList.contains("open")) {
-        list.style.display = "block";
-        addBtn.style.display = "block";
-      } else {
-        list.style.display = "none";
-        addBtn.style.display = "none";
-      }
-    });
-  });
-
-  /* -----------------------------------------
-    (B) 勾選項目
-  ----------------------------------------- */
+  /* 勾選項目 */
   document.addEventListener("click", (e) => {
     if (!e.target.classList.contains("packing-checkbox")) return;
-
     e.stopPropagation();
 
     const li = e.target.closest(".packing-item");
@@ -2428,12 +2375,9 @@ function bindPackingEvents() {
     renderPackingPage();
   });
 
-  /* -----------------------------------------
-    (C) 刪除項目
-  ----------------------------------------- */
+  /* 刪除項目 */
   document.addEventListener("click", (e) => {
     if (!e.target.classList.contains("item-delete-btn")) return;
-
     e.stopPropagation();
 
     const li = e.target.closest(".packing-item");
@@ -2446,49 +2390,21 @@ function bindPackingEvents() {
     renderPackingPage();
   });
 
-  /* -----------------------------------------
-    (D) 新增項目
-  ----------------------------------------- */
+  /* 新增項目 */
   qsa(".add-item-btn").forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
+    btn.onclick = () => {
       currentGroupKey = btn.dataset.additem;
-      openPackingModal("新增項目");
+      openModal("新增項目");
     };
   });
 
-  /* -----------------------------------------
-    (E) 新增分類
-  ----------------------------------------- */
+  /* 新增分類 */
   qs("#add-category").onclick = () => {
     currentGroupKey = null;
-    openPackingModal("新增分類");
+    openModal("新增分類");
   };
 
-  /* -----------------------------------------
-    (F) 編輯模式
-  ----------------------------------------- */
-  qs("#packing-edit-btn").onclick = () => {
-    isPackingEditing = !isPackingEditing;
-
-    const editBtn = qs("#packing-edit-btn");
-    const arrows = qsa(".arrow");
-    const deleteBtns = qsa(".delete-group-btn");
-
-    if (isPackingEditing) {
-      editBtn.textContent = "完成";
-      arrows.forEach(a => a.textContent = "×");
-      deleteBtns.forEach(btn => btn.style.display = "block");
-    } else {
-      editBtn.textContent = "編輯";
-      arrows.forEach(a => a.textContent = "▾");
-      deleteBtns.forEach(btn => btn.style.display = "none");
-    }
-  };
-
-  /* -----------------------------------------
-    (G) 刪除分類
-  ----------------------------------------- */
+  /* 刪除分類 */
   qsa(".delete-group-btn").forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
@@ -2498,12 +2414,15 @@ function bindPackingEvents() {
       renderPackingPage();
     };
   });
+
 }
 
 /* ============================================================
-   7. Modal 控制
+   6. Modal 控制（通用）
 ============================================================ */
-function openPackingModal(title) {
+let currentGroupKey = null;
+
+function openModal(title) {
   const modal = qs("#itemModal");
   const modalTitle = qs("#modalTitle");
   const input = qs("#modalInput");
@@ -2528,9 +2447,12 @@ qs("#modalOK").onclick = () => {
   const text = qs("#modalInput").value.trim();
   if (!text) return;
 
+  // 新增項目
   if (currentGroupKey) {
     packingData.groups[currentGroupKey].items.push({ text, done: false });
-  } else {
+  }
+  // 新增分類
+  else {
     const id = "cat" + Date.now();
     packingData.groups[id] = { name: text, items: [] };
   }
@@ -2541,13 +2463,15 @@ qs("#modalOK").onclick = () => {
 };
 
 /* ============================================================
-   8. 初始化
+   7. 初始化
 ============================================================ */
+
 renderPackingPage();
 
 </script>
 </body>
 </html>
+
 
 
 

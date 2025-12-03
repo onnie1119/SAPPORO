@@ -1298,7 +1298,11 @@ body.packing-mode {
 .subgroup.open .sub-list {
   display: block;
 }
-
+/* 拖曳時的半透明樣式 */
+.drag-ghost {
+  opacity: 0.4;
+  background: #ffeef2 !important;
+}
 </style>
 </head>
 <body>
@@ -2403,6 +2407,7 @@ function renderPackingPage() {
 
   fillItems();
   bindEvents();
+  enableDrag();
 }
 /* ============================================
    🟦 啟用拖曳排序（每個分類各自獨立 sort）
@@ -2577,5 +2582,6 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 

@@ -2368,35 +2368,46 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
 // ===========================
 function showExchange() {
   isMainPage = false;
+
   document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
   document.getElementById("packing-page").style.display = "none";
+  document.getElementById("ticket-page").style.display = "none"; // ★ 要加
+
+  document.getElementById("exchange-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
   homeBtn.classList.add("show");
 }
 
+
 function showPacking() {
   isMainPage = false;
+
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
+  document.getElementById("ticket-page").style.display = "none";  // ★ 要加
+
   document.getElementById("packing-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
   homeBtn.classList.add("show");
 }
 
+
 function backToMain() {
   isMainPage = true;
+
   document.querySelector(".container").style.display = "block";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
+  document.getElementById("ticket-page").style.display = "none"; // ★ 要加
 
   homeBtn.classList.remove("show");
 
   if (window.scrollY > 300) scrollBtn.classList.add("show");
   else scrollBtn.classList.remove("show");
 }
+
 
 
 /* ============================================================
@@ -2746,6 +2757,7 @@ document.getElementById("ticketBack").onclick = () => {
 </script>
 </body>
 </html>
+
 
 
 

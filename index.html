@@ -2154,52 +2154,44 @@ body.packing-mode {
   </div>
 </div>
 
-<div id="ticket-page" class="ticket-page">
-
+<div id="ticket-page" class="ticket-page" style="display:none;">
   <h2 class="ticket-title">電子憑證</h2>
 
   <div class="ticket-category-list">
-
-    <!-- 住宿 -->
     <div class="ticket-category" data-target="hotel">
       <div class="ticket-bg bg-hotel"></div>
       <span>住宿</span>
     </div>
 
-    <!-- 機票 -->
     <div class="ticket-category" data-target="flight">
       <div class="ticket-bg bg-flight"></div>
       <span>機票</span>
     </div>
 
-    <!-- 行程 -->
     <div class="ticket-category" data-target="schedule">
       <div class="ticket-bg bg-schedule"></div>
       <span>行程</span>
     </div>
 
-    <!-- 租車 -->
     <div class="ticket-category" data-target="rentcar">
       <div class="ticket-bg bg-rent"></div>
       <span>租車</span>
     </div>
 
-    <!-- 入境審查 -->
     <div class="ticket-category" data-target="entry">
       <div class="ticket-bg bg-entry"></div>
       <span>入境審查</span>
     </div>
-
   </div>
 
-  <!-- 內容頁（預設隱藏） -->
+  <!-- 內容頁 -->
   <div id="ticketContent" class="ticket-content hidden">
     <button id="ticketBack" class="ticket-back">← 返回</button>
     <h3 id="ticketContentTitle"></h3>
     <div id="ticketContentBody"></div>
   </div>
-
 </div>
+
 
 
 
@@ -2772,6 +2764,7 @@ document.getElementById("ticketBack").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
 
 

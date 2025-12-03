@@ -2508,10 +2508,89 @@ function openModal(title) {
    初始化
 ============================================================ */
 renderPackingPage();
+// ============================
+// 行李清單收合/展開 + 勾選邏輯
+// ============================
+
+// 收合/展開：只針對 header 的箭頭或標題觸發
+document.querySelectorAll('.packing-group-header').forEach(header => {
+  header.addEventListener('click', function(e) {
+    // 如果點擊的是 checkbox 或刪除鍵，就不要收合
+    if (
+      e.target.classList.contains('packing-checkbox') ||
+      e.target.classList.contains('item-delete-btn')
+    ) {
+      return;
+    }
+
+    const group = this.closest('.packing-group');
+    group.classList.toggle('open');
+    const list = group.querySelector('.packing-list');
+    if (list) {
+      list.style.display = group.classList.contains('open') ? 'block' : 'none';
+    }
+
+    // 箭頭旋轉效果
+    const arrow = group.querySelector('.arrow');
+    if (arrow) {
+      arrow.style.transform = group.classList.contains('open')
+        ? 'rotate(180deg)'
+        : 'rotate(0deg)';
+    }
+  });
+});
+
+// 勾選 checkbox：獨立事件，不影響收合
+document.querySelectorAll('.packing-checkbox').forEach(cb => {
+  cb.addEventListener('click', function(e) {
+    e.stopPropagation(); // 阻止冒泡到 header
+    this.classList.toggle('checked');
+  });
+});
+
+// 刪除項目：獨立事件
+document.querySelectorAll('.item-delete-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation(); // 阻止冒泡到 header
+    const item = this.closest('.packing-item');
+    if (item) item.remove();
+  });
+});
+
+// 新增項目按鈕：示範用
+document.querySelectorAll('.add-item-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const list = this.closest('.packing-group').querySelector('.packing-list');
+    if (list) {
+      const li = document.createElement('li');
+      li.className = 'packing-item';
+      li.innerHTML = `
+        <div class="packing-checkbox"></div>
+        <span>新項目</span>
+        <button class="item-delete-btn">✕</button>
+      `;
+      list.appendChild(li);
+
+      // 綁定新 checkbox
+      li.querySelector('.packing-checkbox').addEventListener('click', function(ev) {
+        ev.stopPropagation();
+        this.classList.toggle('checked');
+      });
+
+      // 綁定新刪除鍵
+      li.querySelector('.item-delete-btn').addEventListener('click', function(ev) {
+        ev.stopPropagation();
+        li.remove();
+      });
+    }
+  });
+});
 
 </script>
 </body>
 </html>
+
 
 
 

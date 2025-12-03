@@ -860,13 +860,6 @@ ease;
   margin: 0;
 }
 
-.packing-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 4px;
-  border-bottom: 1px solid #eee;
-  font-size: 15px;
-}
 
 .packing-item:last-child {
   border-bottom: none;
@@ -984,17 +977,7 @@ ease;
   color: #fff;
 }
 
-/* 每個項目 */
-.packing-item {
-  position: relative;
-  padding: 14px 14px;
-  background: #fff;
 
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
 /* 編輯按鈕（每一項目的右上角） */
 .item-edit-btn {
@@ -1117,13 +1100,6 @@ body.packing-mode {
   display: none;
 }
 
-/* 小項目排版 */
-.packing-item {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  padding: 10px 0;
-}
 
 .packing-item:last-child {
   border-bottom: none;
@@ -1285,6 +1261,19 @@ body.packing-mode {
   font-size: 12px;
   color: #999;
   flex-shrink: 0;
+}
+/* === 統一版 packing-item === */
+.packing-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 0;         /* 建議的安全 padding */
+  border-bottom: 1px solid #eee;
+  background: #fff;
+
+  font-size: 15px;
 }
 
 </style>
@@ -2512,6 +2501,7 @@ renderPackingPage();
 </script>
 </body>
 </html>
+
 
 
 

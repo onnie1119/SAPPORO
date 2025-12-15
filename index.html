@@ -3043,24 +3043,36 @@ document.addEventListener("click", function (e) {
 
   const key = card.dataset.target;
 
-  // ⭐ 住宿：直接顯示飯店列表（不進內容頁）
+  /* =========================
+     ⭐ 住宿：直接顯示飯店清單
+     ⭐ 完全不進內容頁
+  ========================= */
   if (key === "hotel") {
     const list = document.querySelector(".ticket-category-list");
 
+    // 強制關閉內容頁（避免殘留）
+    document.getElementById("ticketContent").style.display = "none";
+
+    // 用住宿內容直接取代分類列表
+    list.style.display = "flex";
     list.innerHTML = ticketData.hotel.body;
-    return;
+
+    return; // ⭐⭐⭐ 關鍵：阻止後面所有邏輯
   }
 
-  // ⭐ 其他分類：維持原本內容頁模式
+  /* =========================
+     其他分類：走內容頁模式
+  ========================= */
   document.getElementById("ticketContentTitle").textContent =
-    ticketData[key].title;
+    ticketData[key].title || "";
 
   document.getElementById("ticketContentBody").innerHTML =
-    ticketData[key].body;
+    ticketData[key].body || "";
 
   document.querySelector(".ticket-category-list").style.display = "none";
   document.getElementById("ticketContent").style.display = "block";
 });
+
 
 // 返回鍵
 document.getElementById("ticketBack").onclick = () => {
@@ -3096,4 +3108,5 @@ function goBack() {
 </script>
 </body>
 </html>
+
 

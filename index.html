@@ -1870,17 +1870,22 @@ a:active {
   transition: transform 0.5s ease;
 }
 
-/* 第二筆航班卡片，初始位置為左側（隱藏狀態） */
 .second-flight-card {
-  position: absolute;
-  left: 100%;
-  top: 0;
-}
+      position: absolute;
+      left: 100%;  /* 初始狀態隱藏在右邊 */
+      top: 0;
+      width: 100%;
+    }
 
-/* 用於滑動時，將第二筆卡片滑到可見位置 */
-.flight-container.slide .second-flight-card {
-  left: 0;
-}
+    /* 當容器添加 .slide 類時，第二筆航班卡片滑入 */
+    .flight-container.slide .second-flight-card {
+      left: 0; /* 使第二筆卡片滑入 */
+    }
+
+    .flight-card {
+      background-color: #fff;
+      padding: 10px;
+    }
 
 </style>
 </head>
@@ -3519,26 +3524,33 @@ function resetTicketPage() {
 
 
 </script>
-	<script>
+<script>
   let startX;
+  let endX;
+  const flightContainer = document.querySelector('.flight-container');
 
-  document.querySelector('.flight-container').addEventListener('touchstart', (e) => {
+  // 監聽 touchstart 事件，記錄開始位置
+  flightContainer.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
   });
 
-  document.querySelector('.flight-container').addEventListener('touchend', (e) => {
-    let endX = e.changedTouches[0].clientX;
-    if (startX - endX > 50) {
-      // 向左滑動，顯示第二筆航班資訊
-      document.querySelector('.flight-container').classList.add('slide');
-    } else if (endX - startX > 50) {
-      // 向右滑動，隱藏第二筆航班資訊
-      document.querySelector('.flight-container').classList.remove('slide');
+  // 監聽 touchmove 事件，根據滑動位置移動航班卡片
+  flightContainer.addEventListener('touchmove', (e) => {
+    endX = e.touches[0].clientX;
+    const distance = startX - endX; // 計算滑動距離
+
+    // 當滑動距離大於50px時，觸發滑動切換
+    if (distance > 50) {
+      flightContainer.classList.add('slide'); // 顯示第二筆航班資訊
+    } else if (distance < -50) {
+      flightContainer.classList.remove('slide'); // 隱藏第二筆航班資訊
     }
   });
 </script>
+
 </body>
 </html>
+
 
 
 

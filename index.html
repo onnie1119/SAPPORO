@@ -1795,6 +1795,33 @@ a:active {
   white-space: nowrap;
 }
 
+.flight-pass-bar {
+  background: #2f4a64;              /* 深藍灰，像登機證 */
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 18px 18px 0 0;     /* 只圓上面 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.flight-card {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;               /* 🔥 關鍵 */
+  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+.pass-title {
+  opacity: 0.95;
+}
+
+.pass-checkin {
+  opacity: 0.85;
+  font-weight: 500;
+}
 
 
 </style>
@@ -3246,8 +3273,10 @@ const ticketData = {
 		
 		  <!-- 上方資訊列 -->
 		  <div class="flight-top">
-		    <div class="flight-tag">BOARDING PASS　登機證</div>
-		    <div class="flight-meta">報到時間｜22:10</div>
+		    <div class="flight-pass-bar">
+			  <span class="pass-title">BOARDING PASS　登機證</span>
+			  <span class="pass-checkin">報到時間｜22:10</span>
+			</div>
 		  </div>
 		
 		  <!-- 航空公司 / 航班 -->
@@ -3403,6 +3432,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

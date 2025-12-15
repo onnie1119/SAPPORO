@@ -1371,7 +1371,7 @@ body.packing-mode {
 }
 
 .ticket-content img {
-  width: 100%;
+  
   border-radius: 12px;
   margin: 12px 0;
 }
@@ -1518,7 +1518,86 @@ body.packing-mode {
   font-size: 13px;
   color: #888;
 }
+/* ===== 住宿群組 ===== */
+.hotel-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
 
+/* 單一住宿卡片 */
+.hotel-item {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+/* 標題列 */
+.hotel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hotel-arrow {
+  font-size: 20px;
+  color: #bbb;
+  transition: transform .25s ease;
+}
+
+/* 展開狀態 */
+.hotel-item.open .hotel-arrow {
+  transform: rotate(90deg);
+}
+
+/* PDF 清單（預設收合） */
+.hotel-pdf-list {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.hotel-item.open .hotel-pdf-list {
+  display: flex;
+}
+
+/* ===== PDF item（沿用 iOS Files 風格） ===== */
+.pdf-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #222;
+}
+
+.pdf-item:active {
+  transform: scale(0.97);
+}
+
+.pdf-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.pdf-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pdf-sub {
+  font-size: 13px;
+  color: #888;
+}
 
 </style>
 </head>
@@ -2356,7 +2435,7 @@ body.packing-mode {
  
   <!-- 內容頁 -->
   <div id="ticketContent" class="ticket-content hidden">
-    <button id="ticketBack" class="ticket-back">← 返回</button>
+   
     <h3 id="ticketContentTitle"></h3>
     <div id="ticketContentBody"></div>
   </div>
@@ -2370,7 +2449,7 @@ body.packing-mode {
 
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>	
 <button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
-
+<button class="back-btn" id="backBtn" onclick="goBack()">BACK</button>
 
 	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -2980,10 +3059,35 @@ document.getElementById("ticketBack").onclick = () => {
   document.querySelector(".ticket-category-list").style.display = "grid";
 };
 
+document.addEventListener("click", function(e) {
+  const header = e.target.closest(".hotel-header");
+  if (!header) return;
+
+  const item = header.closest(".hotel-item");
+  item.classList.toggle("open");
+});
+	
+function goBack() {
+
+  // 如果目前在「電子憑證 → 內容頁」
+  const ticketContent = document.getElementById("ticketContent");
+  const ticketList = document.querySelector(".ticket-category-list");
+
+  if (ticketContent && ticketContent.style.display === "block") {
+    // 回到電子憑證分類列表
+    ticketContent.style.display = "none";
+    ticketList.style.display = "grid";
+    return;
+  }
+
+  // 其他情況（匯率 / 行李 / 電子憑證首頁）
+  backToMain();
+}
 
 </script>
 </body>
 </html>
+
 
 
 

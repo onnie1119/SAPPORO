@@ -2455,6 +2455,8 @@ body.packing-mode {
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 let navBtn;
+const originalTicketCategoryHTML =
+  document.querySelector(".ticket-category-list").innerHTML;
 
 document.addEventListener("DOMContentLoaded", () => {
   navBtn = document.getElementById("navBtn");
@@ -2958,8 +2960,13 @@ qs("#modalOK").onclick = () => {
 renderPackingPage();
 
 // =============== 電子憑證分類內容 ===============
+	let ticketLevel = "list"; 
+// list = 電子憑證首頁
+// hotel = 住宿憑證
+// content = 其他分類內容頁
 function showTicket() {
   isMainPage = false;
+ ticketLevel = "list"; // ⭐ 關鍵
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
@@ -3061,7 +3068,7 @@ document.addEventListener("click", function (e) {
     // 用住宿內容直接取代分類列表
     list.style.display = "flex";
     list.innerHTML = ticketData.hotel.body;
-
+	ticketLevel = "hotel"; // ⭐ 關鍵
     return; // ⭐⭐⭐ 關鍵：阻止後面所有邏輯
   }
 
@@ -3100,26 +3107,34 @@ function setNavBack() {
   navBtn.onclick = goBack;
   navBtn.classList.add("show");
 }
-	
 function goBack() {
-  const ticketContent = document.getElementById("ticketContent");
   const ticketList = document.querySelector(".ticket-category-list");
 
-  // ① 電子憑證內容頁 → 回分類
-  if (ticketContent && ticketContent.style.display === "block") {
-    ticketContent.style.display = "none";
-    ticketList.style.display = "flex";
+  // ① 從「住宿憑證」回到「電子憑證首頁」
+  if (ticketLevel === "hotel") {
+    ticketList.innerHTML = originalTicketCategoryHTML; // 回原分類
+    ticketLevel = "list";
     return;
   }
 
-  // ② 電子憑證分類頁 → 回主行程
+  // ② 從其他分類內容頁回到電子憑證首頁
+  if (ticketLevel === "content") {
+    document.getElementById("ticketContent").style.display = "none";
+    ticketList.style.display = "flex";
+    ticketLevel = "list";
+    return;
+  }
+
+  // ③ 從電子憑證首頁 → 回主行程
   backToMain();
 }
+
 
 
 
 </script>
 </body>
 </html>
+
 
 

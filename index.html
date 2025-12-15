@@ -2953,140 +2953,125 @@ qs("#modalOK").onclick = () => {
 renderPackingPage();
 
 // =============== 電子憑證分類內容 ===============
-function showTicket() {
-  isMainPage = false;
+/* =========================
+   全域 DOM 參考
+========================= */
+const homeBtn = document.getElementById("homeBtn");
+const backBtn = document.getElementById("backBtn");
 
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
+const ticketPage = document.getElementById("ticket-page");
+const ticketList = document.querySelector(".ticket-category-list");
+const ticketContent = document.getElementById("ticketContent");
 
-  document.getElementById("ticket-page").style.display = "block";
-
-  scrollBtn.classList.remove("show");
+/* =========================
+   按鈕顯示控制
+========================= */
+function showHomeBtn() {
   homeBtn.classList.add("show");
+  backBtn.classList.remove("show");
 }
-const ticketData = {
- hotel: {
- body: `
-    <div class="hotel-group">
 
-      <!-- ONSEN RYOKAN YUEN -->
-      <div class="hotel-item">
-        <div class="hotel-header">
-          <span>ONSEN RYOKAN YUEN</span>
-          <span class="hotel-arrow">›</span>
-        </div>
+function showBackBtn() {
+  backBtn.classList.add("show");
+  homeBtn.classList.remove("show");
+}
 
-        <div class="hotel-pdf-list">
-          <a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
-            <img src="images/60.png" class="pdf-icon">
-            <div class="pdf-info">
-              <div class="pdf-title">Hotel Reservation</div>
-              <div class="pdf-sub">住宿訂房確認</div>
-            </div>
-          </a>
+/* =========================
+   主頁 / HOME 行為
+========================= */
+function backToMain() {
+  // 🔸 你原本回主行程的程式碼照留
+  // ex: 隱藏其他頁面、顯示行程頁
+  // -----------------------------
 
-          <a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
-            <img src="images/60.png" class="pdf-icon">
-            <div class="pdf-info">
-              <div class="pdf-title">Payment Receipt</div>
-              <div class="pdf-sub">付款收據</div>
-            </div>
-          </a>
-        </div>
-      </div>
+  // 🔸 電子憑證相關重置
+  if (ticketPage) ticketPage.style.display = "none";
+  if (ticketContent) ticketContent.style.display = "none";
+  if (ticketList) ticketList.style.display = "flex";
 
-      <!-- VESSEL -->
-      <div class="hotel-item">
-        <div class="hotel-header">
-          <span>VESSEL HOTEL</span>
-          <span class="hotel-arrow">›</span>
-        </div>
+  showHomeBtn();
+}
 
-        <div class="hotel-pdf-list">
-          <a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
-            <img src="images/60.png" class="pdf-icon">
-            <div class="pdf-info">
-              <div class="pdf-title">Hotel Reservation</div>
-              <div class="pdf-sub">住宿訂房確認</div>
-            </div>
-          </a>
+/* =========================
+   進入電子憑證頁
+========================= */
+function openTicketPage() {
+  // 顯示電子憑證頁
+  ticketPage.style.display = "block";
 
-          <a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
-            <img src="images/60.png" class="pdf-icon">
-            <div class="pdf-info">
-              <div class="pdf-title">Payment Receipt</div>
-              <div class="pdf-sub">付款收據</div>
-            </div>
-          </a>
-        </div>
-      </div>
+  // 預設顯示分類列表
+  ticketList.style.display = "flex";
+  ticketContent.style.display = "none";
 
-    </div>
-  `
-},
+  showBackBtn();
+}
 
+/* =========================
+   點分類（住宿 / 機票…）
+========================= */
+function openTicketCategory(type) {
+  const data = ticketData[type];
+  if (!data) return;
 
-  flight: {
-    title: "機票憑證",
-    body: `<img src="images/flight.jpg"><p>航班資訊…</p>`
-  },
-  schedule: { title: "行程單", body: `<p>行程詳細資料...</p>` },
-  rentcar: { title: "租車文件", body: `<p>租車公司 / 取車資料...</p>` },
-  entry: { title: "入境審查", body: `<p>VJW / 入境條碼...</p>` }
-};
+  // 填內容
+  document.getElementById("ticketContentTitle").innerText = data.title;
+  document.getElementById("ticketContentBody").innerHTML = data.body;
 
-// 點分類 → 顯示內容頁
-document.addEventListener("click", function(e){
-  const card = e.target.closest(".ticket-category");
-  if (!card) return;
+  // 切畫面
+  ticketList.style.display = "none";
+  ticketContent.style.display = "block";
 
-  const key = card.dataset.target;
+  showBackBtn();
+}
 
-  document.getElementById("ticketContentTitle").textContent =
-    ticketData[key].title;
+/* =========================
+   BACK：回上一層
+========================= */
+function goBack() {
 
-  document.getElementById("ticketContentBody").innerHTML =
-    ticketData[key].body;
+  // ① 在電子憑證「內容頁」
+  if (ticketContent.style.display === "block") {
+    ticketContent.style.display = "none";
+    ticketList.style.display = "flex";
+    return;
+  }
 
-  document.querySelector(".ticket-category-list").style.display = "none";
-  document.getElementById("ticketContent").style.display = "block";
+  // ② 在電子憑證「列表頁」
+  if (ticketPage.style.display === "block") {
+    backToMain();
+    return;
+  }
+
+  // ③ 其他頁面（保險）
+  backToMain();
+}
+
+/* =========================
+   電子憑證分類點擊事件
+========================= */
+document.addEventListener("click", function (e) {
+  const category = e.target.closest(".ticket-category");
+  if (!category) return;
+
+  const type = category.dataset.target;
+  openTicketCategory(type);
 });
 
-// 返回鍵
-document.getElementById("ticketBack").onclick = () => {
-  document.getElementById("ticketContent").style.display = "none";
-  document.querySelector(".ticket-category-list").style.display = "grid";
-};
-
-document.addEventListener("click", function(e) {
+/* =========================
+   住宿內展開（ONSEN / VESSEL）
+========================= */
+document.addEventListener("click", function (e) {
   const header = e.target.closest(".hotel-header");
   if (!header) return;
 
   const item = header.closest(".hotel-item");
   item.classList.toggle("open");
 });
-	
-function goBack() {
-
-  // 如果目前在「電子憑證 → 內容頁」
-  const ticketContent = document.getElementById("ticketContent");
-  const ticketList = document.querySelector(".ticket-category-list");
-
-  if (ticketContent && ticketContent.style.display === "block") {
-    // 回到電子憑證分類列表
-    ticketContent.style.display = "none";
-    ticketList.style.display = "grid";
-    return;
-  }
-
-  // 其他情況（匯率 / 行李 / 電子憑證首頁）
-  backToMain();
-}
 
 </script>
 </body>
 </html>
+
 
 
 

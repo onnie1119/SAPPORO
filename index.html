@@ -3091,6 +3091,18 @@ document.addEventListener("click", function(e) {
   item.classList.toggle("open");
 });
 	
+function setNavHome() {
+  navBtn.textContent = "HOME";
+  navBtn.onclick = backToMain;
+  navBtn.classList.add("show");
+}
+
+function setNavBack() {
+  navBtn.textContent = "BACK";
+  navBtn.onclick = goBack;
+  navBtn.classList.add("show");
+}
+	
 function goBack() {
   const ticketContent = document.getElementById("ticketContent");
   const ticketList = document.querySelector(".ticket-category-list");
@@ -3110,18 +3122,9 @@ function goBack() {
   // 其他情況（匯率 / 行李 / 電子憑證首頁）
   backToMain();
 }
-function setNavHome() {
-  navBtn.textContent = "HOME";
-  navBtn.onclick = backToMain;
-  navBtn.classList.add("show");
-}
 
-function setNavBack() {
-  navBtn.textContent = "BACK";
-  navBtn.onclick = goBack;
-  navBtn.classList.add("show");
-}
 
 </script>
 </body>
 </html>
+

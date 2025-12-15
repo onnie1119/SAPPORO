@@ -2471,6 +2471,14 @@ document.addEventListener("DOMContentLoaded", () => {
   showDay(1);
   updateArrows();
 });
+let originalTicketCategoryHTML = "";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const list = document.querySelector(".ticket-category-list");
+  if (list) {
+    originalTicketCategoryHTML = list.innerHTML;
+  }
+});
 
 // ===========================
 // 1. 行程切換
@@ -2625,6 +2633,7 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
 // ===========================
 function showExchange() {
   isMainPage = false;
+ resetTicketPage(); // ⭐ 關鍵
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
@@ -2651,7 +2660,8 @@ function showPacking() {
 
 function backToMain() {
   isMainPage = true;
-
+ // ⭐ 離開電子憑證時，重置狀態
+  resetTicketPage();
   document.querySelector(".container").style.display = "block";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
@@ -3128,6 +3138,24 @@ function goBack() {
   // ③ 從電子憑證首頁 → 回主行程
   backToMain();
 }
+function resetTicketPage() {
+  const list = document.querySelector(".ticket-category-list");
+  const content = document.getElementById("ticketContent");
+
+  // 回到第一層分類
+  if (list) {
+    list.innerHTML = originalTicketCategoryHTML;
+    list.style.display = "flex";
+  }
+
+  // 關閉內容頁
+  if (content) {
+    content.style.display = "none";
+  }
+
+  // 重置層級狀態
+  ticketLevel = "list";
+}
 
 
 
@@ -3135,6 +3163,7 @@ function goBack() {
 </script>
 </body>
 </html>
+
 
 
 

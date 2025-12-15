@@ -3037,12 +3037,21 @@ const ticketData = {
 };
 
 // 點分類 → 顯示內容頁
-document.addEventListener("click", function(e){
+document.addEventListener("click", function (e) {
   const card = e.target.closest(".ticket-category");
   if (!card) return;
 
   const key = card.dataset.target;
 
+  // ⭐ 住宿：直接顯示飯店列表（不進內容頁）
+  if (key === "hotel") {
+    const list = document.querySelector(".ticket-category-list");
+
+    list.innerHTML = ticketData.hotel.body;
+    return;
+  }
+
+  // ⭐ 其他分類：維持原本內容頁模式
   document.getElementById("ticketContentTitle").textContent =
     ticketData[key].title;
 
@@ -3087,3 +3096,4 @@ function goBack() {
 </script>
 </body>
 </html>
+

@@ -1481,6 +1481,43 @@ body.packing-mode {
   color: #007AFF;
   margin-bottom: 12px;
 }
+.pdf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.pdf-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #222;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.pdf-item:active {
+  transform: scale(0.97);
+}
+
+.pdf-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.pdf-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pdf-sub {
+  font-size: 13px;
+  color: #888;
+}
 
 
 </style>
@@ -2851,9 +2888,29 @@ function showTicket() {
 }
 const ticketData = {
   hotel: {
-    title: "住宿憑證",
-    body: `<img src="images/hotel.jpg"><p>入住資訊…</p>`
+  body: `
+    <div class="pdf-list">
+
+      <a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
+        <img src="images/60.png" class="pdf-icon">
+        <div class="pdf-info">
+          <div class="pdf-title">Hotel Reservation</div>
+          <div class="pdf-sub">住宿訂房確認</div>
+        </div>
+      </a>
+
+      <a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
+        <img src="images/60.png" class="pdf-icon">
+        <div class="pdf-info">
+          <div class="pdf-title">Payment Receipt</div>
+          <div class="pdf-sub">付款收據</div>
+        </div>
+      </a>
+
+    </div>
+  `
   },
+
   flight: {
     title: "機票憑證",
     body: `<img src="images/flight.jpg"><p>航班資訊…</p>`
@@ -2890,6 +2947,7 @@ document.getElementById("ticketBack").onclick = () => {
 </script>
 </body>
 </html>
+
 
 
 

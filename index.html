@@ -1607,7 +1607,7 @@ body.packing-mode {
 .flight-card {
      background: #fff;
     border-radius: 8px;
-    padding: 0px 18px;
+    
     margin: 20px 0;
     margin-top: 10px;
     margin-bottom: 3px;
@@ -1681,11 +1681,12 @@ a:active {
 
 /* 1. 顏色區塊（色帶） */
 .flight-pass-bar {
- border-radius: 8px 8px 0px 0px;
+     border-radius: 8px 8px 0px 0px;
     background-color: #757575;
     color: white;
-    padding: 12px 16px;
-    text-align: center;
+    padding: 12px 12px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .pass-title {
@@ -3403,6 +3404,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

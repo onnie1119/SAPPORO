@@ -1784,8 +1784,9 @@ a:active {
 }
 .flight-dates {
   display: flex;
-  gap: 12px;
-  margin-top: 4px;
+  justify-content: space-between; /* 🔥 左右分開 */
+  align-items: center;
+  margin-top: 6px;
   font-size: 12px;
   color: #777;
 }
@@ -1793,6 +1794,7 @@ a:active {
 .flight-dates span {
   white-space: nowrap;
 }
+
 
 
 </style>
@@ -3253,8 +3255,8 @@ const ticketData = {
 		    
 		    <div class="flight-no">IT216</div>
 		   <div class="flight-dates">
-			    <span class="date-depart">出發｜2026 年 2 月 9 日</span>
-			    <span class="date-arrive">抵達｜2026 年 2 月 10 日</span>
+			    <span class="date-depart">2026 年 2 月 9 日</span>
+			    <span class="date-arrive">2026 年 2 月 10 日</span>
 			</div>
 		  </div>
 		
@@ -3401,6 +3403,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1376,7 +1376,7 @@ body.packing-mode {
   margin: 12px 0;
 }
 /* =========================
-   電子憑證頁（File App 風格）
+   電子憑證頁（File.Co 風格）
 ========================= */
 
 .ticket-page {
@@ -1394,55 +1394,71 @@ body.packing-mode {
 
 /* 單一列 */
 .ticket-category {
-  background: #fff;
   border-radius: 16px;
   padding: 16px 14px;
   display: flex;
   align-items: center;
   gap: 14px;
   cursor: pointer;
+  position: relative;
 
-  box-shadow: 0 6px 20px rgba(58, 122, 254, 0.06);
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .15s ease;
 }
 
 .ticket-category:active {
   transform: scale(0.97);
-  box-shadow: 0 2px 10px rgba(58, 122, 254, 0.04);
 }
 
-/* 左側 icon 容器 */
+/* 左側 icon（無背景） */
 .ticket-category .icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: #EEF3FF;          /* 淡藍底，File 感 */
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
-/* 資料夾 icon 圖檔 */
 .ticket-category .icon img {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
 /* 文字 */
-.ticket-category span {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1C1C1E;
+.ticket-category .text {
   flex: 1;
 }
 
-/* 右側箭頭 */
-.ticket-category::after {
-  content: "›";
-  font-size: 22px;
-  color: #C7C7CC;
+.ticket-category .title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1C1C1E;
+}
+
+/* 右側三點 */
+.ticket-category .more {
+  font-size: 18px;
+  color: #8E8E93;
+  padding: 4px 6px;
+}
+
+/* ===== 每一列背景色（柔色） ===== */
+
+.bg-blue {
+  background: #EAF2FF;
+}
+
+.bg-yellow {
+  background: #FFF7E6;
+}
+
+.bg-red {
+  background: #FFECEC;
+}
+
+.bg-green {
+  background: #EAF8F1;
 }
 
 /* ===== 內容頁 ===== */
@@ -1462,6 +1478,7 @@ body.packing-mode {
   color: #007AFF;
   margin-bottom: 12px;
 }
+
 
 </style>
 </head>
@@ -2245,52 +2262,58 @@ body.packing-mode {
 
   <div class="ticket-category-list">
 
-    <div class="ticket-category" data-target="hotel">
-      <div class="icon">
-        <img src="images/57.png" alt="folder">
-      </div>
-      <span>住宿</span>
-    </div>
-
-    <div class="ticket-category" data-target="flight">
-      <div class="icon">
-        <img src="images/58.png" alt="folder">
-      </div>
-      <span>機票</span>
-    </div>
-
-    <div class="ticket-category" data-target="schedule">
-      <div class="icon">
-        <img src="images/59.png" alt="folder">
-      </div>
-      <span>行程</span>
-    </div>
-
-    <div class="ticket-category" data-target="rentcar">
+    <div class="ticket-category bg-blue" data-target="hotel">
       <div class="icon">
         <img src="images/60.png" alt="folder">
       </div>
-      <span>租車</span>
-    </div>
-
-    <div class="ticket-category" data-target="entry">
-      <div class="icon">
-        <img src="images/57.png" alt="folder">
+      <div class="text">
+        <span class="title">住宿</span>
       </div>
-      <span>入境審查</span>
+      <div class="more">⋮</div>
+    </div>
+
+    <div class="ticket-category bg-yellow" data-target="flight">
+      <div class="icon">
+        <img src="images/60.png" alt="folder">
+      </div>
+      <div class="text">
+        <span class="title">機票</span>
+      </div>
+      <div class="more">⋮</div>
+    </div>
+
+    <div class="ticket-category bg-red" data-target="schedule">
+      <div class="icon">
+        <img src="images/60.png" alt="folder">
+      </div>
+      <div class="text">
+        <span class="title">行程</span>
+      </div>
+      <div class="more">⋮</div>
+    </div>
+
+    <div class="ticket-category bg-green" data-target="rentcar">
+      <div class="icon">
+        <img src="images/60.png" alt="folder">
+      </div>
+      <div class="text">
+        <span class="title">租車</span>
+      </div>
+      <div class="more">⋮</div>
+    </div>
+
+    <div class="ticket-category bg-blue" data-target="entry">
+      <div class="icon">
+        <img src="images/60.png" alt="folder">
+      </div>
+      <div class="text">
+        <span class="title">入境審查</span>
+      </div>
+      <div class="more">⋮</div>
     </div>
 
   </div>
-
-  <!-- 原本內容頁保留 -->
-  <div id="ticketContent" class="ticket-content hidden">
-    <button id="ticketBack" class="ticket-back">← 返回</button>
-    <h3 id="ticketContentTitle"></h3>
-    <div id="ticketContentBody"></div>
-  </div>
-
-</div>
-
+ 
   <!-- 內容頁 -->
   <div id="ticketContent" class="ticket-content hidden">
     <button id="ticketBack" class="ticket-back">← 返回</button>
@@ -2864,6 +2887,7 @@ document.getElementById("ticketBack").onclick = () => {
 </script>
 </body>
 </html>
+
 
 
 

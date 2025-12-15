@@ -1679,6 +1679,109 @@ a:active {
   text-decoration: none !important;
 }
 
+.flight-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+
+/* 上方列 */
+.flight-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* 航空公司 */
+.flight-airline {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.airline-name {
+  font-weight: 600;
+}
+
+.flight-no {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.flight-date {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* 核心航班 */
+.flight-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0;
+}
+
+.flight-time {
+  text-align: center;
+  min-width: 80px;
+}
+
+.flight-time .time {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.flight-time .airport {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.flight-time .terminal {
+  font-size: 11px;
+  color: #999;
+}
+
+.flight-line {
+  flex: 1;
+  height: 2px;
+  background: #cfd6e0;
+  margin: 0 10px;
+  border-radius: 2px;
+}
+
+/* PDF 區塊（低調） */
+.flight-docs {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.flight-doc {
+  flex: 1;
+  background: #f4f5f7;
+  border-radius: 12px;
+  padding: 8px 10px;
+  text-align: center;
+  text-decoration: none;
+  color: #222;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.flight-doc:visited {
+  color: #222;
+}
+
+.flight-doc:hover {
+  background: #eceef2;
+}
 
 
 </style>
@@ -3126,27 +3229,49 @@ const ticketData = {
 
  flight: {
   body: `
-    <div class="flight-item open">
+    <div class="flight-card">
+		
+		  <!-- 上方資訊列 -->
+		  <div class="flight-top">
+		    <div class="flight-tag">BOARDING PASS　登機證</div>
+		    <div class="flight-meta">報到時間｜22:10</div>
+		  </div>
+		
+		  <!-- 航空公司 / 航班 -->
+		  <div class="flight-airline">
+		    <div class="airline-name">Tigerair Taiwan</div>
+		    <div class="flight-no">IT216</div>
+		    <div class="flight-date">2026 年 2 月 9 日</div>
+		  </div>
+		
+		  <!-- 核心航班時間 -->
+		  <div class="flight-main">
+		    <div class="flight-time">
+		      <div class="time">00:10</div>
+		      <div class="airport">TPE</div>
+		      <div class="terminal">第一航廈</div>
+		    </div>
+		
+		    <div class="flight-line"></div>
+		
+		    <div class="flight-time">
+		      <div class="time">04:00</div>
+		      <div class="airport">HND</div>
+		      <div class="terminal">第一航廈</div>
+		    </div>
+		  </div>
+		
+		  <!-- PDF 文件（小、附屬） -->
+		  <div class="flight-docs">
+		    <a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
+		      <div class="doc-name">CHUANG ICHEN</div>
+		    </a>
+		    <a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
+		      <div class="doc-name">SU BORUI</div>
+		    </a>
+		  </div>
 
-      <!-- 航班資訊卡 -->
-     <div class="flight-card">
-
-  <div class="flight-header">
-    <div class="flight-route">桃園機場 T2 → 羽田機場 T3</div>
-    <div class="flight-info">08:30 → 12:30 ｜ CI 101</div>
-  </div>
-
-  <div class="flight-docs">
-    <a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
-      <div class="doc-name">CHUANG ICHEN</div>
-    </a>
-
-    <a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
-      <div class="doc-name">SU BORUI</div>
-    </a>
-  </div>
-
-</div>
+	</div>
 
   `
  
@@ -3262,6 +3387,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

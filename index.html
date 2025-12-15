@@ -2454,37 +2454,23 @@ body.packing-mode {
 	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
+
 let originalTicketCategoryHTML = "";
+let navBtn = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+  navBtn = document.getElementById("navBtn");
+
   const list = document.querySelector(".ticket-category-list");
   if (list) {
     originalTicketCategoryHTML = list.innerHTML;
   }
-});
 
-
-document.addEventListener("DOMContentLoaded", () => {
-  navBtn = document.getElementById("navBtn");
-});
-
-window.scrollTo(0, 0);
-// ===========================
-// 頁面初始化
-// ===========================
-document.addEventListener("DOMContentLoaded", () => {
   getExchangeRate();
   showDay(1);
   updateArrows();
 });
-let originalTicketCategoryHTML = "";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const list = document.querySelector(".ticket-category-list");
-  if (list) {
-    originalTicketCategoryHTML = list.innerHTML;
-  }
-});
 
 // ===========================
 // 1. 行程切換
@@ -2534,7 +2520,7 @@ if (scrollEl) {
 // 3. TOP 按鈕
 // ===========================
 const scrollBtn = document.getElementById("scrollToTop");
-const homeBtn = document.getElementById("backBtn");
+
 let isMainPage = true;
 
 window.addEventListener("scroll", () => {
@@ -2982,6 +2968,7 @@ renderPackingPage();
 // content = 其他分類內容頁
 function showTicket() {
   isMainPage = false;
+	resetTicketPage();   // ⭐ 關鍵
  ticketLevel = "list"; // ⭐ 關鍵
 
   document.querySelector(".container").style.display = "none";
@@ -3169,6 +3156,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

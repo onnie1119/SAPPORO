@@ -2454,6 +2454,7 @@ body.packing-mode {
 	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
+let isInTicketFlow = false;
 window.scrollTo(0, 0);
 // ===========================
 // 頁面初始化
@@ -2954,7 +2955,8 @@ renderPackingPage();
 
 // =============== 電子憑證分類內容 ===============
 function showTicket() {
-  isMainPage = false;
+   isMainPage = false;
+  isInTicketFlow = true;   // ⭐ 關鍵
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
@@ -2962,9 +2964,13 @@ function showTicket() {
 
   document.getElementById("ticket-page").style.display = "block";
 
-  scrollBtn.classList.remove("show");
-  homeBtn.classList.add("show");
+  // 預設顯示分類
+  document.querySelector(".ticket-category-list").style.display = "flex";
+  document.getElementById("ticketContent").style.display = "none";
+
+  showBackBtn();           // ⭐ 強制顯示 BACK
 }
+	
 const ticketData = {
  hotel: {
  body: `
@@ -3042,6 +3048,7 @@ document.addEventListener("click", function (e) {
   if (!card) return;
 
   const key = card.dataset.target;
+showBackBtn();
 
   /* =========================
      ⭐ 住宿：直接顯示飯店清單
@@ -3058,6 +3065,7 @@ document.addEventListener("click", function (e) {
     list.innerHTML = ticketData.hotel.body;
 
     return; // ⭐⭐⭐ 關鍵：阻止後面所有邏輯
+	  
   }
 
   /* =========================
@@ -3090,24 +3098,43 @@ document.addEventListener("click", function(e) {
 	
 function goBack() {
 
-  // 如果目前在「電子憑證 → 內容頁」
-  const ticketContent = document.getElementById("ticketContent");
-  const ticketList = document.querySelector(".ticket-category-list");
+  // ① 電子憑證 → 內容頁 → 分類
+  const content = document.getElementById("ticketContent");
+  const list = document.querySelector(".ticket-category-list");
 
-  if (ticketContent && ticketContent.style.display === "block") {
-    // 回到電子憑證分類列表
-    ticketContent.style.display = "none";
-    ticketList.style.display = "grid";
+  if (isInTicketFlow && content.style.display === "block") {
+    content.style.display = "none";
+    list.style.display = "flex";
+    showBackBtn();
     return;
   }
 
-  // 其他情況（匯率 / 行李 / 電子憑證首頁）
+  // ② 電子憑證 → 分類 → 主行程
+  if (isInTicketFlow) {
+    isInTicketFlow = false;
+    backToMain();     // 回主行程
+    return;
+  }
+
+  // ③ 其他狀況保險
   backToMain();
+}
+
+	
+function showHomeBtn() {
+  document.getElementById("homeBtn")?.classList.add("show");
+  document.getElementById("backBtn")?.classList.remove("show");
+}
+
+function showBackBtn() {
+  document.getElementById("backBtn")?.classList.add("show");
+  document.getElementById("homeBtn")?.classList.remove("show");
 }
 
 </script>
 </body>
 </html>
+
 
 
 

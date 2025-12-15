@@ -2454,7 +2454,11 @@ body.packing-mode {
 	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-const navBtn = document.getElementById("navBtn");
+let navBtn;
+
+document.addEventListener("DOMContentLoaded", () => {
+  navBtn = document.getElementById("navBtn");
+});
 
 window.scrollTo(0, 0);
 // ===========================
@@ -2622,12 +2626,11 @@ function showExchange() {
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none"; // ★ 要加
-
+  document.getElementById("ticket-page").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
-  homeBtn.classList.add("show");
+  setNavHome(); // ✅
 }
 
 
@@ -2636,12 +2639,11 @@ function showPacking() {
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none";  // ★ 要加
-
+  document.getElementById("ticket-page").style.display = "none";
   document.getElementById("packing-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
-  homeBtn.classList.add("show");
+  setNavHome(); // ✅
 }
 
 
@@ -3077,11 +3079,7 @@ document.addEventListener("click", function (e) {
 });
 
 
-// 返回鍵
-document.getElementById("ticketBack").onclick = () => {
-  document.getElementById("ticketContent").style.display = "none";
-  document.querySelector(".ticket-category-list").style.display = "grid";
-};
+
 
 document.addEventListener("click", function(e) {
   const header = e.target.closest(".hotel-header");
@@ -3107,24 +3105,21 @@ function goBack() {
   const ticketContent = document.getElementById("ticketContent");
   const ticketList = document.querySelector(".ticket-category-list");
 
-  // ① 在電子憑證內容頁（飯店 / PDF）
+  // ① 電子憑證內容頁 → 回分類
   if (ticketContent && ticketContent.style.display === "block") {
     ticketContent.style.display = "none";
     ticketList.style.display = "flex";
     return;
   }
 
-  // ② 在電子憑證分類頁 → 回主行程
+  // ② 電子憑證分類頁 → 回主行程
   backToMain();
 }
 
-
-  // 其他情況（匯率 / 行李 / 電子憑證首頁）
-  backToMain();
-}
 
 
 </script>
 </body>
 </html>
+
 

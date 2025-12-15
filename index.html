@@ -1797,7 +1797,40 @@ a:active {
     text-align: center;
   }
 }
+/* =========================
+   航班時間區塊（時間、機場名稱）
+========================= */
+.flight-main {
+  display: flex;
+  justify-content: space-between;  /* 讓左右兩邊對齊 */
+  align-items: center;
+  padding: 0px 16px;
+}
 
+.flight-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;  /* 讓時間區塊可以佔滿寬度 */
+}
+
+.time1 {
+  font-size: 25px;
+  font-weight: bold;
+  color: #a87f30;
+}
+
+.airport {
+  font-size: 14px;
+  color: #777;
+  justify-content: space-between;  /* 使TPE和HND左右對齊 */
+  width: 100%;  /* 讓兩邊可以分開 */
+}
+
+.terminal {
+  font-size: 12px;
+  color: #999;
+}
 
 </style>
 </head>
@@ -3405,6 +3438,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

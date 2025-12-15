@@ -2887,29 +2887,66 @@ function showTicket() {
   homeBtn.classList.add("show");
 }
 const ticketData = {
-  hotel: {
-  body: `
-    <div class="pdf-list">
+ hotel: {
+ body: `
+    <div class="hotel-group">
 
-      <a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
-        <img src="images/60.png" class="pdf-icon">
-        <div class="pdf-info">
-          <div class="pdf-title">Hotel Reservation</div>
-          <div class="pdf-sub">住宿訂房確認</div>
+      <!-- ONSEN RYOKAN YUEN -->
+      <div class="hotel-item">
+        <div class="hotel-header">
+          <span>ONSEN RYOKAN YUEN</span>
+          <span class="hotel-arrow">›</span>
         </div>
-      </a>
 
-      <a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
-        <img src="images/60.png" class="pdf-icon">
-        <div class="pdf-info">
-          <div class="pdf-title">Payment Receipt</div>
-          <div class="pdf-sub">付款收據</div>
+        <div class="hotel-pdf-list">
+          <a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
+            <img src="images/60.png" class="pdf-icon">
+            <div class="pdf-info">
+              <div class="pdf-title">Hotel Reservation</div>
+              <div class="pdf-sub">住宿訂房確認</div>
+            </div>
+          </a>
+
+          <a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
+            <img src="images/60.png" class="pdf-icon">
+            <div class="pdf-info">
+              <div class="pdf-title">Payment Receipt</div>
+              <div class="pdf-sub">付款收據</div>
+            </div>
+          </a>
         </div>
-      </a>
+      </div>
+
+      <!-- VESSEL -->
+      <div class="hotel-item">
+        <div class="hotel-header">
+          <span>VESSEL HOTEL</span>
+          <span class="hotel-arrow">›</span>
+        </div>
+
+        <div class="hotel-pdf-list">
+          <a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
+            <img src="images/60.png" class="pdf-icon">
+            <div class="pdf-info">
+              <div class="pdf-title">Hotel Reservation</div>
+              <div class="pdf-sub">住宿訂房確認</div>
+            </div>
+          </a>
+
+          <a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
+            <img src="images/60.png" class="pdf-icon">
+            <div class="pdf-info">
+              <div class="pdf-title">Payment Receipt</div>
+              <div class="pdf-sub">付款收據</div>
+            </div>
+          </a>
+        </div>
+      </div>
 
     </div>
   `
-  },
+},
+
 
   flight: {
     title: "機票憑證",
@@ -2947,6 +2984,7 @@ document.getElementById("ticketBack").onclick = () => {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1728,12 +1728,6 @@ a:active {
   padding: 0px 16px;
 }
 
-.flight-time {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-	width: 100%;  /* 讓時間區塊可以佔滿寬度 */
-}
 
 .time1 {
   font-size: 25px;
@@ -1753,12 +1747,7 @@ a:active {
   color: #999;
 }
 
-.flight-line {
-  width: 2px;
-  height: 100%;
-  background-color: #bbb;
-  margin: 0 16px;
-}
+
 
 /* 4. PDF 文件區塊 */
 .flight-docs {
@@ -1805,10 +1794,9 @@ a:active {
 }
 
 .flight-time {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;  /* 讓時間區塊可以佔滿寬度 */
+     display: flex;
+    justify-content: space-between;
+    margin-top: 0px;
 }
 
 .time1 {
@@ -3434,6 +3422,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

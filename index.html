@@ -1679,148 +1679,118 @@ a:active {
   text-decoration: none !important;
 }
 
-.flight-card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-  margin-bottom: 20px;
+/* 1. 顏色區塊（色帶） */
+.flight-pass-bar {
+  background-color: #2b9dff; /* 藍色背景 */
+  color: white;
+  padding: 12px 16px;
+  text-align: center;
 }
 
-/* 上方列 */
-.flight-top {
-  display: flex;
-  justify-content: space-between;
+.pass-title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.pass-checkin {
   font-size: 12px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 10px;
 }
 
-/* 航空公司 */
+/* 2. 航空公司與航班編號 */
 .flight-airline {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 12px;
-}
-
-.airline-name {
-  font-weight: 600;
+  padding: 12px 16px;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
 }
 
 .flight-no {
-  font-size: 12px;
-  margin-top: 2px;
+  font-size: 16px;
+  font-weight: bold;
 }
 
-.flight-date {
-  font-size: 12px;
-  margin-top: 2px;
+.flight-dates {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
 }
 
-/* 核心航班 */
+.date-depart, .date-arrive {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 3. 航班時間 */
 .flight-main {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin: 16px 0;
+  align-items: center;
+  padding: 12px 16px;
 }
 
 .flight-time {
-  text-align: center;
-  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.flight-time .time {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 1px;
+.time {
+  font-size: 16px;
+  font-weight: bold;
 }
 
-.flight-time .airport {
+.airport {
   font-size: 14px;
-  font-weight: 600;
-  margin-top: 2px;
+  color: #777;
 }
 
-.flight-time .terminal {
-  font-size: 11px;
+.terminal {
+  font-size: 12px;
   color: #999;
 }
 
 .flight-line {
-  flex: 1;
-  height: 2px;
-  background: #cfd6e0;
-  margin: 0 10px;
-  border-radius: 2px;
+  width: 2px;
+  height: 100%;
+  background-color: #bbb;
+  margin: 0 16px;
 }
 
-/* PDF 區塊（低調） */
+/* 4. PDF 文件區塊 */
 .flight-docs {
+  padding: 16px;
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  justify-content: space-between;
 }
 
 .flight-doc {
-  flex: 1;
-  background: #f4f5f7;
-  border-radius: 12px;
-  padding: 8px 10px;
-  text-align: center;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  padding: 8px 12px;
   text-decoration: none;
-  color: #222;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.flight-doc:visited {
-  color: #222;
+  color: #333;
+  font-weight: bold;
 }
 
 .flight-doc:hover {
-  background: #eceef2;
-}
-.flight-dates {
-  display: flex;
-  justify-content: space-between; /* 🔥 左右分開 */
-  align-items: center;
-  margin-top: 6px;
-  font-size: 12px;
-  color: #777;
+  background-color: #e0e0e0;
 }
 
-.flight-dates span {
-  white-space: nowrap;
+.doc-name {
+  font-size: 14px;
 }
 
-.flight-pass-bar {
-  background: #2f4a64;              /* 深藍灰，像登機證 */
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 18px 18px 0 0;     /* 只圓上面 */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-.flight-card {
-  background: #fff;
-  border-radius: 18px;
-  overflow: hidden;               /* 🔥 關鍵 */
-  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-  margin-bottom: 20px;
-}
-.pass-title {
-  opacity: 0.95;
-}
+/* 小尺寸處理：將PDF卡片變小 */
+@media (max-width: 768px) {
+  .flight-docs {
+    flex-direction: column;
+    align-items: center;
+  }
 
-.pass-checkin {
-  opacity: 0.85;
-  font-weight: 500;
+  .flight-doc {
+    margin-bottom: 8px;
+    width: 100%;
+    text-align: center;
+  }
 }
 
 
@@ -3432,6 +3402,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

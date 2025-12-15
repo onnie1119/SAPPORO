@@ -2448,13 +2448,14 @@ body.packing-mode {
 
 
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>	
-<button class="back-btn" id="backBtn" onclick="backToMain()" >HOME</button>
-<button class="back-btn" id="backBtn" onclick="goBack()">BACK</button>
+<button class="back-btn" id="navBtn">HOME</button>
+
 
 	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-let isInTicketFlow = false;
+const navBtn = document.getElementById("navBtn");
+
 window.scrollTo(0, 0);
 // ===========================
 // 頁面初始化
@@ -2650,13 +2651,14 @@ function backToMain() {
   document.querySelector(".container").style.display = "block";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none"; // ★ 要加
+  document.getElementById("ticket-page").style.display = "none";
 
-  homeBtn.classList.remove("show");
+  navBtn.classList.remove("show");
 
   if (window.scrollY > 300) scrollBtn.classList.add("show");
   else scrollBtn.classList.remove("show");
 }
+
 
 
 
@@ -2955,22 +2957,17 @@ renderPackingPage();
 
 // =============== 電子憑證分類內容 ===============
 function showTicket() {
-   isMainPage = false;
-  isInTicketFlow = true;   // ⭐ 關鍵
+  isMainPage = false;
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
-
   document.getElementById("ticket-page").style.display = "block";
 
-  // 預設顯示分類
-  document.querySelector(".ticket-category-list").style.display = "flex";
-  document.getElementById("ticketContent").style.display = "none";
-
-  showBackBtn();           // ⭐ 強制顯示 BACK
+  scrollBtn.classList.remove("show");
+  setNavBack(); // ⭐ 關鍵
 }
-	
+
 const ticketData = {
  hotel: {
  body: `
@@ -3048,7 +3045,6 @@ document.addEventListener("click", function (e) {
   if (!card) return;
 
   const key = card.dataset.target;
-showBackBtn();
 
   /* =========================
      ⭐ 住宿：直接顯示飯店清單
@@ -3065,7 +3061,6 @@ showBackBtn();
     list.innerHTML = ticketData.hotel.body;
 
     return; // ⭐⭐⭐ 關鍵：阻止後面所有邏輯
-	  
   }
 
   /* =========================
@@ -3097,44 +3092,36 @@ document.addEventListener("click", function(e) {
 });
 	
 function goBack() {
+  const ticketContent = document.getElementById("ticketContent");
+  const ticketList = document.querySelector(".ticket-category-list");
 
-  // ① 電子憑證 → 內容頁 → 分類
-  const content = document.getElementById("ticketContent");
-  const list = document.querySelector(".ticket-category-list");
-
-  if (isInTicketFlow && content.style.display === "block") {
-    content.style.display = "none";
-    list.style.display = "flex";
-    showBackBtn();
+  // ① 在電子憑證內容頁（飯店 / PDF）
+  if (ticketContent && ticketContent.style.display === "block") {
+    ticketContent.style.display = "none";
+    ticketList.style.display = "flex";
     return;
   }
 
-  // ② 電子憑證 → 分類 → 主行程
-  if (isInTicketFlow) {
-    isInTicketFlow = false;
-    backToMain();     // 回主行程
-    return;
-  }
-
-  // ③ 其他狀況保險
+  // ② 在電子憑證分類頁 → 回主行程
   backToMain();
 }
 
-	
-function showHomeBtn() {
-  document.getElementById("homeBtn")?.classList.add("show");
-  document.getElementById("backBtn")?.classList.remove("show");
+
+  // 其他情況（匯率 / 行李 / 電子憑證首頁）
+  backToMain();
+}
+function setNavHome() {
+  navBtn.textContent = "HOME";
+  navBtn.onclick = backToMain;
+  navBtn.classList.add("show");
 }
 
-function showBackBtn() {
-  document.getElementById("backBtn")?.classList.add("show");
-  document.getElementById("homeBtn")?.classList.remove("show");
+function setNavBack() {
+  navBtn.textContent = "BACK";
+  navBtn.onclick = goBack;
+  navBtn.classList.add("show");
 }
 
 </script>
 </body>
 </html>
-
-
-
-

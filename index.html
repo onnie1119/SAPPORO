@@ -3393,10 +3393,7 @@ const ticketData = {
   entry: { title: "入境審查", body: `<p>VJW / 入境條碼...</p>` }
 };
 	
-document.querySelector('.slide-toggle-btn').addEventListener('click', function() {
-  const flightCard = document.querySelector('.flight-card');
-  flightCard.classList.toggle('show-details'); // 切換顯示或隱藏第二筆航班資訊
-});
+
 
 // 點分類 → 顯示內容頁
 document.addEventListener("click", function (e) {
@@ -3500,8 +3497,15 @@ function resetTicketPage() {
 
 
 </script>
+	<script>
+  document.querySelector('.slide-toggle-btn').addEventListener('click', function() {
+    const flightCard = document.querySelector('.flight-card');
+    flightCard.classList.toggle('show-details'); // 切換顯示或隱藏第二筆航班資訊
+  });
+</script>
 </body>
 </html>
+
 
 
 

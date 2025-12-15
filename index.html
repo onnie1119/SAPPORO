@@ -1810,6 +1810,53 @@ a:active {
   color: #999;
 }
 
+/* 滑動動畫效果 */
+.flight-card {
+  margin: 20px 0;
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* 右滑顯示區塊 */
+.flight-card.slide-toggle {
+  transform: translateX(100%); /* 滑出右邊 */
+  transition: transform 0.5s ease;
+  display: none;  /* 默認隱藏 */
+}
+
+.flight-card.show-details {
+  transform: translateX(0);  /* 滑入顯示 */
+  display: block;
+}
+
+/* 控制右滑按鈕 */
+.slide-toggle-btn {
+  background-color: #4CAF50;  /* 綠色背景 */
+  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* 針對小屏幕的調整 */
+@media (max-width: 768px) {
+  .flight-docs {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .flight-doc {
+    margin-bottom: 8px;
+    width: 100%;
+    text-align: center;
+  }
+}
 
 
 </style>
@@ -3258,48 +3305,44 @@ const ticketData = {
  flight: {
   body: `
     <div class="flight-card">
-		
-		  <!-- 上方資訊列 -->
-		  <div class="flight-top">
-		    <div class="flight-pass-bar">
-			  <span class="pass-title">BOARDING PASS　登機證</span>
-			  <span class="pass-checkin">報到時間｜22:10</span>
-			</div>
-		  </div>
-		
-		  <!-- 航空公司 / 航班 -->
-		  <div class="flight-airline">
-		    
-		    <div class="flight-no">IT216</div>
-	            <div class="flight-dates">
-				    <span class="date-depart">2026 年 2 月 9 日</span>
-				    <span class="date-arrive">2026 年 2 月 9 日</span>
-				</div>
-				 <div class="flight-time">
-	  				<span class="time1">00:10</span>
-					<span class="time1">04:00</span>
-	            </div>
-				
-			    <div class="flight-line">
-	              <span class="airport">TPE T2</span>
-			      <span class="airport">HND T3</span>
-				</div>
-		  </div>
-		
-		  
-		
-		  <!-- PDF 文件（小、附屬） -->
-		  <div class="flight-docs">
-		    <a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
-		      <div class="doc-name">CHUANG ICHEN</div>
-		    </a>
-		    <a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
-		      <div class="doc-name">SU BORUI</div>
-		    </a>
-		  </div>
+  <!-- 上方資訊列 -->
+  <div class="flight-top">
+    <div class="flight-pass-bar">
+      <span class="pass-title">BOARDING PASS　登機證</span>
+      <span class="pass-checkin">報到時間｜22:10</span>
+    </div>
+  </div>
 
-	</div>
-	<div class="flight-card">
+  <!-- 航空公司 / 航班 -->
+  <div class="flight-airline">
+    <div class="flight-no">IT216</div>
+    <div class="flight-dates">
+      <span class="date-depart">2026 年 2 月 9 日</span>
+      <span class="date-arrive">2026 年 2 月 9 日</span>
+    </div>
+    <div class="flight-time">
+      <span class="time1">00:10</span>
+      <span class="time1">04:00</span>
+    </div>
+    <div class="flight-line">
+      <span class="airport">TPE T2</span>
+      <span class="airport">HND T3</span>
+    </div>
+  </div>
+
+  <!-- PDF 文件（小、附屬） -->
+  <div class="flight-docs">
+    <a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
+      <div class="doc-name">CHUANG ICHEN</div>
+    </a>
+    <a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
+      <div class="doc-name">SU BORUI</div>
+    </a>
+  </div>
+</div>
+
+<!-- 第二筆航班資訊 -->
+<div class="flight-card slide-toggle">
   <!-- 上方資訊列 -->
   <div class="flight-top">
     <div class="flight-pass-bar">
@@ -3310,19 +3353,15 @@ const ticketData = {
 
   <!-- 航空公司 / 航班 -->
   <div class="flight-airline">
-	<div class="flight-no">HD015</div>
+    <div class="flight-no">HD015</div>
     <div class="flight-dates">
       <span class="date-depart">2026 年 2 月 9 日</span>
       <span class="date-arrive">2026 年 2 月 9 日</span>
     </div>
-
-    <!-- 航班時間 -->
     <div class="flight-time">
       <span class="time1">08:15</span>
       <span class="time1">09:45</span>
     </div>
-
-    <!-- 機場 -->
     <div class="flight-line">
       <span class="airport">HND</span>
       <span class="airport">CTS</span>
@@ -3340,6 +3379,10 @@ const ticketData = {
   </div>
 </div>
 
+<!-- 按鈕顯示第二筆資訊 -->
+<button class="slide-toggle-btn">Show Details</button>
+
+
   `
  
  },
@@ -3349,6 +3392,11 @@ const ticketData = {
   rentcar: { title: "租車文件", body: `<p>租車公司 / 取車資料...</p>` },
   entry: { title: "入境審查", body: `<p>VJW / 入境條碼...</p>` }
 };
+	
+document.querySelector('.slide-toggle-btn').addEventListener('click', function() {
+  const flightCard = document.querySelector('.flight-card');
+  flightCard.classList.toggle('show-details'); // 切換顯示或隱藏第二筆航班資訊
+});
 
 // 點分類 → 顯示內容頁
 document.addEventListener("click", function (e) {
@@ -3454,6 +3502,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

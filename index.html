@@ -2454,9 +2454,15 @@ body.packing-mode {
 	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-let navBtn;
-const originalTicketCategoryHTML =
-  document.querySelector(".ticket-category-list").innerHTML;
+let originalTicketCategoryHTML = "";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const list = document.querySelector(".ticket-category-list");
+  if (list) {
+    originalTicketCategoryHTML = list.innerHTML;
+  }
+});
+
 
 document.addEventListener("DOMContentLoaded", () => {
   navBtn = document.getElementById("navBtn");
@@ -3163,6 +3169,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

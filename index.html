@@ -3492,14 +3492,15 @@ function setNavBack() {
 function goBack() {
   const ticketList = document.querySelector(".ticket-category-list");
 
-  // ① 從「住宿憑證」回到「電子憑證首頁」
-  if (ticketLevel === "hotel") {
-    ticketList.innerHTML = originalTicketCategoryHTML; // 回原分類
+  // ⭐ 住宿 or 航班 → 回電子憑證首頁
+  if (ticketLevel === "hotel" || ticketLevel === "flight") {
+    ticketList.innerHTML = originalTicketCategoryHTML;
+    ticketList.style.display = "flex";
     ticketLevel = "list";
     return;
   }
 
-  // ② 從其他分類內容頁回到電子憑證首頁
+  // 其他內容頁 → 回電子憑證首頁
   if (ticketLevel === "content") {
     document.getElementById("ticketContent").style.display = "none";
     ticketList.style.display = "flex";
@@ -3507,9 +3508,10 @@ function goBack() {
     return;
   }
 
-  // ③ 從電子憑證首頁 → 回主行程
+  // 最後才是真的回主行程
   backToMain();
 }
+
 function resetTicketPage() {
   const list = document.querySelector(".ticket-category-list");
   const content = document.getElementById("ticketContent");
@@ -3535,6 +3537,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

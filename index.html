@@ -1886,6 +1886,18 @@ a:active {
       background-color: #fff;
       padding: 10px;
     }
+.flight-container {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;  /* 允許水平方向的滾動 */
+  -webkit-overflow-scrolling: touch;  /* 支援移動設備的慣性滾動 */
+}.flight-card {
+  width: 100vw;  /* 確保每張卡片的寬度佔滿整個視口寬度 */
+  transition: transform 0.5s ease;
+}
+.flight-container {
+  touch-action: pan-x;  /* 允許水平滑動 */
+}
 
 </style>
 </head>
@@ -3548,6 +3560,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

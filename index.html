@@ -3258,7 +3258,13 @@ const ticketData = {
  flight: {
   body: `
     <div class="flight-card">
-		
+		<!-- 添加飛機圖標與航班路線 -->
+	    <div class="transport-info">
+			<span class="icon-airplane"></span>
+			<span class="route">桃園 — 東京</span>
+		</div>
+
+	 
 		  <!-- 上方資訊列 -->
 		  <div class="flight-top">
 		    <div class="flight-pass-bar">
@@ -3282,7 +3288,7 @@ const ticketData = {
 				
 			    <div class="flight-line">
 	              <span class="airport">TPE T2</span>
-			      <span class="airport">HND T3</span>a
+			      <span class="airport">HND T3</span>
 				</div>
 		  </div>
 		
@@ -3454,6 +3460,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

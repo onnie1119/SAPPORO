@@ -1744,200 +1744,13 @@ a:active {
 
 
 
-/* ============================
-   滑動區域設置 (Flight Container)
-============================ */
-.flight-container {
-  position: relative;
-  width: 100%;
-  overflow-x: auto;  /* 允許水平方向滾動 */
-  -webkit-overflow-scrolling: touch;  /* 支援移動設備的慣性滾動 */
-  touch-action: pan-x;  /* 明確允許水平滑動 */
-  padding: 0;
-  margin: 0;
-}
-
-.flight-card {
-  width: 100vw;  /* 每張卡片寬度為 100% 視口寬度 */
-  box-sizing: border-box;
-  transition: transform 0.5s ease;
-  margin: 0;
-  padding: 0;
-  position: relative;
-  display: inline-block;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.second-flight-card {
-  position: absolute;
-  left: 100%;  /* 初始位置隱藏在右邊 */
-  top: 0;
-  width: 100%;  /* 設定寬度為 100% */
-  box-sizing: border-box;
-}
-
-/* 當容器添加 .slide 類時，第二張卡片滑入 */
-.flight-container.slide .second-flight-card {
-  left: 0;  /* 當添加 .slide 類時，第二張卡片滑入 */
-}
-
+/* 4. PDF 文件區塊 */
 .flight-docs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.flight-doc {
-  border-radius: 8px;
-  padding: 6px 8px;
-  text-align: center;
-  box-shadow: inset 0 0 0 1px #e6e9f0;
-  transition: background 0.15s ease;
-}
-
-.flight-doc:active {
-  background: #eef3ff;
-  transform: scale(0.97);
-}
-
-.flight-doc .doc-name {
-  font-size: 12px;
-  margin-bottom: 2px;
-}
-
-.flight-doc .doc-type {
-  font-size: 11px;
-  color: #8e8e93;
-}
-
-.flight-doc::after {
-  font-size: 10px;
-  top: 6px;
-  right: 8px;
-  opacity: 0.45;
-}
-
-a,
-a:visited,
-a:hover,
-a:active {
-  color: inherit !important;
-  text-decoration: none !important;
-}
-
-/* ============================
-   航班卡顯示 (Flight Header, Time, Date, etc.)
-============================ */
-.flight-header {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.flight-route {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111;
-}
-
-.flight-info {
-  font-size: 24px;
-  color: #6e6e73;
-}
-
-.flight-pass-bar {
-  border-radius: 8px 8px 0px 0px;
-  background-color: #4e4e4e;
-  color: white;
-  padding: 12px 15px;
+      padding: 15px 12px 5px 12px;
   display: flex;
   justify-content: space-between;
 }
 
-.pass-title {
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.pass-checkin {
-  font-size: 12px;
-}
-
-.flight-airline {
-  padding: 8px 16px;
-  padding-bottom: 0;
-}
-
-.flight-no {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.flight-dates {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0px;
-}
-
-.date-depart, .date-arrive {
-  font-size: 12px;
-  color: #b9b9b9;
-}
-
-.flight-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0px 16px;
-}
-
-.time1 {
-  font-size: 25px;
-  font-weight: bold;
-  color: #a87f30;
-}
-
-.terminal {
-  font-size: 12px;
-  color: #999;
-}
-
-/* ============================
-   小屏幕調整 (For Small Devices)
-============================ */
-@media (max-width: 768px) {
-  .flight-docs {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .flight-doc {
-    margin-bottom: 8px;
-    width: 100%;
-    text-align: center;
-  }
-}
-
-/* ============================
-   右滑顯示區塊 (For Sliding Effect)
-============================ */
-.flight-card.slide-toggle {
-  transform: translateX(100%);
-  transition: transform 0.5s ease;
-  display: none;
-}
-
-.flight-card.show-details {
-  transform: translateX(0);
-  display: block;
-}
-
-/* ============================
-   邊框和陰影設置
-============================ */
 .flight-doc {
   background-color: #f1f1f1;
   border-radius: 8px;
@@ -1951,92 +1764,54 @@ a:active {
   background-color: #e0e0e0;
 }
 
-.pdf-item {
+.doc-name {
+  font-size: 14px;
+}
+
+/* 小尺寸處理：將PDF卡片變小 */
+@media (max-width: 768px) {
+  .flight-docs {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .flight-doc {
+    margin-bottom: 8px;
+    width: 100%;
+    text-align: center;
+  }
+}
+.flight-main {
   display: flex;
+  justify-content: space-between; /* 讓左右項目分開並靠兩邊 */
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: #fff;
-  border-radius: 14px;
-  text-decoration: none;
-  color: #222;
+  padding: 0px 16px;
 }
 
-.pdf-item:active {
-  transform: scale(0.97);
+.flight-time,.flight-line {
+     display: flex;
+    justify-content: space-between;
+    margin-top: 0px;
 }
 
-.pdf-icon {
-  width: 40px;
-  height: 40px;
+.time1 {
+  font-size: 25px;
+  font-weight: bold;
+  color: #a87f30;
 }
 
-.pdf-title {
-  font-size: 16px;
-  font-weight: 600;
+.airport {
+  font-size: 14px;
+  color: #777;
 }
 
-.pdf-sub {
-  font-size: 13px;
-  color: #888;
+.terminal {
+  font-size: 12px;
+  color: #999;
 }
 
-/* ============================
-   PDF列表示設置
-============================ */
-.pdf-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 20px;
-}
 
-.ticket-category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-}
 
-.ticket-category {
-  border-radius: 8px;
-  padding: 18px 14px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  position: relative;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: transform .15s ease;
-}
-
-.ticket-category:active {
-  transform: scale(0.97);
-}
-
-.ticket-category .icon {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ticket-category .icon img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-
-.ticket-category .text {
-  flex: 1;
-}
-
-.ticket-category .title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1C1C1E;
-}
 </style>
 </head>
 <body>
@@ -3482,83 +3257,88 @@ const ticketData = {
 
  flight: {
   body: `
-   <div class="flight-container">
-	   <div class="flight-card">
-	  <!-- 上方資訊列 -->
-	  <div class="flight-top">
-	    <div class="flight-pass-bar">
-	      <span class="pass-title">BOARDING PASS　登機證</span>
-	      <span class="pass-checkin">報到時間｜22:10</span>
-	    </div>
-	  </div>
-	
-	  <!-- 航空公司 / 航班 -->
-	  <div class="flight-airline">
-	    <div class="flight-no">IT216</div>
-	    <div class="flight-dates">
-	      <span class="date-depart">2026 年 2 月 9 日</span>
-	      <span class="date-arrive">2026 年 2 月 9 日</span>
-	    </div>
-	    <div class="flight-time">
-	      <span class="time1">00:10</span>
-	      <span class="time1">04:00</span>
-	    </div>
-	    <div class="flight-line">
-	      <span class="airport">TPE T2</span>
-	      <span class="airport">HND T3</span>
-	    </div>
-	  </div>
-	
-	  <!-- PDF 文件（小、附屬） -->
-	  <div class="flight-docs">
-	    <a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
-	      <div class="doc-name">CHUANG ICHEN</div>
-	    </a>
-	    <a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
-	      <div class="doc-name">SU BORUI</div>
-	    </a>
-	  </div>
-	</div>
+    <div class="flight-card">
+		
+		  <!-- 上方資訊列 -->
+		  <div class="flight-top">
+		    <div class="flight-pass-bar">
+			  <span class="pass-title">BOARDING PASS　登機證</span>
+			  <span class="pass-checkin">報到時間｜22:10</span>
+			</div>
+		  </div>
+		
+		  <!-- 航空公司 / 航班 -->
+		  <div class="flight-airline">
+		    
+		    <div class="flight-no">IT216</div>
+	            <div class="flight-dates">
+				    <span class="date-depart">2026 年 2 月 9 日</span>
+				    <span class="date-arrive">2026 年 2 月 9 日</span>
+				</div>
+				 <div class="flight-time">
+	  				<span class="time1">00:10</span>
+					<span class="time1">04:00</span>
+	            </div>
+				
+			    <div class="flight-line">
+	              <span class="airport">TPE T2</span>
+			      <span class="airport">HND T3</span>a
+				</div>
+		  </div>
+		
+		  
+		
+		  <!-- PDF 文件（小、附屬） -->
+		  <div class="flight-docs">
+		    <a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
+		      <div class="doc-name">CHUANG ICHEN</div>
+		    </a>
+		    <a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
+		      <div class="doc-name">SU BORUI</div>
+		    </a>
+		  </div>
 
-	<!-- 第二筆航班資訊 -->
-	<div class="flight-card second-flight-card">
-	  <!-- 上方資訊列 -->
-	  <div class="flight-top">
-	    <div class="flight-pass-bar">
-	      <span class="pass-title">BOARDING PASS　登機證</span>
-	      <span class="pass-checkin">報到時間｜06:15</span>
-	    </div>
-	  </div>
-	
-	  <!-- 航空公司 / 航班 -->
-	  <div class="flight-airline">
-	    <div class="flight-no">HD015</div>
-	    <div class="flight-dates">
-	      <span class="date-depart">2026 年 2 月 9 日</span>
-	      <span class="date-arrive">2026 年 2 月 9 日</span>
-	    </div>
-	    <div class="flight-time">
-	      <span class="time1">08:15</span>
-	      <span class="time1">09:45</span>
-	    </div>
-	    <div class="flight-line">
-	      <span class="airport">HND</span>
-	      <span class="airport">CTS</span>
-	    </div>
-	  </div>
-	
-	  <!-- PDF 文件（小、附屬） -->
-	  <div class="flight-docs">
-	    <a class="flight-doc" href="pdf/ichenido.pdf" target="_blank">
-	      <div class="doc-name">CHUANG ICHEN</div>
-	    </a>
-	    <a class="flight-doc" href="pdf/boruiido.pdf" target="_blank">
-	      <div class="doc-name">SU BORUI</div>
-	    </a>
-	  </div>
 	</div>
+	<div class="flight-card">
+  <!-- 上方資訊列 -->
+  <div class="flight-top">
+    <div class="flight-pass-bar">
+      <span class="pass-title">BOARDING PASS　登機證</span>
+      <span class="pass-checkin">報到時間｜06:15</span>
+    </div>
+  </div>
+
+  <!-- 航空公司 / 航班 -->
+  <div class="flight-airline">
+	<div class="flight-no">HD015</div>
+    <div class="flight-dates">
+      <span class="date-depart">2026 年 2 月 9 日</span>
+      <span class="date-arrive">2026 年 2 月 9 日</span>
+    </div>
+
+    <!-- 航班時間 -->
+    <div class="flight-time">
+      <span class="time1">08:15</span>
+      <span class="time1">09:45</span>
+    </div>
+
+    <!-- 機場 -->
+    <div class="flight-line">
+      <span class="airport">HND</span>
+      <span class="airport">CTS</span>
+    </div>
+  </div>
+
+  <!-- PDF 文件（小、附屬） -->
+  <div class="flight-docs">
+    <a class="flight-doc" href="pdf/ichenido.pdf" target="_blank">
+      <div class="doc-name">CHUANG ICHEN</div>
+    </a>
+    <a class="flight-doc" href="pdf/boruiido.pdf" target="_blank">
+      <div class="doc-name">SU BORUI</div>
+    </a>
+  </div>
 </div>
-
 
   `
  
@@ -3569,8 +3349,6 @@ const ticketData = {
   rentcar: { title: "租車文件", body: `<p>租車公司 / 取車資料...</p>` },
   entry: { title: "入境審查", body: `<p>VJW / 入境條碼...</p>` }
 };
-	
-
 
 // 點分類 → 顯示內容頁
 document.addEventListener("click", function (e) {
@@ -3674,38 +3452,8 @@ function resetTicketPage() {
 
 
 </script>
-<script>
-  let startX, endX;
-  const flightContainer = document.querySelector('.flight-container');
-  
-  // 監聽 touchstart 事件，記錄開始位置
-  flightContainer.addEventListener('touchstart', function(e) {
-    startX = e.touches[0].clientX;
-  });
-
-  // 監聽 touchmove 事件，計算滑動距離
-  flightContainer.addEventListener('touchmove', function(e) {
-    endX = e.touches[0].clientX;
-    const distance = startX - endX; // 計算滑動距離
-
-    // 當滑動超過50px時，顯示第二筆航班資訊
-    if (distance > 50) {
-      flightContainer.classList.add('slide'); // 顯示第二筆航班資訊
-    } else if (distance < -50) {
-      flightContainer.classList.remove('slide'); // 隱藏第二筆航班資訊
-    }
-  });
-</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
 
 

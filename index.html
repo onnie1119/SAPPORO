@@ -1810,7 +1810,13 @@ a:active {
   color: #999;
 }
 
-
+/* ============================
+   飛機圖標與路線顯示樣式（位於卡片外面）
+============================ */
+.flight-card-wrapper {
+  position: relative;
+  padding-top: 20px; /* 與上方內容間的間隔 */
+}
 
 </style>
 </head>
@@ -3257,12 +3263,15 @@ const ticketData = {
 
  flight: {
   body: `
-    <div class="flight-card">
-		<!-- 添加飛機圖標與航班路線 -->
-	    <div class="flight-info-header">
-			<span class="icon-airplane"></span>
-			<span class="route">桃園 — 東京</span>
+  <!-- 添加飛機圖標與航班路線 -->
+	   <div class="flight-card-wrapper">
+	   		<div class="flight-info-header">
+				<span class="icon-airplane"></span>
+				<span class="route">桃園 — 東京</span>
+			</div>
 		</div>
+    <div class="flight-card">
+		
 
 	 
 		  <!-- 上方資訊列 -->
@@ -3460,6 +3469,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

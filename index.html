@@ -1898,6 +1898,43 @@ a:active {
 .flight-container {
   touch-action: pan-x;  /* 允許水平滑動 */
 }
+/* 確保容器可以滑動 */
+.flight-container {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;  /* 允許水平方向的滾動 */
+  -webkit-overflow-scrolling: touch;  /* 支援移動設備的慣性滾動 */
+  touch-action: pan-x;  /* 允許水平滑動 */
+  padding: 0;  /* 確保沒有額外的填充或邊距 */
+  margin: 0;   /* 確保容器沒有外邊距 */
+}
+
+/* 每張航班卡的寬度應為 100vw 或設定適當的寬度 */
+.flight-card {
+  width: 100vw;  /* 每張卡片的寬度佔滿整個視口寬度 */
+  transition: transform 0.5s ease;
+  margin: 0;   /* 確保沒有額外的間距 */
+  padding: 0;  /* 確保沒有額外的內邊距 */
+}
+
+/* 第二張航班卡的初始位置 */
+.second-flight-card {
+  position: absolute;
+  left: 100%;  /* 初始隱藏在右邊 */
+  top: 0;
+  width: 100%;  /* 設置寬度以便顯示完全的卡片 */
+}
+
+/* 當添加 .slide 類時，第二張卡片滑入 */
+.flight-container.slide .second-flight-card {
+  left: 0;  /* 使第二張卡片滑入 */
+}
+
+/* 確保飛行卡的內容不會被裁切 */
+.flight-card {
+  box-sizing: border-box;  /* 確保 padding 和 border 不會影響寬度 */
+  border: none;  /* 如果不需要邊框，則去除 */
+}
 
 </style>
 </head>
@@ -3560,6 +3597,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

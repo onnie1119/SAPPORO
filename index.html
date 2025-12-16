@@ -3427,7 +3427,7 @@ const ticketData = {
 
 
   schedule: { title: "行程單", body: `<p>行程詳細資料...</p>` },
-  rentcar: { title: "租車文件", body: `<p>租車公司 / 取車資料...</p>` },
+  rentcar: {  body: `<p>租車公司 / 取車資料...</p>` },
   entry: { title: "入境審查", body: `<p>VJW / 入境條碼...</p>` }
 };
 
@@ -3437,6 +3437,11 @@ document.addEventListener("click", function (e) {
   if (!card) return;
 
   const key = card.dataset.target;
+  // ⭐ 租車：直接開 PDF，不進電子憑證流程
+  if (key === "rentcar") {
+    window.open("pdf/rentcar.pdf", "_blank"); // ← 換成你的實際檔名
+    return;
+  }
 
   /* =========================
      ⭐ 住宿：直接顯示飯店清單
@@ -3537,6 +3542,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -42,6 +42,12 @@ body.exchange-mode {
 
     }
 
+	hr{    width: 100%;
+    height: 1px;
+    border: 0;
+    margin: 2rem auto;
+    background-color: #e3e3e3;}
+	  
     .trip-title {
       font-size: 20px;
     }
@@ -3317,6 +3323,13 @@ const ticketData = {
 
 	</div>
 	<hr>
+	 <!-- 添加飛機圖標與航班路線 -->
+	   <div class="flight-card-wrapper">
+	   		<div class="flight-info-header">
+				<span class="icon-airplane"></span>
+				<span class="route">桃園 東京</span>
+			</div>
+		</div>
 	<div class="flight-card">
   <!-- 上方資訊列 -->
   <div class="flight-top">
@@ -3472,6 +3485,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

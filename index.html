@@ -3525,21 +3525,20 @@ function resetTicketPage() {
 
 </script>
 <script>
-  let startX;
-  let endX;
+  let startX, endX;
   const flightContainer = document.querySelector('.flight-container');
-
+  
   // 監聽 touchstart 事件，記錄開始位置
-  flightContainer.addEventListener('touchstart', (e) => {
+  flightContainer.addEventListener('touchstart', function(e) {
     startX = e.touches[0].clientX;
   });
 
-  // 監聽 touchmove 事件，根據滑動位置移動航班卡片
-  flightContainer.addEventListener('touchmove', (e) => {
+  // 監聽 touchmove 事件，計算滑動距離
+  flightContainer.addEventListener('touchmove', function(e) {
     endX = e.touches[0].clientX;
     const distance = startX - endX; // 計算滑動距離
 
-    // 當滑動距離大於50px時，觸發滑動切換
+    // 當滑動超過50px時，顯示第二筆航班資訊
     if (distance > 50) {
       flightContainer.classList.add('slide'); // 顯示第二筆航班資訊
     } else if (distance < -50) {
@@ -3547,9 +3546,9 @@ function resetTicketPage() {
     }
   });
 </script>
-
 </body>
 </html>
+
 
 
 

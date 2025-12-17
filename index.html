@@ -1846,7 +1846,9 @@ a:active {
     transform: scale(0.96);
   }
 }
-
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
 </style>
 </head>
 <body>
@@ -3500,6 +3502,13 @@ document.addEventListener("click", function (e) {
 
   document.getElementById("ticketContentBody").innerHTML =
     ticketData[key].body || "";
+const content = document.getElementById("ticketContent");
+content.classList.remove("fade-in");
+
+// 強制 reflow，讓 animation 可以重播
+void content.offsetWidth;
+
+content.classList.add("fade-in");
 
   document.querySelector(".ticket-category-list").style.display = "none";
   document.getElementById("ticketContent").style.display = "block";
@@ -3577,6 +3586,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

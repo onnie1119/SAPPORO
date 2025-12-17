@@ -3437,30 +3437,26 @@ document.addEventListener("click", function (e) {
   if (!card) return;
 
   const key = card.dataset.target;
-if (key === "rentcar") {
-  window.open("pdf/carreservation.pdf", "_blank");
-  return;
-}
 
-  /* =========================
-     ⭐ 住宿：直接顯示飯店清單
-     ⭐ 完全不進內容頁
-  ========================= */
- if (key === "hotel" || key === "flight") {
-  const list = document.querySelector(".ticket-category-list");
+  // ⭐ 租車：直接開 PDF
+  if (key === "rentcar") {
+    window.open("pdf/carreservation.pdf", "_blank");
+    return;
+  }
 
-  document.getElementById("ticketContent").style.display = "none";
-  list.style.display = "flex";
-  list.innerHTML = ticketData[key].body;
+  // ⭐ 住宿 / 航班：留在電子憑證頁
+  if (key === "hotel" || key === "flight") {
+    const list = document.querySelector(".ticket-category-list");
 
-  ticketLevel = key; // hotel / flight
-  return;
-}
+    document.getElementById("ticketContent").style.display = "none";
+    list.style.display = "flex";
+    list.innerHTML = ticketData[key].body;
 
+    ticketLevel = key; // hotel / flight
+    return;
+  }
 
-  /* =========================
-     其他分類：走內容頁模式
-  ========================= */
+  // ⭐ 其他分類：內容頁模式
   document.getElementById("ticketContentTitle").textContent =
     ticketData[key].title || "";
 
@@ -3469,6 +3465,8 @@ if (key === "rentcar") {
 
   document.querySelector(".ticket-category-list").style.display = "none";
   document.getElementById("ticketContent").style.display = "block";
+
+  ticketLevel = "content";
 });
 
 
@@ -3541,4 +3539,5 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 

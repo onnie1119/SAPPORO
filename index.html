@@ -3437,6 +3437,10 @@ document.addEventListener("click", function (e) {
   if (!card) return;
 
   const key = card.dataset.target;
+if (key === "rentcar") {
+  window.open("pdf/carreservation.pdf", "_blank");
+  return;
+}
 
   /* =========================
      ⭐ 住宿：直接顯示飯店清單
@@ -3537,3 +3541,4 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+

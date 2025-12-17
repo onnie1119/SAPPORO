@@ -1843,6 +1843,30 @@ a:active {
     transform: scale(0.96);
   }
 }
+/* =========================
+   通用頁面進場動畫
+========================= */
+.page {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page.show {
+  display: block;
+  animation: pageFadeIn .35s ease-out forwards;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 </style>
 </head>
@@ -2714,6 +2738,7 @@ document.addEventListener("DOMContentLoaded", () => {
   getExchangeRate();
   showDay(1);
   updateArrows();
+	showPage("container"); // ⭐ 新增這行
 });
 
 
@@ -2868,47 +2893,66 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
 // ===========================
 // 5. 三頁切換
 // ===========================
+
+function showPage(pageId) {
+  // 關掉所有頁面
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove("show");
+  });
+
+  // 顯示指定頁面（觸發動畫）
+  const target = document.getElementById(pageId);
+  if (target) {
+    target.classList.add("show");
+  }
+}
+
+	
 function showExchange() {
   isMainPage = false;
- resetTicketPage(); // ⭐ 關鍵
+  resetTicketPage();
 
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
+  showPage("exchange-page"); // ⭐ 關鍵
 
   scrollBtn.classList.remove("show");
-  setNavHome(); // ✅
+  setNavHome();
 }
+
 
 
 function showPacking() {
   isMainPage = false;
 
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "block";
+  showPage("packing-page"); // ⭐ 關鍵
 
   scrollBtn.classList.remove("show");
-  setNavHome(); // ✅
+  setNavHome();
 }
+function showTicket() {
+  isMainPage = false;
+  resetTicketPage();
+  ticketLevel = "list";
+
+  showPage("ticket-page"); // ⭐ 關鍵
+
+  scrollBtn.classList.remove("show");
+  setNavBack();
+}
+
 
 
 function backToMain() {
   isMainPage = true;
- // ⭐ 離開電子憑證時，重置狀態
   resetTicketPage();
-  document.querySelector(".container").style.display = "block";
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none";
+
+  showPage("container"); // ⭐ 關鍵
 
   navBtn.classList.remove("show");
 
   if (window.scrollY > 300) scrollBtn.classList.add("show");
   else scrollBtn.classList.remove("show");
 }
+
 
 
 
@@ -3574,6 +3618,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1535,7 +1535,7 @@ body.packing-mode {
   flex-direction: column;
   gap: 14px;
   margin-top: 10px;
- 
+  animation: fadeIn 0.4s ease-out;
 }
 
 /* 單一住宿卡片 */
@@ -1554,8 +1554,12 @@ body.packing-mode {
   padding: 16px;
   padding-left:1.5rem;
   font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+cursor: pointer;
+	border-radius: 8px 8px 0px 0px;
+    background-color: #e6e6e6;
+    border-bottom: 1px solid #e0e0e0;
+    color: #444;
+    padding: 8px 15px;
 }
 
 .hotel-arrow {
@@ -3660,6 +3664,7 @@ document.addEventListener("click", function (e) {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1900,6 +1900,29 @@ a:active {
     transform: translateY(0);
   }
 }
+/* 入境審查下拉容器 */
+.entry-dropdown {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 0 4px;
+  font-size: 13px;
+}
+
+/* 人名樣式 */
+.entry-person {
+  color: #333;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* 中間的 ｜ */
+.entry-separator {
+  color: #bbb;
+}
 
 </style>
 </head>
@@ -3511,42 +3534,39 @@ document.addEventListener("click", function (e) {
   if (!card) return;
 	
 const key = card.dataset.target;
- /* =========================
-     ⭐ 入境審查：下拉人名
-     ========================= */
+  /* =========================
+     ⭐ 入境審查：下方展開人名
+  ========================= */
   if (key === "entry") {
     e.preventDefault();
 
-    // 已展開 → 收起
+    // 已經有展開 → 收起
     const existing = card.querySelector(".entry-dropdown");
     if (existing) {
       existing.remove();
-      card.classList.remove("open");
       return;
     }
 
-    // 關掉其他 entry（保險）
+    // 保險：關掉其他入境審查展開
     document.querySelectorAll(".entry-dropdown").forEach(el => el.remove());
-    document.querySelectorAll(".ticket-category.open")
-      .forEach(el => el.classList.remove("open"));
 
-    // 建立下拉
+    // 建立人名列
     const dropdown = document.createElement("div");
     dropdown.className = "entry-dropdown";
     dropdown.innerHTML = `
-      <div class="entry-person" data-img="images/entry/chuang-ichen.jpg">
+      <a class="entry-person" href="images/entry/chuang-ichen.jpg" target="_blank">
         CHUANG ICHEN
-      </div>
-      <div class="entry-person" data-img="images/entry/su-borui.jpg">
+      </a>
+      <span class="entry-separator">｜</span>
+      <a class="entry-person" href="images/entry/su-borui.jpg" target="_blank">
         SU BORUI
-      </div>
+      </a>
     `;
 
     card.appendChild(dropdown);
-    card.classList.add("open");
-
-    return; // ⭐⭐⭐ 超重要：到這裡就停
+    return; // ⬅️ 很重要：這裡直接結束，不走後面切頁流程
   }
+
 
 	
   /* =========================
@@ -3648,6 +3668,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

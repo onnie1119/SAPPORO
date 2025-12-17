@@ -3491,7 +3491,7 @@ document.addEventListener("click", function (e) {
     document.getElementById("ticketContent").style.display = "none";
     list.style.display = "flex";
     list.innerHTML = ticketData[key].body;
-
+playFadeIn(list); // ⭐ 關鍵動畫
     ticketLevel = key; // hotel / flight
     return;
   }
@@ -3580,12 +3580,19 @@ function resetTicketPage() {
   ticketLevel = "list";
 }
 
+function playFadeIn(el) {
+  if (!el) return;
+  el.classList.remove("fade-in");
+  void el.offsetWidth; // 強制 reflow
+  el.classList.add("fade-in");
+}
 
 
 
 </script>
 </body>
 </html>
+
 
 
 

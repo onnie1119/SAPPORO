@@ -3216,19 +3216,7 @@ renderPackingPage();
 // list = 電子憑證首頁
 // hotel = 住宿憑證
 // content = 其他分類內容頁
-function showTicket() {
-  isMainPage = false;
-	resetTicketPage();   // ⭐ 關鍵
- ticketLevel = "list"; // ⭐ 關鍵
 
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "block";
-
-  scrollBtn.classList.remove("show");
-  setNavBack(); // ⭐ 關鍵
-}
 
 const ticketData = {
  hotel: {
@@ -3519,13 +3507,6 @@ content.classList.add("fade-in");
 
 
 
-document.addEventListener("click", function(e) {
-  const header = e.target.closest(".hotel-header");
-  if (!header) return;
-
-  const item = header.closest(".hotel-item");
-  item.classList.toggle("open");
-});
 	
 function setNavHome() {
   navBtn.textContent = "HOME";
@@ -3674,21 +3655,18 @@ function resetTicketPage() {
   const list = document.querySelector(".ticket-category-list");
   const content = document.getElementById("ticketContent");
 
-  // 回到第一層分類
   if (list) {
     list.innerHTML = originalTicketCategoryHTML;
     list.style.display = "flex";
-    playFadeIn(list); // ⭐ 動畫效果
   }
 
-  // 關閉內容頁
   if (content) {
     content.style.display = "none";
   }
 
-  // 重置層級狀態
   ticketLevel = "list";
 }
+
 
 // 淡入動畫效果
 function playFadeIn(el) {
@@ -3702,6 +3680,7 @@ function playFadeIn(el) {
 </script>
 </body>
 </html>
+
 
 
 

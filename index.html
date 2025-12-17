@@ -3438,10 +3438,10 @@ document.addEventListener("click", function (e) {
 
   const key = card.dataset.target;
   // ⭐ 租車：直接開 PDF，不進電子憑證流程
-  if (key === "rentcar") {
-    window.open("pdf/rentcar.pdf", "_blank"); // ← 換成你的實際檔名
-    return;
-  }
+if (key === "rentcar") {
+  window.open("pdf/carreservation.pdf", "_blank");
+  return;
+}
 
   /* =========================
      ⭐ 住宿：直接顯示飯店清單
@@ -3542,6 +3542,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

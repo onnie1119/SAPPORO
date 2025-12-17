@@ -3587,11 +3587,122 @@ function playFadeIn(el) {
   el.classList.add("fade-in");
 }
 
+// 修改 showTicket() 來正確播放動畫
+function showTicket() {
+  isMainPage = false;
+  resetTicketPage();   // ⭐ 關鍵
+  ticketLevel = "list"; // ⭐ 關鍵
+
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("exchange-page").style.display = "none";
+  document.getElementById("packing-page").style.display = "none";
+  document.getElementById("ticket-page").style.display = "block";
+
+  scrollBtn.classList.remove("show");
+  setNavBack(); // ✅
+
+  // 重置並加上動畫
+  playFadeIn(document.querySelector(".ticket-category-list")); // ⭐ 添加動畫效果
+}
+
+// 點擊分類後顯示具體內容
+document.addEventListener("click", function (e) {
+  const card = e.target.closest(".ticket-category");
+  if (!card) return;
+
+  const key = card.dataset.target;
+
+  // ⭐ 住宿 & 航班 → 留在電子憑證頁
+  if (key === "hotel" || key === "flight") {
+    const list = document.querySelector(".ticket-category-list");
+
+    document.getElementById("ticketContent").style.display = "none";
+    list.style.display = "flex";
+    list.innerHTML = ticketData[key].body;
+    playFadeIn(list); // ⭐ 關鍵動畫，這裡會讓新的內容顯示動畫
+
+    ticketLevel = key; // hotel / flight
+    return;
+  }
+
+  // ⭐ 其他分類：顯示內容頁
+  document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
+  document.getElementById("ticketContentBody").innerHTML = ticketData[key].body || "";
+  
+  const content = document.getElementById("ticketContent");
+  content.classList.remove("fade-in");
+
+  // 強制 reflow，讓動畫可以重播
+  void content.offsetWidth;  // 讓瀏覽器重繪
+
+  content.classList.add("fade-in"); // 添加動畫效果
+
+  document.querySelector(".ticket-category-list").style.display = "none";
+  document.getElementById("ticketContent").style.display = "block";
+
+  ticketLevel = "content";
+});
+
+// 回到上一層級（電子憑證頁面首頁）
+function goBack() {
+  const ticketList = document.querySelector(".ticket-category-list");
+
+  // ⭐ 住宿 or 航班 → 回電子憑證首頁
+  if (ticketLevel === "hotel" || ticketLevel === "flight") {
+    ticketList.innerHTML = originalTicketCategoryHTML;
+    ticketList.style.display = "flex";
+    ticketLevel = "list";
+    playFadeIn(ticketList); // ⭐ 動畫效果
+    return;
+  }
+
+  // 其他內容頁 → 回電子憑證首頁
+  if (ticketLevel === "content") {
+    document.getElementById("ticketContent").style.display = "none";
+    ticketList.style.display = "flex";
+    ticketLevel = "list";
+    playFadeIn(ticketList); // ⭐ 動畫效果
+    return;
+  }
+
+  // 最後才回到主頁
+  backToMain();
+}
+
+// 清除電子憑證頁面的內容
+function resetTicketPage() {
+  const list = document.querySelector(".ticket-category-list");
+  const content = document.getElementById("ticketContent");
+
+  // 回到第一層分類
+  if (list) {
+    list.innerHTML = originalTicketCategoryHTML;
+    list.style.display = "flex";
+    playFadeIn(list); // ⭐ 動畫效果
+  }
+
+  // 關閉內容頁
+  if (content) {
+    content.style.display = "none";
+  }
+
+  // 重置層級狀態
+  ticketLevel = "list";
+}
+
+// 淡入動畫效果
+function playFadeIn(el) {
+  if (!el) return;
+  el.classList.remove("fade-in");
+  void el.offsetWidth;  // 強制 reflow
+  el.classList.add("fade-in");
+}
 
 
 </script>
 </body>
 </html>
+
 
 
 

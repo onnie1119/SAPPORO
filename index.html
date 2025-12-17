@@ -1854,6 +1854,52 @@ a:active {
   transform: scale(0.97);
   background: #ececec;
 }
+/* 入境審查下拉容器 */
+.entry-dropdown {
+  display: flex;                 /* 水平並排 */
+  gap: 12px;                     /* 兩張卡片間距 */
+  padding: 12px 14px 14px;
+  margin-top: 10px;
+
+  background: #f7f7f7;           /* 淡灰底，像 iOS */
+  border-radius: 12px;
+
+  animation: fadeIn 0.25s ease;
+}
+
+/* 每個人名卡片 */
+.entry-person {
+  flex: 1;                       /* 兩張平均寬 */
+  padding: 14px 10px;
+  text-align: center;
+
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease;
+}
+
+/* 點擊回饋 */
+.entry-person:active {
+  background: #eee;
+  transform: scale(0.97);
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 </style>
 </head>
@@ -3602,6 +3648,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

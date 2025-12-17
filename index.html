@@ -3463,44 +3463,44 @@ const ticketData = {
 document.addEventListener("click", function (e) {
   const card = e.target.closest(".ticket-category");
   if (!card) return;
+	
+const key = card.dataset.target;
+ /* =========================
+     ⭐ 入境審查：下拉人名
+     ========================= */
+  if (key === "entry") {
+    e.preventDefault();
 
-  const key = card.dataset.target;
-  // ⭐ 租車：直接開 PDF，不進電子憑證流程
-if (key === "rentcar") {
-  window.open("pdf/carreservation.pdf", "_blank");
-  return;
-}
- const entryCard = e.target.closest('.ticket-category[data-target="entry"]');
-  if (!entryCard) return;
+    // 已展開 → 收起
+    const existing = card.querySelector(".entry-dropdown");
+    if (existing) {
+      existing.remove();
+      card.classList.remove("open");
+      return;
+    }
 
-  e.preventDefault();
+    // 關掉其他 entry（保險）
+    document.querySelectorAll(".entry-dropdown").forEach(el => el.remove());
+    document.querySelectorAll(".ticket-category.open")
+      .forEach(el => el.classList.remove("open"));
 
-  // 已經展開就收起
-  const existing = entryCard.querySelector(".entry-dropdown");
-  if (existing) {
-    existing.remove();
-    entryCard.classList.remove("open");
-    return;
+    // 建立下拉
+    const dropdown = document.createElement("div");
+    dropdown.className = "entry-dropdown";
+    dropdown.innerHTML = `
+      <div class="entry-person" data-img="images/entry/chuang-ichen.jpg">
+        CHUANG ICHEN
+      </div>
+      <div class="entry-person" data-img="images/entry/su-borui.jpg">
+        SU BORUI
+      </div>
+    `;
+
+    card.appendChild(dropdown);
+    card.classList.add("open");
+
+    return; // ⭐⭐⭐ 超重要：到這裡就停
   }
-
-  // 先關掉其他展開（保險）
-  document.querySelectorAll(".entry-dropdown").forEach(el => el.remove());
-  document.querySelectorAll(".ticket-category.open").forEach(el => el.classList.remove("open"));
-
-  // 建立下拉
-  const dropdown = document.createElement("div");
-  dropdown.className = "entry-dropdown";
-  dropdown.innerHTML = `
-    <div class="entry-person" data-img="images/entry/chuang-ichen.jpg">
-      CHUANG ICHEN
-    </div>
-    <div class="entry-person" data-img="images/entry/su-borui.jpg">
-      SU BORUI
-    </div>
-  `;
-
-  entryCard.appendChild(dropdown);
-  entryCard.classList.add("open");
 
 	
   /* =========================
@@ -3602,6 +3602,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

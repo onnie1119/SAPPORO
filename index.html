@@ -3567,11 +3567,10 @@ function playFadeIn(el) {
   el.classList.add("fade-in");
 }
 
-// 修改 showTicket() 來正確播放動畫
+// 1. 點擊切換頁面時做動畫效果
 function showTicket() {
   isMainPage = false;
-  resetTicketPage();   // ⭐ 關鍵
-  ticketLevel = "list"; // ⭐ 關鍵
+  resetTicketPage(); // ⭐ 關鍵重設頁面狀態
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
@@ -3579,106 +3578,89 @@ function showTicket() {
   document.getElementById("ticket-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
-  setNavBack(); // ✅
+  setNavBack(); // 設定返回按鈕
 
-  // 重置並加上動畫
-  playFadeIn(document.querySelector(".ticket-category-list")); // ⭐ 添加動畫效果
+  // 添加動畫效果
+  playFadeIn(document.querySelector(".ticket-category-list"));
 }
 
-// 點擊分類後顯示具體內容
+// 2. 返回上一頁時做動畫效果
+function goBack() {
+  const ticketList = document.querySelector(".ticket-category-list");
+
+  // ⭐ 當在住宿或航班頁面，返回首頁時加動畫
+  if (ticketLevel === "hotel" || ticketLevel === "flight") {
+    ticketList.innerHTML = originalTicketCategoryHTML;  // 保持原有內容
+    ticketList.style.display = "flex";
+    ticketLevel = "list";
+    playFadeIn(ticketList);  // 加入動畫效果
+    return;
+  }
+
+  // ⭐ 當在其他內容頁時，返回首頁也加動畫
+  if (ticketLevel === "content") {
+    document.getElementById("ticketContent").style.display = "none";
+    ticketList.style.display = "flex";
+    ticketLevel = "list";
+    playFadeIn(ticketList);  // 加入動畫效果
+    return;
+  }
+
+  // 最後回到主頁
+  backToMain();
+}
+
+// 3. 播放動畫效果，確保頁面顯示過程中有動畫
+function playFadeIn(el) {
+  if (!el) return;
+  el.classList.remove("fade-in");  // 移除之前的動畫效果
+  void el.offsetWidth;  // 強制觸發重繪（瀏覽器重新渲染）
+  el.classList.add("fade-in");  // 重新添加動畫效果
+}
+
+// 4. 內容頁面（比如酒店或航班）點擊後顯示具體內容
 document.addEventListener("click", function (e) {
   const card = e.target.closest(".ticket-category");
   if (!card) return;
 
   const key = card.dataset.target;
-
-  // ⭐ 住宿 & 航班 → 留在電子憑證頁
+  
+  // ⭐ 住宿 & 航班頁面 → 顯示在電子憑證頁面，並加上動畫
   if (key === "hotel" || key === "flight") {
     const list = document.querySelector(".ticket-category-list");
 
     document.getElementById("ticketContent").style.display = "none";
     list.style.display = "flex";
     list.innerHTML = ticketData[key].body;
-    playFadeIn(list); // ⭐ 關鍵動畫，這裡會讓新的內容顯示動畫
-
-    ticketLevel = key; // hotel / flight
+    playFadeIn(list);  // 加入動畫效果
+    ticketLevel = key;  // 顯示當前頁面
     return;
   }
 
-  // ⭐ 其他分類：顯示內容頁
+  // ⭐ 其他分類內容頁面 → 顯示具體內容
   document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
   document.getElementById("ticketContentBody").innerHTML = ticketData[key].body || "";
-  
+
   const content = document.getElementById("ticketContent");
-  content.classList.remove("fade-in");
+  content.classList.remove("fade-in");  // 移除之前的動畫
 
-  // 強制 reflow，讓動畫可以重播
-  void content.offsetWidth;  // 讓瀏覽器重繪
+  // 強制瀏覽器重繪，讓動畫生效
+  void content.offsetWidth;  // 讓瀏覽器重新渲染
 
-  content.classList.add("fade-in"); // 添加動畫效果
+  content.classList.add("fade-in");  // 重新添加動畫
 
   document.querySelector(".ticket-category-list").style.display = "none";
   document.getElementById("ticketContent").style.display = "block";
 
-  ticketLevel = "content";
+  ticketLevel = "content"; // 顯示內容頁
 });
 
-// 回到上一層級（電子憑證頁面首頁）
-function goBack() {
-  const ticketList = document.querySelector(".ticket-category-list");
-
-  // ⭐ 住宿 or 航班 → 回電子憑證首頁
-  if (ticketLevel === "hotel" || ticketLevel === "flight") {
-    ticketList.innerHTML = originalTicketCategoryHTML;
-    ticketList.style.display = "flex";
-    ticketLevel = "list";
-    playFadeIn(ticketList); // ⭐ 動畫效果
-    return;
-  }
-
-  // 其他內容頁 → 回電子憑證首頁
-  if (ticketLevel === "content") {
-    document.getElementById("ticketContent").style.display = "none";
-    ticketList.style.display = "flex";
-    ticketLevel = "list";
-    playFadeIn(ticketList); // ⭐ 動畫效果
-    return;
-  }
-
-  // 最後才回到主頁
-  backToMain();
-}
-
-// 清除電子憑證頁面的內容
-function resetTicketPage() {
-  const list = document.querySelector(".ticket-category-list");
-  const content = document.getElementById("ticketContent");
-
-  if (list) {
-    list.innerHTML = originalTicketCategoryHTML;
-    list.style.display = "flex";
-  }
-
-  if (content) {
-    content.style.display = "none";
-  }
-
-  ticketLevel = "list";
-}
-
-
-// 淡入動畫效果
-function playFadeIn(el) {
-  if (!el) return;
-  el.classList.remove("fade-in");
-  void el.offsetWidth;  // 強制 reflow
-  el.classList.add("fade-in");
-}
 
 
 </script>
 </body>
 </html>
+
 
 
 

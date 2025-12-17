@@ -1827,6 +1827,22 @@ a:active {
 	margin-top:0.5rem;
 }
 .route{padding-left:0.5rem;}
+/* ===== PDF 開啟過渡動畫 ===== */
+.ticket-opening {
+  animation: ticketFadeOut 0.25s ease forwards;
+}
+
+@keyframes ticketFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+}
+
 </style>
 </head>
 <body>
@@ -3439,16 +3455,29 @@ document.addEventListener("click", function (e) {
   const key = card.dataset.target;
 
   // ⭐ 租車：直接開 PDF
-  if (key === "rentcar") {
+ if (key === "rentcar") {
+  card.classList.add("ticket-opening");
+
+  setTimeout(() => {
     window.open("pdf/carreservation.pdf", "_blank");
-    return;
-  }
+    card.classList.remove("ticket-opening");
+  }, 250);
+
+  return;
+}
+
   // ⭐ 入境：直接開 PDF
-  if (key === "entry") {
+ if (key === "entry") {
+  card.classList.add("ticket-opening");
+
+  setTimeout(() => {
     window.open("pdf/vjw.pdf", "_blank");
-    return;
-  }
-	
+    card.classList.remove("ticket-opening");
+  }, 250);
+
+  return;
+}
+
   // ⭐ 住宿 / 航班：留在電子憑證頁
   if (key === "hotel" || key === "flight") {
     const list = document.querySelector(".ticket-category-list");
@@ -3544,6 +3573,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1827,6 +1827,34 @@ a:active {
 	margin-top:0.5rem;
 }
 .route{padding-left:0.5rem;}
+
+/* 入境審查下拉 */
+.ticket-category.open {
+  padding-bottom: 8px;
+}
+
+.entry-dropdown {
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entry-person {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f5f5f7;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.entry-person:active {
+  transform: scale(0.97);
+  background: #ececec;
+}
+
 </style>
 </head>
 <body>
@@ -3442,7 +3470,39 @@ if (key === "rentcar") {
   window.open("pdf/carreservation.pdf", "_blank");
   return;
 }
+ const entryCard = e.target.closest('.ticket-category[data-target="entry"]');
+  if (!entryCard) return;
 
+  e.preventDefault();
+
+  // 已經展開就收起
+  const existing = entryCard.querySelector(".entry-dropdown");
+  if (existing) {
+    existing.remove();
+    entryCard.classList.remove("open");
+    return;
+  }
+
+  // 先關掉其他展開（保險）
+  document.querySelectorAll(".entry-dropdown").forEach(el => el.remove());
+  document.querySelectorAll(".ticket-category.open").forEach(el => el.classList.remove("open"));
+
+  // 建立下拉
+  const dropdown = document.createElement("div");
+  dropdown.className = "entry-dropdown";
+  dropdown.innerHTML = `
+    <div class="entry-person" data-img="images/entry/chuang-ichen.jpg">
+      CHUANG ICHEN
+    </div>
+    <div class="entry-person" data-img="images/entry/su-borui.jpg">
+      SU BORUI
+    </div>
+  `;
+
+  entryCard.appendChild(dropdown);
+  entryCard.classList.add("open");
+
+	
   /* =========================
      ⭐ 住宿：直接顯示飯店清單
      ⭐ 完全不進內容頁
@@ -3542,6 +3602,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

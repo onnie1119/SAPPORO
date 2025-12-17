@@ -1828,103 +1828,25 @@ a:active {
 }
 .route{padding-left:0.5rem;}
 
-/* 入境審查下拉 */
-.ticket-category.open {
-  padding-bottom: 8px;
-}
+/* =========================
+   入境審查（Entry）— 最終統一版
+========================= */
 
-.entry-dropdown {
-  margin-top: 10px;
-  border-top: 1px solid #eee;
-  padding-top: 8px;
+/* 1️⃣ 入境審查卡片本體要能往下長 */
+.ticket-category[data-target="entry"] {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: column;      /* ⭐ 關鍵：改成直向 */
+  align-items: flex-start;
 }
 
-.entry-person {
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: #f5f5f7;
-  font-size: 14px;
-  cursor: pointer;
+/* 2️⃣ 展開時微調底部間距 */
+.ticket-category[data-target="entry"].open {
+  padding-bottom: 12px;
 }
 
-.entry-person:active {
-  transform: scale(0.97);
-  background: #ececec;
-}
-/* 入境審查下拉容器 */
-.entry-dropdown {
-  display: flex;                 /* 水平並排 */
-  gap: 12px;                     /* 兩張卡片間距 */
-  padding: 12px 14px 14px;
-  margin-top: 10px;
-
-  background: #f7f7f7;           /* 淡灰底，像 iOS */
-  border-radius: 12px;
-
-  animation: fadeIn 0.25s ease;
-}
-
-/* 每個人名卡片 */
-.entry-person {
-  flex: 1;                       /* 兩張平均寬 */
-  padding: 14px 10px;
-  text-align: center;
-
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.08);
-
-  font-size: 13px;
-  font-weight: 600;
-  color: #111;
-
-  cursor: pointer;
-  transition: transform .15s ease, background .15s ease;
-}
-
-/* 點擊回饋 */
-.entry-person:active {
-  background: #eee;
-  transform: scale(0.97);
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* 入境審查下拉容器 */
-.entry-dropdown {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-
-  padding: 10px 0 4px;
-  font-size: 13px;
-}
-
-/* 人名樣式 */
-.entry-person {
-  color: #333;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-/* 中間的 ｜ */
-.entry-separator {
-  color: #bbb;
-}
-/* 入境審查下方人名（水平） */
+/* 3️⃣ 人名容器（水平並排，放在卡片下方） */
 .entry-inline {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1932,25 +1854,34 @@ a:active {
 
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #eee;
 
+  border-top: 1px solid #eee;
   font-size: 14px;
 }
 
+/* 4️⃣ 人名按鈕 */
 .entry-inline a {
   text-decoration: none;
   color: #333;
+
   padding: 6px 14px;
   border-radius: 12px;
   background: #f6f6f6;
+
+  font-weight: 500;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
-.entry-inline a:hover {
+/* 5️⃣ 點擊回饋 */
+.entry-inline a:active {
   background: #eaeaea;
+  transform: scale(0.96);
 }
 
+/* 6️⃣ 中間分隔線 */
 .entry-inline .divider {
   color: #bbb;
+  font-size: 13px;
 }
 
 </style>
@@ -3697,6 +3628,7 @@ function resetTicketPage() {
 </script>
 </body>
 </html>
+
 
 
 

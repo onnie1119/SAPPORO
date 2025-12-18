@@ -1557,7 +1557,10 @@ body.packing-mode {
   color: #bbb;
   transition: transform .25s ease;
 }
-
+.flight-group {
+ 
+  animation: fadeIn 0.4s ease-out;
+}
 /* 展開狀態 */
 .hotel-item.open .hotel-arrow {
   transform: rotate(90deg);
@@ -3276,6 +3279,7 @@ const ticketData = {
 
  flight: {
   body: `
+  <div class="flight-group">
   <!-- 1添加飛機圖標與航班路線 -->
 	   <div class="flight-card-wrapper">
 	   		<div class="flight-info-header">
@@ -3424,7 +3428,7 @@ const ticketData = {
     </a>
   </div>
 </div>
-
+</div>
   `
  
  },
@@ -3658,6 +3662,7 @@ document.addEventListener("click", function (e) {
 </script>
 </body>
 </html>
+
 
 
 

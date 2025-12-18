@@ -3984,85 +3984,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2000);
   }
 });
+// ===== 基本元素 =====
 const menuBtn = document.getElementById("menuBtn");
-const iosFullMenu = document.getElementById("iosFullMenu");
 const menuClose = document.getElementById("menuClose");
-const topBar = document.querySelector(".topbar");
+const iosFullMenu = document.getElementById("iosFullMenu");
+const topBar = document.querySelector(".topbar"); // ← 確認跟 HTML 一樣
 
+// ===== 關選單（唯一一個）=====
 function closeMenu() {
   iosFullMenu.classList.remove("active", "closing");
   topBar.classList.remove("menu-open");
 
-  // 清掉選單動畫狀態
   document.querySelectorAll(".menu-content li").forEach(li => {
     li.classList.remove("selected", "fade-out");
   });
 }
 
+// ===== 開選單 =====
 menuBtn.addEventListener("click", () => {
   iosFullMenu.classList.add("active");
   topBar.classList.add("menu-open");
 });
 
+// ===== 關選單（✕）=====
 menuClose.addEventListener("click", closeMenu);
 
+// ===== 選單點擊（唯一一段，不能再有第二段）=====
 document.querySelectorAll(".menu-content li").forEach(item => {
   item.addEventListener("click", () => {
 
     if (navigator.vibrate) navigator.vibrate(8);
 
-    item.classList.add("selected");
-
-    document.querySelectorAll(".menu-content li").forEach(item => {
-  item.addEventListener("click", () => {
-
-    if (navigator.vibrate) navigator.vibrate(8);
+    const target = item.dataset.target;
 
     iosFullMenu.classList.add("closing");
 
     setTimeout(() => {
-      closeMenu(); // 關選單 + top-bar 回來
-
-      const target = item.dataset.target;
-
-      switch (target) {
-        case "schedule":
-          goPage("page-schedule");
-          break;
-        case "luggage":
-          goPage("page-luggage");
-          break;
-        case "voucher":
-          goPage("page-voucher");
-          break;
-        case "exchange":
-          goPage("page-exchange");
-          break;
-      }
+      closeMenu();
+      goPageByTarget(target);
     }, 180);
   });
 });
 
-function closeMenu() {
-  iosFullMenu.classList.remove("active", "closing");
-  topBar.classList.remove("menu-open");
-
-  document.querySelectorAll(".menu-content li").forEach(li => {
-    li.classList.remove("selected", "fade-out");
-  });
-}
-
-function goPage(pageId) {
-  document.querySelectorAll(".page").forEach(p => {
-    p.style.display = "none";
-  });
-
-  const target = document.getElementById(pageId);
-  if (target) target.style.display = "block";
-}
-
+// ===== 切頁（只留這一套）=====
 function goPageByTarget(target) {
-  // 先全部關掉
+  // 全部頁面先隱藏
   document.querySelectorAll('[id$="-page"]').forEach(p => {
     p.style.display = "none";
   });
@@ -4085,7 +4051,6 @@ function goPageByTarget(target) {
       break;
   }
 }
-
 </script>
 </body>
 </html>

@@ -654,7 +654,6 @@ ease;
   padding: 20px;
   margin-top: 142px;
 	background-color: #F6F9FC;
-	animation: fadeIn 0.4s ease;
 }
 
 /* 標題 */
@@ -1849,13 +1848,6 @@ body.page-ticket #ticketBtn {
   background: #f0f4ff;
     color: #3A7AFE;
 }
-
-/* 預設 */
-#ticketBtn {
-background: #ffffff30;
-    color: #ffffff;
-}
-	  
 </style>
 </head>
 <body>
@@ -2915,12 +2907,11 @@ function showPacking() {
 
 
 function backToMain() {
-  setPageState("home");
-  setActive(null); // ✅ 清 active
+	setActive(null);   // ⭐ 清掉 active
 
   isMainPage = true;
+ // ⭐ 離開電子憑證時，重置狀態
   resetTicketPage();
-
   document.querySelector(".container").style.display = "block";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
@@ -3457,6 +3448,71 @@ const ticketData = {
  
 };
 
+// 點分類 → 顯示內容頁
+document.addEventListener("click", function (e) {
+  const card = e.target.closest(".ticket-category");
+  if (!card) return;
+
+  const key = card.dataset.target;
+
+  // ⭐ 租車：直接開 PDF
+ if (key === "rentcar") {
+  card.classList.add("ticket-opening");
+
+  setTimeout(() => {
+    window.open("pdf/carreservation.pdf", "_blank");
+    card.classList.remove("ticket-opening");
+  }, 250);
+
+  return;
+}
+
+  // ⭐ 入境：直接開 PDF
+ if (key === "entry") {
+  card.classList.add("ticket-opening");
+
+  setTimeout(() => {
+    window.open("pdf/vjw.pdf", "_blank");
+    card.classList.remove("ticket-opening");
+  }, 250);
+
+  return;
+}
+
+  // ⭐ 住宿 / 航班：留在電子憑證頁
+  if (key === "hotel" || key === "flight") {
+	  setActive("ticket");   // ⭐ 加這行
+
+    const list = document.querySelector(".ticket-category-list");
+
+    document.getElementById("ticketContent").style.display = "none";
+    list.style.display = "flex";
+    list.innerHTML = ticketData[key].body;
+playFadeIn(list); // ⭐ 關鍵動畫
+    ticketLevel = key; // hotel / flight
+    return;
+  }
+
+  // ⭐ 其他分類：內容頁模式
+  document.getElementById("ticketContentTitle").textContent =
+    ticketData[key].title || "";
+
+  document.getElementById("ticketContentBody").innerHTML =
+    ticketData[key].body || "";
+const content = document.getElementById("ticketContent");
+content.classList.remove("fade-in");
+
+// 強制 reflow，讓 animation 可以重播
+void content.offsetWidth;
+
+content.classList.add("fade-in");
+
+  document.querySelector(".ticket-category-list").style.display = "none";
+  document.getElementById("ticketContent").style.display = "block";
+
+  ticketLevel = "content";
+});
+
 
 
 
@@ -3472,7 +3528,28 @@ function setNavBack() {
   navBtn.onclick = goBack;
   navBtn.classList.add("show");
 }
+function goBack() {
+  const ticketList = document.querySelector(".ticket-category-list");
 
+  // ⭐ 住宿 or 航班 → 回電子憑證首頁
+  if (ticketLevel === "hotel" || ticketLevel === "flight") {
+    ticketList.innerHTML = originalTicketCategoryHTML;
+    ticketList.style.display = "flex";
+    ticketLevel = "list";
+    return;
+  }
+
+  // 其他內容頁 → 回電子憑證首頁
+  if (ticketLevel === "content") {
+    document.getElementById("ticketContent").style.display = "none";
+    ticketList.style.display = "flex";
+    ticketLevel = "list";
+    return;
+  }
+
+  // 最後才是真的回主行程
+  backToMain();
+}
 
 function resetTicketPage() {
   const list = document.querySelector(".ticket-category-list");
@@ -3493,14 +3570,18 @@ function resetTicketPage() {
   ticketLevel = "list";
 }
 
-
+function playFadeIn(el) {
+  if (!el) return;
+  el.classList.remove("fade-in");
+  void el.offsetWidth; // 強制 reflow
+  el.classList.add("fade-in");
+}
 
 // 1. 點擊切換頁面時做動畫效果
 function showTicket() {
-  setPageState("ticket");
-  setActive("ticket"); // ✅
-
+  setPageState("ticket"); // ⭐⭐⭐ 核心
   isMainPage = false;
+
   resetTicketPage();
 
   document.querySelector(".container").style.display = "none";
@@ -3583,7 +3664,7 @@ document.addEventListener("click", function (e) {
   ticketLevel = "content"; // 顯示內容頁
 });
 
-function setPageState(state) {
+function setPageState(state){
   document.body.classList.remove(
     "page-home",
     "page-ticket",
@@ -3591,54 +3672,9 @@ function setPageState(state) {
     "page-packing"
   );
   document.body.classList.add(`page-${state}`);
+}
 
 
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

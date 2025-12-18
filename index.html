@@ -2128,7 +2128,7 @@ position: fixed;
 
 	
 
-	<div class="container">
+	<div id="home-page" class="container">
 		<div class="day-tabs-wrapper">
 			<div class="day-tabs-arrow left" id="arrow-left"><span class="icon-arrow-left"></span></div>
 			<div class="day-tabs-scroll" id="dayTabsScroll">
@@ -2970,7 +2970,7 @@ position: fixed;
 <div class="ios-full-menu" id="iosFullMenu">
   <div class="menu-content">
     <ul>
-      <li data-target="schedule">行程表</li>
+      <li data-target="home">行程表</li>
       <li data-target="luggage">行李清單</li>
       <li data-target="voucher">電子憑證</li>
       <li data-target="exchange">匯率計算機</li>
@@ -3978,9 +3978,13 @@ document.addEventListener("DOMContentLoaded", () => {
       splash.classList.add("hide");
 
       setTimeout(() => {
-        splash.remove();
-        app.classList.add("show");
-      }, 400);
+  splash.remove();
+  app.classList.add("show");
+
+  // ⭐ 關鍵這一行（打開首頁）
+  goPageByTarget("home-page");
+
+}, 400);
     }, 2000);
   }
 });
@@ -4034,8 +4038,8 @@ function goPageByTarget(target) {
   });
 
   switch (target) {
-    case "schedule":
-      document.getElementById("schedule-page")?.style.display = "block";
+    case "home":
+      document.getElementById("home-page")?.style.display = "block";
       break;
 
     case "luggage":

@@ -3564,19 +3564,23 @@ function playFadeIn(el) {
 // 1. 點擊切換頁面時做動畫效果
 function showTicket() {
   isMainPage = false;
-  resetTicketPage(); // ⭐ 關鍵重設頁面狀態
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "block";
+
+  const ticketPage = document.getElementById("ticket-page");
+  ticketPage.style.display = "block";
+
+  // ⭐ 這三行才是動畫關鍵
+  ticketPage.classList.remove("fade-in");
+  void ticketPage.offsetWidth;
+  ticketPage.classList.add("fade-in");
 
   scrollBtn.classList.remove("show");
-  setNavBack(); // 設定返回按鈕
-
-  // 添加動畫效果
-  playFadeIn(document.querySelector(".ticket-category-list"));
+  setNavBack();
 }
+
 
 // 2. 返回上一頁時做動畫效果
 function goBack() {
@@ -3654,6 +3658,7 @@ document.addEventListener("click", function (e) {
 </script>
 </body>
 </html>
+
 
 
 

@@ -2915,11 +2915,12 @@ function showPacking() {
 
 
 function backToMain() {
-  setPageState("home"); // ⭐⭐⭐ 關鍵：離開電子憑證
+	setPageState("home"); // ⭐⭐⭐ 關鍵：離開電子憑證
+	setActive(null);   // ⭐ 清掉 active
 
   isMainPage = true;
+ // ⭐ 離開電子憑證時，重置狀態
   resetTicketPage();
-
   document.querySelector(".container").style.display = "block";
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
@@ -3685,6 +3686,7 @@ function setPageState(state) {
 </script>
 </body>
 </html>
+
 
 
 

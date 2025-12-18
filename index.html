@@ -2006,7 +2006,7 @@ a:active {
 .ios-full-menu {
   position: fixed;
   inset: 0;                       /* 👈 關鍵：整片 */
-  background: rgba(30,120,255,.95);
+ background: #00a8ffb3;
   backdrop-filter: blur(18px);
 
   display: flex;
@@ -2051,18 +2051,19 @@ a:active {
 
 /* 底部關閉 */
 .menu-close {
-  position: absolute;
-  bottom: calc(24px + env(safe-area-inset-bottom));
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 26px;
-  cursor: pointer;
+     position: fixed;
+    top: 600px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 26px;
+    cursor: pointer;
 }
   .menu-content {
   width: 100%;
   max-width: 320px;
-
+position: fixed;
+    top: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -4013,6 +4014,7 @@ function closeMenu() {
 </script>
 </body>
 </html>
+
 
 
 

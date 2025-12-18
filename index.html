@@ -41,6 +41,15 @@ body.exchange-mode {
 	  z-index: 1000;
 
     }
+.top-bar {
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.top-bar.menu-open {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+}
 
 	hr{    width: 100%;
     height: 1px;
@@ -3944,8 +3953,11 @@ const menuBtn = document.getElementById("menuBtn");
 const iosFullMenu = document.getElementById("iosFullMenu");
 const menuClose = document.getElementById("menuClose");
 
+const topBar = document.querySelector(".top-bar");
+
 menuBtn.addEventListener("click", () => {
   iosFullMenu.classList.add("active");
+  topBar.classList.add("menu-open");
 });
 
 menuClose.addEventListener("click", closeMenu);
@@ -3969,12 +3981,17 @@ document.querySelectorAll(".ios-full-menu li").forEach(item => {
     }
   });
 });
+function closeMenu() {
+  iosFullMenu.classList.remove("active");
+  topBar.classList.remove("menu-open");
+}
 
 
 
 </script>
 </body>
 </html>
+
 
 
 

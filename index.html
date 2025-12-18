@@ -1992,6 +1992,62 @@ a:active {
   opacity: 1;
   pointer-events: auto;
 }
+
+	  /* 全螢幕半透明背景 */
+.ios-full-menu {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 120, 255, 0.92); /* 可換你主色 */
+  backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  z-index: 3000;
+}
+
+.ios-full-menu.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 中央選單內容 */
+.menu-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.menu-content li {
+  font-size: 22px;
+  font-weight: 500;
+  color: #fff;
+  padding: 14px 0;
+  cursor: pointer;
+  letter-spacing: .5px;
+}
+
+/* iOS 點擊回饋 */
+.menu-content li:active {
+  opacity: .6;
+}
+
+/* 底部關閉 */
+.menu-close {
+  position: absolute;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -2009,15 +2065,7 @@ a:active {
 			<button onclick="showTicket()">憑證</button>
  			<button onclick="showExchange()">匯率</button>
 		</div>
-		<!-- 側邊選單 -->
-		<div class="side-menu" id="sideMenu">
-		  <ul>
-		    <li data-target="schedule">行程表</li>
-		    <li data-target="luggage">行李清單</li>
-		    <li data-target="voucher">電子憑證</li>
-		    <li data-target="exchange">匯率計算機</li>
-		  </ul>
-		</div>
+		
 		
 		<!-- 遮罩 -->
 		<div class="menu-overlay" id="menuOverlay"></div>
@@ -2874,7 +2922,19 @@ a:active {
 
 
 
+<!-- iOS 全螢幕選單 -->
+<div class="ios-full-menu" id="iosFullMenu">
+  <div class="menu-content">
+    <ul>
+      <li data-target="schedule">行程表</li>
+      <li data-target="luggage">行李清單</li>
+      <li data-target="voucher">電子憑證</li>
+      <li data-target="exchange">匯率計算機</li>
+    </ul>
+  </div>
 
+  <button class="menu-close" id="menuClose">✕</button>
+</div>
 
 
 <button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>	
@@ -3881,50 +3941,41 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 const menuBtn = document.getElementById("menuBtn");
-const sideMenu = document.getElementById("sideMenu");
-const menuOverlay = document.getElementById("menuOverlay");
+const iosFullMenu = document.getElementById("iosFullMenu");
+const menuClose = document.getElementById("menuClose");
 
 menuBtn.addEventListener("click", () => {
-  sideMenu.classList.add("active");
-  menuOverlay.classList.add("active");
+  iosFullMenu.classList.add("active");
 });
 
-menuOverlay.addEventListener("click", closeMenu);
+menuClose.addEventListener("click", closeMenu);
 
 function closeMenu() {
-  sideMenu.classList.remove("active");
-  menuOverlay.classList.remove("active");
+  iosFullMenu.classList.remove("active");
 }
 
-/* 點擊選單項目 */
-document.querySelectorAll(".side-menu li").forEach(item => {
+/* 點選項目 */
+document.querySelectorAll(".ios-full-menu li").forEach(item => {
   item.addEventListener("click", () => {
     const target = item.dataset.target;
-
     closeMenu();
 
-    // 這裡接你原本的頁面切換邏輯
+    // 接你原本頁面切換
     switch (target) {
-      case "schedule":
-        showSchedule();
-        break;
-      case "luggage":
-        showLuggage();
-        break;
-      case "voucher":
-        showVoucher();
-        break;
-      case "exchange":
-        showExchange();
-        break;
+      case "schedule": showSchedule(); break;
+      case "luggage": showLuggage(); break;
+      case "voucher": showVoucher(); break;
+      case "exchange": showExchange(); break;
     }
   });
 });
 
 
+
 </script>
 </body>
 </html>
+
 
 
 

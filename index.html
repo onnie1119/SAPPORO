@@ -484,7 +484,7 @@ select {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size:15px;
+  font-size:13px;
   cursor: pointer;
   margin: 10px 0;
 }
@@ -652,9 +652,8 @@ ease;
 /* 整頁 */
 .packing-page {
   padding: 20px;
-  margin-top: 142px;
+  margin-top: 135px;
 	background-color: #F6F9FC;
-	animation: fadeIn 0.4s ease;
 }
 
 /* 標題 */
@@ -1329,7 +1328,7 @@ body.packing-mode {
 
 .ticket-page {
   padding: 20px;
-  margin-top: 135px;
+  margin-top: 130px;
   animation: fadeIn 0.4s ease;
 }
 
@@ -1584,7 +1583,7 @@ body.packing-mode {
 
   border-radius: 8px;
   text-decoration: none;
-  color: #333;
+  color: #222;
 }
 
 .pdf-item:active {
@@ -1599,12 +1598,11 @@ body.packing-mode {
 .pdf-title {
   font-size: 15px;
   font-weight: 600;
-	    color: #333;
 }
 
 .pdf-sub {
   font-size: 13px;
-  color: #999;
+  color: #888;
 }
 /* =========================
    航班區塊（Flight Section）
@@ -1844,11 +1842,6 @@ a:active {
 .fade-in {
   animation: fadeIn 0.4s ease;
 }
-
-body.page-ticket #ticketBtn {
-  background: #f0f4ff;
-    color: #3A7AFE;
-}
 </style>
 </head>
 <body>
@@ -1858,7 +1851,7 @@ body.page-ticket #ticketBtn {
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
 		<div class="top-buttons">
 			<button onclick="showPacking()">行李清單</button>
-			<button id="ticketBtn" onclick="showTicket()">電子憑證</button>
+			<button onclick="showTicket()">電子憑證</button>
  			<button onclick="showExchange()">匯率換算</button>
 		</div>
 	</div>
@@ -2715,14 +2708,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (list) {
     originalTicketCategoryHTML = list.innerHTML;
   }
-const ticketBtn = document.getElementById("ticketBtn");
 
-function setActive(page){
-  ticketBtn.classList.remove("active");
-  if(page === "ticket"){
-    ticketBtn.classList.add("active");
-  }
-}
   getExchangeRate();
   showDay(1);
   updateArrows();
@@ -2908,8 +2894,6 @@ function showPacking() {
 
 
 function backToMain() {
-	setActive(null);   // ⭐ 清掉 active
-
   isMainPage = true;
  // ⭐ 離開電子憑證時，重置狀態
   resetTicketPage();
@@ -3482,8 +3466,6 @@ document.addEventListener("click", function (e) {
 
   // ⭐ 住宿 / 航班：留在電子憑證頁
   if (key === "hotel" || key === "flight") {
-	  setActive("ticket");   // ⭐ 加這行
-
     const list = document.querySelector(".ticket-category-list");
 
     document.getElementById("ticketContent").style.display = "none";
@@ -3580,10 +3562,8 @@ function playFadeIn(el) {
 
 // 1. 點擊切換頁面時做動畫效果
 function showTicket() {
-  setPageState("ticket"); // ⭐⭐⭐ 核心
   isMainPage = false;
-
-  resetTicketPage();
+  resetTicketPage(); // ⭐ 關鍵重設頁面狀態
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
@@ -3591,7 +3571,10 @@ function showTicket() {
   document.getElementById("ticket-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
-  setNavBack();
+  setNavBack(); // 設定返回按鈕
+
+  // 添加動畫效果
+  playFadeIn(document.querySelector(".ticket-category-list"));
 }
 
 // 2. 返回上一頁時做動畫效果
@@ -3665,18 +3648,45 @@ document.addEventListener("click", function (e) {
   ticketLevel = "content"; // 顯示內容頁
 });
 
-function setPageState(state){
-  document.body.classList.remove(
-    "page-home",
-    "page-ticket",
-    "page-exchange",
-    "page-packing"
-  );
-  document.body.classList.add(`page-${state}`);
-}
 
 
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -3157,47 +3157,14 @@ document.querySelectorAll(".num-pad .key").forEach(btn => {
 // ===========================
 // 5. 三頁切換
 // ===========================
-function showExchange() {
-  isMainPage = false;
- resetTicketPage(); // ⭐ 關鍵
 
-
-  document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none";
-  document.getElementById("exchange-page").style.display = "block";
-
-  scrollBtn.classList.remove("show");
   
   
 
 
-function showPacking() {
-  isMainPage = false;
 
 
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "block";
 
-  scrollBtn.classList.remove("show");
-  setNavHome(); // ✅
-}
-
-
-function backToMain() {
-  isMainPage = true;
- // ⭐ 離開電子憑證時，重置狀態
-  resetTicketPage();
-  
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
-  document.getElementById("ticket-page").style.display = "none";
-
-  navBtn.classList.remove("show");
-
-  if (window.scrollY > 300) scrollBtn.classList.add("show");
-  else scrollBtn.classList.remove("show");
-}
 
 
 
@@ -3839,51 +3806,10 @@ function playFadeIn(el) {
 }
 
 // 1. 點擊切換頁面時做動畫效果
-function showTicket() {
-  isMainPage = false;
-
-  
-  document.getElementById("exchange-page").style.display = "none";
-  document.getElementById("packing-page").style.display = "none";
-
-  const ticketPage = document.getElementById("ticket-page");
-  ticketPage.style.display = "block";
-
-  // ⭐ 這三行才是動畫關鍵
-  ticketPage.classList.remove("fade-in");
-  void ticketPage.offsetWidth;
-  ticketPage.classList.add("fade-in");
-
-  scrollBtn.classList.remove("show");
-  setNavBack();
-}
 
 
 // 2. 返回上一頁時做動畫效果
-function goBack() {
-  const ticketList = document.querySelector(".ticket-category-list");
 
-  // ⭐ 當在住宿或航班頁面，返回首頁時加動畫
-  if (ticketLevel === "hotel" || ticketLevel === "flight") {
-    ticketList.innerHTML = originalTicketCategoryHTML;  // 保持原有內容
-    ticketList.style.display = "flex";
-    ticketLevel = "list";
-    playFadeIn(ticketList);  // 加入動畫效果
-    return;
-  }
-
-  // ⭐ 當在其他內容頁時，返回首頁也加動畫
-  if (ticketLevel === "content") {
-    document.getElementById("ticketContent").style.display = "none";
-    ticketList.style.display = "flex";
-    ticketLevel = "list";
-    playFadeIn(ticketList);  // 加入動畫效果
-    return;
-  }
-
-  // 最後回到主頁
-  backToMain();
-}
 
 // 3. 播放動畫效果，確保頁面顯示過程中有動畫
 function playFadeIn(el) {
@@ -4017,25 +3943,25 @@ function goPageByTarget(target) {
   switch (target) {
     case "home":
       isMainPage = true;
-      document.getElementById("home-page")?.style.display = "block";
+      document.getElementById("home-page").style.display = "block";
       scrollBtn.classList.toggle("show", window.scrollY > 300);
       break;
 
     case "luggage":
       isMainPage = false;
-      document.getElementById("packing-page")?.style.display = "block";
+      document.getElementById("packing-page").style.display = "block";
       scrollBtn.classList.remove("show");
       break;
 
     case "voucher":
       isMainPage = false;
-      document.getElementById("ticket-page")?.style.display = "block";
+      document.getElementById("ticket-page").style.display = "block";
       scrollBtn.classList.remove("show");
       break;
 
     case "exchange":
       isMainPage = false;
-      document.getElementById("exchange-page")?.style.display = "block";
+      document.getElementById("exchange-page").style.display = "block";
       scrollBtn.classList.remove("show");
       break;
   }

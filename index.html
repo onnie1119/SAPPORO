@@ -1844,9 +1844,9 @@ a:active {
   animation: fadeIn 0.4s ease;
 }
 
-#ticketBtn.active {
-  background: #f0f4ff;
-  color: #3A7AFE;
+body.page-ticket #ticketBtn {
+  background: #3A7AFE;
+  color: #fff;
 }
 </style>
 </head>
@@ -1857,7 +1857,7 @@ a:active {
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
 		<div class="top-buttons">
 			<button onclick="showPacking()">行李清單</button>
-			<button onclick="showTicket()">電子憑證</button>
+			<button id="ticketBtn" onclick="showTicket()">電子憑證</button>
  			<button onclick="showExchange()">匯率換算</button>
 		</div>
 	</div>
@@ -3579,8 +3579,10 @@ function playFadeIn(el) {
 
 // 1. 點擊切換頁面時做動畫效果
 function showTicket() {
+  setPageState("ticket"); // ⭐⭐⭐ 核心
   isMainPage = false;
-  resetTicketPage(); // ⭐ 關鍵重設頁面狀態
+
+  resetTicketPage();
 
   document.querySelector(".container").style.display = "none";
   document.getElementById("exchange-page").style.display = "none";
@@ -3588,10 +3590,7 @@ function showTicket() {
   document.getElementById("ticket-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
-  setNavBack(); // 設定返回按鈕
-
-  // 添加動畫效果
-  playFadeIn(document.querySelector(".ticket-category-list"));
+  setNavBack();
 }
 
 // 2. 返回上一頁時做動畫效果
@@ -3665,11 +3664,21 @@ document.addEventListener("click", function (e) {
   ticketLevel = "content"; // 顯示內容頁
 });
 
+function setPageState(state){
+  document.body.classList.remove(
+    "page-home",
+    "page-ticket",
+    "page-exchange",
+    "page-packing"
+  );
+  document.body.classList.add(`page-${state}`);
+}
 
 
 </script>
 </body>
 </html>
+
 
 
 

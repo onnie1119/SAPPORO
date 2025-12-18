@@ -3689,59 +3689,7 @@ const ticketData = {
  
 };
 
-// 點分類 → 顯示內容頁
-document.addEventListener("click", function (e) {
-  const card = e.target.closest(".ticket-category");
-  if (!card) return;
-
-  const key = card.dataset.target;
-
-  // ⭐ 租車：直接開 PDF
- if (key === "rentcar") {
-  card.classList.add("ticket-opening");
-
-  setTimeout(() => {
-    window.open("pdf/carreservation.pdf", "_blank");
-    card.classList.remove("ticket-opening");
-  }, 250);
-
-  return;
-}
-
-  // ⭐ 入境：直接開 PDF
- if (key === "entry") {
-  card.classList.add("ticket-opening");
-
-  setTimeout(() => {
-    window.open("pdf/vjw.pdf", "_blank");
-    card.classList.remove("ticket-opening");
-  }, 250);
-
-  return;
-}
- // ⭐ 行程：直接開 PDF
- if (key === "schedule") {
-  card.classList.add("ticket-opening");
-
-  setTimeout(() => {
-    window.open("pdf/klook.pdf", "_blank");
-    card.classList.remove("ticket-opening");
-  }, 250);
-
-  return;
- }
-  // ⭐ 住宿 / 航班：留在電子憑證頁
-  if (key === "hotel" || key === "flight") {
-    const list = document.querySelector(".ticket-category-list");
-
-    document.getElementById("ticketContent").style.display = "none";
-    list.style.display = "flex";
-    list.innerHTML = ticketData[key].body;
-playFadeIn(list); // ⭐ 關鍵動畫
-    ticketLevel = key; // hotel / flight
-    return;
-  }
-
+// 
   // ⭐ 其他分類：內容頁模式
   document.getElementById("ticketContentTitle").textContent =
     ticketData[key].title || "";

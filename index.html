@@ -3161,20 +3161,20 @@ function showExchange() {
   isMainPage = false;
  resetTicketPage(); // ⭐ 關鍵
 
-  document.querySelector(".container").style.display = "none";
+
   document.getElementById("packing-page").style.display = "none";
   document.getElementById("ticket-page").style.display = "none";
   document.getElementById("exchange-page").style.display = "block";
 
   scrollBtn.classList.remove("show");
-  setNavHome(); // ✅
-}
+  
+  
 
 
 function showPacking() {
   isMainPage = false;
 
-  document.querySelector(".container").style.display = "none";
+
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("ticket-page").style.display = "none";
   document.getElementById("packing-page").style.display = "block";
@@ -3188,7 +3188,7 @@ function backToMain() {
   isMainPage = true;
  // ⭐ 離開電子憑證時，重置狀態
   resetTicketPage();
-  document.querySelector(".container").style.display = "block";
+  
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
   document.getElementById("ticket-page").style.display = "none";
@@ -3810,28 +3810,7 @@ function setNavBack() {
   navBtn.onclick = goBack;
   navBtn.classList.add("show");
 }
-function goBack() {
-  const ticketList = document.querySelector(".ticket-category-list");
 
-  // ⭐ 住宿 or 航班 → 回電子憑證首頁
-  if (ticketLevel === "hotel" || ticketLevel === "flight") {
-    ticketList.innerHTML = originalTicketCategoryHTML;
-    ticketList.style.display = "flex";
-    ticketLevel = "list";
-    return;
-  }
-
-  // 其他內容頁 → 回電子憑證首頁
-  if (ticketLevel === "content") {
-    document.getElementById("ticketContent").style.display = "none";
-    ticketList.style.display = "flex";
-    ticketLevel = "list";
-    return;
-  }
-
-  // 最後才是真的回主行程
-  backToMain();
-}
 
 function resetTicketPage() {
   const list = document.querySelector(".ticket-category-list");
@@ -3863,7 +3842,7 @@ function playFadeIn(el) {
 function showTicket() {
   isMainPage = false;
 
-  document.querySelector(".container").style.display = "none";
+  
   document.getElementById("exchange-page").style.display = "none";
   document.getElementById("packing-page").style.display = "none";
 

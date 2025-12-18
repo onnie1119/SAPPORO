@@ -4006,6 +4006,8 @@ menuClose.addEventListener("click", closeMenu);
 
 document.querySelectorAll(".menu-content li").forEach(item => {
   item.addEventListener("click", () => {
+	
+	  if (navigator.vibrate) navigator.vibrate(8);
 
     // 1️⃣ 標記被點的項目
     item.classList.add("selected");
@@ -4050,6 +4052,7 @@ function closeMenu() {
 </script>
 </body>
 </html>
+
 
 
 

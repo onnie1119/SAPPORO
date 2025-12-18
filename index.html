@@ -3983,12 +3983,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ⭐ 關鍵這一行（打開首頁）
   goPageByTarget("home");
-case "home":
-  isMainPage = true;              // ⭐ 恢復主頁狀態
-  document.getElementById("home-page")?.style.display = "block";
-  scrollBtn.classList.toggle("show", window.scrollY > 300);
-  break;
-}, 400);
+
     }, 2000);
   }
 });
@@ -4036,26 +4031,33 @@ document.querySelectorAll(".menu-content li").forEach(item => {
 
 // ===== 切頁（只留這一套）=====
 function goPageByTarget(target) {
-  // 全部頁面先隱藏
   document.querySelectorAll('[id$="-page"]').forEach(p => {
     p.style.display = "none";
   });
 
   switch (target) {
     case "home":
+      isMainPage = true;
       document.getElementById("home-page")?.style.display = "block";
+      scrollBtn.classList.toggle("show", window.scrollY > 300);
       break;
 
     case "luggage":
+      isMainPage = false;
       document.getElementById("packing-page")?.style.display = "block";
+      scrollBtn.classList.remove("show");
       break;
 
     case "voucher":
+      isMainPage = false;
       document.getElementById("ticket-page")?.style.display = "block";
+      scrollBtn.classList.remove("show");
       break;
 
     case "exchange":
+      isMainPage = false;
       document.getElementById("exchange-page")?.style.display = "block";
+      scrollBtn.classList.remove("show");
       break;
   }
 }

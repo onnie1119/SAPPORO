@@ -1923,11 +1923,10 @@ a:active {
 #app-root.show {
   animation: fadeIn 0.4s ease forwards;
 }
-/* 漢堡按鈕 */
 .menu-btn {
   background: none;
   border: none;
-  padding: 0;
+  padding: 4px;
   cursor: pointer;
 }
 
@@ -1994,7 +1993,7 @@ a:active {
 </head>
 <body>
 	<div class="topbar">
-		<button class="menu-btn" id="menuBtn">
+		<button class="menu-btn" id="menuBtn" aria-label="menu">
 		    <span></span>
 		    <span></span>
 		    <span></span>
@@ -3923,6 +3922,7 @@ document.querySelectorAll(".side-menu li").forEach(item => {
 </script>
 </body>
 </html>
+
 
 
 

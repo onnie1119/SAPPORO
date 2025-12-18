@@ -653,7 +653,7 @@ ease;
 /* 整頁 */
 .packing-page {
   padding: 20px;
-  margin-top: 142px;
+  padding-top: 160px;
 	background-color: #F6F9FC;
 	    animation: fadeIn 0.4s ease;
 }
@@ -1924,6 +1924,15 @@ a:active {
 </style>
 </head>
 <body>
+	<div class="topbar">
+		<div class="trip-title">北海道の旅</div>
+		<div class="trip-date">旅を記錄する、思い出を綴る</div>
+		<div class="top-buttons">
+			<button onclick="showPacking()">行李清單</button>
+			<button onclick="showTicket()">電子憑證</button>
+ 			<button onclick="showExchange()">匯率換算</button>
+		</div>
+	</div>
 <!-- ✈️ App 啟動畫面 -->
 <div id="app-splash">
   <div class="runway"></div>
@@ -1936,15 +1945,7 @@ a:active {
   <!-- 你現在所有內容都放這裡 -->
 
 
-	<div class="topbar">
-		<div class="trip-title">北海道の旅</div>
-		<div class="trip-date">旅を記錄する、思い出を綴る</div>
-		<div class="top-buttons">
-			<button onclick="showPacking()">行李清單</button>
-			<button onclick="showTicket()">電子憑證</button>
- 			<button onclick="showExchange()">匯率換算</button>
-		</div>
-	</div>
+	
 
 	<div class="container">
 		<div class="day-tabs-wrapper">
@@ -3788,6 +3789,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
 
 

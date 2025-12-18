@@ -4013,26 +4013,35 @@ document.querySelectorAll(".menu-content li").forEach(item => {
 
     item.classList.add("selected");
 
-    document.querySelectorAll(".menu-content li").forEach(li => {
-      if (li !== item) li.classList.add("fade-out");
-    });
+    document.querySelectorAll(".menu-content li").forEach(item => {
+  item.addEventListener("click", () => {
+
+    if (navigator.vibrate) navigator.vibrate(8);
 
     iosFullMenu.classList.add("closing");
 
     setTimeout(() => {
-      closeMenu(); // ✅ 關選單 + 還原 top-bar
+      closeMenu(); // 關選單 + top-bar 回來
 
       const target = item.dataset.target;
+
       switch (target) {
-        case "schedule": showSchedule(); break;
-        case "luggage": showLuggage(); break;
-        case "voucher": showVoucher(); break;
-        case "exchange": showExchange(); break;
+        case "schedule":
+          goPage("page-schedule");
+          break;
+        case "luggage":
+          goPage("page-luggage");
+          break;
+        case "voucher":
+          goPage("page-voucher");
+          break;
+        case "exchange":
+          goPage("page-exchange");
+          break;
       }
     }, 180);
   });
 });
-
 
 function closeMenu() {
   iosFullMenu.classList.remove("active", "closing");
@@ -4043,7 +4052,39 @@ function closeMenu() {
   });
 }
 
+function goPage(pageId) {
+  document.querySelectorAll(".page").forEach(p => {
+    p.style.display = "none";
+  });
 
+  const target = document.getElementById(pageId);
+  if (target) target.style.display = "block";
+}
+
+function goPageByTarget(target) {
+  // 先全部關掉
+  document.querySelectorAll('[id$="-page"]').forEach(p => {
+    p.style.display = "none";
+  });
+
+  switch (target) {
+    case "schedule":
+      document.getElementById("schedule-page")?.style.display = "block";
+      break;
+
+    case "luggage":
+      document.getElementById("packing-page")?.style.display = "block";
+      break;
+
+    case "voucher":
+      document.getElementById("ticket-page")?.style.display = "block";
+      break;
+
+    case "exchange":
+      document.getElementById("exchange-page")?.style.display = "block";
+      break;
+  }
+}
 
 </script>
 </body>

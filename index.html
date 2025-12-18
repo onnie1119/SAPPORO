@@ -41,11 +41,11 @@ body.exchange-mode {
 	  z-index: 1000;
 
     }
-.top-bar {
+.topbar {
   transition: opacity .2s ease, transform .2s ease;
 }
 
-.top-bar.menu-open {
+.topbar.menu-open {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-8px);
@@ -3953,7 +3953,7 @@ const menuBtn = document.getElementById("menuBtn");
 const iosFullMenu = document.getElementById("iosFullMenu");
 const menuClose = document.getElementById("menuClose");
 
-const topBar = document.querySelector(".top-bar");
+const topBar = document.querySelector(".topbar");
 
 menuBtn.addEventListener("click", () => {
   iosFullMenu.classList.add("active");
@@ -3991,6 +3991,7 @@ function closeMenu() {
 </script>
 </body>
 </html>
+
 
 
 

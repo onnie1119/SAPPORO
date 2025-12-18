@@ -1847,9 +1847,93 @@ a:active {
 .fade-in {
   animation: fadeIn 0.4s ease;
 }
+
+/* Splash 整體 */
+#app-splash {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(#FAFAF7, #F0F0EB);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 跑道 */
+.runway {
+  width: 160px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    #bbb 0 12px,
+    transparent 12px 24px
+  );
+  margin-bottom: 24px;
+  opacity: 0.6;
+}
+
+/* ✈️ 飛機 */
+.plane {
+  width: 72px;
+  animation: taxi 0.8s ease-out forwards,
+             takeoff 1.2s ease-in forwards 0.8s;
+}
+
+@keyframes taxi {
+  from { transform: translateX(-40px); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes takeoff {
+  to {
+    transform: translate(120px, -120px) rotate(-15deg);
+    opacity: 0;
+  }
+}
+
+/* 文字 */
+.splash-text {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #777;
+  animation: blink 1s ease-in-out infinite alternate;
+}
+
+@keyframes blink {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+
+/* Splash 消失 */
+#app-splash.hide {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+/* 主內容 */
+#app-root {
+  opacity: 0;
+}
+#app-root.show {
+  animation: fadeIn 0.4s ease forwards;
+}
+
 </style>
 </head>
 <body>
+<!-- ✈️ App 啟動畫面 -->
+<div id="app-splash">
+  <div class="runway"></div>
+  <img src="images/flight.png" class="plane">
+  <div class="splash-text">Preparing for departure…</div>
+</div>
+
+<!-- 原本整個網站包起來 -->
+<div id="app-root">
+  <!-- 你現在所有內容都放這裡 -->
+
 
 	<div class="topbar">
 		<div class="trip-title">北海道の旅</div>
@@ -2699,7 +2783,7 @@ a:active {
 <button class="back-btn" id="navBtn">BACK</button>
 
 
-	
+</div>	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 
@@ -3665,11 +3749,45 @@ document.addEventListener("click", function (e) {
   ticketLevel = "content"; // 顯示內容頁
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const splash = document.getElementById("app-splash");
+  const app = document.getElementById("app-root");
+
+  const images = [...document.images];
+  let loaded = 0;
+
+  if (images.length === 0) finish();
+
+  images.forEach(img => {
+    if (img.complete) {
+      loaded++;
+      if (loaded === images.length) finish();
+    } else {
+      img.onload = img.onerror = () => {
+        loaded++;
+        if (loaded === images.length) finish();
+      };
+    }
+  });
+
+  function finish() {
+    // ✈️ 飛機動畫總長約 2 秒
+    setTimeout(() => {
+      splash.classList.add("hide");
+
+      setTimeout(() => {
+        splash.remove();
+        app.classList.add("show");
+      }, 400);
+    }, 2000);
+  }
+});
 
 
 </script>
 </body>
 </html>
+
 
 
 

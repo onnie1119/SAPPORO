@@ -2003,14 +2003,13 @@ a:active {
   pointer-events: auto;
 }
 
-	  /* 全螢幕半透明背景 */
 .ios-full-menu {
   position: fixed;
-  inset: 0;
-  background: rgba(30, 120, 255, 0.92); /* 可換你主色 */
+  inset: 0;                       /* 👈 關鍵：整片 */
+  background: rgba(30,120,255,.95);
   backdrop-filter: blur(18px);
+
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
 
@@ -2024,6 +2023,7 @@ a:active {
   opacity: 1;
   pointer-events: auto;
 }
+
 
 /* 中央選單內容 */
 .menu-content ul {
@@ -2041,6 +2041,8 @@ a:active {
   cursor: pointer;
   letter-spacing: .5px;
 }
+	
+
 
 /* iOS 點擊回饋 */
 .menu-content li:active {
@@ -2057,7 +2059,26 @@ a:active {
   font-size: 26px;
   cursor: pointer;
 }
+  .menu-content {
+  width: 100%;
+  max-width: 320px;
 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.menu-content ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.menu-content li {
+  font-size: 22px;
+  color: #fff;
+  padding: 16px 0;
+}
 </style>
 </head>
 <body>
@@ -3992,6 +4013,7 @@ function closeMenu() {
 </script>
 </body>
 </html>
+
 
 
 

@@ -1843,6 +1843,11 @@ a:active {
 .fade-in {
   animation: fadeIn 0.4s ease;
 }
+
+#ticketBtn.active {
+  background: #f0f4ff;
+  color: #3A7AFE;
+}
 </style>
 </head>
 <body>
@@ -2709,7 +2714,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (list) {
     originalTicketCategoryHTML = list.innerHTML;
   }
+const ticketBtn = document.getElementById("ticketBtn");
 
+function setActive(page){
+  ticketBtn.classList.remove("active");
+  if(page === "ticket"){
+    ticketBtn.classList.add("active");
+  }
+}
   getExchangeRate();
   showDay(1);
   updateArrows();
@@ -2895,6 +2907,8 @@ function showPacking() {
 
 
 function backToMain() {
+	setActive(null);   // ⭐ 清掉 active
+
   isMainPage = true;
  // ⭐ 離開電子憑證時，重置狀態
   resetTicketPage();
@@ -3467,6 +3481,8 @@ document.addEventListener("click", function (e) {
 
   // ⭐ 住宿 / 航班：留在電子憑證頁
   if (key === "hotel" || key === "flight") {
+	  setActive("ticket");   // ⭐ 加這行
+
     const list = document.querySelector(".ticket-category-list");
 
     document.getElementById("ticketContent").style.display = "none";
@@ -3654,6 +3670,7 @@ document.addEventListener("click", function (e) {
 </script>
 </body>
 </html>
+
 
 
 

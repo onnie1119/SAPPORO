@@ -3987,8 +3987,17 @@ document.addEventListener("DOMContentLoaded", () => {
 const menuBtn = document.getElementById("menuBtn");
 const iosFullMenu = document.getElementById("iosFullMenu");
 const menuClose = document.getElementById("menuClose");
-
 const topBar = document.querySelector(".topbar");
+
+function closeMenu() {
+  iosFullMenu.classList.remove("active", "closing");
+  topBar.classList.remove("menu-open");
+
+  // 清掉選單動畫狀態
+  document.querySelectorAll(".menu-content li").forEach(li => {
+    li.classList.remove("selected", "fade-out");
+  });
+}
 
 menuBtn.addEventListener("click", () => {
   iosFullMenu.classList.add("active");
@@ -3997,47 +4006,36 @@ menuBtn.addEventListener("click", () => {
 
 menuClose.addEventListener("click", closeMenu);
 
-
-
 document.querySelectorAll(".menu-content li").forEach(item => {
- item.addEventListener("click", () => {
+  item.addEventListener("click", () => {
 
-  if (navigator.vibrate) navigator.vibrate(8);
+    if (navigator.vibrate) navigator.vibrate(8);
 
-  item.classList.add("selected");
+    item.classList.add("selected");
 
-  document.querySelectorAll(".menu-content li").forEach(li => {
-    if (li !== item) li.classList.add("fade-out");
-  });
-
-  iosFullMenu.classList.add("closing");
-
-  setTimeout(() => {
-    // 關閉選單
-    iosFullMenu.classList.remove("active", "closing");
-
-  
-
-    // 清乾淨狀態
     document.querySelectorAll(".menu-content li").forEach(li => {
-      li.classList.remove("selected", "fade-out");
+      if (li !== item) li.classList.add("fade-out");
     });
 
-    // 切頁
-    const target = item.dataset.target;
-    switch (target) {
-      case "schedule": showSchedule(); break;
-      case "luggage": showLuggage(); break;
-      case "voucher": showVoucher(); break;
-      case "exchange": showExchange(); break;
-    }
+    iosFullMenu.classList.add("closing");
 
-  }, 180);
+    setTimeout(() => {
+      closeMenu(); // ✅ 關選單 + 還原 top-bar
+
+      const target = item.dataset.target;
+      switch (target) {
+        case "schedule": showSchedule(); break;
+        case "luggage": showLuggage(); break;
+        case "voucher": showVoucher(); break;
+        case "exchange": showExchange(); break;
+      }
+    }, 180);
+  });
 });
 
 
 function closeMenu() {
-  iosFullMenu.classList.remove("active";
+  iosFullMenu.classList.remove("active");
   topBar.classList.remove("menu-open");
 }
 
@@ -4046,88 +4044,3 @@ function closeMenu() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

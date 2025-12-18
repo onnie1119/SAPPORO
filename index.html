@@ -825,14 +825,23 @@ ease;
     z-index: 999;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     justify-content: center;
+	
 }
+.scroll-top-button{ display: inline-flex;          /* ✅ 關鍵 1 */
+  align-items: center;
+  justify-content: center;
 
+  width: auto;                   /* ✅ 關鍵 2 */
+  max-width: max-content;        /* ✅ 關鍵 3 */
+  white-space: nowrap;           /* ✅ 防止文字換行 */}
+	  
 /* 顯示狀態 */
 .scroll-top-button.show,
 .back-btn.show {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+
 }
 
 /* 整體外框 */
@@ -3667,6 +3676,7 @@ document.addEventListener("click", function (e) {
 </script>
 </body>
 </html>
+
 
 
 

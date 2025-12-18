@@ -3983,7 +3983,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ⭐ 關鍵這一行（打開首頁）
   goPageByTarget("home");
-
+case "home":
+  isMainPage = true;              // ⭐ 恢復主頁狀態
+  document.getElementById("home-page")?.style.display = "block";
+  scrollBtn.classList.toggle("show", window.scrollY > 300);
+  break;
 }, 400);
     }, 2000);
   }

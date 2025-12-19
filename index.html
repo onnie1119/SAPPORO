@@ -2110,6 +2110,13 @@ a:active {
   color: #fff;
   cursor: pointer;
 }
+ .packing-page, .ticket-page, .exchange-page {
+  display: none;  /* 默认隐藏所有页面 */
+}
+
+.container.active, .packing-page.active, .ticket-page.active, .exchange-page.active {
+  display: block;  /* 只有通过 JS 动态添加 active 时才显示 */
+}
 
 </style>
 </head>
@@ -3953,8 +3960,7 @@ a:active {
 		  }
 		});
 		
-		
-		document.addEventListener("DOMContentLoaded", () => {
+	document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-content ul li"); // 菜单项
   const contentPages = document.querySelectorAll(".content-page"); // 所有页面
   const topbar = document.getElementById("topbar"); // topbar 元素
@@ -3981,13 +3987,13 @@ a:active {
 
       // 隐藏所有页面
       contentPages.forEach(page => {
-        page.style.display = "none"; // 隐藏页面
+        page.classList.remove("active"); // 移除 active 类
       });
 
       // 显示选中的页面
       const targetPage = document.getElementById(targetId);
       if (targetPage) {
-        targetPage.style.display = "block"; // 显示目标页面
+        targetPage.classList.add("active"); // 为目标页面添加 active 类
       }
 
       // 关闭菜单

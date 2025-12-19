@@ -2123,7 +2123,10 @@ a:active {
 .exchange-page.active {
   display: block;
 }
-
+/* 預設顯示 home-page */
+#home-page {
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -3974,10 +3977,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page");
   const topbar = document.getElementById("topbar");
 
-  // 設定預設顯示行程表
+  // 預設顯示 home-page
   const homePage = document.getElementById("home-page");
-  homePage.style.display = "block"; // 顯示行程表
-  homePage.classList.add("active"); // 設定為 active
+  homePage.classList.add("active"); // 顯示行程表頁面
 
   // 展開選單
   menuBtn.addEventListener("click", () => {
@@ -3999,14 +4001,12 @@ document.addEventListener("DOMContentLoaded", () => {
       // 隱藏所有頁面
       contentPages.forEach(page => {
         page.classList.remove("active");
-        page.style.display = "none";  // 確保頁面隱藏
       });
 
       // 顯示選中的頁面
       const targetPage = document.getElementById(targetId);
       if (targetPage) {
         targetPage.classList.add("active");
-        targetPage.style.display = "block";  // 顯示當前頁面
       }
 
       // 關閉選單

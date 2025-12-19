@@ -10,2215 +10,1232 @@
 
   <style>
 	html {
-	  margin: 0;
-	  padding: 0;
+		margin: 0;
+		padding: 0;
 	}
+	
     body {
-      margin: 0;
-      background: #FAFAF7;
-      font-family: 'Noto Sans TC', sans-serif;
-      color: #444;
-      padding-bottom: 20px;
-    }
-body.exchange-mode {
-	margin: 0;
-  background-color: #FAFAF7;    /* 你要改什麼都可以 */
-  font-family: 'Noto Sans TC', sans-serif; 
-	color: #444;/* 或是 100vh、120vh 都能用 */
-  padding-bottom: 0px;      /* 你可以調整 */
-}
-    .topbar {
-      background: #3A7AFE;
-      color: #fff;
-      padding: 25px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 24px;
-	  position: fixed;
-	  top: 0;
-	  left: 0;
-	  right: 0;
-	  z-index: 1000;
+		margin: 0;
+		background: #FAFAF7;
+		font-family: 'Noto Sans TC', sans-serif;
+		color: #444;
+		padding-bottom: 20px;}
 
-    }
-
-	hr{    width: 100%;
-    height: 1px;
-    border: 0;
-    margin: 2rem auto;
-	margin-bottom:1rem;
-    background-color: #e3e3e3;}
+	body.exchange-mode {
+		margin: 0;
+		background-color: #FAFAF7;    /* 你要改什麼都可以 */
+		font-family: 'Noto Sans TC', sans-serif; 
+		color: #444;/* 或是 100vh、120vh 都能用 */
+		padding-bottom: 0px;}
+	
+    hr{
+		width: 100%;
+		height: 1px;
+		border: 0;
+		margin: 2rem auto;
+		margin-bottom:1rem;
+		background-color: #e3e3e3;}
 
 	.ticket-divider{
-	width: 100%;
-    height: 1px;
-    border: 0;
-    
-    background-color: #e3e3e3;}
+		width: 100%;
+    	height: 1px;
+    	border: 0;
+    	background-color: #e3e3e3;}
 	  
-    .trip-title {
-      font-size: 24px;
-    }
-
-    .trip-date {
-      font-size: 12px;
-      letter-spacing: 1px;
-    }
-
-    .top-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
-    .top-buttons button {
-      background: #ffffff30;
-      color: #ffffff;
-      border: none;
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 14px;
-      letter-spacing: 1.5px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    .top-buttons button:hover {
-      background: #f0f4ff;
-      color: #3A7AFE;
-    }
-
-    .container {
-      padding: 0 20px;
-      max-width: 600px;
-      margin: 0 auto;
-	  padding-top: 65px;
-      position: relative;
-		background-color: #F6F9FC;
-    }
+	.container {
+		padding: 0 20px;
+		max-width: 600px;
+		margin: 0 auto;
+		padding-top: 65px;
+		position: relative;
+		background-color: #F6F9FC;}
 
     .day-tabs {
-      display: flex;
-      gap: 5px;
-      border-bottom: 1px solid #e0e0e0;
-      margin-bottom: 20px;
-    }
+		display: flex;
+		gap: 6px;
+		border-bottom: 1px solid #e0e0e0;
+		margin-bottom: 20px;
+		padding-bottom: 6px;
+		min-width: max-content;}
 
     .day-tab {
-      background: none;
-      border: none;
-      font-size: 13px;
-      color: #999;
-      padding: 5px 6px;
-      cursor: pointer;
-      position: relative;
-      transition: color 0.2s ease;
-    }
-
-    .day-tab:hover {
-      color: #3A7AFE;
-    }
+		background: none;
+		border: none;
+		font-size: 13px;
+		color: #999;
+		cursor: pointer;
+		position: relative;
+		transition: color 0.2s ease;
+		white-space: nowrap;
+		flex-shrink: 0;
+		padding: 5px 15px;
+		scroll-snap-align: start;}
+		
+	
+	.day-tab:hover {
+		color: #3A7AFE;}
 
     .day-tab.active {
-      color: #3A7AFE;
-      font-weight: 600;
-    }
+		color: #3A7AFE;
+		font-weight: 600;}
 
     .day-tab.active::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: #3A7AFE;
-      border-radius: 1px;
-    }
-
-    .day-section {
-      display: none;
-    }
+		content: "";
+		position: absolute;
+		bottom: -7px;
+		left: 0;
+      	width: 100%;
+      	height: 2px;
+      	background: #3A7AFE;
+      	border-radius: 1px;}
+		
+	.day-section {
+		display: none;
+		opacity: 0;
+		transform: translateY(10px);
+		transition: opacity 0.4s ease, transform 0.4s ease;}
 
     .day-label {
-      font-size: 13px;
-      color: #999;
-      margin-bottom: 0.5rem;
-      padding-left: 0.3rem;
-      letter-spacing: 1.2px;
-      pointer-events: none;
-    }
+		font-size: 13px;
+		color: #999;
+		margin-bottom: 0.5rem;
+		padding-left: 0.3rem;
+		letter-spacing: 1.2px;
+		pointer-events: none;}
 
     .activity-card {
-      display: flex;
-      align-items: center;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      padding: 6px;
-      margin-bottom: 12px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    }
+		display: flex;
+		align-items: center;
+		background: #fff;
+		border-radius: 12px;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+		padding: 6px;
+		margin-bottom: 12px;
+		transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;}
 
     .activity-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      background: #fdfdfc;
-    }
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+		background: #fdfdfc;}
 
     .activity-card img {
-      width: 90px;
-      height: 90px;
-      border-radius: 7px;
-      object-fit: cover;
-      margin-right: 15px;
-      background: #ddd;
-    }
+		width: 90px;
+		height: 90px;
+		border-radius: 7px;
+		object-fit: cover;
+		margin-right: 15px;
+		background: #ddd;}
 
     .info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+		flex: 1;
+		display: flex;
+		flex-direction: column;}
 
     .title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-    
-    }
+		font-size: 18px;
+		font-weight: 600;
+		color: #333;}
 
     .time {
-      font-size: 15px;
-      color: #a87f30;
-      margin-bottom: 5px;
-    }
+		font-size: 15px;
+		color: #a87f30;
+		margin-bottom: 5px;}
 
     .note {
-      font-size: 12px;
-      color: #999;
-      letter-spacing: 0.5px;
-    }
+		font-size: 12px;
+		color: #999;
+		letter-spacing: 0.5px;}
 
     .transport-info {
-      display: flex;
-	  align-items: flex-end;
-      gap: 6px;
-      font-size: 13px;
-      color: #999;
-      margin: 15px 0 15px 40px;
-      position: relative;
-      letter-spacing: 1px;
-    }
+		display: flex;
+		align-items: flex-end;
+		gap: 6px;
+		font-size: 13px;
+		color: #999;
+		margin: 15px 0 15px 40px;
+		position: relative;
+		letter-spacing: 1px;}
 
     .transport-info::before {
-      content: "";
-      position: absolute;
-      left: -20px;
-      top: -8px;
-      bottom: -8px;
-      width: 1px;
-      background: repeating-linear-gradient(
-        to bottom,
-        #ccc,
-        #ccc 2px,
-        transparent 2px,
-        transparent 4px
-      );
-    }
+		content: "";
+		position: absolute;
+		left: -20px;
+		top: -8px;
+		bottom: -8px;
+		width: 1px;
+		background: repeating-linear-gradient(to bottom,#ccc,#ccc 2px,transparent 2px,transparent 4px);}
 
     a {
-      text-decoration: none;
-      display: block;
-    }
+		text-decoration: none;
+		display: block;}
 
-    .scroll-end-message {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-      text-align: center;
-      font-size: 13px;
-      color: #3A7AFE;
-      margin-top: 40px;
-      padding-bottom: 20px;
-    }
-
-    .scroll-end-message.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-	
 	.day-tabs-wrapper {
-  position: relative;
-	}
-
-.day-tabs-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.day-tabs-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.day-tabs {
-  display: flex;
-  gap: 6px;
-  padding-bottom: 6px;
-  min-width: max-content;
-}
-
-.day-tab {
-  white-space: nowrap;
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  font-size: 13px;
-  color: #999;
-  padding: 5px 15px;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.2s ease;
-}
-
-.day-tab:hover {
-  color: #3A7AFE;
-}
-
-.day-tab.active {
-  color: #3A7AFE;
-  font-weight: 600;
-}
-
-.day-tab.active::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1.5px;
-  background: #3A7AFE;
-  border-radius: 1px;
-}
-
-.day-tabs-arrow {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ccc;
-  font-size: 16px;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.day-tabs-arrow.left {
-  left: 0;
-}
-
-.day-tabs-arrow.right {
-  right: 0;
-}
-.day-tabs-scroll {
- overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* iOS 慣性滾動 */
-  scroll-behavior: auto; /* 對手指滑動無效，可省略 */
-  touch-action: pan-x; /* 明確允許水平滑動 */
-  
-}
-.day-tab.active::after {
-  content: "";
-  position: absolute;
-  bottom: -7px; /* 對齊灰底線 */
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #3A7AFE;
-  border-radius: 1px;
-}
-.day-tab::after {
-  transition: all 0.3s ease;
-}
-.day-tabs-scroll {
-  scroll-snap-type: x mandatory;
-}
-
-.day-tab {
-  scroll-snap-align: start;
-}
-
-
-.scroll-top-button:hover {
-  background: #2a5edb;
-  transform: translateX(-50%) scale(1.05);
-}
-
-
-
-
-.scroll-top-button {
-  position: fixed;
-  bottom: 30px;
-  right: 20px;
-  padding: 10px 14px;
-  font-size: 14px;
-  border: none;
-  background: #444;
-  color: white;
-  border-radius: 50px;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.3s ease;
-}
-
-.scroll-top-button.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-
-.day-section {
-  display: none;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.day-section.fade-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.exchange-page {
-  
-  display: none;
-  text-align: center;
-  padding: 40px 20px;
-  animation: fadeIn 0.4s ease;
-}
-
-.converter {
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.input-group {
-  width:100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-input[type="number"] {
-  width: 180px;
-  padding: 8px;
-  font-size: 18px;
-  text-align: right;
-}
-
-select {
-  padding: 8px;
-  font-size: 16px;
-}
-
-#swap-btn {
-  font-size: 22px;
-  border: none;
-  background: #3a7afe;
-  color: #fff;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-#swap-btn:hover {
-  transform: rotate(180deg);
-}
-
-.back-btn {
-  position: fixed;
-  
-  left: 50%;
-  transform: translateX(-50%);
-  background: #3A7AFE;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  padding: 8px 18px;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 2px 2px rgba(0,0,0,0.2);
-  z-index: 999;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.back-btn.show {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
-
-
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
- .toggle-switch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size:13px;
-  cursor: pointer;
-  margin: 10px 0;
-}
-
-.toggle-track {
-  position: relative;
-  width: 35px;
-  height: 20px;
-  background: #ccc;
-  border-radius: 15px;
-  transition: background 0.3s ease;
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 19px;
-  height: 19px;
-  background: #3a7afe;
-  border-radius: 50%;
-  transition: left 0.3s ease;
-}
-
-.toggle-switch.active .toggle-thumb {
-  left: 15px;
-}
-
-.toggle-switch.active .toggle-track {
-  background: #a3c1ff;
-}
-.input-wrapper {
-  width: calc(100%); /* ✅ 左右各留 1rem */
-  margin: 0 auto;            /* ✅ 水平置中 */
-  position: relative;
-}
-
-.input-wrapper input[type="number"] {
-  width: 100%;
-  padding: 1rem; /* ✅ 左右內距：右側留空給幣別提示 */
-  font-size: 20px;
-  text-align: left;
-  border: 1px solid #ddd;
-  color:#222;
-  border-radius: 8px;
-  box-sizing: border-box;
-}
-
-
-.currency-label {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  color: #888;
-  pointer-events: none;
-}
-.num-pad {
-   max-width: 400px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    margin-top: 20px;
-    gap: 10px;
-    width: 100%;
-}
-
-.num-pad .key {
-  padding: 12px 0;
-  font-size: 20px;
-  border: none;
-  border-radius: 10px;
-  background: #e6e6e6;
-  color: #333;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.num-pad .key.gray {
-  
-}
-
-.num-pad .key.orange {
-  background: #ff9f47;
-  color: white;
-  
-}
-
-.num-pad .key:active {
-  transform: scale(0.95);
-}
-/* ============================
-     匯率換算輸入框（修正版）
-============================ */
-
-.input-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.input-wrapper input {
-  width: 100%;
-  padding: 14px 16px;
-  padding-right: 70px; /* ⭐ 預留右邊空間給「｜幣別」 */
-  font-size: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fff;
-  color: #222;
-  box-sizing: border-box;
-
-  /* ⭐ 讓 text 與 number 呈現效果一致 */
-  -moz-appearance: textfield;
-}
-
-.input-wrapper input:focus {
-  outline: none;
-  border-color: #3A7AFE;
-  box-shadow: 0 0 0 2px rgba(58,122,254,0.15);
-}
-
-/* 移除 number 的上下箭頭（避免某些瀏覽器強制出現） */
-input[type="text"]::-webkit-inner-spin-button,
-input[type="text"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* 幣別文字（右邊） */
-.currency-label {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 15px;
-  color: #888;
-  pointer-events: none;
-}
-	  .exchange-page {
-     position: relative;
-    top: 2.5rem;
-    min-height:530px;
-   
-    display: none;
-    text-align: center;
-    padding: 0px 20px;
-		  padding-top:95px;
-    animation: fadeIn 0.4s 
-ease;
-}
-
-.exchange-inner {
-  padding-bottom: 0px;   /* ⭐ 所有匯率頁的 padding 放這邊 */
-  max-width: 500px;
-  margin: 0 auto;
-}
-#exchange-page {
-	background-color: #F6F9FC;
-  height: auto;
-  overflow: hidden;   /* ⭐ 不讓匯率頁滾動 */
-  padding-bottom: 0 !important;  /* ⭐ 確保底部沒有空白 */
-}
-/* 整頁 */
-.packing-page {
-  padding: 20px;
-  padding-top: 160px;
-	background-color: #F6F9FC;
-	    animation: fadeIn 0.4s ease;
-}
-
-/* 標題 */
-.packing-title {
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
-
-/* 區塊 */
-.packing-section-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 20px 0 10px;
-}
-
-/* 卡片排列 */
-.packing-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 14px;
-}
-
-/* 單一卡片 */
-.packing-card-item {
-  background: #fff;
-  border-radius: 18px;
-  padding: 20px 12px;
-  text-align: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  font-size: 15px;
-  position: relative;
-  transition: transform .2s ease, opacity .2s ease;
-}
-
-.packing-card-item:active {
-  transform: scale(0.95);
-  opacity: 0.7;
-}
-
-.packing-card-item.done {
-  background: #e8f8e4;
-  text-decoration: line-through;
-  color: #3a6b2e;
-}
-
-/* + 新增卡 */
-.packing-add-card {
-  background: #f3f4f6;
-  border-radius: 18px;
-  padding: 40px 0;
-  text-align: center;
-  font-size: 28px;
-  color: #999;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-  cursor: pointer;
-}
-
-/* 編輯刪除按鈕 */
-.packing-actions {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  display: flex;
-  gap: 6px;
-}
-
-.packing-actions button {
-  border: none;
-  background: #ddd;
-  font-size: 12px;
-  padding: 3px 6px;
-  border-radius: 6px;
-}
-
-.packing-actions .delete-btn {
-  background: #ff5757;
-  color: white;
-}
-
-/* popup */
-.packing-add-modal.hidden {
-  display: none;
-}
-
-.packing-add-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.25);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.packing-modal-card {
-  background: white;
-  padding: 20px;
-  border-radius: 18px;
-  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
-  width: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.packing-modal-card input {
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 14px;
-  border: 1px solid #ddd;
-}
-
-.packing-modal-card button {
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 14px;
-  border: none;
-  background: #007aff;
-  color: white;
-}
-
-.packing-modal-card .cancel {
-  background: #bbb;
-}
-
-/* ========== TOP 按鈕最終統一版本 ========== */
-
-.scroll-top-button {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 18px;
-  font-size: 12px;
-  border: none;
-  background: #3A7AFE;
-  color: white;
-  border-radius: 50px;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.3s ease;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-  
-.scroll-top-button.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* 兩顆按鈕統一造型 */
-.scroll-top-button,
-.back-btn {
-      position: fixed;
-   bottom: 0px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #3A7AFE;
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    padding: 8px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-    z-index: 999;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    justify-content: center;
+		position: relative;}
+
+	.day-tabs-scroll {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch; /* iOS 慣性滾動 */
+		scroll-behavior: auto; /* 對手指滑動無效，可省略 */
+		touch-action: pan-x; /* 明確允許水平滑動 */
+		scroll-snap-type: x mandatory;}
+		
+	.day-tabs-scroll::-webkit-scrollbar {
+		display: none;}
 	
-}
-.scroll-top-button{ display: inline-flex;          /* ✅ 關鍵 1 */
-  align-items: center;
-  justify-content: center;
-
-  width: auto;                   /* ✅ 關鍵 2 */
-  max-width: max-content;        /* ✅ 關鍵 3 */
-  white-space: nowrap;           /* ✅ 防止文字換行 */}
+	
+	.day-tabs-arrow {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 30px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #ccc;
+		font-size: 16px;
+		pointer-events: none;
+		z-index: 1;
+		opacity: 0;
+		transition: opacity 0.3s ease;}
+	
+	.day-tabs-arrow.left {
+		left: 0;}
+	
+	.day-tabs-arrow.right {
+		right: 0;}
+		
+	.day-tab::after {
+		transition: all 0.3s ease;}
+		
+	.scroll-top-button:hover {
+		background: #2a5edb;
+		transform: translateX(-50%) scale(1.05);}
+	
+	.scroll-top-button {
+		position: fixed;
+		bottom: 20px;
+	  	left: 50%;
+	  	transform: translateX(-50%);
+		padding: 10px 20px;
+		font-size: 16px;
+		border: none;
+		background:#3A7AFE;
+		color: white;
+		border-radius: 50px;
+		opacity: 0;
+		pointer-events: none;
+		transition: 0.3s ease;
+		box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+	  	cursor: pointer;
+	  	transition: opacity 0.3s ease, visibility 0.3s ease;
+		justify-content: center;
+		display: inline-flex;       
+	  	align-items: center;
+	  	justify-content: center;
+		width: auto;                 
+		max-width: max-content;       
+		white-space: nowrap;
+		z-index: 1000; }
 	  
-/* 顯示狀態 */
-.scroll-top-button.show,
-.back-btn.show {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-
-}
-
-/* 整體外框 */
-.packing-group {
-  background: #fff;
-  border-radius: 14px;
-  padding: 15px 18px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  margin-top: 20px;
-}
-
-/* 標題列 */
-.packing-group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
- 
-}
-
-.packing-group-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: #d95380;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-/* 列表 */
-.packing-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-
-.packing-item:last-child {
-  border-bottom: none;
-}
-
-/* checkbox */
-.packing-checkbox {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #3a7afe;
-  border-radius: 4px;
-  margin-right: 10px;
-  cursor: pointer;
-  position: relative;
-}
-
-.packing-checkbox.checked {
-  background:#3a7afe;
-}
-
-.packing-checkbox.checked::after {
-  content: "✓";
-  color: #fff;
-  font-size: 14px;
-  position: absolute;
-  top: -1px;
-  left: 4px;
-}
-
-/* 刪除按鈕 */
-.delete-item {
-  margin-left: auto;
-  background: none;
-  border: none;
-  color: #bbb;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-/* 新增按鈕 */
-.add-item-btn {
-  width: 100%;
-  background: none;
-  border: none;
-  font-size: 15px;
-  color: #d95380;
-  padding: 12px 0 5px;
-  cursor: pointer;
-}
-
-/* ==========================
-   行李清單 Modal（置中）
-========================== */
-.packing-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: none;               /* 初始隱藏 */
-  justify-content: center;     /* 水平置中 */
-  align-items: center;         /* 垂直置中 */
-  z-index: 3000;
-}
-
-.packing-modal {
-  background: #fff;
-  width: 80%;
-  max-width: 300px;
-  padding: 25px 20px;
-  border-radius: 14px;
-  box-shadow: 0 6px 25px rgba(0,0,0,0.20);
-  text-align: center;
-  animation: modalPop .25s ease;
-}
-
-@keyframes modalPop {
-  from { transform: scale(0.9); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-.packing-modal h3 {
-  margin: 0 0 12px;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.packing-modal input {
-     width: 260px;
-    padding: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    margin-bottom: 15px;
-    font-size: 15px;
-}
-
-.packing-modal-btns {
-  display: flex;
-  gap: 10px;
-}
-
-.packing-modal-btns button {
-  flex: 1;
-  padding: 10px 0;
-  border-radius: 8px;
-  border: none;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-#packingCancel {
-  background: #ccc;
-}
-
-#packingOK {
-  background: #d95380;
-  color: #fff;
-}
-
-
-
-/* 編輯按鈕（每一項目的右上角） */
-.item-edit-btn {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  font-size: 13px;
-  background: none;
-  color: #3a7afe;
-  border: none;
-  cursor: pointer;
-  padding: 2px 5px;
-}
-
-/* 刪除按鈕（只有進入編輯後才會出現） */
-.delete-item {
-  margin-left: auto;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s ease;
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: #e95959;
-  cursor: pointer;
-}
-
-.packing-item.edit-mode .delete-item {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* checkbox */
-.packing-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #d95380;
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-}
-
-.packing-checkbox.checked {
-  background: #d95380;
-}
-
-.packing-checkbox.checked::after {
-  content: "✓";
-  color: #fff;
-  font-size: 14px;
-  position: absolute;
-  left: 4px;
-  top: -1px;
-}
-/* 行李清單頁背景 */
-body.packing-mode {
-  background: #f1f1f1 !important;
-}
-
-/* 每個分類外框 */
-.packing-group {
-     background: #fff;
-    border-radius: 8px;
-    padding: 20px 18px;
-    margin: 20px 0;
-    margin-top: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* 分類標題列 */
-.packing-group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-/* 分類標題左側 */
-.group-left {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
-}
-
-/* 右上角刪除分類 */
-.delete-group-btn {
- 
-  background: none;
-  border: none;
-  color: #d95380;
-  font-size: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-right: 8px;
-
-}
-.count-status {
-     font-size: 14px;
-    color: #bbb;
-    font-weight: normal;
-}
-/* 展開箭頭 */
-.arrow {
-  color: #444;
-    font-size: 20px;
-  transition: transform 0.25s;
-}
-.packing-group.open .arrow {
-  transform: rotate(180deg);
-}
-
-/* 小項目列表 */
-.packing-list {
-  margin-top: 10px;
-  padding: 0;
-  list-style: none;
-  display: none;
-}
-
-
-.packing-item:last-child {
-  border-bottom: none;
-}
-
-/* checkbox */
-.packing-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #d95380;
-  border-radius: 4px;
- 
-  cursor: pointer;
-  position: relative;
-}
-
-.packing-checkbox.checked {
-  background: #d95380;
-}
-.packing-checkbox.checked::after {
-  content: "✓";
-  position: absolute;
-  color: #fff;
-  font-size: 14px;
-  left: 4px;
-  top: -2px;
-}
-
-/* 小項目文字 */
-.packing-item span {
-  flex: 1;
-  font-size: 15px;
-}
-
-/* 小項目刪除鍵（永遠顯示） */
-.item-delete-btn {
-  background: none;
-  border: none;
-  color: #c7c7c7;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-/* 新增項目按鈕 */
-.add-item-btn {
-  width: 100%;
-  background: none;
-  border: none;
-  color: #d95380;
-  font-size: 15px;
-  text-align: left;
-  padding: 10px 0 0;
-  cursor: pointer;
-}
-
-/* + 新增分類外框 */
-.add-category {
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid #d95380;
-  padding: 15px 18px;
-  color: #d95380;
-  text-align: center;
-  margin: 20px 0;
-  cursor: pointer;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-}
-
-.modal-box {
-  background: #fff;
-  width: 80%;
-  max-width: 330px;
-  border-radius: 8px;
-  padding: 28px 20px;
-  text-align: center;
-}
-
-.modal-box input {
-     width: 90%;
-    padding: 14px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 15px;
-    margin-bottom: 14px;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.modal-buttons button {
-  flex: 1;
-  padding: 10px 0;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-}
-
-#modalCancel { background: #ddd; }
-#modalOK { background: #d95380; color: white; }
-.add-category {
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid #d95380;
-  padding: 15px 18px;
-  color: #d95380;
-  text-align: center;
-  margin: 10px 0;
-	    margin-bottom: 3rem;
-  cursor: pointer;
-}
-/* 分類刪除鍵（默認隱藏） */
-.delete-group-btn {
-  background: none;
-  border: none;
-  color: #d95380;
-  font-size: 20px;
-  cursor: pointer;
-  display: none;   /* ⭐ 預設隱藏 */
-}
-
-/* 編輯模式下才顯示 */
-.packing-edit-mode .delete-group-btn {
-  display: block;
-}
-/* 編輯模式時，箭頭變成 X 的視覺 */
-.packing-edit-mode .arrow {
-  font-size: 18px;
-  color: #d95380;
-}
-.packing-group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* 右邊箭頭固定在最右 */
-  gap: 6px;
-}
-
-.packing-group-header .left-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.packing-group-header .title {
-  flex-shrink: 0;
-}
-
-.packing-group-header .count-status {
-  font-size: 12px;
-  color: #999;
-  flex-shrink: 0;
-}
-/* === 統一版 packing-item === */
-.packing-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0px;
-
-  padding: 8px 0;         /* 建議的安全 padding */
-  border-bottom: 1px solid #eee;
-  background: #fff;
-
-  font-size: 15px;
-}
-.sub-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 2px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sub-arrow {
-  transition: 0.25s;
-}
-
-.sub-list {
-  list-style: none;
-  padding-left: 12px;
-  margin-top: 4px;
-  display: none;
-}
-
-.subgroup.open .sub-list {
-  display: block;
-}
-/* 拖曳時的半透明樣式 */
-.drag-ghost {
-  opacity: 0.3;
-  background: #f7f7f7 !important;
-}
-
-.ticket-page {
-  padding: 20px;
-  
-  animation: fadeIn 0.4s ease;
-}
-
-/* 標題 */
-.ticket-title {
-  font-size: 22px;
-  margin-bottom: 14px;
-  font-weight: 600;
-}
-
-/* 類別區塊 */
-.ticket-category-list {
-  display: grid;
-  gap: 16px;
- animation: fadeIn 0.4s ease;
-}
-
-/* 單一卡片 */
-.ticket-category {
-	 animation: fadeIn 0.4s ease;
-      background: #fff;
-    border-radius: 8px;
-    padding: 20px 18px;
-    margin: 20px 0;
-    margin-top: 8px;
-    margin-bottom: 3px;
-       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* 黑底背景圖片 */
-.ticket-bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: brightness(0.35);
-  z-index: 1;
-}
-.ticket-category span {
-  position: relative;
-  z-index: 2;
-}
-
-/* 不同分類的背景（自行換） */
-.bg-hotel { background-image: url('images/hotel.jpg'); }
-.bg-flight { background-image: url('images/flight.jpg'); }
-.bg-schedule { background-image: url('images/schedule.jpg'); }
-.bg-rent { background-image: url('images/rent.jpg'); }
-.bg-entry { background-image: url('images/entry.jpg'); }
-
-
-/* 內容頁 */
-.ticket-content.hidden {
-  display: none;
-}
-.ticket-content {
-  margin-top: 20px;
-}
-.ticket-back {
-  background: none;
-  border: none;
-  font-size: 16px;
-  margin-bottom: 10px;
-  cursor: pointer;
-}
-
-.ticket-content img {
-  
-  border-radius: 12px;
-  margin: 12px 0;
-}
-/* =========================
-   電子憑證頁（File.Co 風格）
-========================= */
-
-.ticket-page {
-  background: #F6F9FC;
-  min-height: 444px;
-  padding: 24px 20px;
-	padding-top:152px;
-}
-
-/* 列表 */
-.ticket-category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-}
-
-/* 單一列 */
-.ticket-category {
-  border-radius: 8px;
-  padding: 15px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  position: relative;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: transform .15s ease;
-}
-
-.ticket-category:active {
-  transform: scale(0.97);
-}
-
-/* 左側 icon（無背景） */
-.ticket-category .icon {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ticket-category .icon img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-
-/* 文字 */
-.ticket-category .text {
-  flex: 1;
-}
-
-.ticket-category .title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #333;
-}
-
-/* 右側三點 */
-.ticket-category .more {
-  font-size: 20px;
-  color: #8E8E93;
-  padding: 4px 6px;
-}
-
-.ticket-content {
-  animation: fadeIn .3s ease;
-}
-
-#ticketContentTitle {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.ticket-back {
-  font-size: 16px;
-  color: #007AFF;
-  margin-bottom: 12px;
-}
-.pdf-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 20px;
-}
-
-.pdf-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: #fff;
-  border-radius: 14px;
-  text-decoration: none;
-  color: #222;
-  
-}
-
-.pdf-item:active {
-  transform: scale(0.97);
-}
-
-.pdf-icon {
-  width: 40px;
-  height: 40px;
-}
-
-.pdf-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.pdf-sub {
-  font-size: 13px;
-  color: #888;
-}
-/* ===== 住宿群組 ===== */
-.hotel-group {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 10px;
-  animation: fadeIn 0.4s ease-out;
-}
-
-/* 單一住宿卡片 */
-.hotel-item {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-	    margin-bottom: 0.5rem;
-}
-
-/* 標題列 */
-.hotel-header {
-     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 8px 8px 0px 0px;
-    background-color: #e6e6e6;
-    border-bottom: 1px solid #e0e0e0;
-    color: #444;
-    padding: 8px 15px;
-}
-
-.hotel-arrow {
-  font-size: 20px;
-  color: #bbb;
-  transition: transform .25s ease;
-}
-.flight-group {
- 
-  animation: fadeIn 0.4s ease-out;
-}
-/* 展開狀態 */
-.hotel-item.open .hotel-arrow {
-  transform: rotate(90deg);
-}
-
-/* PDF 清單（預設收合） */
-.hotel-pdf-list {
-  display: none;
-  flex-direction: column;
- 
-  padding: 5px 5px 5px 5px;
-}
-
-.hotel-item.open .hotel-pdf-list {
-  display: flex;
-}
-
-/* ===== PDF item（沿用 iOS Files 風格） ===== */
-.pdf-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-
-  border-radius: 8px;
-  text-decoration: none;
-  color: #222;
-}
-
-.pdf-item:active {
-  transform: scale(0.97);
-}
-
-.pdf-icon {
-  width: 36px;
-  height: 36px;
-}
-
-.pdf-title {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.pdf-sub {
-  font-size: 13px;
-  color: #888;
-}
-/* =========================
-   航班區塊（Flight Section）
-========================= */
-
-.flight-card {
-     background: #fff;
-    border-radius: 8px;
-    
-    margin: 20px 0;
-    margin-top: 10px;
-    margin-bottom: 3px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-.flight-header {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.flight-route {
-  font-size: 15px;      /* 比原本再大一點 */
-  font-weight: 600;
-  color: #111;
-}
-
-.flight-info {
-  font-size: 24px;
-  color: #6e6e73;
-}
-
-.flight-docs {
-
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
- 
-}
-
-.flight-doc {
-  border-radius: 8px;
-  padding: 6px 8px;         /* ⬅️ 關鍵：縮 padding */
-  text-align: center;
-  box-shadow: inset 0 0 0 1px #e6e9f0;
-  transition: background 0.15s ease;
-}
-
-
-.flight-doc:active {
-  background: #eef3ff;
-  transform: scale(0.97);
-}
-.flight-doc .doc-name {
-  font-size: 12px;           /* 原本 15 → 13 */
-  
-  margin-bottom: 2px;
-}
-
-.flight-doc .doc-type {
-  font-size: 11px;           /* 更像附件說明 */
-  color: #8e8e93;
-}
-
-
-
-.flight-doc::after {
-  font-size: 10px;
-  top: 6px;
-  right: 8px;
-  opacity: 0.45;
-}
-
-a,
-a:visited,
-a:hover,
-a:active {
-  color: inherit !important;
-  text-decoration: none !important;
-}
-
-/* 1. 顏色區塊（色帶） */
-.flight-pass-bar {
-   border-radius: 8px 8px 0px 0px;
-    background-color: #e6e6e6;
-    border-bottom: 1px solid #e0e0e0;
-    color: #444;
-    padding: 8px 15px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.pass-title {
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.pass-checkin {
-  font-size: 12px;
-}
-
-/* 2. 航空公司與航班編號 */
-.flight-airline {
-  padding: 8px 16px;
-  padding-bottom:0;
-}
-
-.flight-no {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.flight-dates {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0px;
-}
-
-.date-depart, .date-arrive {
-  font-size: 12px;
-  color: #b9b9b9;
-}
-
-/* 3. 航班時間 */
-.flight-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0px 16px;
-}
-
-
-.time1 {
-  font-size: 25px;
-  font-weight: bold;
-  color:#a87f30;
-}
-
-
-
-.terminal {
-  font-size: 12px;
-  color: #999;
-}
-
-
-
-/* 4. PDF 文件區塊 */
-.flight-docs {
-      padding: 15px 12px 5px 12px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.flight-doc {
-  background-color: #f1f1f1;
-  border-radius: 8px;
-  padding: 7px 0px;
-  text-decoration: none;
-  color: #333;
-  font-weight: bold;
-}
-
-.flight-doc:hover {
-  background-color: #e0e0e0;
-}
-
-.doc-name {
-  font-size: 14px;
-}
-
-/* 小尺寸處理：將PDF卡片變小 */
-@media (max-width: 768px) {
-  .flight-docs {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .flight-doc {
-    margin-bottom: 8px;
-    width: 100%;
-    text-align: center;
-  }
-}
-.flight-main {
-  display: flex;
-  justify-content: space-between; /* 讓左右項目分開並靠兩邊 */
-  align-items: center;
-  padding: 0px 16px;
-}
-
-.flight-time,.flight-line {
-     display: flex;
-    justify-content: space-between;
-    margin-top: 0px;
-}
-
-.time1 {
-  font-size: 25px;
-  font-weight: bold;
-  color: #a87f30;
-}
-
-.airport {
-  font-size: 14px;
-  color: #777;
-}
-
-.terminal {
-  font-size: 12px;
-  color: #999;
-}
-
-/* ============================
-   飛機圖標與路線顯示樣式（位於卡片外面）
-============================ */
-.flight-card-wrapper {
-  position: relative;
-  font-size:14px;
-	margin-top:0.5rem;
-}
-.route{padding-left:0.5rem;}
-/* ===== PDF 開啟過渡動畫 ===== */
-.ticket-opening {
-  animation: ticketFadeOut 0.25s ease forwards;
-}
-
-@keyframes ticketFadeOut {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0.85;
-    transform: scale(0.96);
-  }
-}
-.fade-in {
-  animation: fadeIn 0.4s ease;
-}
-
-/* Splash 整體 */
-#app-splash {
-  position: fixed;
-  inset: 0;
-  background-color:#3A7AFE;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-
-
-/* ✈️ 飛機 */
-.plane {
-  width: 84px;
-  animation: taxi 0.8s ease-out forwards,
-             takeoff 1.2s ease-in forwards 0.8s;
-}
-
-@keyframes taxi {
-  from { transform: translateX(-40px); }
-  to   { transform: translateX(0); }
-}
-
-@keyframes takeoff {
-  to {
-    transform: translate(120px, -120px) rotate(-15deg);
-    opacity: 0;
-  }
-}
-
-/* 文字 */
-.splash-text {
-  margin-top: 16px;
-  font-size: 16px;
-  color: #fff;
-  animation: blink 1s ease-in-out infinite alternate;
-}
-
-@keyframes blink {
-  from { opacity: 0.4; }
-  to   { opacity: 1; }
-}
-
-/* Splash 消失 */
-#app-splash.hide {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
-/* 主內容 */
-#app-root {
-  opacity: 0;
-}
-#app-root.show {
-  animation: fadeIn 0.4s ease forwards;
-}
-
-.topbar {
-  background: #3A7AFE;
-  color: white;
-  padding: 15px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  transition: top 0.3s ease;
-}
-
-.ios-full-menu {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);  /* 半透明黑色背景 */
-  z-index: 999;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-.ios-full-menu .menu-content {
- 
-  border-radius: 10px;
-  padding: 20px;
-  text-align: center;
-}
-
-.ios-full-menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.ios-full-menu li {
-  padding: 15px;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.menu-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 30px;
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-}
-
-.menu-btn {
- background: none;
-    border: none;
-    position: relative;
-    width: 30px;
-    height: 20px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 0;
-}
-
-/* 創建三條線，並給每條線加陰影 */
-.menu-btn::before,
-.menu-btn::after,
-.menu-btn div {
- content: "";
-    position: absolute;
-    width: 100%;
-    height: 3px;
-    BORDER-RADIUS: 100PX;
-    background-color: white;
-    transition: transform 0.3s ease;
-  
-}
-
-/* 均勻間隔的三條線 */
-.menu-btn::before {
-  top: 0;
-}
-
-.menu-btn div {
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.menu-btn::after {
-  bottom: 0;
-}
-
-/* 當選單開啟時，將線條旋轉，並隱藏中間的線 */
-.menu-btn.open::before {
-  transform: rotate(45deg);
-  top: 50%;
-}
-
-.menu-btn.open::after {
-  transform: rotate(-45deg);
-  bottom: 50%;
-}
-
-.menu-btn.open div {
-  opacity: 0; /* 中間的線會隱藏 */
-}
-
-/* iOS 全螢幕選單顯示 */
-.ios-full-menu {
-  display: none;
-}
-
-.ios-full-menu.show {
-  display: flex; /* 顯示選單 */
-  opacity: 1; /* 使選單顯示 */
-}/* 選單項目 */
-.menu-content ul {
-  display: flex;
-  flex-direction: column;
-  gap: 0px; /* 項目之間的間距 */
-}
-
-.menu-content li {
-  padding: 20px;
-}
-
-/* 頁面隱藏 */
-.content-page {
-  display: none;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-/* 當頁面有 active 類別時顯示 */
-.content-page.active {
-  display: block;
-  opacity: 1;
-}
-/* 隐藏所有内容页面 */
-.content-page {
-  display: none;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-/* 显示 active 类的页面 */
-.content-page.active {
-  display: block;
-  opacity: 1;
-}
-
-/* 选单样式 */
-.ios-full-menu {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7); /* 半透明背景 */
-  z-index: 999;
-  justify-content: center;
-  align-items: center;
-  transition: 0.3s;
-}
-
-.menu-content ul {
-  list-style: none;
-  padding: 0;
-}
-
-.menu-content ul li {
-  margin: 5px 0;
-  font-size: 24px;
-  color: #fff;
-  cursor: pointer;
-}
-
-/* 点击展开的菜单按钮 */
-.menu-btn {
-  font-size: 30px;
-  cursor: pointer;
-}
-
-/* 关闭按钮 */
-.menu-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 30px;
-  color: #fff;
-  cursor: pointer;
-}
-.container,
-.packing-page,
-.ticket-page,
-.exchange-page {
-  display: none;
-}
-
-.container.active,
-.packing-page.active,
-.ticket-page.active,
-.exchange-page.active {
-  display: block;
-}
-#app-root {
-  display: none;
-  margin: 0;  /* 確保沒有額外的 margin */
-  padding: 0;  /* 確保沒有額外的 padding */
-  position: relative;
-}
-
-#app-root.show {
-  display: block;
-  position: absolute;
-  top: 0;  /* 確保頁面從頂部開始 */
-  left: 0;
-  width: 100%;  /* 保證寬度占滿整個視口 */
-  height: 100%; /* 保證高度占滿整個視口 */
-}
-/* 固定在畫面底部 */
-.scroll-top-button {
-  position: fixed;  /* 使按鈕固定 */
-  bottom: 20px;     /* 距離畫面底部 20px */
-  right: 20px;      /* 距離畫面右邊 20px */
-  display: none;    /* 預設隱藏，當需要顯示時會加上 show class */
-  z-index: 1000;    /* 保證按鈕層級較高，避免被其他元素蓋住 */
-  background-color: #189cc0;  /* 背景顏色 */
-  color: white;     /* 按鈕文字顏色 */
-  padding: 10px 20px;
-  border-radius: 5px;  /* 圓角 */
-  cursor: pointer;    /* 鼠標樣式 */
-  transition: opacity 0.3s ease-in-out; /* 顯示/隱藏過渡效果 */
-}
-
-/* 顯示按鈕的樣式 */
-.scroll-top-button.show {
-  display: block;  /* 顯示按鈕 */
-}
-/* 固定在畫面底部 */
-.scroll-top-button {
-  position: fixed;  /* 使按鈕固定 */
-  bottom: 20px;     /* 距離畫面底部 20px */
-  right: 20px;      /* 距離畫面右邊 20px */
-  display: none;    /* 預設隱藏，當需要顯示時會加上 show class */
-  z-index: 1000;    /* 保證按鈕層級較高，避免被其他元素蓋住 */
-  background-color: #189cc0;  /* 背景顏色 */
-  color: white;     /* 按鈕文字顏色 */
-  padding: 10px 20px;
-  border-radius: 5px;  /* 圓角 */
-  cursor: pointer;    /* 鼠標樣式 */
-  transition: opacity 0.3s ease-in-out; /* 顯示/隱藏過渡效果 */
-}
-
-/* 顯示按鈕的樣式 */
-.scroll-top-button.show {
-  display: block;  /* 顯示按鈕 */
-}
-
-/* 確保沒有其他容器影響fixed定位 */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow-x: hidden; /* 防止橫向滾動 */
-}
-
-body {
-  font-family: 'Noto Sans TC', sans-serif;
-  background-color: #FAFAF7;
-}
-
-body.scroll-mode {
-  background-color: #F6F9FC; /* 可以設定一個區別 */
-}
-
-/* 其他內容區域的顯示/隱藏 */
-.container, .packing-page, .ticket-page, .exchange-page {
-  display: none;
-}
-
-.container.active, .packing-page.active, .ticket-page.active, .exchange-page.active {
-  display: block;
-}
-
-#app-root.show {
-  animation: fadeIn 0.4s ease forwards;
-}
-
-/* scroll-top-button的滑動顯示 */
-.scroll-top-button {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.scroll-top-button.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-
+	.back-btn {
+		position: fixed;
+		bottom: 20px;
+		left: 50%;
+		transform: translateX(-50%);
+		background: #3A7AFE;
+		color: #fff;
+		border: none;
+		border-radius: 50px;
+		padding: 10px 20px;
+		font-size: 16px;
+		cursor: pointer;
+		display: flex;
+		box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+		z-index: 999;
+		transition: opacity 0.3s ease, visibility 0.3s ease;
+		justify-content: center;
+		opacity: 0;
+	  	visibility: hidden;
+	  	pointer-events: none;}
+	
+	
+	.scroll-top-button.show,
+	.back-btn.show {
+		
+	  	opacity: 1;
+	  	visibility: visible;
+	  	pointer-events: auto;}
+		
+	
+	/* 顯示按鈕的樣式 */
+	.scroll-top-button.show {
+	  	display: block;  /* 顯示按鈕 */}
+		
+		
+	.day-section.fade-in {
+		opacity: 1;
+		transform: translateY(0);}
+	
+	.exchange-page {
+		display: none;
+		position: relative;
+		top: 2.5rem;
+		min-height:530px;
+		text-align: center;
+		padding: 0px 20px;
+		padding-top:95px;
+		animation: fadeIn 0.4s ease;}
+
+	.converter {
+		margin-top: 30px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;}
+	
+	.input-group {
+		width:100%;
+		display: flex;
+		align-items: center;
+		gap: 10px;}
+	
+	input[type="number"] {
+		width: 180px;
+		padding: 8px;
+		font-size: 18px;
+		text-align: right;}
+	
+	select {
+		padding: 8px;
+		font-size: 16px;}
+	
+	#swap-btn {
+		font-size: 22px;
+		border: none;
+		background: #3a7afe;
+		color: #fff;
+		width: 50px;
+		height: 50px;
+		border-radius: 50%;
+		cursor: pointer;
+		transition: transform 0.2s ease;}
+	
+	#swap-btn:hover {
+		transform: rotate(180deg);}
+	
+	
+	@keyframes fadeIn {
+	  	from { opacity: 0; transform: translateY(10px); }
+	  	to { opacity: 1; transform: translateY(0); }}
+	
+	.toggle-switch {
+	  	display: flex;
+	  	align-items: center;
+	  	gap: 10px;
+	  	font-size:13px;
+	  	cursor: pointer;
+	  	margin: 10px 0;}
+	
+	.toggle-track {
+	  	position: relative;
+	  	width: 35px;
+	  	height: 20px;
+	  	background: #ccc;
+	  	border-radius: 15px;
+	  	transition: background 0.3s ease;}
+	
+	.toggle-thumb {
+	  	position: absolute;
+	  	top: 0px;
+	  	left: 0px;
+	  	width: 19px;
+	  	height: 19px;
+	  	background: #3a7afe;
+	  	border-radius: 50%;
+	  	transition: left 0.3s ease;}
+	
+	.toggle-switch.active .toggle-thumb {
+	  	left: 15px;}
+	
+	.toggle-switch.active .toggle-track {
+	  	background: #a3c1ff;}
+		
+	.input-wrapper {
+	  	width: calc(100%); /* ✅ 左右各留 1rem */
+	  	margin: 0 auto;            /* ✅ 水平置中 */
+	  	position: relative;}
+	
+	.input-wrapper input[type="number"] {
+	  	width: 100%;
+	  	padding: 1rem; /* ✅ 左右內距：右側留空給幣別提示 */
+	  	font-size: 20px;
+	  	text-align: left;
+	  	border: 1px solid #ddd;
+	  	color:#222;
+	 	border-radius: 8px;
+	  	box-sizing: border-box;}
+	
+	
+	.currency-label {
+	  	position: absolute;
+	 	right: 10px;
+	  	top: 50%;
+	  	transform: translateY(-50%);
+	  	font-size: 14px;
+	  	color: #888;
+	  	pointer-events: none;}
+		
+	.num-pad {
+	   	max-width: 400px;
+		margin: 0 auto;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		margin-top: 20px;
+		gap: 10px;
+		width: 100%;}
+	
+	.num-pad .key {
+	  	padding: 12px 0;
+	  	font-size: 20px;
+	  	border: none;
+	  	border-radius: 10px;
+	  	background: #e6e6e6;
+	  	color: #333;
+	  	cursor: pointer;
+	  	transition: 0.2s;}
+	
+	.num-pad .key.orange {
+	  	background: #ff9f47;
+	  	color: white;}
+	
+	.num-pad .key:active {
+	  	transform: scale(0.95);}
+		
+		
+	/* 匯率換算輸入框（修正版）*/
+	
+	.input-wrapper {
+	  	position: relative;
+	  	width: 100%;
+	  	max-width: 400px;
+	  	margin: 0 auto;}
+	
+	.input-wrapper input {
+	  	width: 100%;
+	  	padding: 14px 16px;
+	  	padding-right: 70px; /* ⭐ 預留右邊空間給「｜幣別」 */
+	  	font-size: 20px;
+	  	border: 1px solid #ddd;
+	  	border-radius: 8px;
+	  	background: #fff;
+	  	color: #222;
+	  	box-sizing: border-box;
+		-moz-appearance: textfield;}
+	
+	.input-wrapper input:focus {
+	  	outline: none;
+	  	border-color: #3A7AFE;
+	  	box-shadow: 0 0 0 2px rgba(58,122,254,0.15);}
+	
+	
+	input[type="text"]::-webkit-inner-spin-button,
+	input[type="text"]::-webkit-outer-spin-button {
+	  	-webkit-appearance: none;
+	  	margin: 0;}
+	
+	/* 幣別文字（右邊） */
+	.currency-label {
+	  	position: absolute;
+	  	right: 16px;
+	  	top: 50%;
+	  	transform: translateY(-50%);
+	  	font-size: 15px;
+	  	color: #888;
+	  	pointer-events: none;}
+		
+	
+	.exchange-inner {
+	  	padding-bottom: 0px;   /* ⭐ 所有匯率頁的 padding 放這邊 */
+	  	max-width: 500px;
+	 	margin: 0 auto;}
+	  
+	.packing-page {
+	  	padding: 20px;
+	  	padding-top: 160px;
+		background-color: #F6F9FC;
+		animation: fadeIn 0.4s ease;}
+	
+	/* 整體外框 */
+	.packing-group {
+	  	background: #fff;
+		border-radius: 8px;
+		padding: 20px 18px;
+		margin: 20px 0;
+		margin-top: 10px;
+		margin-bottom: 20px;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);}
+		
+	/* 標題列 */
+	.packing-group-header {
+	  	display: flex;
+	  	align-items: center;
+	  	justify-content: space-between; /* 右邊箭頭固定在最右 */
+	  	gap: 6px;
+		font-weight: 600;
+	  	font-size: 16px;
+	  	cursor: pointer;}
+	
+	.packing-group-actions {
+		display: flex;
+		gap: 10px;}
+	
+	/* 列表 */
+	.packing-list {
+	  	list-style: none;
+	  	padding: 0;
+	  	margin: 0;
+		margin-top: 10px;}
+
+	.packing-item:last-child {
+	  	border-bottom: none;}
+	
+	/* checkbox */
+	.packing-checkbox {
+	  	width: 18px;
+	  	height: 18px;
+	  	border: 2px solid #d95380;
+	  	border-radius: 4px;
+	  	margin-right: 10px;
+	  	cursor: pointer;
+	  	position: relative;}
+		
+	.packing-checkbox.checked {
+	  	background: #d95380;}
+		
+	.packing-checkbox.checked::after {
+	  	content: "✓";
+	  	position: absolute;
+	  	color: #fff;
+	  	font-size: 14px;
+	  	left: 4px;
+	  	top: -2px;}
+	
+	/* 刪除按鈕 */
+	.delete-item {
+	  	margin-left: auto;
+	  	background: none;
+	  	border: none;
+	  	color: #bbb;
+	  	font-size: 18px;
+	  	cursor: pointer;
+		opacity: 0;
+	  	pointer-events: none;
+	  	transition: opacity .25s ease;
+		color: #e95959;
+	  	cursor: pointer;}
+	
+	
+	/* 新增按鈕 */
+	.add-item-btn {
+	  	width: 100%;
+	  	background: none;
+	  	border: none;
+	  	font-size: 15px;
+	  	color: #d95380;
+	  	text-align: left;
+	  	padding: 10px 0 0;
+	  	cursor: pointer;}
+	
+	
+	@keyframes modalPop {
+	  	from { transform: scale(0.9); opacity: 0; }
+	  	to   { transform: scale(1); opacity: 1; }}
+	
+	.packing-item.edit-mode .delete-item {
+	  	opacity: 1;
+	  	pointer-events: auto;}
+
+		
+	/* 行李清單頁背景 */
+	body.packing-mode {
+	  	background: #f1f1f1 !important;}
+	
+	/* 右上角刪除分類 */
+	.delete-group-btn {
+		background: none;
+	  	border: none;
+	  	color: #d95380;
+	  	font-size: 20px;
+	  	font-weight: 600;
+	  	cursor: pointer;
+	  	margin-right: 8px;
+		display: none;}
+		
+	.count-status {
+		font-size: 14px;
+		color: #bbb;
+		font-weight: normal;}
+		
+	/* 展開箭頭 */
+	.arrow {
+	  	color: #444;
+		font-size: 20px;
+	  	transition: transform 0.25s;}
+		
+	.packing-group.open .arrow {
+	  	transform: rotate(180deg);}
+
+	
+	/* 小項目文字 */
+	.packing-item span {
+	  	flex: 1;
+	  	font-size: 15px;}
+	
+	/* 小項目刪除鍵（永遠顯示） */
+	.item-delete-btn {
+		background: none;
+		border: none;
+		color: #c7c7c7;
+		font-size: 22px;
+		cursor: pointer;}
+	
+	
+	/* + 新增分類外框 */
+	.add-category {
+		background: #fff;
+	  	border-radius: 8px;
+	  	border: 1px solid #d95380;
+	  	padding: 15px 18px;
+		color: #d95380;
+	  	text-align: center;
+	  	margin: 10px 0;
+		margin-bottom: 3rem;
+	  	cursor: pointer;}
+		
+	/* Modal */
+	.modal-overlay {
+	  	position: fixed;
+	  	inset: 0;
+	  	background: rgba(0,0,0,0.35);
+	  	display: none;
+	  	justify-content: center;
+	  	align-items: center;
+	  	z-index: 3000;}
+	
+	.modal-box {
+	  	background: #fff;
+	  	width: 80%;
+	  	max-width: 330px;
+	  	border-radius: 8px;
+	  	padding: 28px 20px;
+	  	text-align: center;}
+	
+	.modal-box input {
+		width: 90%;
+		padding: 14px;
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		font-size: 15px;
+		margin-bottom: 14px;}
+	
+	.modal-buttons {
+	  	display: flex;
+	  	gap: 10px;}
+	
+	.modal-buttons button {
+	  	flex: 1;
+	  	padding: 10px 0;
+	  	border: none;
+	 	border-radius: 6px;
+	  	font-size: 15px;}
+	
+	#modalCancel { 
+		background: #ddd; }
+		
+	#modalOK { 
+		background: #d95380; color: white; }
+		
+	.packing-group-header .left-group {
+	  	display: flex;
+	  	align-items: center;
+	  	gap: 6px;}
+	
+	.packing-group-header .title {
+	  	flex-shrink: 0;}
+	
+	.packing-group-header .count-status {
+	  	font-size: 12px;
+	  	color: #999;
+	  	flex-shrink: 0;}
+		
+	/* === 統一版 packing-item === */
+	.packing-item {
+	  	position: relative;
+	  	display: flex;
+	  	align-items: center;
+	  	gap: 0px;
+		padding: 8px 0;         /* 建議的安全 padding */
+	  	border-bottom: 1px solid #eee;
+		background: #fff;
+		font-size: 15px;}
+		
+	/* 拖曳時的半透明樣式 */
+	.drag-ghost {
+	  	opacity: 0.3;
+	 	background: #f7f7f7 !important;}
+	
+	.ticket-page {
+	  	background: #F6F9FC;
+	  	min-height: 444px;
+	  	padding: 24px 20px;
+		padding-top:152px;
+		animation: fadeIn 0.4s ease;}
+	
+	
+	/* 類別區塊 */
+	.ticket-category-list {
+	  	display: flex;
+	  	flex-direction: column;
+	  	gap: 0px;
+	 	animation: fadeIn 0.4s ease;}
+	
+	/* 單一卡片 */
+	.ticket-category {
+		animation: fadeIn 0.4s ease;
+		background: #fff;
+		border-radius: 8px;
+		margin: 20px 0;
+		margin-top: 8px;
+		margin-bottom: 3px;
+		padding: 15px 14px;
+	  	display: flex;
+	  	align-items: center;
+	  	gap: 8px;
+	  	cursor: pointer;
+		position: relative;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);}
+		
+	.ticket-category span {
+	  	position: relative;
+	  	z-index: 2;}
+	
+	/* 內容頁 */
+	.ticket-content.hidden {
+	  	display: none;}
+		
+	
+	.ticket-back {
+	 	background: none;
+	  	border: none;
+	  	font-size: 16px;
+	  	color: #007AFF;
+	  	margin-bottom: 12px;
+	  	cursor: pointer;}
+
+	.ticket-content img {
+		border-radius: 12px;
+		margin: 12px 0;}
+		
+	.ticket-category:active {
+	  	transform: scale(0.97);}
+	
+	/* 左側 icon（無背景） */
+	.ticket-category .icon {
+	  	width: 40px;
+	  	height: 40px;
+	  	flex-shrink: 0;
+	  	display: flex;
+	  	align-items: center;
+	  	justify-content: center;}
+	
+	.ticket-category .icon img {
+	  	width: 32px;
+	  	height: 32px;
+	  	object-fit: contain;}
+	
+	/* 文字 */
+	.ticket-category .text {
+	  	flex: 1;}
+	
+	.ticket-category .title {
+	  	font-size: 17px;
+	  	font-weight: 600;
+		color: #333;}
+	
+	/* 右側三點 */
+	.ticket-category .more {
+	  	font-size: 20px;
+	  	color: #8E8E93;
+	  	padding: 4px 6px;}
+	
+	.ticket-content {
+	  	animation: fadeIn .3s ease;
+		margin-top: 20px;}
+
+	#ticketContentTitle {
+	  	font-size: 22px;
+	  	font-weight: 600;
+	  	margin-bottom: 12px;}
+		
+	.pdf-list {
+	  	display: flex;
+	  	flex-direction: column;
+	  	gap: 14px;
+	  	margin-top: 20px;}
+	
+	.pdf-item {
+	  	display: flex;
+	  	align-items: center;
+	  	gap: 14px;
+	  	padding: 12px 14px;
+	  	background: #fff;
+	  	border-radius: 8px;
+	  	text-decoration: none;
+	  	color: #222;}
+	
+	.pdf-item:active {
+	  	transform: scale(0.97);}
+	
+	.pdf-icon {
+	  	width: 36px;
+	  	height: 36px;}
+	
+	.pdf-title {
+	  	font-size: 15px;
+	  	font-weight: 600;}
+	
+	.pdf-sub {
+		font-size: 13px;
+		color: #888;}
+		
+	/* ===== 住宿群組 ===== */
+	.hotel-group {
+	  	display: flex;
+	  	flex-direction: column;
+	 	gap: 14px;
+	  	margin-top: 10px;
+	  	animation: fadeIn 0.4s ease-out;}
+	
+	/* 單一住宿卡片 */
+	.hotel-item {
+	  	background: #fff;
+	  	border-radius: 8px;
+	  	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	  	overflow: hidden;
+		margin-bottom: 0.5rem;}
+	
+	/* 標題列 */
+	.hotel-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 14px;
+		cursor: pointer;
+		border-radius: 8px 8px 0px 0px;
+		background-color: #e6e6e6;
+		border-bottom: 1px solid #e0e0e0;
+		color: #444;
+		padding: 8px 15px;}
+	
+	.hotel-arrow {
+	  	font-size: 20px;
+	  	color: #bbb;
+	  	transition: transform .25s ease;}
+		
+	.flight-group {
+	 	animation: fadeIn 0.4s ease-out;}
+		
+	/* 展開狀態 */
+	.hotel-item.open .hotel-arrow {
+	  	transform: rotate(90deg);}
+	
+	/* PDF 清單（預設收合） */
+	.hotel-pdf-list {
+	  	display: none;
+	  	flex-direction: column;
+		padding: 5px 5px 5px 5px;}
+	
+	.hotel-item.open .hotel-pdf-list {
+	  	display: flex;}
+	
+	/* 航班區塊 */
+	
+	.flight-card {
+		background: #fff;
+		border-radius: 8px;
+		margin: 20px 0;
+		margin-top: 10px;
+		margin-bottom: 3px;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);}
+		
+	.flight-header {
+	  	display: flex;
+	  	flex-direction: column;
+	  	gap: 6px;
+	  	margin-bottom: 14px;}
+	
+	.flight-route {
+	  	font-size: 15px;      /* 比原本再大一點 */
+	  	font-weight: 600;
+	  	color: #111;}
+	
+	.flight-info {
+		font-size: 24px;
+		color: #6e6e73;}
+	
+	.flight-docs {
+		display: grid;
+	  	grid-template-columns: repeat(2, 1fr);
+		padding: 15px 12px 5px 12px;
+	  	display: flex;
+	  	justify-content: space-between;}
+	
+	.flight-doc {
+		border-radius: 8px;
+		padding: 6px 8px;         /* ⬅️ 關鍵：縮 padding */
+		text-align: center;
+		box-shadow: inset 0 0 0 1px #e6e9f0;
+		transition: background 0.15s ease;
+		margin-bottom: 8px;
+		width: 100%;}
+
+	.flight-doc:active {
+	  	background: #eef3ff;
+	  	transform: scale(0.97);}
+		
+	.flight-doc .doc-name {
+	 	font-size: 12px; 
+		margin-bottom: 2px;}
+	
+	.flight-doc .doc-type {
+		font-size: 11px;           /* 更像附件說明 */
+		color: #8e8e93;}
+	
+	.flight-doc::after {
+	  	font-size: 10px;
+	  	top: 6px;
+	  	right: 8px;
+	  	opacity: 0.45;}
+	
+	a,
+	a:visited,
+	a:hover,
+	a:active {
+	  	color: inherit !important;
+	  	text-decoration: none !important;}
+	
+	/* 1. 顏色區塊（色帶） */
+	.flight-pass-bar {
+		border-radius: 8px 8px 0px 0px;
+		background-color: #e6e6e6;
+		border-bottom: 1px solid #e0e0e0;
+		color: #444;
+		padding: 8px 15px;
+		display: flex;
+		justify-content: space-between;}
+	
+	.pass-title {
+	 	font-size: 12px;
+		font-weight: bold;}
+	
+	.pass-checkin {
+		font-size: 12px;}
+	
+	/* 2. 航空公司與航班編號 */
+	.flight-airline {
+	  	padding: 8px 16px;
+	  	padding-bottom:0;}
+	
+	.flight-no {
+	  	font-size: 16px;
+	  	font-weight: bold;}
+	
+	.flight-dates {
+	  	display: flex;
+	  	justify-content: space-between;
+	  	margin-top: 0px;}
+	
+	.date-depart, .date-arrive {
+	  	font-size: 12px;
+	  	color: #b9b9b9;}
+	
+	/* 3. 航班時間 */
+	.flight-main {
+	  	display: flex;
+	  	justify-content: space-between;
+	  	align-items: center;
+	  	padding: 0px 16px;}
+	
+	.time1 {
+	  	font-size: 25px;
+	  	font-weight: bold;
+	  	color:#a87f30;}
+	
+	.terminal {
+	  	font-size: 12px;
+	  	color: #999;}
+	
+	
+	.flight-doc {
+		background-color: #f1f1f1;
+		border-radius: 8px;
+		padding: 7px 0px;
+	  	text-decoration: none;
+	  	color: #333;
+	  	font-weight: bold;}
+	
+	.flight-doc:hover {
+	  	background-color: #e0e0e0;}	
+	
+	.doc-name {
+	  	font-size: 14px;}
+	
+	/* 小尺寸處理：將PDF卡片變小 */
+	@media (max-width: 768px) {
+	.flight-docs {
+		flex-direction: column;
+		align-items: center;}
+	
+	.flight-time,.flight-line {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 0px;}
+	
+	
+	.airport {
+	 	font-size: 14px;
+	  	color: #777;}
+	
+	/* 飛機圖標與路線顯示樣式（位於卡片外面）*/
+	.flight-card-wrapper {
+	  	position: relative;
+	  	font-size:14px;
+		margin-top:0.5rem;}
+		
+	.route{
+		padding-left:0.5rem;}
+		
+	/* ===== PDF 開啟過渡動畫 ===== */
+	.ticket-opening {
+	  	animation: ticketFadeOut 0.25s ease forwards;}
+	
+	@keyframes ticketFadeOut {
+	from {
+		opacity: 1;
+		transform: scale(1);}
+	  to {
+		opacity: 0.85;
+		transform: scale(0.96);}}
+		
+	.fade-in {
+	  	animation: fadeIn 0.4s ease;}
+	
+	/* Splash 整體 */
+	#app-splash {
+	  	position: fixed;
+	  	inset: 0;
+	  	background-color:#3A7AFE;
+	  	z-index: 9999;
+	  	display: flex;
+	  	flex-direction: column;
+	  	justify-content: center;
+	  	align-items: center;}
+	
+	/* ✈️ 飛機 */
+	.plane {
+	  	width: 84px;
+	 	animation: taxi 0.8s ease-out forwards,takeoff 1.2s ease-in forwards 0.8s;}
+	
+	@keyframes taxi {
+	  from { transform: translateX(-40px); }
+	  to   { transform: translateX(0); }}
+	
+	@keyframes takeoff {
+	  to {
+		transform: translate(120px, -120px) rotate(-15deg);
+		opacity: 0;}}
+	
+	/* 文字 */
+	.splash-text {
+	  	margin-top: 16px;
+	  	font-size: 16px;
+	  	color: #fff;
+	  	animation: blink 1s ease-in-out infinite alternate;}
+	
+	@keyframes blink {
+	  from { opacity: 0.4; }
+	  to   { opacity: 1; }}
+	
+	/* Splash 消失 */
+	#app-splash.hide {
+	  	opacity: 0;
+	  	pointer-events: none;
+	  	transition: opacity 0.4s ease;}
+	
+	/* 主內容 */
+	#app-root {
+	  	opacity: 0;
+		display: none;
+	  	margin: 0;  /* 確保沒有額外的 margin */
+	  	padding: 0;  /* 確保沒有額外的 padding */
+	  	position: relative;}
+		
+	#app-root.show {
+	  	animation: fadeIn 0.4s ease forwards;
+		display: block;
+	  	position: absolute;
+	  	top: 0;  /* 確保頁面從頂部開始 */
+	  	left: 0;
+	  	width: 100%;  /* 保證寬度占滿整個視口 */
+	  	height: 100%; /* 保證高度占滿整個視口 */}
+		
+	.topbar {
+	  	background: #3A7AFE;
+	  	color: white;
+	  	padding: 15px;
+	  	position: fixed;
+	  	top: 0;
+	  	left: 0;
+	  	right: 0;
+	  	z-index: 1000;
+	  	transition: top 0.3s ease;
+		text-align: center;
+      	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      	margin-bottom: 24px;}
+	
+	.ios-full-menu {
+	  	display: none;
+	  	position: fixed;
+	  	top: 0;
+	  	left: 0;
+	  	right: 0;
+	  	bottom: 0;
+	  	background: rgba(0, 0, 0, 0.7);  /* 半透明黑色背景 */
+	  	z-index: 999;
+	  	justify-content: center;
+	  	align-items: center;
+	  	flex-direction: column;
+		transition: 0.3s;}
+	
+	.ios-full-menu .menu-content {
+		border-radius: 10px;
+	  	padding: 20px;
+	  	text-align: center;}
+	
+	.ios-full-menu ul {
+	  	list-style: none;
+	  	padding: 0;
+	  	margin: 0;}
+	
+	.ios-full-menu li {
+		padding: 15px;
+	  	cursor: pointer;
+	  	font-size: 18px;}
+	
+	.menu-close {
+	  	position: absolute;
+	  	top: 20px;
+	  	right: 20px;
+	  	font-size: 30px;
+	  	background: none;
+	  	border: none;
+	  	color: white;
+	  	cursor: pointer;}
+	
+	.menu-btn {
+	 	background: none;
+		border: none;
+		position: relative;
+		width: 30px;
+		font-size: 30px;
+		height: 20px;
+		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		padding: 0;}
+	
+	/* 創建三條線，並給每條線加陰影 */
+	.menu-btn::before,
+	.menu-btn::after,
+	.menu-btn div {
+	 	content: "";
+		position: absolute;
+		width: 100%;
+		height: 3px;
+		BORDER-RADIUS: 100PX;
+		background-color: white;
+		transition: transform 0.3s ease;}
+	
+	/* 均勻間隔的三條線 */
+	.menu-btn::before {
+	  	top: 0;}
+	
+	.menu-btn div {
+	  	top: 50%;
+	  	transform: translateY(-50%);}
+	
+	.menu-btn::after {
+	  	bottom: 0;}
+	
+	/* 當選單開啟時，將線條旋轉，並隱藏中間的線 */
+	.menu-btn.open::before {
+	  	transform: rotate(45deg);
+	  	top: 50%;}
+	
+	.menu-btn.open::after {
+	  	transform: rotate(-45deg);
+	  	bottom: 50%;}
+	
+	.menu-btn.open div {
+	  	opacity: 0; /* 中間的線會隱藏 */}
+	
+	
+	.ios-full-menu.show {
+	  	display: flex; /* 顯示選單 */
+	  	opacity: 1; /* 使選單顯示 */}/* 選單項目 */
+		
+	.menu-content ul {
+	  	display: flex;
+	  	flex-direction: column;
+		list-style: none;
+	  	padding: 0;
+	  	gap: 0px; /* 項目之間的間距 */}
+	
+	.menu-content li {
+	  	padding: 20px;}
+	
+	/* 頁面隱藏 */
+	.content-page {
+	  	display: none;
+	  	opacity: 0;
+	  	transition: opacity 0.3s ease-in-out;}
+	
+	/* 當頁面有 active 類別時顯示 */
+	.content-page.active {
+	  	display: block;
+	  	opacity: 1;}
+
+	
+	.menu-content ul li {
+	  	margin: 5px 0;
+	 	font-size: 24px;
+	  	color: #fff;
+	  	cursor: pointer;}
+	
+		
+	.container,
+	.packing-page,
+	.ticket-page,
+	.exchange-page {
+	  	display: none;}
+	
+	.container.active,
+	.packing-page.active,
+	.ticket-page.active,
+	.exchange-page.active {
+	  	display: block;}
+		
 </style>
 </head>
 <body>

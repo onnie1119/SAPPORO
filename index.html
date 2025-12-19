@@ -2110,12 +2110,18 @@ a:active {
   color: #fff;
   cursor: pointer;
 }
-.container, .packing-page, .ticket-page, .exchange-page {
-  display: none;  /* 默认隐藏所有页面 */
+.container,
+.packing-page,
+.ticket-page,
+.exchange-page {
+  display: none;
 }
 
-.container.active, .packing-page.active, .ticket-page.active, .exchange-page.active {
-  display: block;  /* 只有通过 JS 动态添加 active 时才显示 */
+.container.active,
+.packing-page.active,
+.ticket-page.active,
+.exchange-page.active {
+  display: block;
 }
 
 </style>
@@ -2884,7 +2890,7 @@ a:active {
             <!-- ================================
                   行李清單頁面
             ================================ -->
-            <div id="packing-page" class="packing-page" style="display:none;"></div>
+            <div id="packing-page" class="packing-page" ></div>
             <div id="packing-edit-bar" style="display:flex;justify-content:flex-end;margin-bottom: 5px;margin-top: 5px;"></div>
             
             <!-- === 行李清單通用 Modal（請務必放在 body 最底部） === -->
@@ -2901,7 +2907,7 @@ a:active {
 
 
 			<!-- === 電子憑證（請務必放在 body 最底部） === -->
-            <div id="ticket-page" class="ticket-page" style="display:none;">
+            <div id="ticket-page" class="ticket-page">
 				<div class="ticket-category-list">
 					<div class="ticket-category bg-blue" data-target="hotel">
 						<div class="icon">
@@ -3961,12 +3967,11 @@ a:active {
 		});
 		
 document.addEventListener("DOMContentLoaded", () => {
-  // 確保在 DOM 加載完成後選取菜單元素
   const menuBtn = document.getElementById("menuBtn");
   const closeBtn = document.getElementById("menuClose");
   const iosFullMenu = document.getElementById("iosFullMenu");
-  const menuItems = document.querySelectorAll(".menu-content ul li"); // 正確選取菜單項目
-  const contentPages = document.querySelectorAll(".content-page");
+  const menuItems = document.querySelectorAll(".menu-content ul li");
+  const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page");
   const topbar = document.getElementById("topbar");
 
   // 展開選單
@@ -3988,13 +3993,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 隱藏所有頁面
       contentPages.forEach(page => {
-        page.style.display = "none";  // 使用 style.display 隱藏頁面
+        page.classList.remove("active");
+        page.style.display = "none";  // 確保頁面隱藏
       });
 
       // 顯示選中的頁面
       const targetPage = document.getElementById(targetId);
       if (targetPage) {
-        targetPage.style.display = "block";  // 顯示目標頁面
+        targetPage.classList.add("active");
+        targetPage.style.display = "block";  // 顯示當前頁面
       }
 
       // 關閉選單
@@ -4003,6 +4010,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
 
 
 // 點擊選單項目時切換頁面

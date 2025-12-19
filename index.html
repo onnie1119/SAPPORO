@@ -3922,33 +3922,40 @@ document.addEventListener("DOMContentLoaded", () => {
 const menuBtn = document.getElementById("menuBtn");
 const closeBtn = document.getElementById("menuClose");
 const iosFullMenu = document.getElementById("iosFullMenu");
-const topbar = document.getElementById("topbar");
-
-// Open the menu
-menuBtn.addEventListener("click", () => {
-  iosFullMenu.style.display = "flex";
-  topbar.style.top = "-80px";  // Hide top bar when menu is open
-  menuBtn.classList.add("open");  // Add 'open' class to animate the menu symbol
-});
-
-// Close the menu
-closeBtn.addEventListener("click", () => {
-  iosFullMenu.style.display = "none";
-  topbar.style.top = "0";  // Reset top bar position when menu is closed
-  menuBtn.classList.remove("open");  // Remove 'open' class to reset the symbol
-});
-
-// Menu item click - hide the menu
 const menuItems = document.querySelectorAll(".menu-content ul li");
+const contentPages = document.querySelectorAll(".content-page");
+
+// 開啟選單
+menuBtn.addEventListener("click", () => {
+  iosFullMenu.style.display = "flex";  // 顯示選單
+  menuBtn.classList.add("open");  // 改變選單按鈕的樣式
+});
+
+// 關閉選單
+closeBtn.addEventListener("click", () => {
+  iosFullMenu.style.display = "none";  // 隱藏選單
+  menuBtn.classList.remove("open");  // 恢復選單按鈕的原始樣式
+});
+
+// 點擊選單項目後切換頁面
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
     const targetId = item.getAttribute("data-target");
-    console.log(`You clicked on: ${targetId}`);  // You can add logic to navigate to different pages
-    iosFullMenu.style.display = "none";
-    topbar.style.top = "0";  // Reset top bar position
-    menuBtn.classList.remove("open");  // Reset the menu button
+
+    // 隱藏所有頁面
+    contentPages.forEach(page => {
+      page.classList.remove("active");
+    });
+
+    // 顯示選中的頁面
+    document.getElementById(targetId).classList.add("active");
+
+    // 關閉選單
+    iosFullMenu.style.display = "none"; 
+    menuBtn.classList.remove("open");
   });
 });
+
 
 
 </script>

@@ -3960,7 +3960,7 @@ a:active {
 		  }
 		});
 		
-	document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-content ul li"); // 菜单项
   const contentPages = document.querySelectorAll(".content-page"); // 所有页面
   const topbar = document.getElementById("topbar"); // topbar 元素
@@ -3987,13 +3987,13 @@ a:active {
 
       // 隐藏所有页面
       contentPages.forEach(page => {
-        page.classList.remove("active"); // 移除 active 类
+        page.style.display = "none"; // 隐藏所有页面
       });
 
       // 显示选中的页面
       const targetPage = document.getElementById(targetId);
       if (targetPage) {
-        targetPage.classList.add("active"); // 为目标页面添加 active 类
+        targetPage.style.display = "block"; // 显示目标页面
       }
 
       // 关闭菜单
@@ -4002,6 +4002,7 @@ a:active {
     });
   });
 });
+
 
 
 	</script>

@@ -2138,12 +2138,11 @@ a:active {
   width: 100%;  /* 保證寬度占滿整個視口 */
   height: 100%; /* 保證高度占滿整個視口 */
 }
-
 #scrollToTop {
   position: fixed; /* 讓按鈕固定在視口 */
-  bottom: 20px;    /* 距離頁面底部 20px */
-  display: none;   /* 預設隱藏，只有在滾動到一定位置後顯示 */
-  background-color: #189cc0; /* 按鈕顏色 */
+  bottom: 20px;    /* 讓它固定在頁面底部，並與底部有 20px 距離 */
+  right: 20px;     /* 讓它固定在右下角，並與右側有 20px 距離 */
+  background-color: #189cc0; /* 按鈕的顏色 */
   color: white;    /* 按鈕文字顏色 */
   border: none;
   border-radius: 50%; /* 圓形按鈕 */
@@ -2156,6 +2155,11 @@ a:active {
 #scrollToTop.show {
   display: block; /* 顯示按鈕 */
 }
+
+#scrollToTop {
+  display: none; /* 預設隱藏，直到滾動到一定位置才顯示 */
+}
+
 
 </style>
 </head>
@@ -3068,18 +3072,21 @@ a:active {
 		// 3. TOP 按鈕
 		// ===========================
 		const scrollBtn = document.getElementById("scrollToTop");
-		
-		let isMainPage = true;
-		
-		window.addEventListener("scroll", () => {
-		  if (!isMainPage) return;
-		  if (window.scrollY > 300) scrollBtn.classList.add("show");
-		  else scrollBtn.classList.remove("show");
-		});
-		
-		scrollBtn.addEventListener("click", () => {
-		  window.scrollTo({ top: 0, behavior: "smooth" });
-		});
+
+			// 監聽滾動事件，當滾動到一定位置顯示按鈕
+			window.addEventListener("scroll", () => {
+			  if (window.scrollY > 300) { // 滾動到 300px 時顯示按鈕
+			    scrollBtn.classList.add("show");
+			  } else {
+			    scrollBtn.classList.remove("show");
+			  }
+			});
+			
+			// 點擊按鈕時滾動到頁面頂部
+			scrollBtn.addEventListener("click", () => {
+			  window.scrollTo({ top: 0, behavior: "smooth" });
+			});
+
 		
 		// ===========================
 		// 4. 匯率換算

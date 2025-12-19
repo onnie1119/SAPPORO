@@ -4010,54 +4010,41 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 開啟選單的按鈕
-const menuBtn = document.getElementById("menuBtn");
-const closeBtn = document.getElementById("menuClose");
-const iosFullMenu = document.getElementById("iosFullMenu");
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("menuBtn");
+  const closeBtn = document.getElementById("menuClose");
+  const iosFullMenu = document.getElementById("iosFullMenu");
+  const menuItems = document.querySelectorAll(".menu-content ul li");
+  const contentPages = document.querySelectorAll(".content-page");
 
-menuBtn.addEventListener("click", () => {
-  iosFullMenu.style.display = "flex";  // 顯示選單
-});
-
-closeBtn.addEventListener("click", () => {
-  iosFullMenu.style.display = "none";  // 隱藏選單
-});
-
-// 點擊選單項目後切換頁面
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.getAttribute("data-target");
-
-    // 隱藏所有頁面
-    contentPages.forEach(page => {
-      page.classList.remove("active");
-    });
-
-    // 顯示選中的頁面
-    document.getElementById(targetId).classList.add("active");
-
-    // 關閉選單
-    iosFullMenu.style.display = "none"; 
+  // 開啟選單
+  menuBtn.addEventListener("click", () => {
+    iosFullMenu.style.display = "flex";  // 顯示選單
+    document.querySelector(".topbar").style.display = "none";  // 隱藏 topbar
   });
-});
-	
-const menuItems = document.querySelectorAll(".menu-content ul li");
-const contentPages = document.querySelectorAll(".content-page");
 
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.getAttribute("data-target");
+  // 關閉選單
+  closeBtn.addEventListener("click", () => {
+    iosFullMenu.style.display = "none";  // 隱藏選單
+    document.querySelector(".topbar").style.display = "block";  // 顯示 topbar
+  });
 
-    // 隱藏所有頁面
-    contentPages.forEach(page => {
-      page.classList.remove("active");
+  // 點擊選單項目後切換頁面
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const targetId = item.getAttribute("data-target");
+
+      // 隱藏所有頁面
+      contentPages.forEach(page => {
+        page.classList.remove("active");
+      });
+
+      // 顯示選中的頁面
+      document.getElementById(targetId).classList.add("active");
+
+      // 關閉選單
+      iosFullMenu.style.display = "none";
     });
-
-    // 顯示選中的頁面
-    document.getElementById(targetId).classList.add("active");
-
-    // 關閉選單
-    iosFullMenu.style.display = "none";
   });
 });
 

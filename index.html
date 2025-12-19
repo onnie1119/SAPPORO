@@ -1911,233 +1911,88 @@ a:active {
 #app-root.show {
   animation: fadeIn 0.4s ease forwards;
 }
-
-/* menu */
-.menu-btn {
-  position: absolute;
-  left: 20px;
-  top: 20px;
-  transform: translateY(-50%);
-
-  width: 24px;
-  height: 2px;
-  background: #fff;          /* 線條顏色 */
-  border-radius: 2px;
-
-  border: none;
-  padding: 0;
-  cursor: pointer;
-
-  /* ✨ 用陰影複製出另外兩條線 */
-  box-shadow:
-    0 -8px 0 #fff,
-    0  8px 0 #fff;
-
-  transition: box-shadow .25s ease, transform .25s ease, opacity .2s;
-}
-.menu-open .menu-btn {
-  background: transparent;
-  box-shadow:
-    0 0 0 transparent,
-    0 0 0 transparent;
-}
-
-.menu-open .menu-btn::before,
-.menu-open .menu-btn::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  width: 24px;
-  height: 2px;
-  background: #fff;
-  border-radius: 2px;
-}
-
-.menu-open .menu-btn::before {
-  transform: rotate(45deg);
-}
-
-.menu-open .menu-btn::after {
-  transform: rotate(-45deg);
-}
-.ios-full-menu {
+.topbar {
+  background: #3A7AFE;
+  color: white;
+  padding: 15px;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: none;  /* 默認隱藏選單 */
-  justify-content: center;
-  align-items: center;
+  right: 0;
+  z-index: 1000;
+  transition: top 0.3s ease;  /* Add smooth transition */
 }
 
-.menu-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.menu-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 30px;
-  background: transparent;
-  border: none;
-  color: #333;
-  cursor: pointer;
-}
-
-.content-page {
-  display: none;  /* 默認隱藏所有頁面 */
-}
-
-.content-page.active {
-  display: block;  /* 顯示當前選中的頁面 */
-}
 .ios-full-menu {
-  position: fixed;
-  inset: 0;                       /* 👈 關鍵：整片 */
- background: #00a8ffb3;
-  backdrop-filter: blur(18px);
-
-  display: none;  /* 默認隱藏選單 */
-  justify-content: center;
-  align-items: center;
-
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s ease;
-  z-index: 3000;
-}
-
-.ios-full-menu.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-
-/* 中央選單內容 */
-.menu-content ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: center;
-}
-
-.menu-content li {
-  font-size: 22px;
-  font-weight: 500;
-  color: #fff;
-  padding: 14px 0;
-  cursor: pointer;
-  letter-spacing: .5px;
-}
-	
-
-
-/* iOS 點擊回饋 */
-.menu-content li:active {
-  opacity: .6;
-}
-
-/* 底部關閉 */
-.menu-close {
-     position: fixed;
-    top: 600px;
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 26px;
-    cursor: pointer;
-}
-  .menu-content {
-  width: 100%;
-  max-width: 320px;
-position: fixed;
-    top: 200px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.menu-content ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  text-align: center;
-}
-
-
-
-.menu-content li {
-  font-size: 22px;
-  color: #fff;
-  padding: 16px 0;
-  cursor: pointer;
-
-  transition:
-    transform .18s cubic-bezier(.2,.8,.2,1),
-    opacity .18s ease;
-}
-
-.menu-content li:active {
-  transform: scale(0.96);
-  opacity: .7;
-}
-.ios-full-menu.closing {
-  opacity: 0;
-  transition: opacity .2s ease;
-}
-
-	  #iosFullMenu {
-  display: none;  /* 初始設置為隱藏 */
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);  /* 半透明背景 */
-  z-index: 1000;  /* 保證選單在最上層 */
-}
-
-.menu-content {
-  display: flex;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);  /* Semi-transparent black */
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
 }
 
-.menu-content ul {
-  list-style-type: none;
+.ios-full-menu .menu-content {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.ios-full-menu ul {
+  list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-.menu-content li {
-  font-size: 1.5em;
-  color: white;
+.ios-full-menu li {
+  padding: 15px;
   cursor: pointer;
-  padding: 10px;
+  font-size: 18px;
 }
 
 .menu-close {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 2em;
-  color: white;
-  background: transparent;
+  top: 10px;
+  right: 10px;
+  font-size: 30px;
+  background: none;
   border: none;
+  color: white;
   cursor: pointer;
 }
 
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 30px;
+  color: white;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
-	<div class="topbar">
-		<button class="menu-btn" id="menuBtn" aria-label="menu"></button>
+	<div class="topbar" id="topbar">
+	  <button class="menu-btn" id="menuBtn" aria-label="menu">☰</button>
 	</div>
+	
+	<!-- iOS Full-Screen Menu -->
+	<div class="ios-full-menu" id="iosFullMenu">
+	  <div class="menu-content">
+	    <ul>
+	      <li data-target="home">行程表</li>
+	      <li data-target="luggage">行李清單</li>
+	      <li data-target="voucher">電子憑證</li>
+	      <li data-target="exchange">匯率計算機</li>
+	    </ul>
+	  </div>
+	  <button class="menu-close" id="menuClose">✕</button>
+</div>
 
 <!-- ✈️ App 啟動畫面 -->
 <div id="app-splash">
@@ -2989,19 +2844,7 @@ position: fixed;
 </div>
 
 
-<!-- iOS 全螢幕選單 -->
-<div class="ios-full-menu" id="iosFullMenu">
-  <div class="menu-content">
-    <ul>
-      <li data-target="home">行程表</li>
-      <li data-target="luggage">行李清單</li>
-      <li data-target="voucher">電子憑證</li>
-      <li data-target="exchange">匯率計算機</li>
-    </ul>
-  </div>
 
-  <button class="menu-close" id="menuClose">✕</button>
-</div>
 
 
 
@@ -4010,87 +3853,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-	document.addEventListener("DOMContentLoaded", () => {
-    const menuBtn = document.getElementById("menuBtn");
-    const closeBtn = document.getElementById("menuClose");
-    const iosFullMenu = document.getElementById("iosFullMenu");
-    const menuItems = document.querySelectorAll(".menu-content ul li");
-    const contentPages = document.querySelectorAll(".content-page");
-
-    // 開啟選單
-    menuBtn.addEventListener("click", () => {
-        iosFullMenu.style.display = "flex";  // 顯示選單
-        document.querySelector(".topbar").style.display = "none";  // 隱藏 topbar
-    });
-
-    // 關閉選單
-    closeBtn.addEventListener("click", () => {
-        iosFullMenu.style.display = "none";  // 隱藏選單
-        document.querySelector(".topbar").style.display = "block";  // 顯示 topbar
-    });
-
-    // 點擊選單項目後切換頁面
-    menuItems.forEach(item => {
-        item.addEventListener("click", () => {
-            const targetId = item.getAttribute("data-target");
-
-            // 隱藏所有頁面
-            contentPages.forEach(page => {
-                page.classList.remove("active");
-            });
-
-            // 顯示選中的頁面
-            document.getElementById(targetId).classList.add("active");
-
-            // 關閉選單
-            iosFullMenu.style.display = "none";
-            document.querySelector(".topbar").style.display = "block";  // 顯示 topbar
-        });
-    });
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const menuBtn = document.getElementById("menuBtn");
-    const closeBtn = document.getElementById("menuClose");
-    const iosFullMenu = document.getElementById("iosFullMenu");
-    const menuItems = document.querySelectorAll(".menu-content ul li");
-    const contentPages = document.querySelectorAll(".content-page");
-
-    // 開啟選單
-    menuBtn.addEventListener("click", () => {
-        iosFullMenu.style.display = "flex";  // 顯示選單
-        document.querySelector(".topbar").style.display = "none";  // 隱藏 topbar
-    });
-
-    // 關閉選單
-    closeBtn.addEventListener("click", () => {
-        iosFullMenu.style.display = "none";  // 隱藏選單
-        document.querySelector(".topbar").style.display = "block";  // 顯示 topbar
-    });
-
-    // 點擊選單項目後切換頁面
-    menuItems.forEach(item => {
-        item.addEventListener("click", () => {
-            const targetId = item.getAttribute("data-target");
-
-            // 隱藏所有頁面
-            contentPages.forEach(page => {
-                page.classList.remove("active");
-            });
-
-            // 顯示選中的頁面
-            document.getElementById(targetId).classList.add("active");
-
-            // 關閉選單
-            iosFullMenu.style.display = "none";
-            document.querySelector(".topbar").style.display = "block";  // 顯示 topbar
-        });
-    });
-});
-
+const menuBtn = document.getElementById("menuBtn");
+const closeBtn = document.getElementById("menuClose");
 const iosFullMenu = document.getElementById("iosFullMenu");
-console.log(iosFullMenu); // 應該顯示選單元素
+const topbar = document.getElementById("topbar");
+
+// Open the menu
+menuBtn.addEventListener("click", () => {
+  iosFullMenu.style.display = "flex";
+  topbar.style.top = "-80px";  // Hide top bar when menu is open
+});
+
+// Close the menu
+closeBtn.addEventListener("click", () => {
+  iosFullMenu.style.display = "none";
+  topbar.style.top = "0";  // Reset top bar position when menu is closed
+});
+
+// Menu item click - hide the menu
+const menuItems = document.querySelectorAll(".menu-content ul li");
+menuItems.forEach(item => {
+  item.addEventListener("click", () => {
+    const targetId = item.getAttribute("data-target");
+    console.log(`You clicked on: ${targetId}`);  // You can add logic to navigate to different pages
+    iosFullMenu.style.display = "none";
+    topbar.style.top = "0";  // Reset top bar position
+  });
+});
 
 </script>
 </body>

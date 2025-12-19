@@ -1911,19 +1911,81 @@ a:active {
 #app-root.show {
   animation: fadeIn 0.4s ease forwards;
 }
+/* ===== Top Bar ===== */
+.topbar {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1000;
+}
+
+.menu-btn {
+  width: 36px;
+  height: 28px;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.menu-btn span {
+  height: 3px;
+  border-radius: 2px;
+  background: #111;
+}
+
+/* ===== Fullscreen iOS Menu ===== */
+.ios-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(18px);
+  background: rgba(255,255,255,0.65);
+}
+
+.ios-menu.active {
+  display: flex;
+}
+
+.ios-menu-panel {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.ios-menu-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ios-menu-panel li {
+  font-size: 22px;
+  padding: 20px 0;
+  cursor: pointer;
+  transition: opacity .2s, transform .2s;
+}
+
+.ios-menu-panel li:active {
+  transform: scale(0.96);
+  opacity: .6;
+}
 
 </style>
 </head>
 <body>
 	<div class="topbar">
+		<button class="menu-btn" id="menuBtn">
+		    <span></span><span></span><span></span>
+		 </button>
 		<div class="trip-title">北海道の旅</div>
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
-		<div class="top-buttons">
-			<button onclick="showtravel()">行程</button>
-			<button onclick="showPacking()">行李</button>
-			<button onclick="showTicket()">憑證</button>
- 			<button onclick="showExchange()">匯率</button>
-		</div>
+		
 	</div>
 <!-- ✈️ App 啟動畫面 -->
 <div id="app-splash">
@@ -2773,7 +2835,17 @@ a:active {
     <div id="ticketContentBody"></div>
   </div>
 </div>
-
+<!-- iOS Fullscreen Menu -->
+<div class="ios-menu" id="iosMenu">
+  <div class="ios-menu-panel">
+    <ul>
+      <li data-action="home">行程表</li>
+      <li data-action="packing">行李清單</li>
+      <li data-action="ticket">電子憑證</li>
+      <li data-action="exchange">匯率計算機</li>
+    </ul>
+  </div>
+</div>
 
 
 
@@ -3781,6 +3853,42 @@ document.addEventListener("DOMContentLoaded", () => {
         app.classList.add("show");
       }, 400);
     }, 2000);
+  }
+});
+/* ======================
+   iOS Menu Control
+====================== */
+const menuBtn = document.getElementById("menuBtn");
+const iosMenu = document.getElementById("iosMenu");
+
+menuBtn.addEventListener("click", () => {
+  iosMenu.classList.add("active");
+  if (navigator.vibrate) navigator.vibrate(8);
+});
+
+iosMenu.addEventListener("click", (e) => {
+  const item = e.target.closest("li");
+  if (!item) {
+    iosMenu.classList.remove("active");
+    return;
+  }
+
+  const action = item.dataset.action;
+  iosMenu.classList.remove("active");
+
+  switch (action) {
+    case "home":
+      showtravel();
+      break;
+    case "packing":
+      showPacking();
+      break;
+    case "ticket":
+      showTicket();
+      break;
+    case "exchange":
+      showExchange();
+      break;
   }
 });
 

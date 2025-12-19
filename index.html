@@ -1911,6 +1911,7 @@ a:active {
 #app-root.show {
   animation: fadeIn 0.4s ease forwards;
 }
+
 .topbar {
   background: #3A7AFE;
   color: white;
@@ -1985,25 +1986,24 @@ a:active {
   height: 6px;
   background-color: white;
   transition: transform 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);  /* Shadow effect */
 }
 
+/* Position the lines evenly spaced */
 .menu-btn::before {
   top: 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);  /* Shadow effect for top line */
-}
-
-.menu-btn::after {
-  bottom: 0;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);  /* Shadow effect for bottom line */
 }
 
 .menu-btn div {
   top: 50%;
   transform: translateY(-50%);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Shadow effect for middle line */
 }
 
-/* When the menu is active (open), you can add some animations */
+.menu-btn::after {
+  bottom: 0;
+}
+
+/* When the menu is active (open), add animations */
 .menu-btn.open::before {
   transform: rotate(45deg);
   top: 50%;
@@ -2016,6 +2016,22 @@ a:active {
 
 .menu-btn.open div {
   opacity: 0; /* Hide the middle line when menu is open */
+}
+
+/* iOS full-screen menu display */
+.ios-full-menu {
+  display: flex;
+}
+
+/* Animations for menu items */
+.menu-content ul {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Add spacing between menu items */
+}
+
+.menu-content li {
+  padding: 20px;
 }
 </style>
 </head>

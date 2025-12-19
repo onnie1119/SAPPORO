@@ -1969,28 +1969,29 @@ a:active {
 }
 
 .menu-btn {
-  background: none;
-  border: none;
-  position: relative;
-  width: 40px;
-  height: 30px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 0;
+ background: none;
+    border: none;
+    position: relative;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
 }
 
 /* 創建三條線，並給每條線加陰影 */
 .menu-btn::before,
 .menu-btn::after,
 .menu-btn div {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 6px;
-  background-color: white;
-  transition: transform 0.3s ease;
+ content: "";
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    BORDER-RADIUS: 100PX;
+    background-color: white;
+    transition: transform 0.3s ease;
   
 }
 

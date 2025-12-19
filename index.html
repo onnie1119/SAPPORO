@@ -3169,37 +3169,7 @@ menuItems.forEach(item => {
 
 
 	</script>
-	<script>
-const btn = document.getElementById("scrollTopBtn");
-const home = document.getElementById("home-page");
 
-function toggleBtn() {
-  if (!home.classList.contains("active")) {
-    btn.classList.remove("show");
-    return;
-  }
-
-  if (home.scrollTop > 200) {
-    btn.classList.add("show");
-  } else {
-    btn.classList.remove("show");
-  }
-}
-
-// ⭐ 關鍵：監聽「home-page 自己」
-home.addEventListener("scroll", toggleBtn);
-
-// 切頁 / 載入時初始化
-window.addEventListener("load", () => {
-  home.scrollTop = 0;
-  toggleBtn();
-});
-
-// 點擊回頂
-btn.addEventListener("click", () => {
-  home.scrollTo({ top: 0, behavior: "smooth" });
-});
-</script>
 
 
 

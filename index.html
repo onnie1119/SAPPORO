@@ -1920,7 +1920,7 @@ a:active {
   left: 0;
   right: 0;
   z-index: 1000;
-  transition: top 0.3s ease;  /* Add smooth transition */
+  transition: top 0.3s ease;
 }
 
 .ios-full-menu {
@@ -1970,17 +1970,59 @@ a:active {
 .menu-btn {
   background: none;
   border: none;
-  font-size: 30px;
-  color: white;
+  position: relative;
+  width: 40px;
+  height: 30px;
   cursor: pointer;
+}
+
+.menu-btn::before,
+.menu-btn::after,
+.menu-btn div {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  background-color: white;
+  transition: transform 0.3s ease;
+}
+
+.menu-btn::before {
+  top: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);  /* Shadow effect for top line */
+}
+
+.menu-btn::after {
+  bottom: 0;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);  /* Shadow effect for bottom line */
+}
+
+.menu-btn div {
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Shadow effect for middle line */
+}
+
+/* When the menu is active (open), you can add some animations */
+.menu-btn.open::before {
+  transform: rotate(45deg);
+  top: 50%;
+}
+
+.menu-btn.open::after {
+  transform: rotate(-45deg);
+  bottom: 50%;
+}
+
+.menu-btn.open div {
+  opacity: 0; /* Hide the middle line when menu is open */
 }
 </style>
 </head>
 <body>
 	<div class="topbar" id="topbar">
-	  <button class="menu-btn" id="menuBtn" aria-label="menu">☰</button>
+	  <button class="menu-btn" id="menuBtn" aria-label="menu"></button>
 	</div>
-	
 	<!-- iOS Full-Screen Menu -->
 	<div class="ios-full-menu" id="iosFullMenu">
 	  <div class="menu-content">
@@ -3862,12 +3904,14 @@ const topbar = document.getElementById("topbar");
 menuBtn.addEventListener("click", () => {
   iosFullMenu.style.display = "flex";
   topbar.style.top = "-80px";  // Hide top bar when menu is open
+  menuBtn.classList.add("open");  // Add 'open' class to animate the menu symbol
 });
 
 // Close the menu
 closeBtn.addEventListener("click", () => {
   iosFullMenu.style.display = "none";
   topbar.style.top = "0";  // Reset top bar position when menu is closed
+  menuBtn.classList.remove("open");  // Remove 'open' class to reset the symbol
 });
 
 // Menu item click - hide the menu
@@ -3878,6 +3922,7 @@ menuItems.forEach(item => {
     console.log(`You clicked on: ${targetId}`);  // You can add logic to navigate to different pages
     iosFullMenu.style.display = "none";
     topbar.style.top = "0";  // Reset top bar position
+    menuBtn.classList.remove("open");  // Reset the menu button
   });
 });
 

@@ -2157,6 +2157,66 @@ a:active {
 .scroll-top-button.show {
   display: block;  /* 顯示按鈕 */
 }
+/* 固定在畫面底部 */
+.scroll-top-button {
+  position: fixed;  /* 使按鈕固定 */
+  bottom: 20px;     /* 距離畫面底部 20px */
+  right: 20px;      /* 距離畫面右邊 20px */
+  display: none;    /* 預設隱藏，當需要顯示時會加上 show class */
+  z-index: 1000;    /* 保證按鈕層級較高，避免被其他元素蓋住 */
+  background-color: #189cc0;  /* 背景顏色 */
+  color: white;     /* 按鈕文字顏色 */
+  padding: 10px 20px;
+  border-radius: 5px;  /* 圓角 */
+  cursor: pointer;    /* 鼠標樣式 */
+  transition: opacity 0.3s ease-in-out; /* 顯示/隱藏過渡效果 */
+}
+
+/* 顯示按鈕的樣式 */
+.scroll-top-button.show {
+  display: block;  /* 顯示按鈕 */
+}
+
+/* 確保沒有其他容器影響fixed定位 */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden; /* 防止橫向滾動 */
+}
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: #FAFAF7;
+}
+
+body.scroll-mode {
+  background-color: #F6F9FC; /* 可以設定一個區別 */
+}
+
+/* 其他內容區域的顯示/隱藏 */
+.container, .packing-page, .ticket-page, .exchange-page {
+  display: none;
+}
+
+.container.active, .packing-page.active, .ticket-page.active, .exchange-page.active {
+  display: block;
+}
+
+#app-root.show {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+/* scroll-top-button的滑動顯示 */
+.scroll-top-button {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scroll-top-button.show {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 
 </style>

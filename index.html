@@ -3974,6 +3974,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page");
   const topbar = document.getElementById("topbar");
 
+  // 設定預設顯示行程表
+  const homePage = document.getElementById("home-page");
+  homePage.style.display = "block"; // 顯示行程表
+  homePage.classList.add("active"); // 設定為 active
+
   // 展開選單
   menuBtn.addEventListener("click", () => {
     iosFullMenu.style.display = "flex";  // 顯示選單
@@ -4010,6 +4015,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
 
 
 

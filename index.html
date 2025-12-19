@@ -1975,6 +1975,24 @@ a:active {
   transform: scale(0.96);
   opacity: .6;
 }
+.menu-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.08);
+  font-size: 20px;
+  line-height: 36px;
+  cursor: pointer;
+}
+
+.menu-close:active {
+  transform: scale(0.92);
+  background: rgba(0,0,0,0.15);
+}
 
 </style>
 </head>
@@ -2835,9 +2853,14 @@ a:active {
     <div id="ticketContentBody"></div>
   </div>
 </div>
-<!-- iOS Fullscreen Menu -->
+
+	
 <div class="ios-menu" id="iosMenu">
   <div class="ios-menu-panel">
+
+    <!-- 關閉按鈕 -->
+    <button class="menu-close" id="menuClose">✕</button>
+
     <ul>
       <li data-action="home">行程表</li>
       <li data-action="packing">行李清單</li>
@@ -2846,6 +2869,7 @@ a:active {
     </ul>
   </div>
 </div>
+
 
 
 
@@ -3892,6 +3916,12 @@ iosMenu.addEventListener("click", (e) => {
   }
 });
 
+const menuClose = document.getElementById("menuClose");
+
+menuClose.addEventListener("click", () => {
+  iosMenu.classList.remove("active");
+  if (navigator.vibrate) navigator.vibrate(6);
+});
 
 </script>
 </body>

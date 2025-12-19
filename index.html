@@ -2074,7 +2074,7 @@
             </div>
             
 		</div>
-		<button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>	
+		
         <button class="back-btn" id="navBtn">BACK</button>
 	</div>	
 
@@ -2145,21 +2145,7 @@
 		// ===========================
 		// 3. TOP 按鈕
 		// ===========================
-		const scrollBtn = document.getElementById("scrollToTop");
-
-			// 滾動頁面時控制按鈕顯示
-			window.addEventListener("scroll", () => {
-			  if (window.scrollY > 300) {  // 當滾動超過300px顯示按鈕
-			    scrollBtn.classList.add("show");
-			  } else {
-			    scrollBtn.classList.remove("show");
-			  }
-			});
-			
-			// 點擊按鈕時滾動到頁面頂部
-			scrollBtn.addEventListener("click", () => {
-			  window.scrollTo({ top: 0, behavior: "smooth" });
-			});
+		
 
 		// ===========================
 		// 4. 匯率換算

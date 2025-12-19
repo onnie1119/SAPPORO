@@ -18,7 +18,7 @@
       background: #FAFAF7;
       font-family: 'Noto Sans TC', sans-serif;
       color: #444;
-      padding-bottom: 60px;
+      padding-bottom: 20px;
     }
 body.exchange-mode {
 	margin: 0;
@@ -94,7 +94,7 @@ body.exchange-mode {
       padding: 0 20px;
       max-width: 600px;
       margin: 0 auto;
-	  margin-top: 165px;
+	  padding-top: 165px;
       position: relative;
 		background-color: #F6F9FC;
     }
@@ -397,7 +397,7 @@ body.exchange-mode {
 }
 
 .exchange-page {
-  margin-top:80px;
+  
   display: none;
   text-align: center;
   padding: 40px 20px;
@@ -449,7 +449,7 @@ select {
 
 .back-btn {
   position: fixed;
-  bottom: 20px;
+  
   left: 50%;
   transform: translateX(-50%);
   background: #3A7AFE;
@@ -554,7 +554,7 @@ select {
 }
 
 .num-pad .key {
-  padding: 14px 0;
+  padding: 12px 0;
   font-size: 20px;
   border: none;
   border-radius: 10px;
@@ -629,11 +629,12 @@ input[type="text"]::-webkit-outer-spin-button {
 	  .exchange-page {
      position: relative;
     top: 2.5rem;
-  
-    margin-top: 95px;
+    min-height:530px;
+   
     display: none;
     text-align: center;
     padding: 0px 20px;
+		  padding-top:95px;
     animation: fadeIn 0.4s 
 ease;
 }
@@ -652,7 +653,7 @@ ease;
 /* 整頁 */
 .packing-page {
   padding: 20px;
-  margin-top: 142px;
+  padding-top: 160px;
 	background-color: #F6F9FC;
 	    animation: fadeIn 0.4s ease;
 }
@@ -811,7 +812,7 @@ ease;
 .scroll-top-button,
 .back-btn {
       position: fixed;
-    bottom: 20px;
+   bottom: 0px;
     left: 50%;
     transform: translateX(-50%);
     background: #3A7AFE;
@@ -1242,6 +1243,7 @@ body.packing-mode {
   color: #d95380;
   text-align: center;
   margin: 10px 0;
+	    margin-bottom: 3rem;
   cursor: pointer;
 }
 /* 分類刪除鍵（默認隱藏） */
@@ -1329,7 +1331,7 @@ body.packing-mode {
 
 .ticket-page {
   padding: 20px;
-  margin-top: 135px;
+  
   animation: fadeIn 0.4s ease;
 }
 
@@ -1407,8 +1409,9 @@ body.packing-mode {
 
 .ticket-page {
   background: #F6F9FC;
-  min-height: 60vh;
+  min-height: 444px;
   padding: 24px 20px;
+	padding-top:152px;
 }
 
 /* 列表 */
@@ -1421,7 +1424,7 @@ body.packing-mode {
 /* 單一列 */
 .ticket-category {
   border-radius: 8px;
-  padding: 18px 14px;
+  padding: 15px 14px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1847,19 +1850,105 @@ a:active {
 .fade-in {
   animation: fadeIn 0.4s ease;
 }
+
+/* Splash 整體 */
+#app-splash {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(#FAFAF7, #F0F0EB);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 跑道 */
+.runway {
+  width: 160px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    #bbb 0 12px,
+    transparent 12px 24px
+  );
+  margin-bottom: 24px;
+  opacity: 0.6;
+}
+
+/* ✈️ 飛機 */
+.plane {
+  width: 72px;
+  animation: taxi 0.8s ease-out forwards,
+             takeoff 1.2s ease-in forwards 0.8s;
+}
+
+@keyframes taxi {
+  from { transform: translateX(-40px); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes takeoff {
+  to {
+    transform: translate(120px, -120px) rotate(-15deg);
+    opacity: 0;
+  }
+}
+
+/* 文字 */
+.splash-text {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #777;
+  animation: blink 1s ease-in-out infinite alternate;
+}
+
+@keyframes blink {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+
+/* Splash 消失 */
+#app-splash.hide {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+/* 主內容 */
+#app-root {
+  opacity: 0;
+}
+#app-root.show {
+  animation: fadeIn 0.4s ease forwards;
+}
+
 </style>
 </head>
 <body>
-
 	<div class="topbar">
 		<div class="trip-title">北海道の旅</div>
 		<div class="trip-date">旅を記錄する、思い出を綴る</div>
 		<div class="top-buttons">
-			<button onclick="showPacking()">行李清單</button>
-			<button onclick="showTicket()">電子憑證</button>
- 			<button onclick="showExchange()">匯率換算</button>
+			<button onclick="showtravel()">行程</button>
+			<button onclick="showPacking()">行李</button>
+			<button onclick="showTicket()">憑證</button>
+ 			<button onclick="showExchange()">匯率</button>
 		</div>
 	</div>
+<!-- ✈️ App 啟動畫面 -->
+<div id="app-splash">
+  <div class="runway"></div>
+  <img src="images/flight.png" class="plane">
+  <div class="splash-text">Preparing for departure…</div>
+</div>
+
+<!-- 原本整個網站包起來 -->
+<div id="app-root">
+  <!-- 你現在所有內容都放這裡 -->
+
+
+	
 
 	<div class="container">
 		<div class="day-tabs-wrapper">
@@ -1982,6 +2071,7 @@ a:active {
             </div>
     	</div>
 	</a>
+	<span style="display:flex;height:3rem;"></span>
 </div> 
     <!-- Day 2 -->
     <div class="day-section" id="day-2" style="display:none;">
@@ -2082,6 +2172,7 @@ a:active {
             </div>
     	</div>
 		</a>
+		<span style="display:flex;height:3rem;"></span>
 	</div>
     <!-- Day 3 -->
     <div class="day-section" id="day-3" style="display:none;">
@@ -2182,6 +2273,7 @@ a:active {
             </div>
     	</div>
 		</a>
+		<span style="display:flex;height:3rem;"></span>
 	</div>
 
 	<!-- Day 4 -->
@@ -2308,6 +2400,7 @@ a:active {
             </div>
     	</div>
 		</a>
+		<span style="display:flex;height:3rem;"></span>
      </div>
      
     <!-- Day 5 -->
@@ -2398,6 +2491,7 @@ a:active {
             </div>
     	</div>
 		</a>
+		<span style="display:flex;height:3rem;"></span>
 	</div>
     <!-- Day 6 -->
     <div class="day-section" id="day-6" style="display:none;">
@@ -2498,6 +2592,7 @@ a:active {
             </div>
     	</div>
 		</a>
+		<span style="display:flex;height:3rem;"></span>
 	</div>
     <!-- Day 7 -->
     <div class="day-section" id="day-7" style="display:none;">
@@ -2532,6 +2627,7 @@ a:active {
             </div>
     	</div>
 		</a>
+		<span style="display:flex;height:1rem;"></span>
 	</div>
 </div>
 	
@@ -2699,7 +2795,7 @@ a:active {
 <button class="back-btn" id="navBtn">BACK</button>
 
 
-	
+</div>	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 
@@ -3665,11 +3761,55 @@ document.addEventListener("click", function (e) {
   ticketLevel = "content"; // 顯示內容頁
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const splash = document.getElementById("app-splash");
+  const app = document.getElementById("app-root");
+
+  const images = [...document.images];
+  let loaded = 0;
+
+  if (images.length === 0) finish();
+
+  images.forEach(img => {
+    if (img.complete) {
+      loaded++;
+      if (loaded === images.length) finish();
+    } else {
+      img.onload = img.onerror = () => {
+        loaded++;
+        if (loaded === images.length) finish();
+      };
+    }
+  });
+
+  function finish() {
+    // ✈️ 飛機動畫總長約 2 秒
+    setTimeout(() => {
+      splash.classList.add("hide");
+
+      setTimeout(() => {
+        splash.remove();
+        app.classList.add("show");
+      }, 400);
+    }, 2000);
+  }
+});
 
 
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

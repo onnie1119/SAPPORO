@@ -1911,253 +1911,26 @@ a:active {
 #app-root.show {
   animation: fadeIn 0.4s ease forwards;
 }
-/* ===== Top Bar ===== */
-.topbar
-	  {display: flex;
-  align-items: center;     /* 垂直置中 */
-  gap: 14px;
-	       justify-content: center;
- backdrop-filter: blur(10px);
-  z-index: 1000;
-}
-.topbar-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.trip-title {
-  font-size: 22px;
-  
-  color: #fff;
-  outline: none;
-  cursor: text;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.trip-title:focus {
-  background: rgba(0,0,0,0.04);
-  border-radius: 6px;
-  padding: 2px 6px;
-}
-
-.trip-date {
-  font-size: 12px;
-  color: #fff;
-  margin-top: 6px;
-}
-.trip-date {
-  letter-spacing: 0.05em;
-}
-
-
-.menu-btn {
-      position: absolute;
-    left: 25px;
-    top: 30px;
-    width: 28px;
-    height: 18px;
-    border: none;
-    background: none;
-    cursor: pointer;
-}
-
-.menu-btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-
-  width: 100%;
-  height: 3px;                 /* ⭐ 唯一一條線 */
-  background-color: #fff;
-  border-radius: 999px;
-
-  transform: translateY(-50%);
-  
-  /* 上下複製 */
-  box-shadow:
-    0 -8px 0 #fff,
-    0  8px 0 #fff;
-}
-
-
-/* ===== Fullscreen iOS Menu ===== */
-.ios-menu {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(18px);
-  background: rgba(255,255,255,0.65);
-}
-
-.ios-menu.active {
-  display: flex;
-}
-
-.ios-menu-panel {
-	position: relative; 
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-}
-
-.ios-menu-panel ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.ios-menu-panel li {
-  font-size: 22px;
-  padding: 20px 0;
-  cursor: pointer;
-  transition: opacity .2s, transform .2s;
-}
-
-.ios-menu-panel li:active {
-  transform: scale(0.96);
-  opacity: .6;
-}
-.menu-close {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0,0,0,0.08);
-  font-size: 20px;
-  line-height: 36px;
-  cursor: pointer;
-}
-
-.menu-close:active {
-  transform: scale(0.92);
-  background: rgba(0,0,0,0.15);
-}
-.title-edit-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.trip-title {
-  font-size: 20px;
- 
-  color: #fff;
-
-  outline: none;
-  cursor: text;
-  white-space: nowrap;
-
-  padding: 2px 4px;
-  border-radius: 6px;
-
-  transition: 
-    background-color 0.25s ease,
-    box-shadow 0.25s ease;
-
-}
-.trip-title.editing {
-  background: rgba(0,0,0,0.06);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
-}
-.edit-icon {
-  font-size: 14px;
-  opacity: 0.5;
-  cursor: pointer;
-
-  transition: 
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-/* hover 或 focus 時更明顯 */
-.title-edit-wrap:hover .edit-icon {
-  opacity: 0.9;
-}
-
-/* 編輯中淡出 */
-.trip-title.editing + .edit-icon {
-  opacity: 0;
-  transform: scale(0.8);
-  pointer-events: none;
-}
-.edit-icon {
-  width: 14px;
-  height: 14px;
-  position: relative;
-  opacity: 0.5;
-  cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-/* 筆身 */
-.edit-icon::before {
-  content: "";
-  position: absolute;
-  width: 12px;
-  height: 2px;
-  background: currentColor;
-  top: 6px;
-  left: 1px;
-  transform: rotate(-45deg);
-  border-radius: 2px;
-}
-
-/* 筆尖 */
-.edit-icon::after {
-  content: "";
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-left: 4px solid currentColor;
-  border-top: 3px solid transparent;
-  border-bottom: 3px solid transparent;
-  top: 3px;
-  right: -2px;
-  transform: rotate(-45deg);
-}
-
-/* hover 提示 */
-.title-edit-wrap:hover .edit-icon {
-  opacity: 0.9;
-}
-
-/* 編輯中隱藏 */
-.trip-title.editing + .edit-icon {
-  opacity: 0;
-  transform: scale(0.8);
-  pointer-events: none;
-}
 
 </style>
 </head>
 <body>
 	<div class="topbar">
-  <button class="menu-btn" id="menuBtn"></button>
-
-  <div class="topbar-text">
-    <div class="title-edit-wrap">
-      <div
-        class="trip-title"
-        id="tripTitle"
-        contenteditable="true"
-        spellcheck="false"
-      >
-        北海道の旅
-      </div>
-
-     <span class="edit-icon" id="editIcon" aria-label="edit"></span>
-
-    </div>
-  </div>
+		<div class="trip-title">北海道の旅</div>
+		<div class="trip-date">旅を記錄する、思い出を綴る</div>
+		<div class="top-buttons">
+			<button onclick="showtravel()">行程</button>
+			<button onclick="showPacking()">行李</button>
+			<button onclick="showTicket()">憑證</button>
+ 			<button onclick="showExchange()">匯率</button>
+		</div>
+	</div>
+<!-- ✈️ App 啟動畫面 -->
+<div id="app-splash">
+  <div class="runway"></div>
+  <img src="images/flight.png" class="plane">
+  <div class="splash-text">白い季節に、恋をする</div>
 </div>
-
 
 <!-- 原本整個網站包起來 -->
 <div id="app-root">
@@ -2998,20 +2771,6 @@ a:active {
    
     <h3 id="ticketContentTitle"></h3>
     <div id="ticketContentBody"></div>
-  </div>
-</div>
-
-	
-<div class="ios-menu" id="iosMenu">
-  <div class="ios-menu-panel">
-    <button class="menu-close" id="menuClose">✕</button>
-
-    <ul>
-      <li data-action="home">行程表</li>
-      <li data-action="packing">行李清單</li>
-      <li data-action="ticket">電子憑證</li>
-      <li data-action="exchange">匯率計算機</li>
-    </ul>
   </div>
 </div>
 
@@ -4024,67 +3783,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2000);
   }
 });
-/* ======================
-   iOS Menu Control
-====================== */
-const menuBtn = document.getElementById("menuBtn");
-const iosMenu = document.getElementById("iosMenu");
-
-menuBtn.addEventListener("click", () => {
-  iosMenu.classList.add("active");
-  if (navigator.vibrate) navigator.vibrate(8);
-});
-
-iosMenu.addEventListener("click", (e) => {
-  const item = e.target.closest("li");
-  if (!item) {
-    iosMenu.classList.remove("active");
-    return;
-  }
-
-  const action = item.dataset.action;
-  iosMenu.classList.remove("active");
-
-  switch (action) {
-    case "home":
-      showtravel();
-      break;
-    case "packing":
-      showPacking();
-      break;
-    case "ticket":
-      showTicket();
-      break;
-    case "exchange":
-      showExchange();
-      break;
-  }
-});
-	
-
-const menuClose = document.getElementById("menuClose");
-
-menuClose.addEventListener("click", () => {
-  iosMenu.classList.remove("active");
-  if (navigator.vibrate) navigator.vibrate(6);
-});
-
-	
-const tripTitle = document.getElementById("tripTitle");
-
-tripTitle.addEventListener("dblclick", () => {
-  const current = tripTitle.textContent;
-  const next = prompt("請輸入旅程標題", current);
-
-  if (next && next.trim()) {
-    tripTitle.textContent = next.trim();
-    localStorage.setItem("tripTitle", next.trim());
-  }
-});
-
-// 初始化
-const savedTitle = localStorage.getItem("tripTitle");
-if (savedTitle) tripTitle.textContent = savedTitle;
 
 
 </script>

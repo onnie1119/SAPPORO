@@ -1996,7 +1996,99 @@ a:active {
 .content-page.active {
   display: block;  /* 顯示當前選中的頁面 */
 }
+.ios-full-menu {
+  position: fixed;
+  inset: 0;                       /* 👈 關鍵：整片 */
+ background: #00a8ffb3;
+  backdrop-filter: blur(18px);
 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  z-index: 3000;
+}
+
+.ios-full-menu.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* 中央選單內容 */
+.menu-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.menu-content li {
+  font-size: 22px;
+  font-weight: 500;
+  color: #fff;
+  padding: 14px 0;
+  cursor: pointer;
+  letter-spacing: .5px;
+}
+	
+
+
+/* iOS 點擊回饋 */
+.menu-content li:active {
+  opacity: .6;
+}
+
+/* 底部關閉 */
+.menu-close {
+     position: fixed;
+    top: 600px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 26px;
+    cursor: pointer;
+}
+  .menu-content {
+  width: 100%;
+  max-width: 320px;
+position: fixed;
+    top: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.menu-content ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+
+
+.menu-content li {
+  font-size: 22px;
+  color: #fff;
+  padding: 16px 0;
+  cursor: pointer;
+
+  transition:
+    transform .18s cubic-bezier(.2,.8,.2,1),
+    opacity .18s ease;
+}
+
+.menu-content li:active {
+  transform: scale(0.96);
+  opacity: .7;
+}
+.ios-full-menu.closing {
+  opacity: 0;
+  transition: opacity .2s ease;
+}
 </style>
 </head>
 <body>

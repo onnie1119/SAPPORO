@@ -2026,10 +2026,13 @@ a:active {
 
 /* iOS 全螢幕選單顯示 */
 .ios-full-menu {
-  display: flex;
+  display: none;
 }
 
-/* 選單項目 */
+.ios-full-menu.show {
+  display: flex; /* 顯示選單 */
+  opacity: 1; /* 使選單顯示 */
+}/* 選單項目 */
 .menu-content ul {
   display: flex;
   flex-direction: column;
@@ -3927,13 +3930,13 @@ const contentPages = document.querySelectorAll(".content-page");
 
 // 開啟選單
 menuBtn.addEventListener("click", () => {
-  iosFullMenu.style.display = "flex";  // 顯示選單
+  iosFullMenu.classList.add("show");  // 顯示選單，並運行過渡效果
   menuBtn.classList.add("open");  // 改變選單按鈕的樣式
 });
 
 // 關閉選單
 closeBtn.addEventListener("click", () => {
-  iosFullMenu.style.display = "none";  // 隱藏選單
+  iosFullMenu.classList.remove("show");  // 隱藏選單
   menuBtn.classList.remove("open");  // 恢復選單按鈕的原始樣式
 });
 
@@ -3951,10 +3954,11 @@ menuItems.forEach(item => {
     document.getElementById(targetId).classList.add("active");
 
     // 關閉選單
-    iosFullMenu.style.display = "none"; 
+    iosFullMenu.classList.remove("show"); 
     menuBtn.classList.remove("open");
   });
 });
+
 
 
 

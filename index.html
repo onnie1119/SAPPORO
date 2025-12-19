@@ -2002,7 +2002,7 @@ a:active {
  background: #00a8ffb3;
   backdrop-filter: blur(18px);
 
-  display: flex;
+  display: none;  /* 默認隱藏選單 */
   justify-content: center;
   align-items: center;
 
@@ -4000,6 +4000,22 @@ menuItems.forEach(item => {
     // 關閉選單
     iosFullMenu.style.display = "none"; 
   });
+});
+	
+const iosFullMenu = document.getElementById("iosFullMenu");
+const menuClose = document.getElementById("menuClose");
+const topbar = document.getElementById("topbar");
+
+// 顯示選單並隱藏 topbar
+function showMenu() {
+  iosFullMenu.style.display = "flex";  // 顯示選單
+  topbar.style.display = "none";  // 隱藏 topbar
+}
+
+// 隱藏選單並顯示 topbar
+menuClose.addEventListener("click", () => {
+  iosFullMenu.style.display = "none";  // 隱藏選單
+  topbar.style.display = "block";  // 顯示 topbar
 });
 
 </script>

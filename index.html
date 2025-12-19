@@ -2110,7 +2110,7 @@ a:active {
   color: #fff;
   cursor: pointer;
 }
-
+.container,
 .packing-page,
 .ticket-page,
 .exchange-page {
@@ -2122,6 +2122,14 @@ a:active {
 .ticket-page.active,
 .exchange-page.active {
   display: block;
+}
+#app-root {
+  display: none; /* 預設隱藏 */
+}
+
+/* 顯示 app-root */
+#app-root.show {
+  display: block; /* 顯示 app-root */
 }
 
 </style>
@@ -3967,16 +3975,21 @@ a:active {
 		});
 		
 document.addEventListener("DOMContentLoaded", () => {
+  const appRoot = document.getElementById("app-root");
+  const homePage = document.getElementById("home-page");
+
+  // 頁面加載後顯示 app-root
+  appRoot.classList.add("show");
+
+  // 預設顯示 home-page
+  homePage.classList.add("active");
+
   const menuBtn = document.getElementById("menuBtn");
   const closeBtn = document.getElementById("menuClose");
   const iosFullMenu = document.getElementById("iosFullMenu");
   const menuItems = document.querySelectorAll(".menu-content ul li");
   const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page");
   const topbar = document.getElementById("topbar");
-
-  // 預設顯示 home-page
-  const homePage = document.getElementById("home-page");
-  homePage.classList.add("active"); // 顯示行程表頁面
 
   // 展開選單
   menuBtn.addEventListener("click", () => {
@@ -4012,6 +4025,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
 
 
 

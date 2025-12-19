@@ -3961,7 +3961,7 @@ a:active {
 		});
 		
 document.addEventListener("DOMContentLoaded", () => {
-  // 選取菜單按鈕
+  // 確保在 DOM 加載完成後選取菜單元素
   const menuBtn = document.getElementById("menuBtn");
   const closeBtn = document.getElementById("menuClose");
   const iosFullMenu = document.getElementById("iosFullMenu");
@@ -4003,6 +4003,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
 
 // 點擊選單項目時切換頁面
 menuItems.forEach(item => {

@@ -3159,6 +3159,20 @@ menuItems.forEach(item => {
     topbar.style.display = "flex";  // 恢復顯示 topbar
   });
 });
+menuItems.forEach(item => {
+  item.addEventListener("click", () => {
+    const target = item.dataset.target;
+    const targetPage = document.getElementById(target);
+
+    // 切換 active
+    pages.forEach(p => p.classList.remove("active"));
+    targetPage.classList.add("active");
+
+    // ⭐ 關鍵：切頁後回到最上
+    targetPage.scrollTop = 0;
+    window.scrollTo(0, 0);
+  });
+});
 
 
 	</script>
@@ -3193,6 +3207,19 @@ menuItems.forEach(item => {
 		    behavior: "smooth"
 		  });
 		});
+</script>
+<script>
+window.addEventListener("load", () => {
+  // window 回到最上
+  window.scrollTo(0, 0);
+
+  // 每個可滾動頁面都回到最上
+  document.querySelectorAll(
+    "#home-page, #packing-page, #ticket-page, #exchange-page"
+  ).forEach(page => {
+    page.scrollTop = 0;
+  });
+});
 </script>
 
 

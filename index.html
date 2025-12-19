@@ -4060,6 +4060,7 @@ iosMenu.addEventListener("click", (e) => {
       break;
   }
 });
+	
 
 const menuClose = document.getElementById("menuClose");
 
@@ -4067,47 +4068,24 @@ menuClose.addEventListener("click", () => {
   iosMenu.classList.remove("active");
   if (navigator.vibrate) navigator.vibrate(6);
 });
-/* ======================
-   Editable Trip Title
-====================== */
+
+	
 const tripTitle = document.getElementById("tripTitle");
-const editIcon = document.getElementById("editIcon");
 
-/* 初始化還原 */
+tripTitle.addEventListener("dblclick", () => {
+  const current = tripTitle.textContent;
+  const next = prompt("請輸入旅程標題", current);
+
+  if (next && next.trim()) {
+    tripTitle.textContent = next.trim();
+    localStorage.setItem("tripTitle", next.trim());
+  }
+});
+
+// 初始化
 const savedTitle = localStorage.getItem("tripTitle");
-if (savedTitle) {
-  tripTitle.textContent = savedTitle;
-}
+if (savedTitle) tripTitle.textContent = savedTitle;
 
-/* 點筆 → 編輯 */
-editIcon.addEventListener("click", () => {
-  tripTitle.focus();
-});
-
-/* 進入編輯 */
-tripTitle.addEventListener("focus", () => {
-  tripTitle.classList.add("editing");
-});
-
-/* 完成編輯 */
-tripTitle.addEventListener("blur", () => {
-  tripTitle.classList.remove("editing");
-
-  const text = tripTitle.textContent.trim();
-  if (text) {
-    localStorage.setItem("tripTitle", text);
-  }
-
-  if (navigator.vibrate) navigator.vibrate(6);
-});
-
-/* Enter 結束編輯 */
-tripTitle.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    tripTitle.blur();
-  }
-});
 
 </script>
 </body>

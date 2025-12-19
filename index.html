@@ -3921,23 +3921,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2000);
   }
 });
-
 const menuBtn = document.getElementById("menuBtn");
 const closeBtn = document.getElementById("menuClose");
 const iosFullMenu = document.getElementById("iosFullMenu");
 const menuItems = document.querySelectorAll(".menu-content ul li");
 const contentPages = document.querySelectorAll(".content-page");
+const topbar = document.getElementById("topbar"); // 获取 topbar
 
 // 開啟選單
 menuBtn.addEventListener("click", () => {
   iosFullMenu.classList.add("show");  // 顯示選單，並運行過渡效果
   menuBtn.classList.add("open");  // 改變選單按鈕的樣式
+  topbar.style.display = "none";  // 隱藏 topbar
 });
 
 // 關閉選單
 closeBtn.addEventListener("click", () => {
   iosFullMenu.classList.remove("show");  // 隱藏選單
   menuBtn.classList.remove("open");  // 恢復選單按鈕的原始樣式
+  topbar.style.display = "flex";  // 恢復顯示 topbar
 });
 
 // 點擊選單項目後切換頁面
@@ -3956,70 +3958,12 @@ menuItems.forEach(item => {
     // 關閉選單
     iosFullMenu.classList.remove("show"); 
     menuBtn.classList.remove("open");
+    topbar.style.display = "flex";  // 恢復顯示 topbar
   });
 });
-
 
 
 
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

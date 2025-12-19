@@ -2124,13 +2124,21 @@ a:active {
   display: block;
 }
 #app-root {
-  display: none; /* 預設隱藏 */
+  display: none;
+  margin: 0;  /* 確保沒有額外的 margin */
+  padding: 0;  /* 確保沒有額外的 padding */
+  position: relative;
 }
 
-/* 顯示 app-root */
 #app-root.show {
-  display: block; /* 顯示 app-root */
+  display: block;
+  position: absolute;
+  top: 0;  /* 確保頁面從頂部開始 */
+  left: 0;
+  width: 100%;  /* 保證寬度占滿整個視口 */
+  height: 100%; /* 保證高度占滿整個視口 */
 }
+
 
 </style>
 </head>
@@ -3978,8 +3986,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const appRoot = document.getElementById("app-root");
   const homePage = document.getElementById("home-page");
 
-  // 頁面加載後顯示 app-root
+  // 頁面加載後顯示 app-root 並滾動到頂部
   appRoot.classList.add("show");
+
+  // 滾動到頁面頂部
+  window.scrollTo(0, 0);
 
   // 預設顯示 home-page
   homePage.classList.add("active");
@@ -4025,6 +4036,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
 
 
 

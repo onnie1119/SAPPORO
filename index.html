@@ -3954,47 +3954,49 @@ a:active {
 		});
 		
 		
-				// 获取 DOM 元素
-		const menuBtn = document.getElementById("menuBtn");
-		const closeBtn = document.getElementById("menuClose");
-		const iosFullMenu = document.getElementById("iosFullMenu");
-		const menuItems = document.querySelectorAll(".menu-content ul li");
-		const contentPages = document.querySelectorAll(".content-page");
-		const topbar = document.getElementById("topbar"); // topbar 元素
-		
-		// 展开菜单
-		menuBtn.addEventListener("click", () => {
-		  iosFullMenu.style.display = "flex";  // 显示菜单
-		  topbar.style.display = "none";  // 隐藏 topbar
-		});
-		
-		// 关闭菜单
-		closeBtn.addEventListener("click", () => {
-		  iosFullMenu.style.display = "none";  // 隐藏菜单
-		  topbar.style.display = "flex";  // 恢复显示 topbar
-		});
-		
-		// 点击菜单项后切换页面
-		menuItems.forEach(item => {
-		  item.addEventListener("click", () => {
-		    const targetClass = item.getAttribute("data-target");
-		
-		    // 隐藏所有页面
-		    contentPages.forEach(page => {
-		      page.classList.remove("active");
-		    });
-		
-		    // 显示选中的页面
-		    const targetPage = document.querySelector(`#${targetClass}`);
-		    if (targetPage) {
-		      targetPage.classList.add("active");
-		    }
-		
-		    // 关闭菜单
-		    iosFullMenu.style.display = "none";
-		    topbar.style.display = "flex";  // 恢复显示 topbar
-		  });
-		});
+		document.addEventListener("DOMContentLoaded", () => {
+			  const menuItems = document.querySelectorAll(".menu-content ul li");
+			  const contentPages = document.querySelectorAll(".content-page");
+			  const topbar = document.getElementById("topbar"); // topbar 元素
+			  const iosFullMenu = document.getElementById("iosFullMenu"); // 菜单
+			  const menuBtn = document.getElementById("menuBtn"); // 菜单按钮
+			  const closeBtn = document.getElementById("menuClose"); // 关闭按钮
+			
+			  // 展开菜单
+			  menuBtn.addEventListener("click", () => {
+			    iosFullMenu.style.display = "flex"; // 显示菜单
+			    topbar.style.display = "none"; // 隐藏 topbar
+			  });
+			
+			  // 关闭菜单
+			  closeBtn.addEventListener("click", () => {
+			    iosFullMenu.style.display = "none"; // 隐藏菜单
+			    topbar.style.display = "flex"; // 恢复显示 topbar
+			  });
+			
+			  // 点击菜单项后切换页面
+			  menuItems.forEach(item => {
+			    item.addEventListener("click", () => {
+			      const targetClass = item.getAttribute("data-target");
+			
+			      // 隐藏所有页面
+			      contentPages.forEach(page => {
+			        page.style.display = "none"; // 隐藏页面
+			      });
+			
+			      // 显示选中的页面
+			      const targetPage = document.getElementById(targetClass);
+			      if (targetPage) {
+			        targetPage.style.display = "block"; // 显示选中的页面
+			      }
+			
+			      // 关闭菜单
+			      iosFullMenu.style.display = "none";
+			      topbar.style.display = "flex"; // 恢复显示 topbar
+			    });
+			  });
+			});
+
 
 	</script>
 </body>

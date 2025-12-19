@@ -1926,10 +1926,21 @@ a:active {
   line-height: 1.2;
 }
 .trip-title {
-  font-size: 24px;
+  font-size: 22px;
   
   color: #fff;
+  outline: none;
+  cursor: text;
+  line-height: 1.2;
+  white-space: nowrap;
 }
+
+.trip-title:focus {
+  background: rgba(0,0,0,0.04);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
 .trip-date {
   font-size: 12px;
   color: #fff;
@@ -2038,8 +2049,9 @@ a:active {
 
 
   <div class="topbar-text">
-    <div class="trip-title">北海道の旅</div>
-    <div class="trip-date">旅を記錄する、思い出を綴る</div>
+    <div class="trip-title" id="tripTitle" contenteditable="true">
+	  北海道の旅
+	</div>
   </div>
 </div>
 <!-- ✈️ App 啟動畫面 -->
@@ -3956,6 +3968,19 @@ const menuClose = document.getElementById("menuClose");
 menuClose.addEventListener("click", () => {
   iosMenu.classList.remove("active");
   if (navigator.vibrate) navigator.vibrate(6);
+});
+const tripTitle = document.getElementById("tripTitle");
+
+const savedTitle = localStorage.getItem("tripTitle");
+if (savedTitle) {
+  tripTitle.textContent = savedTitle;
+}
+
+tripTitle.addEventListener("blur", () => {
+  const text = tripTitle.textContent.trim();
+  if (text) {
+    localStorage.setItem("tripTitle", text);
+  }
 });
 
 </script>

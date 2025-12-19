@@ -2055,6 +2055,61 @@ a:active {
   display: block;
   opacity: 1;
 }
+/* 隐藏所有内容页面 */
+.content-page {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* 显示 active 类的页面 */
+.content-page.active {
+  display: block;
+  opacity: 1;
+}
+
+/* 选单样式 */
+.ios-full-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7); /* 半透明背景 */
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.menu-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.menu-content ul li {
+  margin: 15px 0;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* 点击展开的菜单按钮 */
+.menu-btn {
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* 关闭按钮 */
+.menu-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 30px;
+  color: #fff;
+  cursor: pointer;
+}
 
 </style>
 </head>
@@ -3899,49 +3954,48 @@ a:active {
 		});
 		
 		
+				// 获取 DOM 元素
 		const menuBtn = document.getElementById("menuBtn");
 		const closeBtn = document.getElementById("menuClose");
 		const iosFullMenu = document.getElementById("iosFullMenu");
 		const menuItems = document.querySelectorAll(".menu-content ul li");
 		const contentPages = document.querySelectorAll(".content-page");
-		const topbar = document.getElementById("topbar"); // 获取 topbar
+		const topbar = document.getElementById("topbar"); // topbar 元素
 		
-		// 開啟選單
+		// 展开菜单
 		menuBtn.addEventListener("click", () => {
-		  iosFullMenu.classList.add("show");  // 顯示選單，並運行過渡效果
-		  menuBtn.classList.add("open");  // 改變選單按鈕的樣式
-		  topbar.style.display = "none";  // 隱藏 topbar
+		  iosFullMenu.style.display = "flex";  // 显示菜单
+		  topbar.style.display = "none";  // 隐藏 topbar
 		});
 		
-		// 關閉選單
+		// 关闭菜单
 		closeBtn.addEventListener("click", () => {
-		  iosFullMenu.classList.remove("show");  // 隱藏選單
-		  menuBtn.classList.remove("open");  // 恢復選單按鈕的原始樣式
-		  topbar.style.display = "flex";  // 恢復顯示 topbar
+		  iosFullMenu.style.display = "none";  // 隐藏菜单
+		  topbar.style.display = "flex";  // 恢复显示 topbar
 		});
 		
-		// 點擊選單項目後切換頁面
+		// 点击菜单项后切换页面
 		menuItems.forEach(item => {
 		  item.addEventListener("click", () => {
 		    const targetClass = item.getAttribute("data-target");
 		
-		    // 隱藏所有頁面
+		    // 隐藏所有页面
 		    contentPages.forEach(page => {
 		      page.classList.remove("active");
 		    });
 		
-		    // 顯示選中的頁面
-		    const targetPage = document.querySelector(`.${targetClass}`);
+		    // 显示选中的页面
+		    const targetPage = document.querySelector(`#${targetClass}`);
 		    if (targetPage) {
 		      targetPage.classList.add("active");
 		    }
 		
-		    // 關閉選單
-		    iosFullMenu.classList.remove("show"); 
-		    menuBtn.classList.remove("open");
-		    topbar.style.display = "flex";  // 恢復顯示 topbar
+		    // 关闭菜单
+		    iosFullMenu.style.display = "none";
+		    topbar.style.display = "flex";  // 恢复显示 topbar
 		  });
 		});
+
 	</script>
 </body>
 </html>

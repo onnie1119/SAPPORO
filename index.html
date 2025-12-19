@@ -3961,7 +3961,7 @@ closeBtn.addEventListener("click", () => {
 // 點擊選單項目後切換頁面
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
-    const targetId = item.getAttribute("data-target");
+    const targetClass = item.getAttribute("data-target");
 
     // 隱藏所有頁面
     contentPages.forEach(page => {
@@ -3969,7 +3969,7 @@ menuItems.forEach(item => {
     });
 
     // 顯示選中的頁面
-    const targetPage = document.getElementById(targetId);
+    const targetPage = document.querySelector(`.${targetClass}`);
     if (targetPage) {
       targetPage.classList.add("active");
     }
@@ -3980,7 +3980,6 @@ menuItems.forEach(item => {
     topbar.style.display = "flex";  // 恢復顯示 topbar
   });
 });
-
 
 
 

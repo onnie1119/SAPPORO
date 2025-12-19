@@ -1246,6 +1246,11 @@
 	
 	#exchange-page.active {
 	  padding-top: 0px;}
+/* 讓 home-page 本身成為滾動容器 */
+#home-page.active {
+  height: calc(100vh - 80px); /* 扣掉 topbar */
+  overflow-y: auto;
+}
 		
 </style>
 </head>
@@ -1278,6 +1283,7 @@
 	<!-- 原本整個網站包起來 -->
 
 	<div id="app-root">
+		<button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>	
 		<div class="content-pages">
 			<div id="home-page" class="container">
 				<div class="day-tabs-wrapper">
@@ -1956,7 +1962,7 @@
                     </a>
                     <span style="display:flex;height:1rem;"></span>
                 </div>
-				<button id="scrollToTop" class="scroll-top-button" title="回到頂部">TOP</button>	
+				
             </div>
 	
             <!-- ================================
@@ -3164,37 +3170,37 @@ menuItems.forEach(item => {
 
 	</script>
 	<script>
-		const scrollTopBtn = document.getElementById("scrollTopBtn");
-		const homePage = document.getElementById("home-page");
-		
-		function updateScrollButton() {
-		  // 只在 home-page 顯示時處理
-		  if (!homePage.classList.contains("active")) {
-		    scrollTopBtn.classList.remove("show");
-		    return;
-		  }
-		
-		  if (homePage.scrollTop > 300) {
-		    scrollTopBtn.classList.add("show");
-		  } else {
-		    scrollTopBtn.classList.remove("show");
-		  }
-		}
-		
-		// ⭐ 重點：監聽的是 homePage，不是 window
-		homePage.addEventListener("scroll", updateScrollButton);
-		
-		// 初始化
-		updateScrollButton();
-		
-		// 點擊回頂（也是回到 home-page 頂）
-		scrollTopBtn.addEventListener("click", () => {
-		  homePage.scrollTo({
-		    top: 0,
-		    behavior: "smooth"
-		  });
-		});
+const btn = document.getElementById("scrollTopBtn");
+const home = document.getElementById("home-page");
+
+function toggleBtn() {
+  if (!home.classList.contains("active")) {
+    btn.classList.remove("show");
+    return;
+  }
+
+  if (home.scrollTop > 200) {
+    btn.classList.add("show");
+  } else {
+    btn.classList.remove("show");
+  }
+}
+
+// ⭐ 關鍵：監聽「home-page 自己」
+home.addEventListener("scroll", toggleBtn);
+
+// 切頁 / 載入時初始化
+window.addEventListener("load", () => {
+  home.scrollTop = 0;
+  toggleBtn();
+});
+
+// 點擊回頂
+btn.addEventListener("click", () => {
+  home.scrollTo({ top: 0, behavior: "smooth" });
+});
 </script>
+
 <script>
 window.addEventListener("load", () => {
   // window 回到最上

@@ -1855,7 +1855,7 @@ a:active {
 #app-splash {
   position: fixed;
   inset: 0;
-  background: linear-gradient(#FAFAF7, #F0F0EB);
+  background-color:#3A7AFE;
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -1863,22 +1863,11 @@ a:active {
   align-items: center;
 }
 
-/* 跑道 */
-.runway {
-  width: 160px;
-  height: 2px;
-  background: repeating-linear-gradient(
-    to right,
-    #bbb 0 12px,
-    transparent 12px 24px
-  );
-  margin-bottom: 24px;
-  opacity: 0.6;
-}
+
 
 /* ✈️ 飛機 */
 .plane {
-  width: 72px;
+  width: 84px;
   animation: taxi 0.8s ease-out forwards,
              takeoff 1.2s ease-in forwards 0.8s;
 }
@@ -1898,8 +1887,8 @@ a:active {
 /* 文字 */
 .splash-text {
   margin-top: 16px;
-  font-size: 13px;
-  color: #777;
+  font-size: 16px;
+  color: #fff;
   animation: blink 1s ease-in-out infinite alternate;
 }
 
@@ -1940,7 +1929,7 @@ a:active {
 <div id="app-splash">
   <div class="runway"></div>
   <img src="images/flight.png" class="plane">
-  <div class="splash-text">Preparing for departure…</div>
+  <div class="splash-text">白い季節に、恋をする</div>
 </div>
 
 <!-- 原本整個網站包起來 -->

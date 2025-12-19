@@ -2139,6 +2139,23 @@ a:active {
   height: 100%; /* 保證高度占滿整個視口 */
 }
 
+#scrollToTop {
+  position: fixed; /* 讓按鈕固定在視口 */
+  bottom: 20px;    /* 距離頁面底部 20px */
+  display: none;   /* 預設隱藏，只有在滾動到一定位置後顯示 */
+  background-color: #189cc0; /* 按鈕顏色 */
+  color: white;    /* 按鈕文字顏色 */
+  border: none;
+  border-radius: 50%; /* 圓形按鈕 */
+  padding: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 9999; /* 確保按鈕顯示在最上層 */
+}
+
+#scrollToTop.show {
+  display: block; /* 顯示按鈕 */
+}
 
 </style>
 </head>

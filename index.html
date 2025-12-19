@@ -4019,29 +4019,29 @@ menuClose.addEventListener("click", () => {
   iosMenu.classList.remove("active");
   if (navigator.vibrate) navigator.vibrate(6);
 });
-
-
-</script>
-	<script>const tripTitle = document.getElementById("tripTitle");
+/* ======================
+   Editable Trip Title
+====================== */
+const tripTitle = document.getElementById("tripTitle");
 const editIcon = document.getElementById("editIcon");
 
-/* 初始化：還原儲存的標題 */
+/* 初始化還原 */
 const savedTitle = localStorage.getItem("tripTitle");
 if (savedTitle) {
   tripTitle.textContent = savedTitle;
 }
 
-/* 點 ✏️ → 進入編輯 */
+/* 點筆 → 編輯 */
 editIcon.addEventListener("click", () => {
   tripTitle.focus();
 });
 
-/* 進入編輯狀態 */
+/* 進入編輯 */
 tripTitle.addEventListener("focus", () => {
   tripTitle.classList.add("editing");
 });
 
-/* 離開編輯 → 儲存 + 退回 */
+/* 完成編輯 */
 tripTitle.addEventListener("blur", () => {
   tripTitle.classList.remove("editing");
 
@@ -4053,13 +4053,14 @@ tripTitle.addEventListener("blur", () => {
   if (navigator.vibrate) navigator.vibrate(6);
 });
 
-/* Enter 完成編輯（很直覺） */
+/* Enter 結束編輯 */
 tripTitle.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
     tripTitle.blur();
   }
 });
+
 </script>
 </body>
 </html>

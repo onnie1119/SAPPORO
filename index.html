@@ -1931,7 +1931,7 @@ a:active {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);  /* Semi-transparent black */
+  background: rgba(0, 0, 0, 0.7);  /* 半透明黑色背景 */
   z-index: 999;
   justify-content: center;
   align-items: center;
@@ -1975,8 +1975,13 @@ a:active {
   width: 40px;
   height: 30px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
 }
 
+/* 創建三條線，並給每條線加陰影 */
 .menu-btn::before,
 .menu-btn::after,
 .menu-btn div {
@@ -1986,10 +1991,10 @@ a:active {
   height: 6px;
   background-color: white;
   transition: transform 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);  /* Shadow effect */
+  
 }
 
-/* Position the lines evenly spaced */
+/* 均勻間隔的三條線 */
 .menu-btn::before {
   top: 0;
 }
@@ -2003,7 +2008,7 @@ a:active {
   bottom: 0;
 }
 
-/* When the menu is active (open), add animations */
+/* 當選單開啟時，將線條旋轉，並隱藏中間的線 */
 .menu-btn.open::before {
   transform: rotate(45deg);
   top: 50%;
@@ -2015,19 +2020,19 @@ a:active {
 }
 
 .menu-btn.open div {
-  opacity: 0; /* Hide the middle line when menu is open */
+  opacity: 0; /* 中間的線會隱藏 */
 }
 
-/* iOS full-screen menu display */
+/* iOS 全螢幕選單顯示 */
 .ios-full-menu {
   display: flex;
 }
 
-/* Animations for menu items */
+/* 選單項目 */
 .menu-content ul {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Add spacing between menu items */
+  gap: 20px; /* 項目之間的間距 */
 }
 
 .menu-content li {
@@ -2037,8 +2042,10 @@ a:active {
 </head>
 <body>
 	<div class="topbar" id="topbar">
-	  <button class="menu-btn" id="menuBtn" aria-label="menu"></button>
-	</div>
+  <button class="menu-btn" id="menuBtn" aria-label="menu">
+    <div></div> <!-- 這是中間的線 -->
+  </button>
+</div>
 	<!-- iOS Full-Screen Menu -->
 	<div class="ios-full-menu" id="iosFullMenu">
 	  <div class="menu-content">

@@ -3144,27 +3144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-// 點擊選單項目時切換頁面
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.getAttribute("data-target");
 
-    // 隱藏所有頁面
-    contentPages.forEach(page => {
-      page.style.display = "none";  // 使用 style.display 來隱藏頁面
-    });
-
-    // 顯示選中的頁面
-    const targetPage = document.getElementById(targetId);
-    if (targetPage) {
-      targetPage.style.display = "block";  // 顯示目標頁面
-    }
-
-    // 關閉選單
-    iosFullMenu.style.display = "none";
-    topbar.style.display = "flex";  // 恢復顯示 topbar
-  });
-});
 
 
 

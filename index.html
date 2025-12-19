@@ -3961,44 +3961,45 @@ a:active {
 		});
 		
 document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll(".menu-content ul li"); // 菜单项
-  const contentPages = document.querySelectorAll(".content-page"); // 所有页面
-  const topbar = document.getElementById("topbar"); // topbar 元素
-  const iosFullMenu = document.getElementById("iosFullMenu"); // 菜单
-  const menuBtn = document.getElementById("menuBtn"); // 菜单按钮
-  const closeBtn = document.getElementById("menuClose"); // 关闭按钮
+  // 選取菜單按鈕
+  const menuBtn = document.getElementById("menuBtn");
+  const closeBtn = document.getElementById("menuClose");
+  const iosFullMenu = document.getElementById("iosFullMenu");
+  const menuItems = document.querySelectorAll(".menu-content ul li"); // 正確選取菜單項目
+  const contentPages = document.querySelectorAll(".content-page");
+  const topbar = document.getElementById("topbar");
 
-  // 展开菜单
+  // 展開選單
   menuBtn.addEventListener("click", () => {
-    iosFullMenu.style.display = "flex"; // 显示菜单
-    topbar.style.display = "none"; // 隐藏 topbar
+    iosFullMenu.style.display = "flex";  // 顯示選單
+    topbar.style.display = "none";  // 隱藏 topbar
   });
 
-  // 关闭菜单
+  // 關閉選單
   closeBtn.addEventListener("click", () => {
-    iosFullMenu.style.display = "none"; // 隐藏菜单
-    topbar.style.display = "flex"; // 恢复显示 topbar
+    iosFullMenu.style.display = "none";  // 隱藏選單
+    topbar.style.display = "flex";  // 恢復顯示 topbar
   });
 
-  // 点击菜单项后切换页面
+  // 點擊選單項目後切換頁面
   menuItems.forEach(item => {
     item.addEventListener("click", () => {
-      const targetId = item.getAttribute("data-target"); // 获取目标页面 ID
+      const targetId = item.getAttribute("data-target");
 
-      // 隐藏所有页面
+      // 隱藏所有頁面
       contentPages.forEach(page => {
-        page.style.display = "none"; // 隐藏所有页面
+        page.style.display = "none";  // 使用 style.display 隱藏頁面
       });
 
-      // 显示选中的页面
+      // 顯示選中的頁面
       const targetPage = document.getElementById(targetId);
       if (targetPage) {
-        targetPage.style.display = "block"; // 显示目标页面
+        targetPage.style.display = "block";  // 顯示目標頁面
       }
 
-      // 关闭菜单
+      // 關閉選單
       iosFullMenu.style.display = "none";
-      topbar.style.display = "flex"; // 恢复显示 topbar
+      topbar.style.display = "flex";  // 恢復顯示 topbar
     });
   });
 });

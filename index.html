@@ -282,7 +282,6 @@
 		min-height:530px;
 		text-align: center;
 		padding: 0px 20px;
-		padding-top:95px;
 		animation: fadeIn 0.4s ease;}
 
 	.converter {
@@ -460,7 +459,7 @@
 	  
 	.packing-page {
 	  	padding: 20px;
-	  	padding-top: 160px;
+	  	padding-top: 60px;
 		background-color: #F6F9FC;
 		animation: fadeIn 0.4s ease;}
 	
@@ -687,7 +686,7 @@
 	  	background: #F6F9FC;
 	  	min-height: 444px;
 	  	padding: 24px 20px;
-		padding-top:152px;
+		padding-top:52px;
 		animation: fadeIn 0.4s ease;}
 	
 	
@@ -3153,11 +3152,11 @@ menuItems.forEach(item => {
 	<script>
 		const scrollTopBtn = document.getElementById("scrollTopBtn");
 		
-		window.addEventListener("scroll", () => {
+		function updateScrollButton() {
 		  const homePage = document.getElementById("home-page");
 		
-		  // 只有在 home-page 顯示時才作用
-		  if (!homePage.classList.contains("active")) {
+		  // 如果 home-page 沒有顯示，隱藏按鈕
+		  if (homePage.style.display === "none") {
 		    scrollTopBtn.classList.remove("show");
 		    return;
 		  }
@@ -3167,15 +3166,23 @@ menuItems.forEach(item => {
 		  } else {
 		    scrollTopBtn.classList.remove("show");
 		  }
-		});
+		}
 		
+		// 滾動時判斷
+		window.addEventListener("scroll", updateScrollButton);
+		
+		// 頁面一載入也要判斷一次（❗關鍵）
+		window.addEventListener("load", updateScrollButton);
+		
+		// 點擊回頂
 		scrollTopBtn.addEventListener("click", () => {
 		  window.scrollTo({
 		    top: 0,
 		    behavior: "smooth"
 		  });
 		});
-</script>
+	</script>
+
 
 </body>
 </html>

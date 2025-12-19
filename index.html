@@ -2087,6 +2087,53 @@ a:active {
   transform: scale(0.8);
   pointer-events: none;
 }
+.edit-icon {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 筆身 */
+.edit-icon::before {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 2px;
+  background: currentColor;
+  top: 6px;
+  left: 1px;
+  transform: rotate(-45deg);
+  border-radius: 2px;
+}
+
+/* 筆尖 */
+.edit-icon::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 4px solid currentColor;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  top: 3px;
+  right: -2px;
+  transform: rotate(-45deg);
+}
+
+/* hover 提示 */
+.title-edit-wrap:hover .edit-icon {
+  opacity: 0.9;
+}
+
+/* 編輯中隱藏 */
+.trip-title.editing + .edit-icon {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+}
 
 </style>
 </head>
@@ -2105,7 +2152,8 @@ a:active {
         北海道の旅
       </div>
 
-      <span class="edit-icon" id="editIcon">✏️</span>
+     <span class="edit-icon" id="editIcon" aria-label="edit"></span>
+
     </div>
   </div>
 </div>

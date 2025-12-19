@@ -2089,6 +2089,49 @@ position: fixed;
   opacity: 0;
   transition: opacity .2s ease;
 }
+
+	  #iosFullMenu {
+  display: none;  /* 初始設置為隱藏 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);  /* 半透明背景 */
+  z-index: 1000;  /* 保證選單在最上層 */
+}
+
+.menu-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.menu-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.menu-content li {
+  font-size: 1.5em;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.menu-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 2em;
+  color: white;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -3971,15 +4014,11 @@ document.addEventListener("DOMContentLoaded", () => {
 const menuBtn = document.getElementById("menuBtn");
 const closeBtn = document.getElementById("menuClose");
 const iosFullMenu = document.getElementById("iosFullMenu");
-const menuItems = document.querySelectorAll(".menu-content ul li");
-const contentPages = document.querySelectorAll(".content-page");
 
-// 開啟選單
 menuBtn.addEventListener("click", () => {
   iosFullMenu.style.display = "flex";  // 顯示選單
 });
 
-// 關閉選單
 closeBtn.addEventListener("click", () => {
   iosFullMenu.style.display = "none";  // 隱藏選單
 });
@@ -4002,6 +4041,25 @@ menuItems.forEach(item => {
   });
 });
 	
+const menuItems = document.querySelectorAll(".menu-content ul li");
+const contentPages = document.querySelectorAll(".content-page");
+
+menuItems.forEach(item => {
+  item.addEventListener("click", () => {
+    const targetId = item.getAttribute("data-target");
+
+    // 隱藏所有頁面
+    contentPages.forEach(page => {
+      page.classList.remove("active");
+    });
+
+    // 顯示選中的頁面
+    document.getElementById(targetId).classList.add("active");
+
+    // 關閉選單
+    iosFullMenu.style.display = "none";
+  });
+});
 
 
 </script>

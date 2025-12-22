@@ -3121,34 +3121,33 @@ function scrollCurrentPageToTop(behavior = "auto") {
    核心：頁面切換（唯一入口）
 ========================= */
 function showPage(targetId) {
-	 // ⭐ 一離開首頁就清掉那次補的距離
+  if (!PAGES.includes(targetId)) return;
+
+  // 離開首頁時清 offset
   if (targetId !== "home-page") {
     const home = document.getElementById("home-page");
     if (home) home.style.marginTop = "";
   }
-	
-  if (!PAGES.includes(targetId)) return;
 
-  // 隱藏全部頁面
+  // 隱藏全部
   PAGES.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
-  // 顯示目標頁面
+  // 顯示目標
   const target = document.getElementById(targetId);
   if (!target) return;
 
   target.style.display = "block";
   currentPageId = targetId;
 
-  // 下一幀再回頂（避免 display:none/block 造成失效）
   requestAnimationFrame(() => {
-    scrollCurrentPageToTop();
-	if (page) page.scrollTop = 0; // ⭐ 強制歸零
-    bindScrollListener(); // 重新綁定 TOP 偵測
+    target.scrollTop = 0;
+    bindScrollListener(); // ⭐ 只綁目前頁面
   });
 }
+
 
 /* =========================
    TOP 按鈕控制（關鍵）
@@ -3159,9 +3158,6 @@ function bindScrollListener() {
   const page = getCurrentPage();
   if (!page || !scrollBtn) return;
 
-  // 先移除舊的（避免重複綁）
-  page.onscroll = null;
-
   page.onscroll = () => {
     if (page.scrollTop > 300) {
       scrollBtn.classList.add("show");
@@ -3171,11 +3167,9 @@ function bindScrollListener() {
   };
 }
 
-if (scrollBtn) {
-  scrollBtn.addEventListener("click", () => {
-    scrollCurrentPageToTop("smooth");
-  });
-}
+scrollBtn.addEventListener("click", () => {
+  scrollCurrentPageToTop("smooth");
+});
 
 /* =========================
    Menu（iOS 全螢幕）
@@ -3297,25 +3291,7 @@ function applyInitialHomeOffset() {
 }
 
 </script>
-<script>
-	const appRoot = document.getElementById("app-root");
-const scrollBtn = document.getElementById("scrollToTop");
 
-// 監聽真正的捲動容器
-appRoot.addEventListener("scroll", () => {
-  if (appRoot.scrollTop > 300) {
-    scrollBtn.classList.add("show");
-  } else {
-    scrollBtn.classList.remove("show");
-  }
-});
-
-// 點擊回頂
-scrollBtn.addEventListener("click", () => {
-  appRoot.scrollTo({ top: 0, behavior: "smooth" });
-});
-
-</script>
 
 
 

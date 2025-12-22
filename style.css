@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?rzy90g');
-  src:  url('fonts/icomoon.eot?rzy90g#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?rzy90g') format('truetype'),
-    url('fonts/icomoon.woff?rzy90g') format('woff'),
-    url('fonts/icomoon.svg?rzy90g#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?fokiui');
+  src:  url('fonts/icomoon.eot?fokiui#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?fokiui') format('truetype'),
+    url('fonts/icomoon.woff?fokiui') format('woff'),
+    url('fonts/icomoon.svg?fokiui#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -151,6 +151,36 @@
 .icon-zoom-out:before {
   content: "\e914";
 }
+.icon-bullhorn:before {
+  content: "\e92a";
+}
+.icon-ticket:before {
+  content: "\e939";
+}
+.icon-calculator:before {
+  content: "\e940";
+}
+.icon-stats-bars:before {
+  content: "\e99c";
+}
+.icon-leaf:before {
+  content: "\e9a4";
+}
+.icon-briefcase1:before {
+  content: "\e9ae";
+}
+.icon-clipboard:before {
+  content: "\e9b8";
+}
+.icon-flag:before {
+  content: "\e9cc";
+}
+.icon-attachment:before {
+  content: "\e9cd";
+}
 .icon-arrow-up2:before {
   content: "\ea3a";
+}
+.icon-table2:before {
+  content: "\ea71";
 }

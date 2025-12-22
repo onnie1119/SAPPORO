@@ -2103,7 +2103,7 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 	<script>
-
+		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
 		let navBtn = null;
 		
@@ -3121,6 +3121,12 @@ function scrollCurrentPageToTop(behavior = "auto") {
    核心：頁面切換（唯一入口）
 ========================= */
 function showPage(targetId) {
+	 // ⭐ 一離開首頁就清掉那次補的距離
+  if (targetId !== "home-page") {
+    const home = document.getElementById("home-page");
+    if (home) home.style.marginTop = "";
+  }
+	
   if (!PAGES.includes(targetId)) return;
 
   // 隱藏全部頁面
@@ -3226,10 +3232,13 @@ document.addEventListener("DOMContentLoaded", () => {
       splash.classList.add("hide");
       setTimeout(() => {
         splash.remove();
-        app.classList.add("show");
+      app.classList.add("show");
+showPage("home-page");
 
-        // ⭐ 預設顯示「行程表」
-        showPage("home-page");
+if (isFirstHomeRender) {
+  applyInitialHomeOffset();
+}
+
       }, 400);
     }, 1800);
   }
@@ -3269,6 +3278,24 @@ function showTicket() {
 function showExchange() {
   showPage("exchange-page");
 }
+
+function applyInitialHomeOffset() {
+  const home = document.getElementById("home-page");
+  const topbar = document.querySelector(".topbar");
+
+  if (!home || !topbar) return;
+
+  // ⭐ 第一次才補一個距離
+  home.style.marginTop = topbar.offsetHeight + "px";
+
+  // 保證畫面在最上
+  requestAnimationFrame(() => {
+    window.scrollTo(0, 0);
+  });
+
+  isFirstHomeRender = false;
+}
+
 </script>
 
 

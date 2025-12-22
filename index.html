@@ -3206,8 +3206,11 @@
 
 	</script>
 	<script>
-		// 在全域範圍內只宣告一次 PAGES
-const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+	// 使用 window.PAGES 來避免衝突
+if (typeof window.PAGES === 'undefined') {
+  window.PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+}
+
 let currentPageId = "home-page"; // 當前頁面的ID
 
 // 點擊選單項目時的處理
@@ -3243,10 +3246,10 @@ function getCurrentPage() {
 
 // 切換頁面
 function showPage(targetId) {
-  if (!PAGES.includes(targetId)) return; // 確保目標頁面是有效的
+  if (!window.PAGES.includes(targetId)) return; // 確保目標頁面是有效的
 
   // 隱藏所有頁面
-  PAGES.forEach(id => {
+  window.PAGES.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
@@ -3291,6 +3294,7 @@ style.innerHTML = `
   }
 `;
 document.head.appendChild(style);
+
 
 
 

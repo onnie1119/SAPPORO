@@ -209,14 +209,16 @@
 	
 	.scroll-top-button {
 		position: fixed;
-	    bottom: 70px;
-	    right: 5px;
-	    font-size: 35px;
-	    border: none;
-		background:none;
+	    bottom: 100px;
+	    right: 18px;
+	    font-size: 25px;
+	    border: 2px solid #ccc;
+	    border-radius: 50px;
+	    background: none;
 	    color: #3a7afe;
 	    opacity: 0;
 	    pointer-events: none;
+	    padding: 5px 5px;
 	    transition: 0.3s ease;
 	    cursor: pointer;
 	    transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -224,7 +226,8 @@
 	    display: inline-flex;
 	    align-items: center;
 	    justify-content: center;
-	    width: auto;
+	    width: 35px;
+	    height: 35px;
 	    max-width: max-content;
 	    white-space: nowrap;
 	    z-index: 1000;}
@@ -253,15 +256,14 @@
 	
 	.scroll-top-button.show,
 	.back-btn.show {
-		
-	  	opacity: 1;
+		opacity: 1;
 	  	visibility: visible;
 	  	pointer-events: auto;}
 		
 	
 	/* 顯示按鈕的樣式 */
 	.scroll-top-button.show {
-	  	display: block;  /* 顯示按鈕 */}
+	  	display: flex;  /* 顯示按鈕 */}
 		
 		
 	.day-section.fade-in {

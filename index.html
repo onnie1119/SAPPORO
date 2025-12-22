@@ -3206,69 +3206,65 @@
 
 	</script>
 	<script>
-	// Assuming window.PAGES is declared globally as before
-if (typeof window.PAGES === 'undefined') {
-  window.PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
-}
-
-// Do not redeclare currentPageId
-let currentPageId = "home-page"; // The current page ID (only declared once)
+// 定義全域變數，避免重複宣告
+const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+let currentPageId = "home-page";  // 宣告一次即可，後續只需使用
 
 const vibrateClass = "vibrate";
 
-// Menu item click handler
+// 獲取所有選單項目
 const menuItems = document.querySelectorAll(".menu-content li");
 
-// Iterate over menu items and add event listeners
+// 設置選單項目的點擊事件
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
-    const targetId = item.dataset.target; // Get the target page ID
-    const currentPage = getCurrentPage(); // Get the current page
-    const currentPageId = currentPage.id; // Get the current page's ID
+    const targetId = item.dataset.target; // 獲取目標頁面的ID
+    const currentPage = getCurrentPage(); // 獲取當前頁面
+    const currentPageId = currentPage.id; // 取得當前頁面ID
 
-    // If the clicked page is the current page, trigger vibration effect
+    // 如果點擊的是當前頁面，觸發震動效果
     if (currentPageId === targetId) {
-      // Add vibration effect to the menu item
+      // 為選單項目添加震動效果
       item.classList.add(vibrateClass);
 
-      // Remove vibration effect after animation ends
+      // 移除震動效果（動畫結束後）
       setTimeout(() => {
         item.classList.remove(vibrateClass);
-      }, 300); // Vibration duration
+      }, 300); // 持續震動的時間
     } else {
-      // Normal page switch logic
+      // 正常切換頁面
       showPage(targetId);
     }
   });
 });
 
-// Function to get the current page
+// 獲取當前頁面的元素
 function getCurrentPage() {
   return document.getElementById(currentPageId);
 }
 
-// Function to switch pages
+// 顯示指定的頁面
 function showPage(targetId) {
-  if (!window.PAGES.includes(targetId)) return; // Ensure target page is valid
+  if (!PAGES.includes(targetId)) return; // 確保目標頁面是有效的
 
-  // Hide all pages
-  window.PAGES.forEach(id => {
+  // 隱藏所有頁面
+  PAGES.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
-  // Show the target page
+  // 顯示目標頁面
   const target = document.getElementById(targetId);
   if (target) {
     target.style.display = "block";
-    currentPageId = targetId; // Update current page ID
+    currentPageId = targetId; // 更新當前頁面的ID
   }
 
-  // Scroll to the top of the page
+  // 滾動到頁面頂部
   scrollCurrentPageToTop();
 }
 
-// Function to scroll the current page to the top
+// 滾動到當前頁面頂部
 function scrollCurrentPageToTop() {
   const page = getCurrentPage();
   if (page) {
@@ -3276,12 +3272,12 @@ function scrollCurrentPageToTop() {
   }
 }
 
-// Function to show the home page
+// 顯示首頁
 function showHome() {
   showPage("home-page");
 }
 
-// Add the vibration effect CSS to the document
+// 增加震動效果的 CSS
 const style = document.createElement("style");
 style.innerHTML = `
   @keyframes shake {

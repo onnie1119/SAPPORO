@@ -3297,7 +3297,25 @@ function applyInitialHomeOffset() {
 }
 
 </script>
+<script>
+	const appRoot = document.getElementById("app-root");
+const scrollBtn = document.getElementById("scrollToTop");
 
+// 監聽真正的捲動容器
+appRoot.addEventListener("scroll", () => {
+  if (appRoot.scrollTop > 300) {
+    scrollBtn.classList.add("show");
+  } else {
+    scrollBtn.classList.remove("show");
+  }
+});
+
+// 點擊回頂
+scrollBtn.addEventListener("click", () => {
+  appRoot.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+</script>
 
 
 

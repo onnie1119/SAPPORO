@@ -1254,6 +1254,73 @@
 		height: calc(100vh - 80px); /* 扣掉 topbar */
 		overflow-y: auto;
 	}
+		
+	/* ===== 底部固定選單 ===== */
+.bottom-nav {
+  position: fixed;              /* ⭐ 關鍵 */
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 64px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  background: rgba(250,250,247,0.92);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0,0,0,0.06);
+
+  z-index: 999;                 /* 要比內容高 */
+}
+
+/* 每一個按鈕 */
+.bottom-nav button {
+  flex: 1;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: none;
+  border: none;
+  padding: 0;
+
+  color: #9aa0a6;
+  cursor: pointer;
+}
+
+/* icon（跟你 transport-info 同系統） */
+.bottom-nav span[class^="icon-"] {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: normal;          /* ⭐ 解決粗細不一 */
+  display: block;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 文字 */
+.bottom-nav .label {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* Active 狀態（不整塊、不醜） */
+.bottom-nav button.active {
+  color: #189cc0;
+}
+
+.bottom-nav button.active::after {
+  content: "";
+  width: 18px;
+  height: 2px;
+  margin-top: 4px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
 
 </style>
 </head>
@@ -1263,6 +1330,29 @@
     		<div></div> <!-- 這是中間的線 -->
   		</button>
 	</div>
+	<nav class="bottom-nav">
+		<button data-page="home-page" class="active">
+		    <span class="icon-home1"></span>
+		    <span class="label">行程</span>
+		</button>
+		<button data-page="packing-page">
+		    <span class="icon-briefcase"></span>
+		    <span class="label">行李</span>
+		</button>
+		<button data-page="ticket-page">
+		    <span class="icon-file-text"></span>
+		    <span class="label">憑證</span>
+		</button>
+		<button data-page="exchange-page">
+		    <span class="icon-refresh-cw"></span>
+		    <span class="label">匯率</span>
+		</button>
+		<button data-page="weather-page">
+		    <span class="icon-sun"></span>
+		    <span class="label">天氣</span>
+		</button>
+	</nav>
+
 	<!-- iOS Full-Screen Menu -->
 	<div class="ios-full-menu" id="iosFullMenu">
 		<div class="menu-content">
@@ -3098,6 +3188,21 @@
 			});
 			isFirstHomeRender = false;
 		}
+		
+		document.querySelectorAll(".bottom-nav button").forEach(btn => {
+		  btn.addEventListener("click", () => {
+		    const page = btn.dataset.page;
+		
+		    // 切頁（用你已經有的）
+		    showPage(page);
+		
+		    // active 樣式
+		    document.querySelectorAll(".bottom-nav button")
+		      .forEach(b => b.classList.remove("active"));
+		    btn.classList.add("active");
+		  });
+		});
+
 	</script>
 </body>
 </html>

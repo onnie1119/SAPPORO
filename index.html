@@ -3157,6 +3157,14 @@ function bindScrollListener() {
   const page = getCurrentPage();
   if (!page || !scrollBtn) return;
 
+  // ⭐ 如果不是行程表，直接隱藏 TOP
+  if (currentPageId !== "home-page") {
+    scrollBtn.classList.remove("show");
+    page.onscroll = null;
+    return;
+  }
+
+  // ⭐ 只有 home-page 才監聽 scroll
   page.onscroll = () => {
     if (page.scrollTop > 300) {
       scrollBtn.classList.add("show");
@@ -3281,10 +3289,11 @@ function applyInitialHomeOffset() {
   // ⭐ 第一次才補一個距離
  home.style.marginTop = "0px";
 
-  // 保證畫面在最上
-  requestAnimationFrame(() => {
-    window.scrollTo(0, 0);
-  });
+ requestAnimationFrame(() => {
+  target.scrollTop = 0;
+  bindScrollListener(); // ⭐ 每次切頁重新決定 TOP
+});
+
 
   isFirstHomeRender = false;
 }

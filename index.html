@@ -2164,7 +2164,21 @@
 		// ===========================
 		// 3. TOP 按鈕
 		// ===========================
-		
+		const scrollBtn = document.getElementById("scrollToTop");
+
+			// 滾動頁面時控制按鈕顯示
+			window.addEventListener("scroll", () => {
+			  if (window.scrollY > 300) {  // 當滾動超過300px顯示按鈕
+			    scrollBtn.classList.add("show");
+			  } else {
+			    scrollBtn.classList.remove("show");
+			  }
+			});
+			
+			// 點擊按鈕時滾動到頁面頂部
+			scrollBtn.addEventListener("click", () => {
+			  window.scrollTo({ top: 0, behavior: "smooth" });
+			});
 
 		// ===========================
 		// 4. 匯率換算
@@ -3084,7 +3098,15 @@
 		  }
 		});
 		
+document.addEventListener("DOMContentLoaded", () => {
+  const appRoot = document.getElementById("app-root");
+  const homePage = document.getElementById("home-page");
 
+  // 頁面加載後顯示 app-root 並滾動到頂部
+  appRoot.classList.add("show");
+
+  // 滾動到頁面頂部
+  window.scrollTo(0, 0);
 
   // 預設顯示 home-page
   homePage.classList.add("active");
@@ -3136,8 +3158,27 @@
 
 
 
+// 點擊選單項目時切換頁面
+menuItems.forEach(item => {
+  item.addEventListener("click", () => {
+    const targetId = item.getAttribute("data-target");
 
+    // 隱藏所有頁面
+    contentPages.forEach(page => {
+      page.style.display = "none";  // 使用 style.display 來隱藏頁面
+    });
 
+    // 顯示選中的頁面
+    const targetPage = document.getElementById(targetId);
+    if (targetPage) {
+      targetPage.style.display = "block";  // 顯示目標頁面
+    }
+
+    // 關閉選單
+    iosFullMenu.style.display = "none";
+    topbar.style.display = "flex";  // 恢復顯示 topbar
+  });
+});
 
 
 	</script>

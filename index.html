@@ -2270,53 +2270,6 @@
 		  });
 		});
 		
-		// ===========================
-		// 5. 三頁切換
-		// ===========================
-		function showExchange() {
-		  isMainPage = false;
-		 resetTicketPage(); // ⭐ 關鍵
-		
-		  document.querySelector(".container").style.display = "none";
-		  document.getElementById("packing-page").style.display = "none";
-		  document.getElementById("ticket-page").style.display = "none";
-		  document.getElementById("exchange-page").style.display = "block";
-		
-		  scrollBtn.classList.remove("show");
-		  setNavHome(); // ✅
-		}
-		
-		
-		function showPacking() {
-		  isMainPage = false;
-		
-		  document.querySelector(".container").style.display = "none";
-		  document.getElementById("exchange-page").style.display = "none";
-		  document.getElementById("ticket-page").style.display = "none";
-		  document.getElementById("packing-page").style.display = "block";
-		
-		  scrollBtn.classList.remove("show");
-		  setNavHome(); // ✅
-		}
-		
-		
-		function backToMain() {
-		  isMainPage = true;
-		 // ⭐ 離開電子憑證時，重置狀態
-		  resetTicketPage();
-		  document.querySelector(".container").style.display = "block";
-		  document.getElementById("exchange-page").style.display = "none";
-		  document.getElementById("packing-page").style.display = "none";
-		  document.getElementById("ticket-page").style.display = "none";
-		
-		  navBtn.classList.remove("show");
-		
-		  if (window.scrollY > 300) scrollBtn.classList.add("show");
-		  else scrollBtn.classList.remove("show");
-		}
-		
-		
-		
 		
 		/* ============================================================
 		   🎒 恢復原本的二層行李清單（分類 → 項目）
@@ -3108,8 +3061,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 頁面加載後顯示 app-root 並滾動到頂部
   appRoot.classList.add("show");
 
-  // 滾動到頁面頂部
-  window.scrollTo(0, 0);
+
 
   // 預設顯示 home-page
   homePage.classList.add("active");
@@ -3157,45 +3109,183 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+	</script>
+<script>
+/* =========================
+   全域狀態
+========================= */
+const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+let currentPageId = "home-page";
 
+/* =========================
+   工具：取得目前顯示的頁面
+========================= */
+function getCurrentPage() {
+  return document.getElementById(currentPageId);
+}
 
+/* =========================
+   工具：回到目前頁面頂部
+========================= */
+function scrollCurrentPageToTop(behavior = "auto") {
+  const page = getCurrentPage();
+  if (page) {
+    page.scrollTo({ top: 0, behavior });
+  }
+}
 
+/* =========================
+   核心：頁面切換（唯一入口）
+========================= */
+function showPage(targetId) {
+  if (!PAGES.includes(targetId)) return;
 
-// 點擊選單項目時切換頁面
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.getAttribute("data-target");
+  // 隱藏全部頁面
+  PAGES.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
 
-    // 隱藏所有頁面
-    contentPages.forEach(page => {
-      page.style.display = "none";  // 使用 style.display 來隱藏頁面
-    });
+  // 顯示目標頁面
+  const target = document.getElementById(targetId);
+  if (!target) return;
 
-    // 顯示選中的頁面
-    const targetPage = document.getElementById(targetId);
-    if (targetPage) {
-      targetPage.style.display = "block";  // 顯示目標頁面
+  target.style.display = "block";
+  currentPageId = targetId;
+
+  // 下一幀再回頂（避免 display:none/block 造成失效）
+  requestAnimationFrame(() => {
+    scrollCurrentPageToTop();
+    bindScrollListener(); // 重新綁定 TOP 偵測
+  });
+}
+
+/* =========================
+   TOP 按鈕控制（關鍵）
+========================= */
+const scrollBtn = document.getElementById("scrollToTop");
+
+function bindScrollListener() {
+  const page = getCurrentPage();
+  if (!page || !scrollBtn) return;
+
+  // 先移除舊的（避免重複綁）
+  page.onscroll = null;
+
+  page.onscroll = () => {
+    if (page.scrollTop > 300) {
+      scrollBtn.classList.add("show");
+    } else {
+      scrollBtn.classList.remove("show");
     }
+  };
+}
 
-    // 關閉選單
-    iosFullMenu.style.display = "none";
-    topbar.style.display = "flex";  // 恢復顯示 topbar
+if (scrollBtn) {
+  scrollBtn.addEventListener("click", () => {
+    scrollCurrentPageToTop("smooth");
+  });
+}
+
+/* =========================
+   Menu（iOS 全螢幕）
+========================= */
+const menuBtn   = document.getElementById("menuBtn");
+const menuClose = document.getElementById("menuClose");
+const iosMenu   = document.getElementById("iosFullMenu");
+const topbar    = document.querySelector(".topbar");
+
+if (menuBtn && iosMenu) {
+  menuBtn.onclick = () => {
+    iosMenu.style.display = "flex";
+    topbar.style.display = "none";
+  };
+}
+
+if (menuClose) {
+  menuClose.onclick = closeMenu;
+}
+
+function closeMenu() {
+  iosMenu.style.display = "none";
+  topbar.style.display = "flex";
+}
+
+// menu 項目
+document.querySelectorAll(".menu-content li").forEach(li => {
+  li.addEventListener("click", () => {
+    const target = li.dataset.target;
+    closeMenu();
+    showPage(target);
   });
 });
 
+/* =========================
+   Splash → App 啟動
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const splash = document.getElementById("app-splash");
+  const app    = document.getElementById("app-root");
 
+  // 預設全部頁面隱藏
+  PAGES.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
 
+  // 模擬 loading（等圖片）
+  const images = [...document.images];
+  let loaded = 0;
 
-	</script>
-<script>
-function scrollToTopInstant() {
-  const app = document.getElementById("app-root");
-  app.scrollTo({ top: 0 });
-}
+  function finish() {
+    setTimeout(() => {
+      splash.classList.add("hide");
+      setTimeout(() => {
+        splash.remove();
+        app.classList.add("show");
+
+        // ⭐ 預設顯示「行程表」
+        showPage("home-page");
+      }, 400);
+    }, 1800);
+  }
+
+  if (images.length === 0) {
+    finish();
+  } else {
+    images.forEach(img => {
+      if (img.complete) {
+        loaded++;
+        if (loaded === images.length) finish();
+      } else {
+        img.onload = img.onerror = () => {
+          loaded++;
+          if (loaded === images.length) finish();
+        };
+      }
+    });
+  }
+});
+
+/* =========================
+   對外可呼叫（給你用）
+========================= */
 function showHome() {
   showPage("home-page");
-  requestAnimationFrame(scrollToTopInstant);
 }
+
+function showPacking() {
+  showPage("packing-page");
+}
+
+function showTicket() {
+  showPage("ticket-page");
+}
+
+function showExchange() {
+  showPage("exchange-page");
+}
+</script>
 
 
 

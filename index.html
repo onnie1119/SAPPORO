@@ -2184,7 +2184,13 @@
 					<div id="ticketContentBody"></div>
 				</div>
             </div>
-            
+			
+            <!-- 天氣頁面 -->
+			<div id="weather-page" style="display: none;">
+ 
+  				<!-- 天氣iframe將在這裡插入 -->
+			</div>
+
 		</div>
 		
         <button class="back-btn" id="navBtn">BACK</button>
@@ -3295,5 +3301,45 @@ document.head.appendChild(style);
 
 
 	</script>
+	<script>
+  // 點擊按鈕切換到天氣頁面
+  const weatherBtn = document.querySelector('button[data-page="weather-page"]');
+  
+  weatherBtn.addEventListener('click', () => {
+    showPage('weather-page'); // 顯示天氣頁面
+
+    // 如果天氣頁面是首次加載，動態插入 iframe
+    const weatherPage = document.getElementById('weather-page');
+    if (!weatherPage.hasChildNodes()) {
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://weather.com/zh-TW/weather/tenday/l/Minami+ku+Hokkaido+061+2274+Japan?canonicalCityId=6285feb8ef82e47f3bba03de7c7ce58c";
+      iframe.width = "100%";
+      iframe.height = "600";  // 設置高度，您可以根據需要調整
+      iframe.frameBorder = "0";  // 移除邊框
+      iframe.style.border = "none";  // 移除邊框
+      weatherPage.appendChild(iframe);  // 插入 iframe
+    }
+  });
+
+  // 當前頁面控制
+  let currentPageId = "home-page"; // 預設首頁頁面
+
+  // 顯示頁面
+  function showPage(targetId) {
+    // 隱藏當前頁面
+    const currentPage = document.getElementById(currentPageId);
+    if (currentPage) {
+      currentPage.style.display = "none";
+    }
+
+    // 顯示目標頁面
+    const targetPage = document.getElementById(targetId);
+    if (targetPage) {
+      targetPage.style.display = "block";
+      currentPageId = targetId;
+    }
+  }
+
+</script>
 </body>
 </html>

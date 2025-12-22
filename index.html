@@ -1248,70 +1248,64 @@
 	}
 		
 	/* ===== 底部固定選單 ===== */
-.bottom-nav {
-  position: fixed;              /* ⭐ 關鍵 */
-  left: 0;
-  right: 0;
-  bottom: 0;
+	.bottom-nav {
+  		position: fixed;              /* ⭐ 關鍵 */
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 64px;
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		background:#fdfdfdc7;
+		backdrop-filter: blur(10px);
+		border-top: 1px solid rgba(0,0,0,0.06);
+		z-index: 999;                 /* 要比內容高 */
+	}
 
-  height: 64px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-
-  background: rgba(250,250,247,0.92);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0,0,0,0.06);
-
-  z-index: 999;                 /* 要比內容高 */
-}
-
-/* 每一個按鈕 */
-.bottom-nav button {
-  flex: 1;
-  height: 100%;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  background: none;
-  border: none;
-  padding: 0;
-
-  color: #9aa0a6;
-  cursor: pointer;
-}
-
-/* icon（跟你 transport-info 同系統） */
-.bottom-nav span[class^="icon-"] {
-  font-size: 22px;
-  line-height: 1;
-  font-weight: normal;          /* ⭐ 解決粗細不一 */
-  display: block;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* 文字 */
-.bottom-nav .label {
-  font-size: 11px;
-  margin-top: 4px;
-}
-
-/* Active 狀態（不整塊、不醜） */
-.bottom-nav button.active {
-  color: #3a7afe;
-}
-
-.bottom-nav button.active::after {
-  content: "";
-  width: 18px;
-  height: 2px;
-  margin-top: 4px;
-  border-radius: 2px;
-  background: #3a7afe;
-}
+	/* 每一個按鈕 */
+	.bottom-nav button {
+		flex: 1;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		padding: 0;
+		color: #9aa0a6;
+		cursor: pointer;
+	}
+	
+	/* icon（跟你 transport-info 同系統） */
+	.bottom-nav span[class^="icon-"] {
+	  	font-size: 22px;
+	  	line-height: 1;
+	  	font-weight: normal;          /* ⭐ 解決粗細不一 */
+	  	display: block;
+	  	-webkit-font-smoothing: antialiased;
+	}
+	
+	/* 文字 */
+	.bottom-nav .label {
+	  	font-size: 11px;
+	  	margin-top: 4px;
+	}
+	
+	/* Active 狀態（不整塊、不醜） */
+	.bottom-nav button.active {
+	  	color: #3a7afe;
+	}
+	
+	.bottom-nav button.active::after {
+	  	content: "";
+	  	width: 18px;
+	  	height: 2px;
+	  	margin-top: 4px;
+	  	border-radius: 2px;
+	  	background: #3a7afe;
+	}
 
 
 </style>

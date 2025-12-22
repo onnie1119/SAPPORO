@@ -3286,7 +3286,7 @@ function applyInitialHomeOffset() {
   if (!home || !topbar) return;
 
   // ⭐ 第一次才補一個距離
-  home.style.marginTop = topbar.offsetHeight + "px";
+ home.style.marginTop = "0px";
 
   // 保證畫面在最上
   requestAnimationFrame(() => {

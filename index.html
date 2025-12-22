@@ -1307,7 +1307,7 @@
 	  	background: #3a7afe;
 	}
 
-	@keyframes navShake {
+	@keyframes shake {
 	  	0%   { transform: translateX(0); }
 	  	20%  { transform: translateX(-4px); }
 	  	40%  { transform: translateX(4px); }
@@ -1316,10 +1316,9 @@
 	  	100% { transform: translateX(0); }
 	}
 	
-	.nav-shake {
+	.vibrate {
 	  	animation: navShake 0.25s ease;
 	}
-
 
 </style>
 </head>
@@ -3206,23 +3205,23 @@
 
 	</script>
 	<script>
-// 定義全域變數，避免重複宣告
+// 定義全域變數
 const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
-let currentPageId = "home-page";  // 宣告一次即可，後續只需使用
+let currentPageId = "home-page";  // 當前頁面 ID
 
-const vibrateClass = "vibrate";
+const vibrateClass = "vibrate"; // 震動動畫的類別
 
-// 獲取所有選單項目
+// 獲取選單項目
 const menuItems = document.querySelectorAll(".menu-content li");
 
-// 設置選單項目的點擊事件
+// 設置選單項目點擊事件
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
-    const targetId = item.dataset.target; // 獲取目標頁面的ID
-    const currentPage = getCurrentPage(); // 獲取當前頁面
-    const currentPageId = currentPage.id; // 取得當前頁面ID
+    const targetId = item.dataset.target; // 獲取目標頁面 ID
+    const currentPage = getCurrentPage();  // 獲取當前頁面元素
+    const currentPageId = currentPage.id;  // 當前頁面 ID
 
-    // 如果點擊的是當前頁面，觸發震動效果
+    // 如果點擊的是當前頁面，則觸發震動效果
     if (currentPageId === targetId) {
       // 為選單項目添加震動效果
       item.classList.add(vibrateClass);
@@ -3230,7 +3229,7 @@ menuItems.forEach(item => {
       // 移除震動效果（動畫結束後）
       setTimeout(() => {
         item.classList.remove(vibrateClass);
-      }, 300); // 持續震動的時間
+      }, 300);  // 震動持續時間：300ms
     } else {
       // 正常切換頁面
       showPage(targetId);
@@ -3243,9 +3242,9 @@ function getCurrentPage() {
   return document.getElementById(currentPageId);
 }
 
-// 顯示指定的頁面
+// 顯示指定頁面
 function showPage(targetId) {
-  if (!PAGES.includes(targetId)) return; // 確保目標頁面是有效的
+  if (!PAGES.includes(targetId)) return;  // 確保目標頁面有效
 
   // 隱藏所有頁面
   PAGES.forEach(id => {
@@ -3257,7 +3256,7 @@ function showPage(targetId) {
   const target = document.getElementById(targetId);
   if (target) {
     target.style.display = "block";
-    currentPageId = targetId; // 更新當前頁面的ID
+    currentPageId = targetId;  // 更新當前頁面 ID
   }
 
   // 滾動到頁面頂部
@@ -3289,7 +3288,7 @@ style.innerHTML = `
   }
 
   .vibrate {
-    animation: shake 0.3s ease-in-out;
+    animation: shake 0.3s ease-in-out;  /* 震動動畫持續 0.3 秒 */
   }
 `;
 document.head.appendChild(style);

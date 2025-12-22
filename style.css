@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?h79v46');
-  src:  url('fonts/icomoon.eot?h79v46#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?h79v46') format('truetype'),
-    url('fonts/icomoon.woff?h79v46') format('woff'),
-    url('fonts/icomoon.svg?h79v46#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?rzy90g');
+  src:  url('fonts/icomoon.eot?rzy90g#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?rzy90g') format('truetype'),
+    url('fonts/icomoon.woff?rzy90g') format('woff'),
+    url('fonts/icomoon.svg?rzy90g#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -28,6 +28,9 @@
 .icon-briefcase:before {
   content: "\e921";
 }
+.icon-chevrons-up:before {
+  content: "\e926";
+}
 .icon-file-text:before {
   content: "\e922";
 }
@@ -48,6 +51,15 @@
 }
 .icon-airplane:before {
   content: "\e902";
+}
+.icon-arrow-outline-up:before {
+  content: "\e927";
+}
+.icon-arrow-thick-up:before {
+  content: "\e928";
+}
+.icon-arrow-thin-up:before {
+  content: "\e929";
 }
 .icon-camera:before {
   content: "\e903";
@@ -138,4 +150,7 @@
 }
 .icon-zoom-out:before {
   content: "\e914";
+}
+.icon-arrow-up2:before {
+  content: "\ea3a";
 }

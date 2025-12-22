@@ -3206,66 +3206,69 @@
 
 	</script>
 	<script>
-	// 使用 window.PAGES 來避免衝突
+	// Assuming window.PAGES is declared globally as before
 if (typeof window.PAGES === 'undefined') {
   window.PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
 }
 
-let currentPageId = "home-page"; // 當前頁面的ID
+// Do not redeclare currentPageId
+let currentPageId = "home-page"; // The current page ID (only declared once)
 
-// 點擊選單項目時的處理
+const vibrateClass = "vibrate";
+
+// Menu item click handler
 const menuItems = document.querySelectorAll(".menu-content li");
 
-// 點擊選單時的邏輯
+// Iterate over menu items and add event listeners
 menuItems.forEach(item => {
   item.addEventListener("click", () => {
-    const targetId = item.dataset.target; // 獲取目標頁面ID
-    const currentPage = getCurrentPage(); // 獲取當前頁面
-    const currentPageId = currentPage.id; // 當前頁面的ID
+    const targetId = item.dataset.target; // Get the target page ID
+    const currentPage = getCurrentPage(); // Get the current page
+    const currentPageId = currentPage.id; // Get the current page's ID
 
-    // 如果點擊的是當前頁面，則觸發震動效果
+    // If the clicked page is the current page, trigger vibration effect
     if (currentPageId === targetId) {
-      // 為選單項目添加震動效果
+      // Add vibration effect to the menu item
       item.classList.add(vibrateClass);
 
-      // 移除震動效果（動畫結束後）
+      // Remove vibration effect after animation ends
       setTimeout(() => {
         item.classList.remove(vibrateClass);
-      }, 300); // 持續震動的時間
+      }, 300); // Vibration duration
     } else {
-      // 正常切換頁面邏輯
+      // Normal page switch logic
       showPage(targetId);
     }
   });
 });
 
-// 獲取當前頁面
+// Function to get the current page
 function getCurrentPage() {
   return document.getElementById(currentPageId);
 }
 
-// 切換頁面
+// Function to switch pages
 function showPage(targetId) {
-  if (!window.PAGES.includes(targetId)) return; // 確保目標頁面是有效的
+  if (!window.PAGES.includes(targetId)) return; // Ensure target page is valid
 
-  // 隱藏所有頁面
+  // Hide all pages
   window.PAGES.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
-  // 顯示目標頁面
+  // Show the target page
   const target = document.getElementById(targetId);
   if (target) {
     target.style.display = "block";
-    currentPageId = targetId; // 更新當前頁面的ID
+    currentPageId = targetId; // Update current page ID
   }
 
-  // 回到頁面頂部
+  // Scroll to the top of the page
   scrollCurrentPageToTop();
 }
 
-// 滾動到當前頁面頂部
+// Function to scroll the current page to the top
 function scrollCurrentPageToTop() {
   const page = getCurrentPage();
   if (page) {
@@ -3273,12 +3276,12 @@ function scrollCurrentPageToTop() {
   }
 }
 
-// 顯示首頁
+// Function to show the home page
 function showHome() {
   showPage("home-page");
 }
 
-// 增加震動效果的 CSS
+// Add the vibration effect CSS to the document
 const style = document.createElement("style");
 style.innerHTML = `
   @keyframes shake {
@@ -3294,9 +3297,6 @@ style.innerHTML = `
   }
 `;
 document.head.appendChild(style);
-
-
-
 
 
 	</script>

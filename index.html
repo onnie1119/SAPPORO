@@ -1255,9 +1255,28 @@
 		overflow-y: auto;
 	}
 
+	.menu-content li:hover {
+		background: rgba(255, 255, 255, 0.12);
+	  	transform: translateY(-1px);
+	}
+
 	.menu-content li.active {
-		background: rgba(255,255,255,0.18);
-		border-radius: 12px;
+  		background: rgba(255, 255, 255, 0.18);
+	}
+
+	.menu-content li.active::after {
+	  	content: "";
+	  	position: absolute;
+	  	left: 18px;
+	  	right: 18px;
+	  	bottom: 6px;
+		height: 2px;
+	  	border-radius: 2px;
+		background: rgba(255, 255, 255, 0.9);
+	}
+
+	.menu-content li:last-child {
+	  	margin-bottom: 0;
 	}
 
 

@@ -3180,10 +3180,26 @@ menuItems.forEach(item => {
   });
 });
 
-function showHome() {
-  showPage("home-page");
-  window.scrollTo({ top: 0, behavior: "instant" });
+function showPage(home-page) {
+  // 關閉全部頁面
+  document.querySelectorAll(
+    "#home-page, #packing-page, #ticket-page, #exchange-page"
+  ).forEach(p => {
+    p.style.display = "none";
+    p.classList.remove("active");
+  });
+
+  // 顯示目標頁
+  const page = document.getElementById(home-page);
+  if (page) {
+    page.style.display = "block";
+    page.classList.add("active");
+  }
+
+  // ⭐ 關鍵：永遠回到最上方
+  window.scrollTo(0, 0);
 }
+
 
 	</script>
 

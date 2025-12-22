@@ -3185,13 +3185,21 @@ menuItems.forEach(item => {
 
 	</script>
 <script>
+function scrollToTopInstant() {
+  const app = document.getElementById("app-root");
+  if (app) {
+    app.scrollTo({ top: 0, behavior: "instant" });
+  }
+}
 function showHome() {
   showPage("home-page");
 
+  // ⭐ 切頁後下一個 frame 再捲（避免 display:none 還沒切完）
   requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, left: 0 });
+    scrollToTopInstant();
   });
 }
+
 
 </script>
 

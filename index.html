@@ -3205,12 +3205,12 @@
 
 	</script>
 	<script>
-// 檢查 'PAGES' 是否已經存在，如果已存在就不重新聲明
-if (typeof PAGES === 'undefined') {
-    const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+// 確保 PAGES 只定義一次，使用 window 來確保全局唯一
+if (!window.PAGES) {
+    window.PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
 }
 
-let currentPageId = "home-page";  // 當前頁面 ID
+let currentPageId = "home-page"; // 當前頁面的ID
 
 const vibrateClass = "vibrate"; // 震動動畫的類別
 
@@ -3247,10 +3247,10 @@ function getCurrentPage() {
 
 // 顯示指定頁面
 function showPage(targetId) {
-    if (!PAGES.includes(targetId)) return;  // 確保目標頁面有效
+    if (!window.PAGES.includes(targetId)) return;  // 確保目標頁面有效
 
     // 隱藏所有頁面
-    PAGES.forEach(id => {
+    window.PAGES.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = "none";
     });
@@ -3295,6 +3295,7 @@ style.innerHTML = `
     }
 `;
 document.head.appendChild(style);
+
 
 	</script>
 </body>

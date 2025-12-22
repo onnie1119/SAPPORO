@@ -3205,8 +3205,11 @@
 
 	</script>
 	<script>
-// 定義全域變數
-const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+// 檢查 'PAGES' 是否已經存在，如果已存在就不重新聲明
+if (typeof PAGES === 'undefined') {
+    const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+}
+
 let currentPageId = "home-page";  // 當前頁面 ID
 
 const vibrateClass = "vibrate"; // 震動動畫的類別
@@ -3216,83 +3219,82 @@ const menuItems = document.querySelectorAll(".menu-content li");
 
 // 設置選單項目點擊事件
 menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.dataset.target; // 獲取目標頁面 ID
-    const currentPage = getCurrentPage();  // 獲取當前頁面元素
-    const currentPageId = currentPage.id;  // 當前頁面 ID
+    item.addEventListener("click", () => {
+        const targetId = item.dataset.target; // 獲取目標頁面 ID
+        const currentPage = getCurrentPage();  // 獲取當前頁面元素
+        const currentPageId = currentPage.id;  // 當前頁面 ID
 
-    // 如果點擊的是當前頁面，則觸發震動效果
-    if (currentPageId === targetId) {
-      // 為選單項目添加震動效果
-      item.classList.add(vibrateClass);
+        // 如果點擊的是當前頁面，則觸發震動效果
+        if (currentPageId === targetId) {
+            // 為選單項目添加震動效果
+            item.classList.add(vibrateClass);
 
-      // 移除震動效果（動畫結束後）
-      setTimeout(() => {
-        item.classList.remove(vibrateClass);
-      }, 300);  // 震動持續時間：300ms
-    } else {
-      // 正常切換頁面
-      showPage(targetId);
-    }
-  });
+            // 移除震動效果（動畫結束後）
+            setTimeout(() => {
+                item.classList.remove(vibrateClass);
+            }, 300);  // 震動持續時間：300ms
+        } else {
+            // 正常切換頁面
+            showPage(targetId);
+        }
+    });
 });
 
 // 獲取當前頁面的元素
 function getCurrentPage() {
-  return document.getElementById(currentPageId);
+    return document.getElementById(currentPageId);
 }
 
 // 顯示指定頁面
 function showPage(targetId) {
-  if (!PAGES.includes(targetId)) return;  // 確保目標頁面有效
+    if (!PAGES.includes(targetId)) return;  // 確保目標頁面有效
 
-  // 隱藏所有頁面
-  PAGES.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-  });
+    // 隱藏所有頁面
+    PAGES.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+    });
 
-  // 顯示目標頁面
-  const target = document.getElementById(targetId);
-  if (target) {
-    target.style.display = "block";
-    currentPageId = targetId;  // 更新當前頁面 ID
-  }
+    // 顯示目標頁面
+    const target = document.getElementById(targetId);
+    if (target) {
+        target.style.display = "block";
+        currentPageId = targetId;  // 更新當前頁面 ID
+    }
 
-  // 滾動到頁面頂部
-  scrollCurrentPageToTop();
+    // 滾動到頁面頂部
+    scrollCurrentPageToTop();
 }
 
 // 滾動到當前頁面頂部
 function scrollCurrentPageToTop() {
-  const page = getCurrentPage();
-  if (page) {
-    page.scrollTo({ top: 0, behavior: "smooth" });
-  }
+    const page = getCurrentPage();
+    if (page) {
+        page.scrollTo({ top: 0, behavior: "smooth" });
+    }
 }
 
 // 顯示首頁
 function showHome() {
-  showPage("home-page");
+    showPage("home-page");
 }
 
 // 增加震動效果的 CSS
 const style = document.createElement("style");
 style.innerHTML = `
-  @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
-  }
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
 
-  .vibrate {
-    animation: shake 0.3s ease-in-out;  /* 震動動畫持續 0.3 秒 */
-  }
+    .vibrate {
+        animation: shake 0.3s ease-in-out;  /* 震動動畫持續 0.3 秒 */
+    }
 `;
 document.head.appendChild(style);
-
 
 	</script>
 </body>

@@ -1088,7 +1088,7 @@
 	  	left: 0;
 	  	width: 100%;  /* 保證寬度占滿整個視口 */
 	  	height: 100%; /* 保證高度占滿整個視口 */
-		overflow-y: auto;}
+		overflow: hidden;}
 		
 	.topbar {
 	  	background: #3A7AFE;
@@ -1249,7 +1249,12 @@
 	
 	#exchange-page.active {
 	  padding-top: 0px;}
-
+		
+	/* 讓 home-page 本身成為滾動容器 */
+	#home-page.active {
+	  height: calc(100vh - 80px); /* 扣掉 topbar */
+	  overflow-y: auto;
+	}
 		
 </style>
 </head>
@@ -3134,6 +3139,7 @@ function showPage(targetId) {
   // 下一幀再回頂（避免 display:none/block 造成失效）
   requestAnimationFrame(() => {
     scrollCurrentPageToTop();
+	if (page) page.scrollTop = 0; // ⭐ 強制歸零
     bindScrollListener(); // 重新綁定 TOP 偵測
   });
 }

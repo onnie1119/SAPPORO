@@ -11,14 +11,16 @@
   <style>
 	html {
 		margin: 0;
-		padding: 0;}
+		padding: 0;
+		height: 100%;}
 	
     body {
 		margin: 0;
 		background: #FAFAF7;
 		font-family: 'Noto Sans TC', sans-serif;
 		color: #444;
-		padding-bottom: 20px;}
+		padding-bottom: 20px;
+		height: 100%;}
 
 	body.exchange-mode {
 		margin: 0;
@@ -1085,7 +1087,8 @@
 	  	top: 0;  /* 確保頁面從頂部開始 */
 	  	left: 0;
 	  	width: 100%;  /* 保證寬度占滿整個視口 */
-	  	height: 100%; /* 保證高度占滿整個視口 */}
+	  	height: 100%; /* 保證高度占滿整個視口 */
+		overflow-y: auto;}
 		
 	.topbar {
 	  	background: #3A7AFE;
@@ -3187,18 +3190,13 @@ menuItems.forEach(item => {
 <script>
 function scrollToTopInstant() {
   const app = document.getElementById("app-root");
-  if (app) {
-    app.scrollTo({ top: 0, behavior: "instant" });
-  }
+  app.scrollTo({ top: 0 });
 }
 function showHome() {
   showPage("home-page");
-
-  // ⭐ 切頁後下一個 frame 再捲（避免 display:none 還沒切完）
-  requestAnimationFrame(() => {
-    scrollToTopInstant();
-  });
+  requestAnimationFrame(scrollToTopInstant);
 }
+
 
 
 </script>

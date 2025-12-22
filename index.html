@@ -1307,6 +1307,19 @@
 	  	background: #3a7afe;
 	}
 
+	@keyframes navShake {
+	  	0%   { transform: translateX(0); }
+	  	20%  { transform: translateX(-4px); }
+	  	40%  { transform: translateX(4px); }
+	  	60%  { transform: translateX(-3px); }
+	  	80%  { transform: translateX(3px); }
+	  	100% { transform: translateX(0); }
+	}
+	
+	.nav-shake {
+	  	animation: navShake 0.25s ease;
+	}
+
 
 </style>
 </head>
@@ -3191,6 +3204,96 @@
 		  });
 		});
 
+	</script>
+	<script>
+		// 震動動畫類別
+		const vibrateClass = "vibrate";
+
+		// 假設頁面列表
+		const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+		let currentPageId = "home-page"; // 當前頁面的ID
+		
+		// 選單項目
+		const menuItems = document.querySelectorAll(".menu-content li");
+		
+		// 點擊選單時的處理
+		menuItems.forEach(item => {
+			item.addEventListener("click", () => {
+		    	const targetId = item.dataset.target; // 獲取目標頁面ID
+		    	const currentPage = getCurrentPage(); // 獲取當前頁面
+		    	const currentPageId = currentPage.id; // 當前頁面的ID
+		
+		    	// 如果點擊的是當前頁面，則觸發震動效果
+		    	if (currentPageId === targetId) {
+		      		// 為選單項目添加震動效果
+		      		item.classList.add(vibrateClass);
+		
+		      		// 移除震動效果（動畫結束後）
+		      		setTimeout(() => {
+		        		item.classList.remove(vibrateClass);
+		      		}, 300);
+		    	} else {
+		      		// 正常切換頁面邏輯
+		      		showPage(targetId);
+		    	}
+		  	});
+		});
+
+		// 獲取當前頁面
+		function getCurrentPage() {
+			return document.getElementById(currentPageId);
+		}
+		
+		// 切換頁面
+		function showPage(targetId) {
+			if (!PAGES.includes(targetId)) return; // 確保目標頁面是有效的
+		
+		  	// 隱藏所有頁面
+		  	PAGES.forEach(id => {
+		    	const el = document.getElementById(id);
+		    	if (el) el.style.display = "none";
+		 	});
+		
+		  	// 顯示目標頁面
+		  	const target = document.getElementById(targetId);
+		  	if (target) {
+		    	target.style.display = "block";
+		    	currentPageId = targetId; // 更新當前頁面的ID
+		  	}
+
+ 			// 回到頁面頂部
+  			scrollCurrentPageToTop();
+		}
+
+		// 滾動到當前頁面頂部
+		function scrollCurrentPageToTop() {
+  			const page = getCurrentPage();
+  			if (page) {
+    			page.scrollTo({ top: 0, behavior: "smooth" });
+  			}
+		}
+
+		// 顯示頁面內容（例如返回首頁、顯示頁面時）
+		function showHome() {
+  			showPage("home-page");
+		}
+
+		// 增加震動效果的 CSS
+		const style = document.createElement("style");
+		style.innerHTML = `
+  			@keyframes shake {
+			    0% { transform: translateX(0); }
+			    25% { transform: translateX(-5px); }
+			    50% { transform: translateX(5px); }
+			    75% { transform: translateX(-5px); }
+			    100% { transform: translateX(0); }
+		  	}
+
+  			.vibrate {
+    			animation: shake 0.3s ease-in-out;
+  			}
+		`;
+		document.head.appendChild(style);
 	</script>
 </body>
 </html>

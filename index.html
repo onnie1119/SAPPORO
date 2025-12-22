@@ -3206,10 +3206,7 @@
 
 	</script>
 	<script>
-	// 震動動畫類別
-const vibrateClass = "vibrate";
-
-// 假設頁面列表
+		// 在全域範圍內只宣告一次 PAGES
 const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
 let currentPageId = "home-page"; // 當前頁面的ID
 
@@ -3294,6 +3291,7 @@ style.innerHTML = `
   }
 `;
 document.head.appendChild(style);
+
 
 
 

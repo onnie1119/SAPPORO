@@ -2107,16 +2107,15 @@
 		let navBtn = null;
 		
 		document.addEventListener("DOMContentLoaded", () => {
-		  navBtn = document.getElementById("navBtn");
+			navBtn = document.getElementById("navBtn");
+			const list = document.querySelector(".ticket-category-list");
+			if (list) {
+				originalTicketCategoryHTML = list.innerHTML;
+			}
 		
-		  const list = document.querySelector(".ticket-category-list");
-		  if (list) {
-		    originalTicketCategoryHTML = list.innerHTML;
-		  }
-		
-		  getExchangeRate();
-		  showDay(1);
-		  updateArrows();
+			getExchangeRate();
+			showDay(1);
+			updateArrows();
 		});
 		
 		
@@ -2124,24 +2123,21 @@
 		// 1. 行程切換
 		// ===========================
 		function showDay(dayNumber) {
-		  const sections = document.querySelectorAll(".day-section");
-		  const tabs = document.querySelectorAll(".day-tab");
-		
-		  sections.forEach((section, index) => {
-		    if (index === dayNumber - 1) {
-		      section.style.display = "block";
-		      requestAnimationFrame(() => section.classList.add("fade-in"));
-		    } else {
-		      section.style.display = "none";
-		      section.classList.remove("fade-in");
-		    }
-		  });
-		
-		  tabs.forEach((tab, index) => {
-		    tab.classList.toggle("active", index === dayNumber - 1);
-		  });
-		
-		  window.scrollTo({ top: 0, behavior: "smooth" });
+			const sections = document.querySelectorAll(".day-section");
+			const tabs = document.querySelectorAll(".day-tab");
+			sections.forEach((section, index) => {
+				if (index === dayNumber - 1) {
+					section.style.display = "block";
+					requestAnimationFrame(() => section.classList.add("fade-in"));
+				} else {
+					section.style.display = "none";
+					section.classList.remove("fade-in");
+				}
+			});
+			tabs.forEach((tab, index) => {
+				tab.classList.toggle("active", index === dayNumber - 1);
+			});
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		}
 		
 		// ===========================
@@ -2152,16 +2148,15 @@
 		const arrowRight = document.getElementById("arrow-right");
 		
 		function updateArrows() {
-		  if (!scrollEl) return;
-		  const max = scrollEl.scrollWidth - scrollEl.clientWidth;
-		
-		  arrowLeft.style.opacity  = scrollEl.scrollLeft > 10 ? "1" : "0";
-		  arrowRight.style.opacity = scrollEl.scrollLeft < max - 10 ? "1" : "0";
+			if (!scrollEl) return;
+			const max = scrollEl.scrollWidth - scrollEl.clientWidth;
+			arrowLeft.style.opacity  = scrollEl.scrollLeft > 10 ? "1" : "0";
+			arrowRight.style.opacity = scrollEl.scrollLeft < max - 10 ? "1" : "0";
 		}
 		
 		if (scrollEl) {
-		  scrollEl.addEventListener("scroll", updateArrows);
-		  window.addEventListener("resize", updateArrows);
+			scrollEl.addEventListener("scroll", updateArrows);
+			window.addEventListener("resize", updateArrows);
 		}
 		
 		
@@ -2179,158 +2174,146 @@
 		const outputLabel = document.getElementById("output-label");
 		
 		async function getExchangeRate() {
-		  try {
-		    const res  = await fetch("https://open.er-api.com/v6/latest/JPY");
-		    const data = await res.json();
-		    currentRate = data.rates.TWD;
-		    updateConversion();
-		  } catch (err) {
-		    console.error("匯率抓取失敗:", err);
-		  }
+			try {
+				const res  = await fetch("https://open.er-api.com/v6/latest/JPY");
+				const data = await res.json();
+				currentRate = data.rates.TWD;
+				updateConversion();
+			} catch (err) {
+				console.error("匯率抓取失敗:", err);
+			}
 		}
 		
 		function addComma(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 		function removeComma(s) { return s.replace(/,/g, ""); }
-		
 		function updateConversion() {
-		  if (!currentRate) return;
-		  let raw = removeComma(inputField.value);
-		  if (!raw || isNaN(raw)) {
+			if (!currentRate) return;
+			let raw = removeComma(inputField.value);
+			if (!raw || isNaN(raw)) {
 		    outputField.value = "";
 		    return;
-		  }
-		  let val = parseInt(raw, 10);
-		  let result = isJPYtoTWD ? val * currentRate : val / currentRate;
-		  outputField.value = addComma(Math.round(result).toString());
+			}
+			let val = parseInt(raw, 10);
+			let result = isJPYtoTWD ? val * currentRate : val / currentRate;
+			outputField.value = addComma(Math.round(result).toString());
 		}
 		
 		toggleBtn.addEventListener("click", () => {
-		  isJPYtoTWD = !isJPYtoTWD;
-		  toggleBtn.classList.toggle("active", !isJPYtoTWD);
-		  toggleLabel.textContent = isJPYtoTWD ? "JPY" : "TWD";
-		  inputLabel.textContent  = isJPYtoTWD ? "｜ 日圓" : "｜ 台幣";
-		  outputLabel.textContent = isJPYtoTWD ? "｜ 台幣" : "｜ 日圓";
-		  updateConversion();
+			isJPYtoTWD = !isJPYtoTWD;
+			toggleBtn.classList.toggle("active", !isJPYtoTWD);
+			toggleLabel.textContent = isJPYtoTWD ? "JPY" : "TWD";
+			inputLabel.textContent  = isJPYtoTWD ? "｜ 日圓" : "｜ 台幣";
+			outputLabel.textContent = isJPYtoTWD ? "｜ 台幣" : "｜ 日圓";
+			updateConversion();
 		});
 		
 		inputField.addEventListener("input", () => {
-		  let raw = removeComma(inputField.value);
-		  if (!raw || isNaN(raw)) {
-		    inputField.value = "";
-		    outputField.value = "";
-		    return;
-		  }
-		  inputField.value = addComma(raw);
-		  updateConversion();
+			let raw = removeComma(inputField.value);
+			if (!raw || isNaN(raw)) {
+				inputField.value = "";
+				outputField.value = "";
+				return;
+			}
+			inputField.value = addComma(raw);
+			updateConversion();
 		});
 		
 		// 數字鍵盤
 		document.querySelectorAll(".num-pad .key").forEach(btn => {
-		  btn.addEventListener("click", () => {
-		    let raw = removeComma(inputField.value);
-		    const key = btn.textContent;
+			btn.addEventListener("click", () => {
+				let raw = removeComma(inputField.value);
+				const key = btn.textContent;
+				if (key === "C") {
+					inputField.value = "";
+					outputField.value = "";
+					return;
+				}
 		
-		    if (key === "C") {
-		      inputField.value = "";
-		      outputField.value = "";
-		      return;
-		    }
+				if (key === "←") {
+					raw = raw.slice(0, -1);
+					inputField.value = raw ? addComma(raw) : "";
+					updateConversion();
+					return;
+				}
 		
-		    if (key === "←") {
-		      raw = raw.slice(0, -1);
-		      inputField.value = raw ? addComma(raw) : "";
-		      updateConversion();
-		      return;
-		    }
-		
-		    raw += key;
-		    raw = raw.replace(/^0+/, "");
-		    if (!raw) raw = "0";
-		
-		    inputField.value = addComma(raw);
-		    updateConversion();
-		  });
+				raw += key;
+		    	raw = raw.replace(/^0+/, "");
+		    	if (!raw) raw = "0";
+				inputField.value = addComma(raw);
+				updateConversion();
+			});
 		});
 		
 		
-		/* ============================================================
-		   🎒 恢復原本的二層行李清單（分類 → 項目）
-		   ✔ 全展開
-		   ✔ 可新增分類 / 項目
-		   ✔ 可刪除
-		   ✔ checkbox 正常
-		   ✔ 不分外套/上衣等細類
-		============================================================ */
-		
 		let packingData = JSON.parse(localStorage.getItem("packingData")) || {
-		  groups: {
-		    documents: {
-		      name: "重要文件",
-		      items: [
-		        { text: "護照", done: false },
-		        { text: "身分證", done: false },
-		        { text: "Esim", done: false },
-		        { text: "信用卡", done: false },
-		        { text: "交通卡", done: false },
-		        { text: "台幣 / 日幣", done: false },
-		        { text: "旅遊保險", done: false }
-		      ]
-		    },
+			groups: {
+				documents: {
+					name: "重要文件",
+					items: [
+						{ text: "護照", done: false },
+						{ text: "身分證", done: false },
+						{ text: "Esim", done: false },
+						{ text: "信用卡", done: false },
+						{ text: "交通卡", done: false },
+						{ text: "台幣 / 日幣", done: false },
+						{ text: "旅遊保險", done: false }
+					]
+				},
 		
-		    personal: {
-		      name: "個人用品",
-		      items: [
-				{ text: "口罩", done: false },
-		        { text: "香水", done: false },
-		        { text: "離子夾", done: false },
-		        { text: "常備藥品", done: false },
-		        { text: "旅行洗漱包", done: false },
-		        { text: "旅行化妝包", done: false },
-		        { text: "衛生紙 / 濕紙巾", done: false }
-		      ]
-		    },
+			personal: {
+				name: "個人用品",
+				items: [
+					{ text: "口罩", done: false },
+					{ text: "香水", done: false },
+					{ text: "離子夾", done: false },
+					{ text: "常備藥品", done: false },
+					{ text: "旅行洗漱包", done: false },
+					{ text: "旅行化妝包", done: false },
+					{ text: "衛生紙 / 濕紙巾", done: false }
+				]
+			},
 		
 		    clothes: {
-		      name: "服裝用品",
-		      items: [
-		        { text: "免洗內衣褲*6", done: false },
-		        { text: "睡衣褲*1", done: false },
-				{ text: "發熱衣*2", done: false },
-		        { text: "上衣*4", done: false },
-				{ text: "中層外套*1", done: false },
-				{ text: "下身*5", done: false },
-				{ text: "疊穿裙*3", done: false },
-				{ text: "內搭褲*2", done: false },
-				{ text: "發熱褲*2", done: false },
-		        { text: "外套*3", done: false },
-				{ text: "羊毛襪*3", done: false },
-				{ text: "襪套*2", done: false },
-		        { text: "鞋子*2", done: false },
-		        { text: "帽子*3", done: false },
-				{ text: "手套*2", done: false },
-				{ text: "圍巾*3", done: false }   
-		      ]
+				name: "服裝用品",
+				items: [
+					{ text: "免洗內衣褲*6", done: false },
+					{ text: "睡衣褲*1", done: false },
+					{ text: "發熱衣*2", done: false },
+					{ text: "上衣*4", done: false },
+					{ text: "中層外套*1", done: false },
+					{ text: "下身*5", done: false },
+					{ text: "疊穿裙*3", done: false },
+					{ text: "內搭褲*2", done: false },
+					{ text: "發熱褲*2", done: false },
+					{ text: "外套*3", done: false },
+					{ text: "羊毛襪*3", done: false },
+					{ text: "襪套*2", done: false },
+					{ text: "鞋子*2", done: false },
+					{ text: "帽子*3", done: false },
+					{ text: "手套*2", done: false },
+					{ text: "圍巾*3", done: false }   
+				]
 		    },
 		
 		    electronics: {
-		      name: "3C 設備",
-		      items: [
-		        { text: "手機", done: false },
-				{ text: "手機掛繩", done: false },
-		        { text: "耳機", done: false },
-		        { text: "腳架", done: false },
-		        { text: "充電器", done: false },
-		        { text: "行動電源", done: false },
-		        { text: "相機 / 電池 / 記憶卡", done: false }
-		      ]
-		    }
-		  }
+				name: "3C 設備",
+				items: [
+					{ text: "手機", done: false },
+					{ text: "手機掛繩", done: false },
+					{ text: "耳機", done: false },
+					{ text: "腳架", done: false },
+					{ text: "充電器", done: false },
+					{ text: "行動電源", done: false },
+					{ text: "相機 / 電池 / 記憶卡", done: false }
+				]
+			}
+		}
 		};
 		
 		
 		/* 儲存 */
 		function savePacking() {
-		  localStorage.setItem("packingData", JSON.stringify(packingData));
+			localStorage.setItem("packingData", JSON.stringify(packingData));
 		}
 		
 		/* 快速選取 */
@@ -2341,969 +2324,780 @@
 		   建立分類 DOM
 		============================================================ */
 		function createGroupDOM(key, group) {
-		  return `
+			return `
 		    <div class="packing-group" data-group="${key}">
-		      <div class="packing-group-header">
-		        <div class="left-group">
-		          <span class="title">${group.name}</span>
-		          <span class="count-status">
-		            ${group.items.filter(i=>i.done).length}/${group.items.length}
-		          </span>
-		        </div>
-		        <button class="delete-group-btn">×</button>
-		      </div>
-		
-		      <ul class="packing-list"></ul>
-		
-		      <button class="add-item-btn" data-additem="${key}">＋ 新增項目</button>
-		    </div>
-		  `;
+				<div class="packing-group-header">
+					<div class="left-group">
+						<span class="title">${group.name}</span>
+		          		<span class="count-status">
+		            		${group.items.filter(i=>i.done).length}/${group.items.length}
+		          		</span>
+		        	</div>
+		       		<button class="delete-group-btn">×</button>
+				</div>
+				<ul class="packing-list"></ul>
+				<button class="add-item-btn" data-additem="${key}">＋ 新增項目</button>
+			</div>
+			`;
 		}
 		
 		/* ============================================================
 		   主渲染（永遠展開）
 		============================================================ */
 		function renderPackingPage() {
-		  const container = qs("#packing-page");
-		  container.innerHTML = "";
-		
-		  Object.keys(packingData.groups).forEach(key => {
-		    container.innerHTML += createGroupDOM(key, packingData.groups[key]);
-		  });
-		
-		  container.innerHTML += `<div id="add-category" class="add-category">＋ 新增分類</div>`;
-		
-		  fillItems();
-		  bindEvents();
-		  enableDrag();
+			const container = qs("#packing-page");
+			container.innerHTML = "";
+			Object.keys(packingData.groups).forEach(key => {
+		    	container.innerHTML += createGroupDOM(key, packingData.groups[key]);
+			});
+			container.innerHTML += `<div id="add-category" class="add-category">＋ 新增分類</div>`;
+			fillItems();
+			bindEvents();
+			enableDrag();
 		}
 		/* ============================================
 		   🟦 啟用拖曳排序（每個分類各自獨立 sort）
 		============================================ */
 		function enableDrag() {
-		  qsa(".packing-list").forEach(ul => {
-		    const groupKey = ul.closest(".packing-group").dataset.group;
-		
-		    Sortable.create(ul, {
-		      animation: 150,
-		      ghostClass: "drag-ghost",   // 拖曳時的透明外框
-		      onEnd: function (evt) {
-		        const items = packingData.groups[groupKey].items;
-		
-		        // 依拖曳後順序重排資料
-		        const movedItem = items.splice(evt.oldIndex, 1)[0];
-		        items.splice(evt.newIndex, 0, movedItem);
-		
-		        savePacking();
-		        renderPackingPage(); // 重新渲染
-		      }
-		    });
-		  });
+			qsa(".packing-list").forEach(ul => {
+				const groupKey = ul.closest(".packing-group").dataset.group;
+				Sortable.create(ul, {
+					animation: 150,
+					ghostClass: "drag-ghost",   // 拖曳時的透明外框
+					onEnd: function (evt) {
+						const items = packingData.groups[groupKey].items;
+						const movedItem = items.splice(evt.oldIndex, 1)[0];
+						items.splice(evt.newIndex, 0, movedItem);
+						savePacking();
+						renderPackingPage(); // 重新渲染
+					}
+				});
+			});
 		}
 		
 		/* ============================================================
 		   填入項目
 		============================================================ */
 		function fillItems() {
-		  qsa(".packing-group").forEach(groupEl => {
-		    const key = groupEl.dataset.group;
-		    const ul = qs(".packing-list", groupEl);
-		
-		    ul.innerHTML = "";
-		
-		    packingData.groups[key].items.forEach((item, idx) => {
-		      const li = document.createElement("li");
-		      li.className = "packing-item";
-		      li.innerHTML = `
-		        <div class="packing-checkbox ${item.done ? "checked" : ""}" data-index="${idx}"></div>
-		        <span>${item.text}</span>
-		        <button class="item-delete-btn" data-index="${idx}">×</button>
-		      `;
-		      ul.appendChild(li);
-		    });
-		
-		    ul.style.display = "block";
-		  });
+			qsa(".packing-group").forEach(groupEl => {
+		    	const key = groupEl.dataset.group;
+		    	const ul = qs(".packing-list", groupEl);
+				ul.innerHTML = "";
+				packingData.groups[key].items.forEach((item, idx) => {
+		      		const li = document.createElement("li");
+					li.className = "packing-item";
+					li.innerHTML = `
+					<div class="packing-checkbox ${item.done ? "checked" : ""}" data-index="${idx}"></div>
+					<span>${item.text}</span>
+					<button class="item-delete-btn" data-index="${idx}">×</button>
+					`;
+		      		ul.appendChild(li);
+				});
+				ul.style.display = "block";
+			});
 		}
 		
 		/* ============================================================
 		   所有事件
 		============================================================ */
 		function bindEvents() {
+			qsa(".packing-checkbox").forEach(cb => {
+				cb.onclick = (e) => {
+					e.stopPropagation();
+					const li = cb.closest(".packing-item");
+					const groupKey = li.closest(".packing-group").dataset.group;
+					const index = Number(cb.dataset.index);
+					packingData.groups[groupKey].items[index].done =
+					!packingData.groups[groupKey].items[index].done;
+					savePacking();
+					renderPackingPage();
+				};
+			});
 		
-		  /* 勾選 */
-		  qsa(".packing-checkbox").forEach(cb => {
-		    cb.onclick = (e) => {
-		      e.stopPropagation();
+			/* 刪除項目 */
+			qsa(".item-delete-btn").forEach(btn => {
+				btn.onclick = (e) => {
+					e.stopPropagation();
+					const li = btn.closest(".packing-item");
+					const groupKey = li.closest(".packing-group").dataset.group;
+					const index = Number(btn.dataset.index);
+					packingData.groups[groupKey].items.splice(index, 1);
+					savePacking();
+					renderPackingPage();
+				};
+			});
 		
-		      const li = cb.closest(".packing-item");
-		      const groupKey = li.closest(".packing-group").dataset.group;
-		      const index = Number(cb.dataset.index);
+			/* 新增項目 */
+			qsa(".add-item-btn").forEach(btn => {
+				btn.onclick = () => {
+					currentGroupKey = btn.dataset.additem;
+					openModal("新增項目");
+				};
+			});
 		
-		      packingData.groups[groupKey].items[index].done =
-		        !packingData.groups[groupKey].items[index].done;
+			/* 新增分類 */
+			qs("#add-category").onclick = () => {
+				currentGroupKey = null;
+				openModal("新增分類");
+			};
 		
-		      savePacking();
-		      renderPackingPage();
-		    };
-		  });
-		
-		  /* 刪除項目 */
-		  qsa(".item-delete-btn").forEach(btn => {
-		    btn.onclick = (e) => {
-		      e.stopPropagation();
-		
-		      const li = btn.closest(".packing-item");
-		      const groupKey = li.closest(".packing-group").dataset.group;
-		      const index = Number(btn.dataset.index);
-		
-		      packingData.groups[groupKey].items.splice(index, 1);
-		
-		      savePacking();
-		      renderPackingPage();
-		    };
-		  });
-		
-		  /* 新增項目 */
-		  qsa(".add-item-btn").forEach(btn => {
-		    btn.onclick = () => {
-		      currentGroupKey = btn.dataset.additem;
-		      openModal("新增項目");
-		    };
-		  });
-		
-		  /* 新增分類 */
-		  qs("#add-category").onclick = () => {
-		    currentGroupKey = null;
-		    openModal("新增分類");
-		  };
-		
-		  /* 刪除分類 */
-		  qsa(".delete-group-btn").forEach(btn => {
-		    btn.onclick = (e) => {
-		      e.stopPropagation();
-		
-		      const key = btn.closest(".packing-group").dataset.group;
-		      delete packingData.groups[key];
-		
-		      savePacking();
-		      renderPackingPage();
-		    };
-		  });
+			/* 刪除分類 */
+			qsa(".delete-group-btn").forEach(btn => {
+				btn.onclick = (e) => {
+					e.stopPropagation();
+					const key = btn.closest(".packing-group").dataset.group;
+		      		delete packingData.groups[key];
+					savePacking();
+		      		renderPackingPage();
+				};
+			});
 		}
 		
 		/* ============================================================
 		   Modal
 		============================================================ */
-		
 		let currentGroupKey = null;
-		
 		function openModal(title) {
-		  const modal = qs("#itemModal");
-		  const titleEl = qs("#modalTitle");
-		  const input = qs("#modalInput");
+			const modal = qs("#itemModal");
+			const titleEl = qs("#modalTitle");
+			const input = qs("#modalInput");
+			
+			if (title === "新增分類") {
+				titleEl.style.display = "none";
+			} else {
+				titleEl.style.display = "block";
+				titleEl.textContent = title;
+			}
 		
-		  if (title === "新增分類") {
-		    titleEl.style.display = "none";
-		  } else {
-		    titleEl.style.display = "block";
-		    titleEl.textContent = title;
-		  }
-		
-		  modal.style.display = "flex";
-		  input.value = "";
-		  setTimeout(()=>input.focus(),50);
+			modal.style.display = "flex";
+			input.value = "";
+			setTimeout(()=>input.focus(),50);
 		}
 		
 		qs("#modalCancel").onclick = () => {
-		  qs("#itemModal").style.display = "none";
+			qs("#itemModal").style.display = "none";
 		};
 		
 		qs("#modalOK").onclick = () => {
-		  const val = qs("#modalInput").value.trim();
-		  if (!val) return;
-		
-		  if (currentGroupKey) {
-		    /* 新增項目 */
-		    packingData.groups[currentGroupKey].items.push({
-		      text: val,
-		      done: false
-		    });
-		  } else {
-		    /* 新增分類 */
-		    const id = "cat" + Date.now();
-		    packingData.groups[id] = {
-		      name: val,
-		      items: []
-		    };
-		  }
-		
-		  savePacking();
-		  renderPackingPage();
-		  qs("#itemModal").style.display = "none";
+			const val = qs("#modalInput").value.trim();
+			if (!val) return;
+			if (currentGroupKey) {
+				packingData.groups[currentGroupKey].items.push({
+					text: val,
+					done: false
+				});
+			} else {
+				const id = "cat" + Date.now();
+				packingData.groups[id] = {
+					name: val,
+				  	items: []
+				};
+			}
+			savePacking();
+		  	renderPackingPage();
+		  	qs("#itemModal").style.display = "none";
 		};
 		
 		/* 初始化 */
 		renderPackingPage();
 		
 		// =============== 電子憑證分類內容 ===============
-			let ticketLevel = "list"; 
-		// list = 電子憑證首頁
-		// hotel = 住宿憑證
-		// content = 其他分類內容頁
-		
-		
+		let ticketLevel = "list"; 
 		const ticketData = {
-		 hotel: {
-		 body: `
-		    <div class="hotel-group">
-		
-		      <!-- ONSEN RYOKAN YUEN -->
-		      <div class="hotel-item open">
-		        <div class="hotel-header">
-		          <span>ONSEN RYOKAN YUEN</span>
-		         
-		        </div>
-		
-		        <div class="hotel-pdf-list">
-		          <a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
-		            <img src="images/57.png" class="pdf-icon">
-		            <div class="pdf-info">
-		              <div class="pdf-title">Hotel Reservation</div>
-		              <div class="pdf-sub">住宿訂房確認</div>
-		            </div>
-		          </a>
-		          <span class="ticket-divider"></span>
-		          <a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
-		            <img src="images/57.png" class="pdf-icon">
-		            <div class="pdf-info">
-		              <div class="pdf-title">Payment Receipt</div>
-		              <div class="pdf-sub">付款收據</div>
-		            </div>
-		          </a>
-		        </div>
-		      </div>
-		
-		      <!-- VESSEL -->
-		      <div class="hotel-item open">
-		        <div class="hotel-header">
-		          <span>VESSEL HOTEL</span>
-		         
-		        </div>
-		
-		        <div class="hotel-pdf-list">
-		          <a href="pdf/hotel-reservation2.pdf" target="_blank" class="pdf-item">
-		            <img src="images/57.png" class="pdf-icon">
-		            <div class="pdf-info">
-		              <div class="pdf-title">Hotel Reservation</div>
-		              <div class="pdf-sub">住宿訂房確認</div>
-		            </div>
-		          </a>
-		<span class="ticket-divider"></span>
-		          <a href="pdf/hotel-reservation2.pdf" target="_blank" class="pdf-item">
-		            <img src="images/57.png" class="pdf-icon">
-		            <div class="pdf-info">
-		              <div class="pdf-title">Payment Receipt</div>
-		              <div class="pdf-sub">付款收據(尚未付款)</div>
-		            </div>
-		          </a>
-		        </div>
-		      </div>
-		
-		    </div>
-		  `
-		},
-		
-		
-		 flight: {
-		  body: `
-		  <div class="flight-group">
-		  <!-- 1添加飛機圖標與航班路線 -->
-			   <div class="flight-card-wrapper">
-			   		<div class="flight-info-header">
-						<span class="icon-airplane"></span>
-						<span class="route">桃園 — 東京</span>
-					</div>
-				</div>
-		    <div class="flight-card">
-				
-		
-			 
-				  <!-- 上方資訊列 -->
-				  <div class="flight-top">
-				    <div class="flight-pass-bar">
-					  <span class="pass-title">BOARDING PASS　登機證</span>
-					  <span class="pass-checkin">報到時間｜22:10</span>
-					</div>
-				  </div>
-				
-				  <!-- 航空公司 / 航班 -->
-				  <div class="flight-airline">
-				    
-				    <div class="flight-no">IT216</div>
-			            <div class="flight-dates">
-						    <span class="date-depart">2026 年 2 月 9 日</span>
-						    <span class="date-arrive">2026 年 2 月 9 日</span>
+			hotel: {
+				body: `
+				<div class="hotel-group">
+					<div class="hotel-item open">
+						<div class="hotel-header">
+					  		<span>ONSEN RYOKAN YUEN</span>
 						</div>
-						 <div class="flight-time">
-			  				<span class="time1">00:10</span>
-							<span class="time1">04:00</span>
-			            </div>
-						
-					    <div class="flight-line">
-			              <span class="airport">TPE T2</span>
-					      <span class="airport">HND T3</span>
+						<div class="hotel-pdf-list">
+						  	<a href="pdf/hotel-reservation.pdf" target="_blank" class="pdf-item">
+								<img src="images/57.png" class="pdf-icon">
+								<div class="pdf-info">
+							  		<div class="pdf-title">Hotel Reservation</div>
+							  		<div class="pdf-sub">住宿訂房確認</div>
+								</div>
+						  	</a>
+					  		<span class="ticket-divider"></span>
+					  		<a href="pdf/hotel-receipt.pdf" target="_blank" class="pdf-item">
+								<img src="images/57.png" class="pdf-icon">
+								<div class="pdf-info">
+						  			<div class="pdf-title">Payment Receipt</div>
+						  			<div class="pdf-sub">付款收據</div>
+								</div>
+					  		</a>
 						</div>
-				  </div>
-				
-				  
-				
-				  <!-- PDF 文件（小、附屬） -->
-				  <div class="flight-docs">
-				    <a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
-				      <div class="doc-name">CHUANG ICHEN</div>
-				    </a>
-				    <a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
-				      <div class="doc-name">SU BORUI</div>
-				    </a>
-				  </div>
-		
-			</div>
-			<hr>
-			 <!-- 2添加飛機圖標與航班路線 -->
-			   <div class="flight-card-wrapper">
-			   		<div class="flight-info-header">
-						<span class="icon-airplane"></span>
-						<span class="route">東京 — 新千歲</span>
 					</div>
+					<div class="hotel-item open">
+						<div class="hotel-header">
+							<span>VESSEL HOTEL</span>
+						</div>
+						<div class="hotel-pdf-list">
+						  	<a href="pdf/hotel-reservation2.pdf" target="_blank" class="pdf-item">
+								<img src="images/57.png" class="pdf-icon">
+								<div class="pdf-info">
+							  		<div class="pdf-title">Hotel Reservation</div>
+							  		<div class="pdf-sub">住宿訂房確認</div>
+								</div>
+						  	</a>
+							<span class="ticket-divider"></span>
+		         			<a href="pdf/hotel-reservation2.pdf" target="_blank" class="pdf-item">
+		            			<img src="images/57.png" class="pdf-icon">
+		            			<div class="pdf-info">
+		              				<div class="pdf-title">Payment Receipt</div>
+		              				<div class="pdf-sub">付款收據(尚未付款)</div>
+		            			</div>
+		          			</a>
+		        		</div>
+		      		</div>
 				</div>
-			<div class="flight-card">
-		  <!-- 上方資訊列 -->
-		  <div class="flight-top">
-		    <div class="flight-pass-bar">
-		      <span class="pass-title">BOARDING PASS　登機證</span>
-		      <span class="pass-checkin">報到時間｜06:15</span>
-		    </div>
-		  </div>
-		
-		  <!-- 航空公司 / 航班 -->
-		  <div class="flight-airline">
-			<div class="flight-no">HD015</div>
-		    <div class="flight-dates">
-		      <span class="date-depart">2026 年 2 月 9 日</span>
-		      <span class="date-arrive">2026 年 2 月 9 日</span>
-		    </div>
-		
-		    <!-- 航班時間 -->
-		    <div class="flight-time">
-		      <span class="time1">08:15</span>
-		      <span class="time1">09:45</span>
-		    </div>
-		
-		    <!-- 機場 -->
-		    <div class="flight-line">
-		      <span class="airport">HND T2</span>
-		      <span class="airport">CTS</span>
-		    </div>
-		  </div>
-		
-		  <!-- PDF 文件（小、附屬） -->
-		  <div class="flight-docs">
-		    <a class="flight-doc" href="pdf/ichenido.pdf" target="_blank">
-		      <div class="doc-name">CHUANG ICHEN</div>
-		    </a>
-		    <a class="flight-doc" href="pdf/boruiido.pdf" target="_blank">
-		      <div class="doc-name">SU BORUI</div>
-		    </a>
-		  </div>
-		</div>
-		
-		<hr>
-			 <!-- 3添加飛機圖標與航班路線 -->
-			   <div class="flight-card-wrapper">
-			   		<div class="flight-info-header">
-						<span class="icon-airplane"></span>
-						<span class="route">新千歲 — 桃園</span>
+		  		`
+			},
+			flight: {
+				body: `
+				  	<div class="flight-group">
+						<div class="flight-card-wrapper">
+							<div class="flight-info-header">
+								<span class="icon-airplane"></span>
+								<span class="route">桃園 — 東京</span>
+							</div>
+						</div>
+					<div class="flight-card">
+						<div class="flight-top">
+							<div class="flight-pass-bar">
+								<span class="pass-title">BOARDING PASS　登機證</span>
+								<span class="pass-checkin">報到時間｜22:10</span>
+							</div>
+						</div>
+						<div class="flight-airline">
+							<div class="flight-no">IT216</div>
+								<div class="flight-dates">
+									<span class="date-depart">2026 年 2 月 9 日</span>
+									<span class="date-arrive">2026 年 2 月 9 日</span>
+								</div>
+								 <div class="flight-time">
+									<span class="time1">00:10</span>
+									<span class="time1">04:00</span>
+								</div>
+								<div class="flight-line">
+								  <span class="airport">TPE T2</span>
+								  <span class="airport">HND T3</span>
+								</div>
+							</div>
+							<div class="flight-docs">
+								<a class="flight-doc" href="pdf/ichentiger.pdf" target="_blank">
+								  <div class="doc-name">CHUANG ICHEN</div>
+								</a>
+								<a class="flight-doc" href="pdf/boruitiger.pdf" target="_blank">
+								  <div class="doc-name">SU BORUI</div>
+								</a>
+							</div>
+						</div>
+						<hr>
+						<div class="flight-card-wrapper">
+							<div class="flight-info-header">
+								<span class="icon-airplane"></span>
+								<span class="route">東京 — 新千歲</span>
+							</div>
+						</div>
+						<div class="flight-card">
+							<div class="flight-top">
+								<div class="flight-pass-bar">
+									<span class="pass-title">BOARDING PASS　登機證</span>
+									<span class="pass-checkin">報到時間｜06:15</span>
+								</div>
+							</div>
+							<div class="flight-airline">
+								<div class="flight-no">HD015</div>
+								<div class="flight-dates">
+									<span class="date-depart">2026 年 2 月 9 日</span>
+									<span class="date-arrive">2026 年 2 月 9 日</span>
+								</div>
+								<div class="flight-time">
+									<span class="time1">08:15</span>
+									<span class="time1">09:45</span>
+								</div>
+								<div class="flight-line">
+									<span class="airport">HND T2</span>
+									<span class="airport">CTS</span>
+								</div>
+							</div>
+							<div class="flight-docs">
+								<a class="flight-doc" href="pdf/ichenido.pdf" target="_blank">
+									<div class="doc-name">CHUANG ICHEN</div>
+								</a>
+								<a class="flight-doc" href="pdf/boruiido.pdf" target="_blank">
+									<div class="doc-name">SU BORUI</div>
+								</a>
+							</div>
+						</div>
+						<hr>
+						<div class="flight-card-wrapper">
+							<div class="flight-info-header">
+								<span class="icon-airplane"></span>
+								<span class="route">新千歲 — 桃園</span>
+							</div>
+						</div>
+						<div class="flight-card">
+							<div class="flight-top">
+								<div class="flight-pass-bar">
+									<span class="pass-title">BOARDING PASS　登機證</span>
+									<span class="pass-checkin">報到時間｜10:10</span>
+								</div>
+							</div>
+							<div class="flight-airline">
+								<div class="flight-no">BR165</div>
+								<div class="flight-dates">
+									<span class="date-depart">2026 年 2 月 15 日</span>
+									<span class="date-arrive">2026 年 2 月 15 日</span>
+								</div>
+								<div class="flight-time">
+									<span class="time1">12:10</span>
+									<span class="time1">16:05</span>
+								</div>
+								<div class="flight-line">
+								  	<span class="airport">CTS</span>
+								  	<span class="airport">TPE T2</span>
+								</div>
+							</div>
+							<div class="flight-docs">
+								<a class="flight-doc" href="pdf/icheneva.pdf" target="_blank">
+									<div class="doc-name">CHUANG ICHEN</div>
+								</a>
+								<a class="flight-doc" href="pdf/boruieva.pdf" target="_blank">
+									<div class="doc-name">SU BORUI</div>
+								</a>
+							</div>
+						</div>
 					</div>
-				</div>
-			<div class="flight-card">
-		  <!-- 上方資訊列 -->
-		  <div class="flight-top">
-		    <div class="flight-pass-bar">
-		      <span class="pass-title">BOARDING PASS　登機證</span>
-		      <span class="pass-checkin">報到時間｜10:10</span>
-		    </div>
-		  </div>
+				`
+				}
+			};
 		
-		  <!-- 航空公司 / 航班 -->
-		  <div class="flight-airline">
-			<div class="flight-no">BR165</div>
-		    <div class="flight-dates">
-		      <span class="date-depart">2026 年 2 月 15 日</span>
-		      <span class="date-arrive">2026 年 2 月 15 日</span>
-		    </div>
+			// 點分類 → 顯示內容頁
+			document.addEventListener("click", function (e) {
+				const card = e.target.closest(".ticket-category");
+				if (!card) return;
+				const key = card.dataset.target;
+				if (key === "rentcar") {
+					card.classList.add("ticket-opening");
+					setTimeout(() => {
+						window.open("pdf/carreservation.pdf", "_blank");
+						card.classList.remove("ticket-opening");
+					}, 250);
+				return;
+			}
 		
-		    <!-- 航班時間 -->
-		    <div class="flight-time">
-		      <span class="time1">12:10</span>
-		      <span class="time1">16:05</span>
-		    </div>
+		  	// ⭐ 入境：直接開 PDF
+		 	if (key === "entry") {
+		  		card.classList.add("ticket-opening");
+				setTimeout(() => {
+					window.open("pdf/vjw.pdf", "_blank");
+					card.classList.remove("ticket-opening");
+				}, 250);
+				return;
+			}
+			
+		 	// ⭐ 行程：直接開 PDF
+		 	if (key === "schedule") {
+		  		card.classList.add("ticket-opening");
+				setTimeout(() => {
+					window.open("pdf/klook.pdf", "_blank");
+					card.classList.remove("ticket-opening");
+		  		}, 250);
+				return;
+			}
+			
+		  	// ⭐ 住宿 / 航班：留在電子憑證頁
+		  	if (key === "hotel" || key === "flight") {
+		    	const list = document.querySelector(".ticket-category-list");
+				document.getElementById("ticketContent").style.display = "none";
+				list.style.display = "flex";
+				list.innerHTML = ticketData[key].body;
+				playFadeIn(list); // ⭐ 關鍵動畫
+				ticketLevel = key; // hotel / flight
+				return;
+			}
 		
-		    <!-- 機場 -->
-		    <div class="flight-line">
-		      <span class="airport">CTS</span>
-		      <span class="airport">TPE T2</span>
-		    </div>
-		  </div>
-		
-		  <!-- PDF 文件（小、附屬） -->
-		  <div class="flight-docs">
-		    <a class="flight-doc" href="pdf/icheneva.pdf" target="_blank">
-		      <div class="doc-name">CHUANG ICHEN</div>
-		    </a>
-		    <a class="flight-doc" href="pdf/boruieva.pdf" target="_blank">
-		      <div class="doc-name">SU BORUI</div>
-		    </a>
-		  </div>
-		</div>
-		</div>
-		  `
-		 
-		 }
-		 
-		};
-		
-		// 點分類 → 顯示內容頁
-		document.addEventListener("click", function (e) {
-		  const card = e.target.closest(".ticket-category");
-		  if (!card) return;
-		
-		  const key = card.dataset.target;
-		
-		  // ⭐ 租車：直接開 PDF
-		 if (key === "rentcar") {
-		  card.classList.add("ticket-opening");
-		
-		  setTimeout(() => {
-		    window.open("pdf/carreservation.pdf", "_blank");
-		    card.classList.remove("ticket-opening");
-		  }, 250);
-		
-		  return;
-		}
-		
-		  // ⭐ 入境：直接開 PDF
-		 if (key === "entry") {
-		  card.classList.add("ticket-opening");
-		
-		  setTimeout(() => {
-		    window.open("pdf/vjw.pdf", "_blank");
-		    card.classList.remove("ticket-opening");
-		  }, 250);
-		
-		  return;
-		}
-		 // ⭐ 行程：直接開 PDF
-		 if (key === "schedule") {
-		  card.classList.add("ticket-opening");
-		
-		  setTimeout(() => {
-		    window.open("pdf/klook.pdf", "_blank");
-		    card.classList.remove("ticket-opening");
-		  }, 250);
-		
-		  return;
-		 }
-		  // ⭐ 住宿 / 航班：留在電子憑證頁
-		  if (key === "hotel" || key === "flight") {
-		    const list = document.querySelector(".ticket-category-list");
-		
-		    document.getElementById("ticketContent").style.display = "none";
-		    list.style.display = "flex";
-		    list.innerHTML = ticketData[key].body;
-		playFadeIn(list); // ⭐ 關鍵動畫
-		    ticketLevel = key; // hotel / flight
-		    return;
-		  }
-		
-		  // ⭐ 其他分類：內容頁模式
-		  document.getElementById("ticketContentTitle").textContent =
-		    ticketData[key].title || "";
-		
-		  document.getElementById("ticketContentBody").innerHTML =
+		  	// ⭐ 其他分類：內容頁模式
+		  	document.getElementById("ticketContentTitle").textContent =
+		  	ticketData[key].title || "";
+			document.getElementById("ticketContentBody").innerHTML =
 		    ticketData[key].body || "";
-		const content = document.getElementById("ticketContent");
-		content.classList.remove("fade-in");
+			const content = document.getElementById("ticketContent");
+			content.classList.remove("fade-in");
 		
-		// 強制 reflow，讓 animation 可以重播
-		void content.offsetWidth;
-		
-		content.classList.add("fade-in");
-		
-		  document.querySelector(".ticket-category-list").style.display = "none";
-		  document.getElementById("ticketContent").style.display = "block";
-		
-		  ticketLevel = "content";
+			// 強制 reflow，讓 animation 可以重播
+			void content.offsetWidth;
+			content.classList.add("fade-in");
+			document.querySelector(".ticket-category-list").style.display = "none";
+		  	document.getElementById("ticketContent").style.display = "block";
+			ticketLevel = "content";
 		});
 		
-		
-		
-		
-			
 		function setNavHome() {
-		  navBtn.textContent = "BACK";
-		  navBtn.onclick = backToMain;
-		  navBtn.classList.add("show");
+			navBtn.textContent = "BACK";
+			navBtn.onclick = backToMain;
+		  	navBtn.classList.add("show");
 		}
 		
 		function setNavBack() {
-		  navBtn.textContent = "BACK";
-		  navBtn.onclick = goBack;
-		  navBtn.classList.add("show");
+			navBtn.textContent = "BACK";
+		  	navBtn.onclick = goBack;
+		  	navBtn.classList.add("show");
 		}
+		
 		function goBack() {
-		  const ticketList = document.querySelector(".ticket-category-list");
-		
-		  // ⭐ 住宿 or 航班 → 回電子憑證首頁
-		  if (ticketLevel === "hotel" || ticketLevel === "flight") {
-		    ticketList.innerHTML = originalTicketCategoryHTML;
-		    ticketList.style.display = "flex";
-		    ticketLevel = "list";
-		    return;
-		  }
-		
-		  // 其他內容頁 → 回電子憑證首頁
-		  if (ticketLevel === "content") {
-		    document.getElementById("ticketContent").style.display = "none";
-		    ticketList.style.display = "flex";
-		    ticketLevel = "list";
-		    return;
-		  }
-		
-		  // 最後才是真的回主行程
-		  backToMain();
+			const ticketList = document.querySelector(".ticket-category-list");
+			if (ticketLevel === "hotel" || ticketLevel === "flight") {
+				ticketList.innerHTML = originalTicketCategoryHTML;
+				ticketList.style.display = "flex";
+				ticketLevel = "list";
+				return;
+			}
+	
+		  	if (ticketLevel === "content") {
+				document.getElementById("ticketContent").style.display = "none";
+				ticketList.style.display = "flex";
+				ticketLevel = "list";
+				return;
+			}
+			
+			backToMain();
 		}
 		
 		function resetTicketPage() {
-		  const list = document.querySelector(".ticket-category-list");
-		  const content = document.getElementById("ticketContent");
+		  	const list = document.querySelector(".ticket-category-list");
+		  	const content = document.getElementById("ticketContent");
 		
-		  // 回到第一層分類
-		  if (list) {
-		    list.innerHTML = originalTicketCategoryHTML;
-		    list.style.display = "flex";
-		  }
-		
-		  // 關閉內容頁
-		  if (content) {
-		    content.style.display = "none";
-		  }
-		
-		  // 重置層級狀態
-		  ticketLevel = "list";
+			if (list) {
+				list.innerHTML = originalTicketCategoryHTML;
+				list.style.display = "flex";
+			}
+			if (content) {
+		    	content.style.display = "none";
+		  	}
+			ticketLevel = "list";
 		}
 		
 		function playFadeIn(el) {
-		  if (!el) return;
-		  el.classList.remove("fade-in");
-		  void el.offsetWidth; // 強制 reflow
-		  el.classList.add("fade-in");
+			if (!el) return;
+		  	el.classList.remove("fade-in");
+		  	void el.offsetWidth; // 強制 reflow
+		  	el.classList.add("fade-in");
 		}
 		
-		// 1. 點擊切換頁面時做動畫效果
 		function showTicket() {
-		  isMainPage = false;
+			isMainPage = false;
 		
-		  document.querySelector(".container").style.display = "none";
-		  document.getElementById("exchange-page").style.display = "none";
-		  document.getElementById("packing-page").style.display = "none";
-		
-		  const ticketPage = document.getElementById("ticket-page");
-		  ticketPage.style.display = "block";
-		
-		  // ⭐ 這三行才是動畫關鍵
-		  ticketPage.classList.remove("fade-in");
-		  void ticketPage.offsetWidth;
-		  ticketPage.classList.add("fade-in");
-		
-		  scrollBtn.classList.remove("show");
-		  setNavBack();
+		  	document.querySelector(".container").style.display = "none";
+		  	document.getElementById("exchange-page").style.display = "none";
+		  	document.getElementById("packing-page").style.display = "none";
+			const ticketPage = document.getElementById("ticket-page");
+		  	ticketPage.style.display = "block";
+			ticketPage.classList.remove("fade-in");
+		  	void ticketPage.offsetWidth;
+		  	ticketPage.classList.add("fade-in");
+			scrollBtn.classList.remove("show");
+		  	setNavBack();
 		}
 		
 		
-		// 2. 返回上一頁時做動畫效果
 		function goBack() {
-		  const ticketList = document.querySelector(".ticket-category-list");
-		
-		  // ⭐ 當在住宿或航班頁面，返回首頁時加動畫
-		  if (ticketLevel === "hotel" || ticketLevel === "flight") {
-		    ticketList.innerHTML = originalTicketCategoryHTML;  // 保持原有內容
-		    ticketList.style.display = "flex";
-		    ticketLevel = "list";
-		    playFadeIn(ticketList);  // 加入動畫效果
-		    return;
-		  }
-		
-		  // ⭐ 當在其他內容頁時，返回首頁也加動畫
-		  if (ticketLevel === "content") {
-		    document.getElementById("ticketContent").style.display = "none";
-		    ticketList.style.display = "flex";
-		    ticketLevel = "list";
-		    playFadeIn(ticketList);  // 加入動畫效果
-		    return;
-		  }
-		
-		  // 最後回到主頁
-		  backToMain();
+		  	const ticketList = document.querySelector(".ticket-category-list");
+			if (ticketLevel === "hotel" || ticketLevel === "flight") {
+				ticketList.innerHTML = originalTicketCategoryHTML;  // 保持原有內容
+				ticketList.style.display = "flex";
+				ticketLevel = "list";
+				playFadeIn(ticketList);  // 加入動畫效果
+				return;
+			}
+			if (ticketLevel === "content") {
+				document.getElementById("ticketContent").style.display = "none";
+				ticketList.style.display = "flex";
+				ticketLevel = "list";
+				playFadeIn(ticketList);  // 加入動畫效果
+				return;
+			}
+			backToMain();
 		}
 		
-		// 3. 播放動畫效果，確保頁面顯示過程中有動畫
+		
 		function playFadeIn(el) {
-		  if (!el) return;
-		  el.classList.remove("fade-in");  // 移除之前的動畫效果
-		  void el.offsetWidth;  // 強制觸發重繪（瀏覽器重新渲染）
-		  el.classList.add("fade-in");  // 重新添加動畫效果
+		  	if (!el) return;
+		  	el.classList.remove("fade-in");  // 移除之前的動畫效果
+		  	void el.offsetWidth;  // 強制觸發重繪（瀏覽器重新渲染）
+		  	el.classList.add("fade-in");  // 重新添加動畫效果
 		}
 		
-		// 4. 內容頁面（比如酒店或航班）點擊後顯示具體內容
+		
 		document.addEventListener("click", function (e) {
-		  const card = e.target.closest(".ticket-category");
-		  if (!card) return;
-		
-		  const key = card.dataset.target;
-		  
-		  // ⭐ 住宿 & 航班頁面 → 顯示在電子憑證頁面，並加上動畫
-		  if (key === "hotel" || key === "flight") {
-		    const list = document.querySelector(".ticket-category-list");
-		
-		    document.getElementById("ticketContent").style.display = "none";
-		    list.style.display = "flex";
-		    list.innerHTML = ticketData[key].body;
-		    playFadeIn(list);  // 加入動畫效果
-		    ticketLevel = key;  // 顯示當前頁面
-		    return;
-		  }
-		
-		  // ⭐ 其他分類內容頁面 → 顯示具體內容
-		  document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
-		  document.getElementById("ticketContentBody").innerHTML = ticketData[key].body || "";
-		
-		  const content = document.getElementById("ticketContent");
-		  content.classList.remove("fade-in");  // 移除之前的動畫
-		
-		  // 強制瀏覽器重繪，讓動畫生效
-		  void content.offsetWidth;  // 讓瀏覽器重新渲染
-		
-		  content.classList.add("fade-in");  // 重新添加動畫
-		
-		  document.querySelector(".ticket-category-list").style.display = "none";
-		  document.getElementById("ticketContent").style.display = "block";
-		
-		  ticketLevel = "content"; // 顯示內容頁
+			const card = e.target.closest(".ticket-category");
+		  	if (!card) return;
+			const key = card.dataset.target;
+			if (key === "hotel" || key === "flight") {
+				const list = document.querySelector(".ticket-category-list");
+				document.getElementById("ticketContent").style.display = "none";
+				list.style.display = "flex";
+				list.innerHTML = ticketData[key].body;
+				playFadeIn(list);  // 加入動畫效果
+				ticketLevel = key;  // 顯示當前頁面
+				return;
+			}
+			document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
+			document.getElementById("ticketContentBody").innerHTML = ticketData[key].body || "";
+			const content = document.getElementById("ticketContent");
+			content.classList.remove("fade-in");  // 移除之前的動畫
+			void content.offsetWidth;  // 讓瀏覽器重新渲染
+			content.classList.add("fade-in");  // 重新添加動畫
+			document.querySelector(".ticket-category-list").style.display = "none";
+			document.getElementById("ticketContent").style.display = "block";
+			ticketLevel = "content"; // 顯示內容頁
 		});
 		
 		document.addEventListener("DOMContentLoaded", () => {
-		  const splash = document.getElementById("app-splash");
-		  const app = document.getElementById("app-root");
-		
-		  const images = [...document.images];
-		  let loaded = 0;
-		
-		  if (images.length === 0) finish();
-		
-		  images.forEach(img => {
-		    if (img.complete) {
-		      loaded++;
-		      if (loaded === images.length) finish();
-		    } else {
-		      img.onload = img.onerror = () => {
-		        loaded++;
-		        if (loaded === images.length) finish();
-		      };
-		    }
-		  });
-		
-		  function finish() {
-		    // ✈️ 飛機動畫總長約 2 秒
-		    setTimeout(() => {
-		      splash.classList.add("hide");
-		
-		      setTimeout(() => {
-		        splash.remove();
-		        app.classList.add("show");
-		      }, 400);
-		    }, 2000);
-		  }
+			const splash = document.getElementById("app-splash");
+		  	const app = document.getElementById("app-root");
+			const images = [...document.images];
+			let loaded = 0;
+			if (images.length === 0) finish();
+			images.forEach(img => {
+				if (img.complete) {
+					loaded++;
+					if (loaded === images.length) finish();
+				} else {
+					img.onload = img.onerror = () => {
+					loaded++;
+					if (loaded === images.length) finish();
+				};
+			}
 		});
 		
-document.addEventListener("DOMContentLoaded", () => {
-  const appRoot = document.getElementById("app-root");
-  const homePage = document.getElementById("home-page");
+		function finish() {
+			setTimeout(() => {
+		    	splash.classList.add("hide");
+				setTimeout(() => {
+					splash.remove();
+					app.classList.add("show");
+				}, 400);
+				}, 2000);
+			}
+		});
+		
+		document.addEventListener("DOMContentLoaded", () => {
+  			const appRoot = document.getElementById("app-root");
+  			const homePage = document.getElementById("home-page");
+			appRoot.classList.add("show");
+			homePage.classList.add("active");
+			const menuBtn = document.getElementById("menuBtn");
+		  	const closeBtn = document.getElementById("menuClose");
+		  	const iosFullMenu = document.getElementById("iosFullMenu");
+		  	const menuItems = document.querySelectorAll(".menu-content ul li");
+		  	const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page");
+		 	const topbar = document.getElementById("topbar");
 
-  // 頁面加載後顯示 app-root 並滾動到頂部
-  appRoot.classList.add("show");
-
-
-
-  // 預設顯示 home-page
-  homePage.classList.add("active");
-
-  const menuBtn = document.getElementById("menuBtn");
-  const closeBtn = document.getElementById("menuClose");
-  const iosFullMenu = document.getElementById("iosFullMenu");
-  const menuItems = document.querySelectorAll(".menu-content ul li");
-  const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page");
-  const topbar = document.getElementById("topbar");
-
-  // 展開選單
-  menuBtn.addEventListener("click", () => {
-    iosFullMenu.style.display = "flex";  // 顯示選單
-    topbar.style.display = "none";  // 隱藏 topbar
-  });
-
-  // 關閉選單
-  closeBtn.addEventListener("click", () => {
-    iosFullMenu.style.display = "none";  // 隱藏選單
-    topbar.style.display = "flex";  // 恢復顯示 topbar
-  });
-
-  // 點擊選單項目後切換頁面
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const targetId = item.getAttribute("data-target");
-
-      // 隱藏所有頁面
-      contentPages.forEach(page => {
-        page.classList.remove("active");
-      });
-
-      // 顯示選中的頁面
-      const targetPage = document.getElementById(targetId);
-      if (targetPage) {
-        targetPage.classList.add("active");
-      }
-
-      // 關閉選單
-      iosFullMenu.style.display = "none";
-      topbar.style.display = "flex";  // 恢復顯示 topbar
-    });
-  });
-});
-
-
+			// 展開選單
+			menuBtn.addEventListener("click", () => {
+				iosFullMenu.style.display = "flex";  // 顯示選單
+				topbar.style.display = "none";  // 隱藏 topbar
+		  	});
+		
+		  	// 關閉選單
+			closeBtn.addEventListener("click", () => {
+				iosFullMenu.style.display = "none";  // 隱藏選單
+				topbar.style.display = "flex";  // 恢復顯示 topbar
+			});
+		
+			// 點擊選單項目後切換頁面
+			menuItems.forEach(item => {
+				item.addEventListener("click", () => {
+					const targetId = item.getAttribute("data-target");
+					contentPages.forEach(page => {
+						page.classList.remove("active");
+			  		});
+					const targetPage = document.getElementById(targetId);
+			  		if (targetPage) {
+						targetPage.classList.add("active");
+			 		 }
+					iosFullMenu.style.display = "none";
+			  		topbar.style.display = "flex";  // 恢復顯示 topbar
+				});
+	  		});
+		});
 	</script>
-<script>
-/* =========================
-   全域狀態
-========================= */
-const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
-let currentPageId = "home-page";
-
-/* =========================
-   工具：取得目前顯示的頁面
-========================= */
-function getCurrentPage() {
-  return document.getElementById(currentPageId);
-}
-
-/* =========================
-   工具：回到目前頁面頂部
-========================= */
-function scrollCurrentPageToTop(behavior = "auto") {
-  const page = getCurrentPage();
-  if (page) {
-    page.scrollTo({ top: 0, behavior });
-  }
-}
-
-/* =========================
-   核心：頁面切換（唯一入口）
-========================= */
-function showPage(targetId) {
-  if (!PAGES.includes(targetId)) return;
-
-  // 離開首頁時清 offset
-  if (targetId !== "home-page") {
-    const home = document.getElementById("home-page");
-    if (home) home.style.marginTop = "";
-  }
-
-  // 隱藏全部
-  PAGES.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-  });
-
-  // 顯示目標
-  const target = document.getElementById(targetId);
-  if (!target) return;
-
-  target.style.display = "block";
-  currentPageId = targetId;
-
-  requestAnimationFrame(() => {
-    target.scrollTop = 0;
-    bindScrollListener(); // ⭐ 只綁目前頁面
-  });
-}
-
-
-/* =========================
-   TOP 按鈕控制（關鍵）
-========================= */
-const scrollBtn = document.getElementById("scrollToTop");
-
-function bindScrollListener() {
-  const page = getCurrentPage();
-  if (!page || !scrollBtn) return;
-
-  // ⭐ 如果不是行程表，直接隱藏 TOP
-  if (currentPageId !== "home-page") {
-    scrollBtn.classList.remove("show");
-    page.onscroll = null;
-    return;
-  }
-
-  // ⭐ 只有 home-page 才監聽 scroll
-  page.onscroll = () => {
-    if (page.scrollTop > 300) {
-      scrollBtn.classList.add("show");
-    } else {
-      scrollBtn.classList.remove("show");
-    }
-  };
-}
-
-scrollBtn.addEventListener("click", () => {
-  scrollCurrentPageToTop("smooth");
-});
-
-/* =========================
-   Menu（iOS 全螢幕）
-========================= */
-const menuBtn   = document.getElementById("menuBtn");
-const menuClose = document.getElementById("menuClose");
-const iosMenu   = document.getElementById("iosFullMenu");
-const topbar    = document.querySelector(".topbar");
-
-if (menuBtn && iosMenu) {
-  menuBtn.onclick = () => {
-    iosMenu.style.display = "flex";
-    topbar.style.display = "none";
-  };
-}
-
-if (menuClose) {
-  menuClose.onclick = closeMenu;
-}
-
-function closeMenu() {
-  iosMenu.style.display = "none";
-  topbar.style.display = "flex";
-}
-
-// menu 項目
-document.querySelectorAll(".menu-content li").forEach(li => {
-  li.addEventListener("click", () => {
-    const target = li.dataset.target;
-    closeMenu();
-    showPage(target);
-  });
-});
-
-/* =========================
-   Splash → App 啟動
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const splash = document.getElementById("app-splash");
-  const app    = document.getElementById("app-root");
-
-  // 預設全部頁面隱藏
-  PAGES.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-  });
-
-  // 模擬 loading（等圖片）
-  const images = [...document.images];
-  let loaded = 0;
-
-  function finish() {
-    setTimeout(() => {
-      splash.classList.add("hide");
-      setTimeout(() => {
-        splash.remove();
-      app.classList.add("show");
-showPage("home-page");
-
-if (isFirstHomeRender) {
-  applyInitialHomeOffset();
-}
-
-      }, 400);
-    }, 1800);
-  }
-
-  if (images.length === 0) {
-    finish();
-  } else {
-    images.forEach(img => {
-      if (img.complete) {
-        loaded++;
-        if (loaded === images.length) finish();
-      } else {
-        img.onload = img.onerror = () => {
-          loaded++;
-          if (loaded === images.length) finish();
-        };
-      }
-    });
-  }
-});
-
-/* =========================
-   對外可呼叫（給你用）
-========================= */
-function showHome() {
-  showPage("home-page");
-}
-
-function showPacking() {
-  showPage("packing-page");
-}
-
-function showTicket() {
-  showPage("ticket-page");
-}
-
-function showExchange() {
-  showPage("exchange-page");
-}
-
-function applyInitialHomeOffset() {
-  const home = document.getElementById("home-page");
-  const topbar = document.querySelector(".topbar");
-
-  if (!home || !topbar) return;
-
-  // ⭐ 第一次才補一個距離
- home.style.marginTop = "0px";
-
- requestAnimationFrame(() => {
-  target.scrollTop = 0;
-  bindScrollListener(); // ⭐ 每次切頁重新決定 TOP
-});
-
-
-  isFirstHomeRender = false;
-}
-
-</script>
-
-
-
-
-
-
+	<script>
+		const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
+		let currentPageId = "home-page";
+		
+		function getCurrentPage() {
+			return document.getElementById(currentPageId);
+		}
+		
+		function scrollCurrentPageToTop(behavior = "auto") {
+			const page = getCurrentPage();
+			if (page) {
+				page.scrollTo({ top: 0, behavior });
+			}
+		}
+		
+		function showPage(targetId) {
+			if (!PAGES.includes(targetId)) return;
+			if (targetId !== "home-page") {
+				const home = document.getElementById("home-page");
+				if (home) home.style.marginTop = "";
+		 	}
+			PAGES.forEach(id => {
+				const el = document.getElementById(id);
+				if (el) el.style.display = "none";
+		  	});
+		
+			const target = document.getElementById(targetId);
+			if (!target) return;
+			target.style.display = "block";
+		  	currentPageId = targetId;
+			requestAnimationFrame(() => {
+				target.scrollTop = 0;
+				bindScrollListener(); // ⭐ 只綁目前頁面
+			});
+		}
+		
+		
+		/* =========================
+		   TOP 按鈕控制（關鍵）
+		========================= */
+		const scrollBtn = document.getElementById("scrollToTop");
+		
+		function bindScrollListener() {
+			const page = getCurrentPage();
+		  	if (!page || !scrollBtn) return;
+			if (currentPageId !== "home-page") {
+				scrollBtn.classList.remove("show");
+				page.onscroll = null;
+				return;
+			}
+		
+			page.onscroll = () => {
+				if (page.scrollTop > 300) {
+			  		scrollBtn.classList.add("show");
+				} else {
+			  		scrollBtn.classList.remove("show");
+				}
+		  	};
+		}
+		
+		scrollBtn.addEventListener("click", () => {
+			scrollCurrentPageToTop("smooth");
+		});
+		
+		/* =========================
+		   Menu（iOS 全螢幕）
+		========================= */
+		const menuBtn   = document.getElementById("menuBtn");
+		const menuClose = document.getElementById("menuClose");
+		const iosMenu   = document.getElementById("iosFullMenu");
+		const topbar    = document.querySelector(".topbar");
+		
+		if (menuBtn && iosMenu) {
+			menuBtn.onclick = () => {
+				iosMenu.style.display = "flex";
+				topbar.style.display = "none";
+			};
+		}
+		
+		if (menuClose) {
+			menuClose.onclick = closeMenu;
+		}
+		
+		function closeMenu() {
+			iosMenu.style.display = "none";
+			topbar.style.display = "flex";
+		}
+		
+		// menu 項目
+		document.querySelectorAll(".menu-content li").forEach(li => {
+			li.addEventListener("click", () => {
+				const target = li.dataset.target;
+				closeMenu();
+				showPage(target);
+		  	});
+		});
+		
+		/* =========================
+		   Splash → App 啟動
+		========================= */
+		document.addEventListener("DOMContentLoaded", () => {
+			const splash = document.getElementById("app-splash");
+		  	const app    = document.getElementById("app-root");
+		
+			PAGES.forEach(id => {
+				const el = document.getElementById(id);
+				if (el) el.style.display = "none";
+		  	});
+		
+			const images = [...document.images];
+		  	let loaded = 0;
+		
+		  	function finish() {
+				setTimeout(() => {
+					splash.classList.add("hide");
+					setTimeout(() => {
+						splash.remove();
+				  		app.classList.add("show");
+						showPage("home-page");
+						if (isFirstHomeRender) {
+		  					applyInitialHomeOffset();
+						}
+					}, 400);
+				}, 1800);
+			}
+			if (images.length === 0) {
+				finish();
+		  	} else {
+				images.forEach(img => {
+			  		if (img.complete) {
+						loaded++;
+						if (loaded === images.length) finish();
+			  		} else {
+						img.onload = img.onerror = () => {
+				  			loaded++;
+				 			if (loaded === images.length) finish();
+						};
+			  		}
+				});
+		  	}
+		});
+		
+		/* =========================
+		   對外可呼叫（給你用）
+		========================= */
+		function showHome() {
+			showPage("home-page");
+		}
+		
+		function showPacking() {
+			showPage("packing-page");
+		}
+		
+		function showTicket() {
+			showPage("ticket-page");
+		}
+		
+		function showExchange() {
+			showPage("exchange-page");
+		}
+		
+		function applyInitialHomeOffset() {
+			const home = document.getElementById("home-page");
+			const topbar = document.querySelector(".topbar");
+			if (!home || !topbar) return;
+			home.style.marginTop = "0px";
+			requestAnimationFrame(() => {
+			  	target.scrollTop = 0;
+			  	bindScrollListener(); // ⭐ 每次切頁重新決定 TOP
+			});
+			isFirstHomeRender = false;
+		}
+	</script>
 </body>
 </html>

@@ -3346,11 +3346,20 @@ document.getElementById('hotel').onclick = function() {
     backBtn.classList.add('show');  // 显示返回按钮
 };
 
-document.getElementById('backBtn').onclick = function() {
-    // 隐藏当前页面，显示 ticket-page 页面
-    document.getElementById('ticket-page').style.display = "block";
-    document.getElementById('currentPage').style.display = "none"; // 隐藏当前页面
-};
+document.getElementById("backBtn").addEventListener("click", () => {
+  const ticketList = document.querySelector(".ticket-category-list");
+  const content = document.getElementById("ticketContent");
+
+  if (ticketLevel === "hotel" || ticketLevel === "flight" || ticketLevel === "content") {
+    // 回到電子憑證第一層
+    if (content) content.style.display = "none";
+    if (ticketList) ticketList.style.display = "flex";
+
+    ticketLevel = "list";
+    document.getElementById("backBtn").classList.remove("show");
+  }
+});
+
 
 
 

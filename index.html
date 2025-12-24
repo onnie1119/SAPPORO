@@ -3341,20 +3341,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 	
-	document.getElementById('hotel').onclick = function() {
-		  // 獲取目標元素
-		  let element = document.getElementById('backBtn');
-		  // 添加 CSS 類別
-		  element.classList.add('show');
-	};
+document.addEventListener('DOMContentLoaded', function () {
+    // 确保点击"酒店"按钮后显示"返回"按钮
+    document.getElementById('hotel').onclick = function() {
+        const backBtn = document.getElementById('backBtn');
+        backBtn.classList.add('show');  // 显示返回按钮
+    };
 
-
-	
-	document.addEventListener('DOMContentLoaded', function () {
+    // 确保点击"返回"按钮时，执行返回上一层的操作
     document.getElementById('backBtn').onclick = function() {
-        window.history.back();  // 回到上一层页面
+        // 检查当前页面是否有历史记录
+        if (window.history.length > 1) {
+            window.history.back();  // 回到上一页
+        } else {
+            // 如果没有历史记录，跳转到主页或执行其他操作
+            window.location.href = "index.html";  // 假设主页是index.html
+        }
     };
 });
+
 
 
 </script>

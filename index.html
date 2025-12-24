@@ -2185,11 +2185,35 @@
 				</div>
             </div>
 			
-            <!-- 天氣頁面 -->
-			<div id="weather-page" style="display: none;">
- 
-  				<!-- 天氣iframe將在這裡插入 -->
-			</div>
+           <div id="weather-page">
+				  <!-- 札幌天氣 -->
+				  <a class="weatherwidget-io" href="https://forecast7.com/en/43d06n141d35/sapporo/?unit=metric" 
+				     data-label_1="SAPPORO" data-label_2="WEATHER" data-theme="pure">SAPPORO WEATHER</a>
+				
+				  <!-- 美瑛天氣 -->
+				  <a class="weatherwidget-io" href="https://forecast7.com/en/43d40n142d51/biei/?unit=metric"
+				     data-label_1="BIEI" data-label_2="WEATHER" data-theme="pure">BIEI WEATHER</a>
+				
+				  <!-- 小樽天氣 -->
+				  <a class="weatherwidget-io" href="https://forecast7.com/en/43d12n141d00/otaru/?unit=metric"
+				     data-label_1="OTARU" data-label_2="WEATHER" data-theme="pure">OTARU WEATHER</a>
+				
+				  <!-- 登別天氣 -->
+				  <a class="weatherwidget-io" href="https://forecast7.com/en/42d28n141d10/noboribetsu/?unit=metric"
+				     data-label_1="NOBORIBETSU" data-label_2="WEATHER" data-theme="pure">NOBORIBETSU WEATHER</a>
+				
+				  <script>
+				    !function(d,s,id){
+				      var js,fjs=d.getElementsByTagName(s)[0];
+				      if(!d.getElementById(id)){
+				        js=d.createElement(s);js.id=id;
+				        js.src='https://weatherwidget.io/js/widget.min.js';
+				        fjs.parentNode.insertBefore(js,fjs);
+				      }
+				    }(document,'script','weatherwidget-io-js');
+				  </script>
+		</div>
+
 
 		</div>
 		

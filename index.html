@@ -3324,60 +3324,59 @@ function showPage(targetId) {
 
 </script>
 <script>
-	let navBtn = document.getElementById("navBtn"); // 找到返回按鈕
+let navBtn = document.getElementById("navBtn"); // 返回按鈕
+let currentPageId = "home-page";  // 預設為首頁
 
-// 設定返回上一頁的功能
+// 設定返回按鈕的顯示與隱藏
 function setNavBack() {
-    console.log("Setting nav back button"); // 用來檢查是否進入這個函數
-    navBtn.textContent = "BACK";  // 設定按鈕文字
-    navBtn.onclick = goBack; // 點擊按鈕時返回上一頁
-    navBtn.classList.add("show");  // 確保按鈕是可見的
-
     // 顯示返回按鈕
-    navBtn.style.visibility = "visible";  // 設置可見
+    navBtn.textContent = "BACK";
+    navBtn.onclick = goBack;  // 設定點擊返回按鈕的邏輯
+    navBtn.classList.add("show");  // 顯示返回按鈕
+    navBtn.style.visibility = "visible";  // 確保可見
     navBtn.style.pointerEvents = "auto";  // 允許點擊
 }
 
-// 返回上一頁的邏輯
+// 點擊返回按鈕的邏輯
 function goBack() {
-    console.log("Going back...");  // 用來檢查是否點擊了返回按鈕
-    const ticketList = document.querySelector(".ticket-category-list");
-
-    // 根據頁面層級切換顯示
-    if (ticketLevel === "hotel" || ticketLevel === "flight") {
-        ticketList.innerHTML = originalTicketCategoryHTML;
-        ticketList.style.display = "flex";
-        ticketLevel = "list";
-        return;
+    // 返回上一頁
+    if (currentPageId === "flight" || currentPageId === "hotel") {
+        showPage("ticket-page");  // 返回到航班資訊頁面或飯店資訊頁面
+    } else {
+        showPage("home-page");  // 返回到主頁
     }
-
-    if (ticketLevel === "content") {
-        document.getElementById("ticketContent").style.display = "none";
-        ticketList.style.display = "flex";
-        ticketLevel = "list";
-        return;
-    }
-
-    backToMain();
 }
 
-// 返回主頁面
-function backToMain() {
-    console.log("Back to main page"); // 用來檢查是否進入這個函數
-    const ticketList = document.querySelector(".ticket-category-list");
-    if (ticketList) {
-        ticketList.style.display = "flex";
+// 顯示指定頁面
+function showPage(targetId) {
+    // 隱藏當前頁面
+    const currentPage = document.getElementById(currentPageId);
+    if (currentPage) {
+        currentPage.style.display = "none";
     }
 
-    const ticketContent = document.getElementById("ticketContent");
-    if (ticketContent) {
-        ticketContent.style.display = "none";
+    // 顯示目標頁面
+    const targetPage = document.getElementById(targetId);
+    if (targetPage) {
+        targetPage.style.display = "block";
+        currentPageId = targetId;  // 更新當前頁面ID
     }
 
-    // 隱藏返回按鈕
-    navBtn.style.visibility = "hidden";
-    navBtn.style.pointerEvents = "none"; // 防止點擊
+    // 控制返回按鈕顯示
+    if (targetId === "hotel" || targetId === "flight") {
+        setNavBack();  // 顯示返回按鈕
+    } else {
+        navBtn.style.visibility = "hidden";  // 隱藏返回按鈕
+        navBtn.style.pointerEvents = "none";  // 禁止點擊
+    }
 }
+
+// 當頁面顯示時顯示正確的返回按鈕狀態
+document.addEventListener("DOMContentLoaded", () => {
+    // 初始化頁面顯示
+    showPage("home-page");  // 預設顯示首頁
+});
+
 
 </script>
 </body>

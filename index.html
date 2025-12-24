@@ -3336,7 +3336,7 @@ document.addEventListener("DOMContentLoaded", () => {
     item.addEventListener('click', () => {
       const key = item.getAttribute('data-target'); // 取得目標分類
 
-      // 隱藏 ticket-category-list 並顯示 ticket-page
+      // 顯示 ticket-page
       const ticketPage = document.getElementById('ticket-page');
       ticketPage.style.display = 'block';
 
@@ -3367,15 +3367,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const ticketCategoryList = document.querySelector('.ticket-category-list');
     ticketCategoryList.style.display = 'flex';
 
-    // 隱藏 ticket-page
+    // 顯示 ticket-page
     const ticketPage = document.getElementById('ticket-page');
-    ticketPage.style.display = 'none';
+    ticketPage.style.display = 'block'; // 確保回到上一層後顯示列表
 
     // 隱藏返回按鈕
     const backBtn = document.getElementById('backBtn');
     backBtn.classList.remove('show');
   };
 });
+
 
 
 

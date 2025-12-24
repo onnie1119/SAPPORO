@@ -1354,7 +1354,7 @@
   		<button class="menu-btn" id="menuBtn" aria-label="menu">
     		<div></div> <!-- 這是中間的線 -->
   		</button>
-		<button id="backBtn" class="back-btn"><span class="icon-home1"></span></button>
+		<button id="backBtn" class="back-btn"><span class="icon-home"></span></button>
 	</div>
 	<nav class="bottom-nav">
 		<button data-page="home-page" class="active">
@@ -3346,6 +3346,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // 添加 CSS 類別
   element.classList.add('show');
 };
+const backBtn = document.getElementById("backBtn");
+
+backBtn.addEventListener("click", () => {
+  // 目前只處理電子票據內的返回
+  const ticketList = document.querySelector(".ticket-category-list");
+  const ticketContent = document.getElementById("ticketContent");
+
+  // 顯示第一層列表
+  if (ticketList) {
+    ticketList.style.display = "flex";
+  }
+
+  // 隱藏第二層內容
+  if (ticketContent) {
+    ticketContent.style.display = "none";
+  }
+
+  // 隱藏 Back 按鈕
+  backBtn.classList.remove("show");
+});
+
 </script>
 </body>
 </html>

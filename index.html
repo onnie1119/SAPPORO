@@ -3331,47 +3331,57 @@ function showPage(targetId) {
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    // 點擊“酒店”或“航班”後顯示返回按鈕
-    document.getElementById('hotel').onclick = function() {
-        const backBtn = document.getElementById('backBtn');
-        if (backBtn) {
-            backBtn.classList.add('show');  // 顯示返回按鈕
-        }
+  // 1. 點擊酒店或航班分類，顯示電子票據頁面
+  document.querySelectorAll('.ticket-category.bg-blue').forEach(item => {
+    item.addEventListener('click', () => {
+      // 顯示 ticket-page
+      const ticketPage = document.getElementById('ticket-page');
+      ticketPage.style.display = 'block';
 
-        // 隱藏當前頁面，顯示 ticket-page
-        const ticketPage = document.getElementById('ticket-page');
-        if (ticketPage) {
-            ticketPage.style.display = 'block';
-        }
+      // 隱藏主頁
+      const homePage = document.getElementById('home-page');
+      if (homePage) {
+        homePage.style.display = 'none';
+      }
 
-        // 更新當前頁面狀態
-        const currentPage = document.getElementById('current-page');
-        if (currentPage) {
-            currentPage.style.display = 'none';
-        }
-    };
+      // 顯示酒店或航班內容
+      const key = item.getAttribute('data-target'); // hotel 或 flight
+      const list = document.querySelector(".ticket-category-list");
+      list.style.display = 'none'; // 隱藏列表頁
 
-    // 點擊返回按鈕
-    document.getElementById('backBtn').onclick = function() {
-        // 隱藏 ticket-page，並顯示上一頁
-        const ticketPage = document.getElementById('ticket-page');
-        if (ticketPage) {
-            ticketPage.style.display = 'none';  // 隱藏 ticket-page
-        }
+      const ticketContent = document.getElementById("ticketContent");
+      ticketContent.style.display = 'block'; // 顯示 ticketContent
+      ticketContent.innerHTML = ticketData[key].body;
 
-        // 顯示上一頁（在此情況下為 hotel 或 flight 頁面）
-        const currentPage = document.getElementById('current-page');
-        if (currentPage) {
-            currentPage.style.display = 'block';  // 顯示上一頁
-        }
+      // 顯示返回按鈕
+      const backBtn = document.getElementById('backBtn');
+      backBtn.classList.add('show'); // 顯示返回按鈕
+    });
+  });
 
-        // 隱藏返回按鈕
-        const backBtn = document.getElementById('backBtn');
-        if (backBtn) {
-            backBtn.classList.remove('show');  // 隱藏返回按鈕
-        }
-    };
+  // 2. 點擊返回按鈕，返回上一層頁面
+  document.getElementById('backBtn').onclick = function() {
+    const ticketPage = document.getElementById('ticket-page');
+    ticketPage.style.display = 'none'; // 隱藏 ticket-page
+
+    // 顯示主頁
+    const homePage = document.getElementById('home-page');
+    if (homePage) {
+      homePage.style.display = 'block';
+    }
+
+    // 隱藏返回按鈕
+    const backBtn = document.getElementById('backBtn');
+    backBtn.classList.remove('show'); // 隱藏返回按鈕
+
+    // 顯示主頁分類
+    const ticketContent = document.getElementById("ticketContent");
+    ticketContent.style.display = 'none'; // 隱藏 ticketContent
+    const list = document.querySelector(".ticket-category-list");
+    list.style.display = 'flex'; // 顯示票據列表
+  };
 });
+
 
 </script>
 </body>

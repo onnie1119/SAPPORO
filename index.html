@@ -30,7 +30,7 @@
 	
     hr{
 		width: 100%;
-		height: 1px;
+		height: 0.5px;
 		border: 0;
 		margin: 2rem auto;
 		margin-bottom:1rem;
@@ -2870,36 +2870,123 @@
 			ticketLevel = "content";
 		});
 		
-		function setNavHome() {
-			navBtn.textContent = "BACK";
-			navBtn.onclick = backToMain;
-		  	navBtn.classList.add("show");
-		}
-		
-		function setNavBack() {
-			navBtn.textContent = "BACK";
-		  	navBtn.onclick = goBack;
-		  	navBtn.classList.add("show");
-		}
-		
-		function goBack() {
-			const ticketList = document.querySelector(".ticket-category-list");
-			if (ticketLevel === "hotel" || ticketLevel === "flight") {
-				ticketList.innerHTML = originalTicketCategoryHTML;
-				ticketList.style.display = "flex";
-				ticketLevel = "list";
-				return;
-			}
-	
-		  	if (ticketLevel === "content") {
-				document.getElementById("ticketContent").style.display = "none";
-				ticketList.style.display = "flex";
-				ticketLevel = "list";
-				return;
-			}
-			
-			backToMain();
-		}
+		// 設定「返回」按鈕
+function setNavHome() {
+    navBtn.textContent = "BACK";
+    navBtn.onclick = backToMain;
+    navBtn.classList.add("show");
+}
+
+// 設定返回上一頁的功能
+function setNavBack() {
+    navBtn.textContent = "BACK";
+    navBtn.onclick = goBack;
+    navBtn.classList.add("show");
+
+    // 顯示返回按鈕
+    navBtn.style.visibility = "visible";
+    navBtn.style.pointerEvents = "auto";
+}
+
+// 返回上一頁的邏輯
+function goBack() {
+    const ticketList = document.querySelector(".ticket-category-list");
+
+    // 根據頁面層級切換顯示
+    if (ticketLevel === "hotel" || ticketLevel === "flight") {
+        ticketList.innerHTML = originalTicketCategoryHTML;
+        ticketList.style.display = "flex";
+        ticketLevel = "list";
+        return;
+    }
+
+    if (ticketLevel === "content") {
+        document.getElementById("ticketContent").style.display = "none";
+        ticketList.style.display = "flex";
+        ticketLevel = "list";
+        return;
+    }
+
+    backToMain();
+}
+
+// 返回主頁面
+function backToMain() {
+    const ticketList = document.querySelector(".ticket-category-list");
+    if (ticketList) {
+        ticketList.style.display = "flex";
+    }
+
+    const ticketContent = document.getElementById("ticketContent");
+    if (ticketContent) {
+        ticketContent.style.display = "none";
+    }
+
+    // 隱藏返回按鈕
+    navBtn.style.visibility = "hidden";
+    navBtn.style.pointerEvents = "none"; // 防止點擊
+}
+
+// 控制頁面顯示
+function showPage(targetId) {
+    const currentPage = document.getElementById(currentPageId);
+    if (currentPage) {
+        currentPage.style.display = "none";
+    }
+
+    const targetPage = document.getElementById(targetId);
+    if (targetPage) {
+        targetPage.style.display = "block";
+        currentPageId = targetId;
+    }
+}
+
+// 當返回按鈕顯示時，顯示並設定正確的點擊事件
+document.addEventListener("click", function (e) {
+    const card = e.target.closest(".ticket-category");
+    if (!card) return;
+    const key = card.dataset.target;
+    if (key === "rentcar") {
+        card.classList.add("ticket-opening");
+        setTimeout(() => {
+            window.open("pdf/carreservation.pdf", "_blank");
+            card.classList.remove("ticket-opening");
+        }, 250);
+        return;
+    }
+
+    // 處理其他票據類型的顯示邏輯
+    if (key === "entry") {
+        card.classList.add("ticket-opening");
+        setTimeout(() => {
+            window.open("pdf/vjw.pdf", "_blank");
+            card.classList.remove("ticket-opening");
+        }, 250);
+        return;
+    }
+
+    if (key === "schedule") {
+        card.classList.add("ticket-opening");
+        setTimeout(() => {
+            window.open("pdf/klook.pdf", "_blank");
+            card.classList.remove("ticket-opening");
+        }, 250);
+        return;
+    }
+
+    // 顯示內容頁
+    document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
+    document.getElementById("ticketContentBody").innerHTML = ticketData[key].body || "";
+    const content = document.getElementById("ticketContent");
+    content.classList.remove("fade-in");
+
+    // 強制重新渲染動畫
+    void content.offsetWidth;
+    content.classList.add("fade-in");
+    document.querySelector(".ticket-category-list").style.display = "none";
+    document.getElementById("ticketContent").style.display = "block";
+    ticketLevel = "content";
+});
 		
 		function resetTicketPage() {
 		  	const list = document.querySelector(".ticket-category-list");

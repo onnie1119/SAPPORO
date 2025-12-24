@@ -3349,7 +3349,7 @@ document.getElementById('backBtn').onclick = function() {
     // 隱藏返回按鈕
     const backBtn = document.getElementById('backBtn');
     if (backBtn) {
-        backBtn.style.display = "none";  // 隱藏返回按鈕
+        backBtn.style.visibility = "hidden";  // 隱藏返回按鈕
     }
 
     // 顯示電子票據選單
@@ -3359,7 +3359,31 @@ document.getElementById('backBtn').onclick = function() {
     }
 };
 
+// 當選擇某個分類（如hotel或flight）時顯示返回按鈕
+document.getElementById('hotel').onclick = function() {
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.style.visibility = "visible";  // 顯示返回按鈕
+    }
 
+    // 顯示酒店相關內容
+    const hotelGroup = document.querySelector('.hotel-group');
+    if (hotelGroup) {
+        hotelGroup.style.display = "block";  // 顯示酒店內容
+    }
+
+    // 隱藏選單內容
+    const ticketCategoryList = document.querySelector('.ticket-category-list');
+    if (ticketCategoryList) {
+        ticketCategoryList.style.display = "none";  // 隱藏選單內容
+    }
+
+    // 隱藏其他的內容
+    const ticketContent = document.getElementById('ticketContent');
+    if (ticketContent) {
+        ticketContent.style.display = "none";  // 隱藏內容
+    }
+};
 </script>
 </body>
 </html>

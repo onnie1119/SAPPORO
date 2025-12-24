@@ -6325,19 +6325,15 @@ document.head.appendChild(style);
 		});
 	</script>
 	<script>
-		// 確保 PAGES 只定義一次
+	// 確保 PAGES 只定義一次
 if (!window.PAGES) {
-    window.PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
+  window.PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
 }
 
 let currentPageId = "home-page";  // 當前頁面的 ID
+let isFirstHomeRender = true; // 記錄是否為首頁的第一次渲染
 
-let isFirstHomeRender = true;  // 記錄是否為首頁的第一次渲染
-
-// =========================
-// 震動動畫類別
-// =========================
-const vibrateClass = "vibrate";
+const vibrateClass = "vibrate"; // 震動動畫的類別
 
 // =========================
 // 點擊選單切換頁面
@@ -6540,6 +6536,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
 
 	</script>
 </body>

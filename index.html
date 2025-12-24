@@ -3342,35 +3342,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 隱藏所有內容（如 hotel-group 等）
       document.querySelectorAll('.hotel-group').forEach(group => {
-        group.style.display = 'none';
+        group.style.visibility = 'hidden';
       });
 
       // 顯示對應的內容頁
       const targetContent = document.querySelector(`.${key}-group`);
       if (targetContent) {
-        targetContent.style.display = 'block';  // 顯示對應的內容
+        targetContent.style.visibility = 'visible';  // 顯示對應的內容
       }
 
       // 隱藏分類列表
-      ticketCategoryList.style.display = 'none';
+      ticketCategoryList.style.visibility = 'hidden';
 
       // 顯示返回按鈕
-      backBtn.style.display = 'block';  // 顯示返回按鈕
+      backBtn.style.visibility = 'visible';  // 顯示返回按鈕
     });
   });
 
   // 點擊返回按鈕，回到上一層
   backBtn.addEventListener('click', () => {
     // 顯示分類列表
-    ticketCategoryList.style.display = 'flex';
+    ticketCategoryList.style.visibility = 'visible';
 
     // 隱藏所有的內容區域
     document.querySelectorAll('.hotel-group').forEach(group => {
-      group.style.display = 'none';  // 隱藏所有內容
+      group.style.visibility = 'hidden';  // 隱藏所有內容
     });
 
     // 隱藏返回按鈕
-    backBtn.style.display = 'none';
+    backBtn.style.visibility = 'hidden';
   });
 });
 

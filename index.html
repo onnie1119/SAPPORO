@@ -3346,19 +3346,30 @@ document.getElementById('hotel').onclick = function() {
     backBtn.classList.add('show');  // 显示返回按钮
 };
 
-document.getElementById("backBtn").addEventListener("click", () => {
-  const ticketList = document.querySelector(".ticket-category-list");
-  const content = document.getElementById("ticketContent");
+document.getElementById('backBtn').onclick = function() {
+    // 获取 ticket-page 元素
+    const ticketPage = document.getElementById('ticket-page');
+    
+    // 如果 ticket-page 存在，显示它
+    if (ticketPage) {
+        ticketPage.style.display = "block";  // 显示 ticket-page
+    }
 
-  if (ticketLevel === "hotel" || ticketLevel === "flight" || ticketLevel === "content") {
-    // 回到電子憑證第一層
-    if (content) content.style.display = "none";
-    if (ticketList) ticketList.style.display = "flex";
+    // 获取当前页面元素
+    const currentPage = document.querySelector('.current-page');  // 假设你当前页面的 class 为 'current-page'
+    
+    // 如果当前页面存在，隐藏它
+    if (currentPage) {
+        currentPage.style.display = "none";  // 隐藏当前页面
+    }
+    
+    // 确保按钮的 visibility 也是适当控制的
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.style.display = "none";  // 隐藏返回按钮
+    }
+};
 
-    ticketLevel = "list";
-    document.getElementById("backBtn").classList.remove("show");
-  }
-});
 
 
 

@@ -1350,7 +1350,10 @@
 	    height: 50px;
 	}
 
-
+	.show {
+	    visibility: visible;  /* 顯示按鈕 */
+	    pointer-events: auto; /* 允許點擊 */
+	}
 </style>
 </head>
 <body>
@@ -3328,19 +3331,37 @@ function showPage(targetId) {
 let currentPageId = "home-page"; // 預設為首頁
 let navBtn = document.getElementById("navBtn");
 
+// 顯示返回按鈕
+function setNavBack() {
+    navBtn.textContent = "BACK";
+    navBtn.onclick = goBack;
+    navBtn.classList.add("show");  // 顯示返回按鈕
+}
+
+// 點擊返回按鈕的邏輯
+function goBack() {
+    const ticketList = document.querySelector(".ticket-category-list");
+    const currentPage = document.getElementById(currentPageId);
+    
+    if (currentPageId === "hotel" || currentPageId === "flight") {
+        // 返回到航班或飯店頁面
+        showPage("ticket-page");
+    } else {
+        showPage("home-page"); // 返回首頁
+    }
+}
+
 // 顯示指定頁面
 function showPage(targetId) {
-    // 隱藏當前頁面
     const currentPage = document.getElementById(currentPageId);
     if (currentPage) {
         currentPage.style.display = "none";
     }
 
-    // 顯示目標頁面
     const targetPage = document.getElementById(targetId);
     if (targetPage) {
         targetPage.style.display = "block";
-        currentPageId = targetId; // 更新當前頁面ID
+        currentPageId = targetId;
     }
 
     // 控制返回按鈕顯示
@@ -3351,29 +3372,6 @@ function showPage(targetId) {
         navBtn.style.pointerEvents = "none";  // 禁止點擊
     }
 }
-
-// 設定返回按鈕的顯示
-function setNavBack() {
-    navBtn.textContent = "BACK";
-    navBtn.onclick = goBack;  // 設定點擊返回按鈕的邏輯
-    navBtn.classList.add("show");  // 顯示返回按鈕
-    navBtn.style.visibility = "visible";  // 確保可見
-    navBtn.style.pointerEvents = "auto";  // 允許點擊
-}
-
-// 點擊返回按鈕的邏輯
-function goBack() {
-    if (currentPageId === "flight" || currentPageId === "hotel") {
-        showPage("ticket-page");  // 返回到航班資訊頁面或飯店資訊頁面
-    } else {
-        showPage("home-page");  // 返回到主頁
-    }
-}
-
-// 初始化顯示首頁
-document.addEventListener("DOMContentLoaded", () => {
-    showPage("home-page");  // 預設顯示首頁
-});
 
 
 </script>

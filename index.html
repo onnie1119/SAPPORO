@@ -3340,32 +3340,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+	
 	document.getElementById('hotel').onclick = function() {
-  // 獲取目標元素
-  let element = document.getElementById('backBtn');
-  // 添加 CSS 類別
-  element.classList.add('show');
+		  // 獲取目標元素
+		  let element = document.getElementById('backBtn');
+		  // 添加 CSS 類別
+		  element.classList.add('show');
+	};
+
+	document.getElementById('backBtn').onclick = function() {
+		  // 獲取目標元素
+		  let element = document.getElementById('backBtn');
+		  // 添加 CSS 類別
+		  element.classList.add('show');
+	};
+document.getElementById('backBtn').onclick = function() {
+    window.history.back();  // 回到上一層頁面
 };
-const backBtn = document.getElementById("backBtn");
-
-backBtn.addEventListener("click", () => {
-  // 目前只處理電子票據內的返回
-  const ticketList = document.querySelector(".ticket-category-list");
-  const ticketContent = document.getElementById("ticketContent");
-
-  // 顯示第一層列表
-  if (ticketList) {
-    ticketList.style.display = "flex";
-  }
-
-  // 隱藏第二層內容
-  if (ticketContent) {
-    ticketContent.style.display = "none";
-  }
-
-  // 隱藏 Back 按鈕
-  backBtn.classList.remove("show");
-});
 
 </script>
 </body>

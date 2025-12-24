@@ -6325,238 +6325,53 @@ document.head.appendChild(style);
 		});
 	</script>
 	<script>
-		const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
-		let currentPageId = "home-page";
-		
-		function getCurrentPage() {
-			return document.getElementById(currentPageId);
-		}
-		
-		function scrollCurrentPageToTop(behavior = "auto") {
-			const page = getCurrentPage();
-			if (page) {
-				page.scrollTo({ top: 0, behavior });
-			}
-		}
-		
-		function showPage(targetId) {
-			if (!PAGES.includes(targetId)) return;
-			if (targetId !== "home-page") {
-				const home = document.getElementById("home-page");
-				if (home) home.style.marginTop = "";
-		 	}
-			PAGES.forEach(id => {
-				const el = document.getElementById(id);
-				if (el) el.style.display = "none";
-		  	});
-		
-			const target = document.getElementById(targetId);
-			if (!target) return;
-			target.style.display = "block";
-		  	currentPageId = targetId;
-			requestAnimationFrame(() => {
-				target.scrollTop = 0;
-				bindScrollListener(); // ⭐ 只綁目前頁面
-			});
-		}
-		
-		
-		/* =========================
-		   TOP 按鈕控制（關鍵）
-		========================= */
-		const scrollBtn = document.getElementById("scrollToTop");
-		
-		function bindScrollListener() {
-			const page = getCurrentPage();
-		  	if (!page || !scrollBtn) return;
-			if (currentPageId !== "home-page") {
-				scrollBtn.classList.remove("show");
-				page.onscroll = null;
-				return;
-			}
-		
-			page.onscroll = () => {
-				if (page.scrollTop > 300) {
-			  		scrollBtn.classList.add("show");
-				} else {
-			  		scrollBtn.classList.remove("show");
-				}
-		  	};
-		}
-		
-		scrollBtn.addEventListener("click", () => {
-			scrollCurrentPageToTop("smooth");
-		});
-		
-		/* =========================
-		   Menu（iOS 全螢幕）
-		========================= */
-		const menuBtn   = document.getElementById("menuBtn");
-		const menuClose = document.getElementById("menuClose");
-		const iosMenu   = document.getElementById("iosFullMenu");
-		const topbar    = document.querySelector(".topbar");
-		
-		if (menuBtn && iosMenu) {
-			menuBtn.onclick = () => {
-				iosMenu.style.display = "flex";
-				topbar.style.display = "none";
-			};
-		}
-		
-		if (menuClose) {
-			menuClose.onclick = closeMenu;
-		}
-		
-		function closeMenu() {
-			iosMenu.style.display = "none";
-			topbar.style.display = "flex";
-		}
-		
-		// menu 項目
-		document.querySelectorAll(".menu-content li").forEach(li => {
-			li.addEventListener("click", () => {
-				const target = li.dataset.target;
-				closeMenu();
-				showPage(target);
-		  	});
-		});
-		
-		/* =========================
-		   Splash → App 啟動
-		========================= */
-		document.addEventListener("DOMContentLoaded", () => {
-			const splash = document.getElementById("app-splash");
-		  	const app    = document.getElementById("app-root");
-		
-			PAGES.forEach(id => {
-				const el = document.getElementById(id);
-				if (el) el.style.display = "none";
-		  	});
-		
-			const images = [...document.images];
-		  	let loaded = 0;
-		
-		  	function finish() {
-				setTimeout(() => {
-					splash.classList.add("hide");
-					setTimeout(() => {
-						splash.remove();
-				  		app.classList.add("show");
-						showPage("home-page");
-						if (isFirstHomeRender) {
-		  					applyInitialHomeOffset();
-						}
-					}, 400);
-				}, 1800);
-			}
-			if (images.length === 0) {
-				finish();
-		  	} else {
-				images.forEach(img => {
-			  		if (img.complete) {
-						loaded++;
-						if (loaded === images.length) finish();
-			  		} else {
-						img.onload = img.onerror = () => {
-				  			loaded++;
-				 			if (loaded === images.length) finish();
-						};
-			  		}
-				});
-		  	}
-		});
-		
-		/* =========================
-		   對外可呼叫（給你用）
-		========================= */
-		function showHome() {
-			showPage("home-page");
-		}
-		
-		function showPacking() {
-			showPage("packing-page");
-		}
-		
-		function showTicket() {
-			showPage("ticket-page");
-		}
-		
-		function showExchange() {
-			showPage("exchange-page");
-		}
-		
-		function applyInitialHomeOffset() {
-			const home = document.getElementById("home-page");
-			const topbar = document.querySelector(".topbar");
-			if (!home || !topbar) return;
-			home.style.marginTop = "0px";
-			requestAnimationFrame(() => {
-			  	target.scrollTop = 0;
-			  	bindScrollListener(); // ⭐ 每次切頁重新決定 TOP
-			});
-			isFirstHomeRender = false;
-		}
-		
-		document.querySelectorAll(".bottom-nav button").forEach(btn => {
-		  btn.addEventListener("click", () => {
-		    const page = btn.dataset.page;
-		
-		    // 切頁（用你已經有的）
-		    showPage(page);
-		
-		    // active 樣式
-		    document.querySelectorAll(".bottom-nav button")
-		      .forEach(b => b.classList.remove("active"));
-		    btn.classList.add("active");
-		  });
-		});
+		// 確保 PAGES 只定義一次
+if (!window.PAGES) {
+    window.PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
+}
 
-	</script>
-	<script>
+let currentPageId = "home-page";  // 當前頁面的 ID
+
+let isFirstHomeRender = true;  // 記錄是否為首頁的第一次渲染
+
+// =========================
 // 震動動畫類別
+// =========================
 const vibrateClass = "vibrate";
 
-// 假設頁面列表
-const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
-let currentPageId = "home-page"; // 當前頁面的ID
+// =========================
+// 點擊選單切換頁面
+// =========================
+document.querySelectorAll(".menu-content li").forEach(item => {
+  item.addEventListener("click", (e) => {
+    const targetId = e.target.dataset.target; // 獲取目標頁面 ID
+    const currentPage = getCurrentPage();
 
-// 點擊選單項目時的處理
-const menuItems = document.querySelectorAll(".menu-content li");
-
-// 點擊選單時的邏輯
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.dataset.target; // 獲取目標頁面ID
-    const currentPage = getCurrentPage(); // 獲取當前頁面
-    const currentPageId = currentPage.id; // 當前頁面的ID
-
-    // 如果點擊的是當前頁面，則觸發震動效果
+    // 如果點擊的是當前頁面，觸發震動效果
     if (currentPageId === targetId) {
-      // 為選單項目添加震動效果
       item.classList.add(vibrateClass);
-
-      // 移除震動效果（動畫結束後）
-      setTimeout(() => {
-        item.classList.remove(vibrateClass);
-      }, 300); // 持續震動的時間
+      setTimeout(() => item.classList.remove(vibrateClass), 300);  // 震動持續時間 300ms
     } else {
-      // 正常切換頁面邏輯
-      showPage(targetId);
+      showPage(targetId);  // 正常切換頁面
     }
   });
 });
 
-// 獲取當前頁面的元素
+// =========================
+// 獲取當前頁面元素
+// =========================
 function getCurrentPage() {
   return document.getElementById(currentPageId);
 }
 
+// =========================
 // 顯示指定頁面
+// =========================
 function showPage(targetId) {
-  if (!PAGES.includes(targetId)) return; // 確保目標頁面有效
+  if (!window.PAGES.includes(targetId)) return;  // 確保目標頁面有效
 
   // 隱藏所有頁面
-  PAGES.forEach(id => {
+  window.PAGES.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
@@ -6565,14 +6380,16 @@ function showPage(targetId) {
   const target = document.getElementById(targetId);
   if (target) {
     target.style.display = "block";
-    currentPageId = targetId; // 更新當前頁面的ID
+    currentPageId = targetId;  // 更新當前頁面 ID
   }
 
   // 滾動到頁面頂部
   scrollCurrentPageToTop();
 }
 
+// =========================
 // 滾動到當前頁面頂部
+// =========================
 function scrollCurrentPageToTop() {
   const page = getCurrentPage();
   if (page) {
@@ -6580,12 +6397,9 @@ function scrollCurrentPageToTop() {
   }
 }
 
-// 顯示首頁
-function showHome() {
-  showPage("home-page");
-}
-
+// =========================
 // 增加震動效果的 CSS
+// =========================
 const style = document.createElement("style");
 style.innerHTML = `
   @keyframes shake {
@@ -6602,48 +6416,132 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
+// =========================
+// 滾動控制按鈕（TOP 按鈕）
+// =========================
+const scrollBtn = document.getElementById("scrollToTop");
 
-	</script>
-	<script>
-  // 點擊按鈕切換到天氣頁面
-  const weatherBtn = document.querySelector('button[data-page="weather-page"]');
-  
-  weatherBtn.addEventListener('click', () => {
-    showPage('weather-page'); // 顯示天氣頁面
+function bindScrollListener() {
+  const page = getCurrentPage();
+  if (!page || !scrollBtn) return;
 
-    // 如果天氣頁面是首次加載，動態插入 iframe
-    const weatherPage = document.getElementById('weather-page');
-    if (!weatherPage.hasChildNodes()) {
-      const iframe = document.createElement("iframe");
-      iframe.src = "https://weather.com/zh-TW/weather/tenday/l/Minami+ku+Hokkaido+061+2274+Japan?canonicalCityId=6285feb8ef82e47f3bba03de7c7ce58c";
-      iframe.width = "100%";
-      iframe.height = "600";  // 設置高度，您可以根據需要調整
-      iframe.frameBorder = "0";  // 移除邊框
-      iframe.style.border = "none";  // 移除邊框
-      weatherPage.appendChild(iframe);  // 插入 iframe
-    }
-  });
-
-  // 當前頁面控制
-  let currentPageId = "home-page"; // 預設首頁頁面
-
-  // 顯示頁面
-  function showPage(targetId) {
-    // 隱藏當前頁面
-    const currentPage = document.getElementById(currentPageId);
-    if (currentPage) {
-      currentPage.style.display = "none";
-    }
-
-    // 顯示目標頁面
-    const targetPage = document.getElementById(targetId);
-    if (targetPage) {
-      targetPage.style.display = "block";
-      currentPageId = targetId;
-    }
+  if (currentPageId !== "home-page") {
+    scrollBtn.classList.remove("show");
+    page.onscroll = null;
+    return;
   }
 
-</script>
+  page.onscroll = () => {
+    if (page.scrollTop > 300) {
+      scrollBtn.classList.add("show");
+    } else {
+      scrollBtn.classList.remove("show");
+    }
+  };
+}
+
+scrollBtn.addEventListener("click", () => {
+  scrollCurrentPageToTop("smooth");
+});
+
+// =========================
+// 顯示天氣頁面（嵌入其他網頁）
+// =========================
+const weatherBtn = document.querySelector('button[data-page="weather-page"]');
+
+weatherBtn.addEventListener('click', () => {
+  showPage('weather-page'); // 顯示天氣頁面
+
+  // 如果天氣頁面是首次加載，動態插入 iframe
+  const weatherPage = document.getElementById('weather-page');
+  if (!weatherPage.hasChildNodes()) {
+    const iframe = document.createElement("iframe");
+    iframe.src = "https://weather.com/zh-TW/weather/tenday/l/Minami+ku+Hokkaido+061+2274+Japan?canonicalCityId=6285feb8ef82e47f3bba03de7c7ce58c";
+    iframe.width = "100%";
+    iframe.height = "600";  // 設置高度，您可以根據需要調整
+    iframe.frameBorder = "0";  // 移除邊框
+    iframe.style.border = "none";  // 移除邊框
+    weatherPage.appendChild(iframe);  // 插入 iframe
+  }
+});
+
+// =========================
+// Menu（iOS 全螢幕）
+// =========================
+const menuBtn = document.getElementById("menuBtn");
+const menuClose = document.getElementById("menuClose");
+const iosMenu = document.getElementById("iosFullMenu");
+const topbar = document.querySelector(".topbar");
+
+if (menuBtn && iosMenu) {
+  menuBtn.onclick = () => {
+    iosMenu.style.display = "flex";
+    topbar.style.display = "none";
+  };
+}
+
+if (menuClose) {
+  menuClose.onclick = closeMenu;
+}
+
+function closeMenu() {
+  iosMenu.style.display = "none";
+  topbar.style.display = "flex";
+}
+
+// 點擊選單項目後切換頁面
+document.querySelectorAll(".menu-content li").forEach(li => {
+  li.addEventListener("click", () => {
+    const target = li.dataset.target;
+    closeMenu();
+    showPage(target);
+  });
+});
+
+// =========================
+// Splash → App 啟動
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+  const splash = document.getElementById("app-splash");
+  const app = document.getElementById("app-root");
+
+  window.PAGES.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+
+  const images = [...document.images];
+  let loaded = 0;
+
+  function finish() {
+    setTimeout(() => {
+      splash.classList.add("hide");
+      setTimeout(() => {
+        splash.remove();
+        app.classList.add("show");
+        showPage("home-page");
+      }, 400);
+    }, 1800);
+  }
+
+  if (images.length === 0) {
+    finish();
+  } else {
+    images.forEach(img => {
+      if (img.complete) {
+        loaded++;
+        if (loaded === images.length) finish();
+      } else {
+        img.onload = img.onerror = () => {
+          loaded++;
+          if (loaded === images.length) finish();
+        };
+      }
+    });
+  }
+});
+
+	</script>
 </body>
 </html>
 

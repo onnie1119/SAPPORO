@@ -3331,50 +3331,39 @@ function showPage(targetId) {
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // 點擊分類顯示內容
+  const ticketCategoryList = document.querySelector('.ticket-category-list');
+  const ticketContent = document.getElementById('ticketContent');
+  const backBtn = document.getElementById('backBtn');
+  const ticketPage = document.getElementById('ticket-page');
+
+  // 顯示對應內容
   document.querySelectorAll('.ticket-category').forEach(item => {
     item.addEventListener('click', () => {
-      const key = item.getAttribute('data-target'); // 取得目標分類
+      const key = item.getAttribute('data-target');  // 獲取選擇的分類（如：hotel，flight等）
 
-      // 顯示 ticket-page
-      const ticketPage = document.getElementById('ticket-page');
-      ticketPage.style.display = 'block';
-
-      // 隱藏 ticket-category-list
-      const ticketCategoryList = document.querySelector('.ticket-category-list');
+      // 隱藏分類列表
       ticketCategoryList.style.display = 'none';
 
-      // 顯示對應的內容
-      const ticketContent = document.getElementById('ticketContent');
-      ticketContent.classList.remove('hidden'); // 顯示內容
-
-      // 填充對應內容
-      ticketContent.innerHTML = ticketData[key].body;
+      // 顯示內容頁並更新內容
+      ticketContent.style.display = 'block';
+      ticketContent.innerHTML = ticketData[key].body; // 更新內容
 
       // 顯示返回按鈕
-      const backBtn = document.getElementById('backBtn');
-      backBtn.classList.add('show');
+      backBtn.style.display = 'block';  // 顯示返回按鈕
     });
   });
 
-  // 點擊返回按鈕，隱藏 ticketContent 並返回上一頁
-  document.getElementById('backBtn').onclick = function() {
-    // 隱藏 ticketContent
-    const ticketContent = document.getElementById('ticketContent');
-    ticketContent.classList.add('hidden');
-
-    // 顯示 ticket-category-list
-    const ticketCategoryList = document.querySelector('.ticket-category-list');
+  // 點擊返回按鈕，回到上一層
+  backBtn.addEventListener('click', () => {
+    // 顯示分類列表
     ticketCategoryList.style.display = 'flex';
 
-    // 顯示 ticket-page
-    const ticketPage = document.getElementById('ticket-page');
-    ticketPage.style.display = 'block'; // 確保回到上一層後顯示列表
+    // 隱藏內容頁
+    ticketContent.style.display = 'none';
 
     // 隱藏返回按鈕
-    const backBtn = document.getElementById('backBtn');
-    backBtn.classList.remove('show');
-  };
+    backBtn.style.display = 'none';
+  });
 });
 
 

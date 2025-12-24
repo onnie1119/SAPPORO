@@ -1350,38 +1350,6 @@
 	    height: 50px;
 	}
 
-	.back-btn.show {
-	  	visibility: visible;
-	  	pointer-events: auto; /* 允許點擊 */
-	}
-
-#navBtn {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #3A7AFE;
-    color: #fff;
-    border-radius: 50px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    z-index: 1000;
-    display: none; /* 初始隱藏 */
-}
-
-#navBtn.show {
-    display: block; /* 當 show 類別存在時顯示 */
-}
-/* 顯示返回按鈕時 */
-.show {
-    display: block;
-}
-
-/* 隱藏內容頁面 */
-#ticketContent {
-    display: none;
-}
 
 </style>
 </head>
@@ -3356,58 +3324,6 @@ function showPage(targetId) {
 }
 
 
-
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const appRoot = document.getElementById("app-root");
-    const backBtn = document.getElementById("navBtn");
-
-    // 在某些情況下顯示 back 按鈕
-    if (appRoot) {
-        appRoot.classList.add("show"); // 確保 show 類別被加到 #app-root
-    }
-
-    // 顯示返回按鈕
-    if (backBtn) {
-        backBtn.style.display = "block";
-    }
-});
-
-// 確保變數只被宣告一次
-let currentPageId = "home-page"; // 預設為首頁
-let navBtn = document.getElementById("navBtn");
-
-// 顯示返回按鈕
-function setNavBack() {
-    navBtn.textContent = "BACK";  // 按鈕文字顯示為 BACK
-    navBtn.onclick = goBack;  // 點擊事件
-    navBtn.classList.add("show");  // 顯示按鈕
-}
-
-function goBack() {
-    const ticketList = document.querySelector(".ticket-category-list");
-    const backBtn = document.getElementById("navBtn");
-    
-    if (ticketLevel === "hotel" || ticketLevel === "flight") {
-        ticketList.innerHTML = originalTicketCategoryHTML;
-        ticketList.style.display = "flex";
-        ticketLevel = "list";
-        backBtn.style.display = "none"; // 返回後隱藏返回按鈕
-        return;
-    }
-
-    if (ticketLevel === "content") {
-        document.getElementById("ticketContent").style.display = "none";
-        ticketList.style.display = "flex";
-        ticketLevel = "list";
-        backBtn.style.display = "none"; // 返回後隱藏返回按鈕
-        return;
-    }
-
-    // 返回到主頁
-    backToMain();
-}
 
 </script>
 </body>

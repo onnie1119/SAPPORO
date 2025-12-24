@@ -3351,16 +3351,11 @@ document.getElementById('hotel').onclick = function() {
 	
 };
 
-document.getElementById('hotel').onclick = function() {
-	const backBtn = document.getElementById('menuBtn');
-    menuBtn.classList.add('hidden');  // 显示返回按钮
-
-};
 	
 document.getElementById('backBtn').onclick = function() {
-    // 获取 ticket-page 元素
+    // 获取 ticket-page 页面元素
     const ticketPage = document.getElementById('ticket-page');
-    
+
     // 如果 ticket-page 存在，显示它
     if (ticketPage) {
         ticketPage.style.display = "block";  // 显示 ticket-page
@@ -3373,8 +3368,8 @@ document.getElementById('backBtn').onclick = function() {
     if (currentPage) {
         currentPage.style.display = "none";  // 隐藏当前页面
     }
-    
-    // 确保按钮的 visibility 也是适当控制的
+
+    // 隐藏返回按钮（如果需要）
     const backBtn = document.getElementById('backBtn');
     if (backBtn) {
         backBtn.style.display = "none";  // 隐藏返回按钮

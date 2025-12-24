@@ -3340,11 +3340,7 @@ document.addEventListener("DOMContentLoaded", () => {
     item.addEventListener('click', () => {
       const key = item.getAttribute('data-target');  // 獲取選擇的分類（如：hotel，flight等）
 
-      // 隱藏所有內容（如 hotel-group 等）
-      document.querySelectorAll('.hotel-group').forEach(group => {
-        group.style.visibility = 'hidden';
-      });
-
+     
       // 顯示對應的內容頁
       const targetContent = document.querySelector(`.${key}-group`);
       if (targetContent) {

@@ -132,6 +132,11 @@
 		flex-direction: column;}
 
     .title {
+		font-size: 18px;
+		font-weight: 600;
+		color: #333;}
+
+	.titlep {
 		font-size: 20px;
 		font-weight: 600;
 		color: #333;}
@@ -2456,7 +2461,7 @@
 		    <div class="packing-group" data-group="${key}">
 				<div class="packing-group-header">
 					<div class="left-group">
-						<span class="title">${group.name}</span>
+						<span class="titlep">${group.name}</span>
 		          		<span class="count-status">
 		            		${group.items.filter(i=>i.done).length}/${group.items.length}
 		          		</span>

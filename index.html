@@ -3350,9 +3350,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 	
-	document.getElementById('backBtn').onclick = function() {
-	    window.history.back();  // 回到上一層頁面
-	};
+	document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('backBtn').onclick = function() {
+        window.history.back();  // 回到上一层页面
+    };
+});
+
 
 </script>
 </body>

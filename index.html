@@ -1320,6 +1320,29 @@
 	  	animation: navShake 0.25s ease;
 	}
 
+	#weather-page {
+    	padding: 20px;
+	}
+	
+	.region-switcher button {
+	    margin: 10px;
+	}
+	
+	.weather-section {
+	    display: flex;
+	    justify-content: space-between;
+	}
+	
+	.weather-time {
+	    margin: 5px;
+	    text-align: center;
+	}
+	
+	.weather-time img {
+	    width: 50px;
+	    height: 50px;
+	}
+
 </style>
 </head>
 <body>
@@ -2185,34 +2208,20 @@
 				</div>
             </div>
 			
-           <div id="weather-page">
-				  <!-- 札幌天氣 -->
-				  <a class="weatherwidget-io" href="https://forecast7.com/en/43d06n141d35/sapporo/?unit=metric" 
-				     data-label_1="SAPPORO" data-label_2="WEATHER" data-theme="pure">SAPPORO WEATHER</a>
-				
-				  <!-- 美瑛天氣 -->
-				  <a class="weatherwidget-io" href="https://forecast7.com/en/43d40n142d51/biei/?unit=metric"
-				     data-label_1="BIEI" data-label_2="WEATHER" data-theme="pure">BIEI WEATHER</a>
-				
-				  <!-- 小樽天氣 -->
-				  <a class="weatherwidget-io" href="https://forecast7.com/en/43d12n141d00/otaru/?unit=metric"
-				     data-label_1="OTARU" data-label_2="WEATHER" data-theme="pure">OTARU WEATHER</a>
-				
-				  <!-- 登別天氣 -->
-				  <a class="weatherwidget-io" href="https://forecast7.com/en/42d28n141d10/noboribetsu/?unit=metric"
-				     data-label_1="NOBORIBETSU" data-label_2="WEATHER" data-theme="pure">NOBORIBETSU WEATHER</a>
-				
-				  <script>
-				    !function(d,s,id){
-				      var js,fjs=d.getElementsByTagName(s)[0];
-				      if(!d.getElementById(id)){
-				        js=d.createElement(s);js.id=id;
-				        js.src='https://weatherwidget.io/js/widget.min.js';
-				        fjs.parentNode.insertBefore(js,fjs);
-				      }
-				    }(document,'script','weatherwidget-io-js');
-				  </script>
-		</div>
+	        <div id="weather-page">
+			    <!-- 地區切換 -->
+			    <div class="region-switcher">
+			        <button id="sapporoBtn">札幌</button>
+			        <button id="bieiBtn">美瑛</button>
+			        <button id="otaruBtn">小樽</button>
+			        <button id="noboribetsuBtn">登別</button>
+			    </div>
+			
+			    <!-- 時段天氣顯示區 -->
+			    <div class="weather-section">
+			        <div id="weather-display"></div> <!-- 顯示天氣的區域 -->
+			    </div>
+			</div>
 
 
 		</div>
@@ -3337,48 +3346,54 @@ document.addEventListener("DOMContentLoaded", () => {
   weatherBtn.addEventListener('click', () => {
     showPage('weather-page'); // 顯示天氣頁面
 
-    // 如果天氣頁面是首次加載，動態插入 iframe
-    const weatherPage = document.getElementById('weather-page');
-    // 檢查 weatherPage 是否已經有 iframe
-    if (weatherPage && !weatherPage.querySelector("iframe")) { // 如果沒有iframe
-      const iframe = document.createElement("iframe");
-      iframe.src = "https://weather.com/zh-TW/weather/tenday/l/Minami+ku+Hokkaido+061+2274+Japan?canonicalCityId=6285feb8ef82e47f3bba03de7c7ce58c";
-      iframe.width = "100%";
-      iframe.height = "600";  // 設置高度，您可以根據需要調整
-      iframe.frameBorder = "0";  // 移除邊框
-      iframe.style.border = "none";  // 移除邊框
-      iframe.style.display = "block";  // 確保顯示
-      weatherPage.appendChild(iframe);  // 插入 iframe
-      console.log("Weather iframe inserted.");
-    }
-  });
+   // 這裡可以選擇使用任意一個天氣API提供的網址
+const apiKey = "YOUR_OPENWEATHERMAP_API_KEY";
+const cities = {
+    sapporo: "Sapporo,jp",
+    biei: "Biei,jp",
+    otaru: "Otaru,jp",
+    noboribetsu: "Noboribetsu,jp"
+};
 
-  // 顯示頁面函式
-  function showPage(targetId) {
-    // 隱藏當前頁面
-    const currentPage = document.getElementById(currentPageId);
-    if (currentPage) {
-      currentPage.style.display = "none";
-    }
+// 顯示天氣數據的函數
+async function fetchWeather(city) {
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${cities[city]}&units=metric&appid=${apiKey}`);
+    const data = await response.json();
+    displayWeather(data);
+}
 
-    // 顯示目標頁面
-    const targetPage = document.getElementById(targetId);
-    if (targetPage) {
-      targetPage.style.display = "block"; // 顯示目標頁面
-      currentPageId = targetId;
-    }
+// 顯示天氣信息
+function displayWeather(data) {
+    const weatherDisplay = document.getElementById("weather-display");
+    weatherDisplay.innerHTML = ""; // 清空顯示區域
 
-    // Debug: 確保 `weather-page` 被顯示
-    const weatherPage = document.getElementById('weather-page');
-    if (weatherPage) {
-      weatherPage.style.display = "block";  // 顯示天氣頁面
-      console.log("Weather page is now visible.");
-    }
-  }
+    // 顯示每個時段的天氣數據
+    data.list.slice(0, 8).forEach((forecast) => { // 只顯示未來8個時段的數據
+        const time = new Date(forecast.dt * 1000).toLocaleTimeString(); // 時間
+        const temp = forecast.main.temp; // 氣溫
+        const weather = forecast.weather[0].description; // 天氣狀況
+        const icon = `http://openweathermap.org/img/w/${forecast.weather[0].icon}.png`; // 天氣圖標
 
-  // 當前頁面控制
-  let currentPageId = "home-page"; // 預設首頁頁面
-});
+        const weatherTimeElement = document.createElement("div");
+        weatherTimeElement.classList.add("weather-time");
+        weatherTimeElement.innerHTML = `
+            <p>${time}</p>
+            <img src="${icon}" alt="${weather}">
+            <p>${temp}°C</p>
+            <p>${weather}</p>
+        `;
+        weatherDisplay.appendChild(weatherTimeElement);
+    });
+}
+
+// 初始顯示札幌的天氣
+fetchWeather("sapporo");
+
+// 切換地區
+document.getElementById("sapporoBtn").addEventListener("click", () => fetchWeather("sapporo"));
+document.getElementById("bieiBtn").addEventListener("click", () => fetchWeather("biei"));
+document.getElementById("otaruBtn").addEventListener("click", () => fetchWeather("otaru"));
+document.getElementById("noboribetsuBtn").addEventListener("click", () => fetchWeather("noboribetsu"));
 
 
 </script>

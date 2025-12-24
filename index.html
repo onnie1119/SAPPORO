@@ -2209,22 +2209,20 @@
 				</div>
             </div>
 			
-	        <!-- 天氣頁面的顯示區域 -->
-			<div id="weather-page" style="display:none;">
-			    <!-- 地區切換 -->
-			    <div class="region-switcher">
-			        <button id="sapporoBtn">札幌</button>
-			        <button id="bieiBtn">美瑛</button>
-			        <button id="otaruBtn">小樽</button>
-			        <button id="noboribetsuBtn">登別</button>
-			    </div>
-			
-			    <!-- 時段天氣顯示區 -->
-			    <div class="weather-section">
-			        <div id="weather-display"></div> <!-- 顯示天氣的區域 -->
-			    </div>
+	       	<!-- 這是天氣頁面 -->
+			<div id="weather-page" style="display: none;">
+			    <h2>天氣資料</h2>
+			    <p id="location-name">選擇一個城市查看天氣</p>
+			    <p id="temperature">溫度: -- °C</p>
+			    <p id="description">天氣狀況: --</p>
+			    <p id="humidity">濕度: --%</p>
+			    <p id="windspeed">風速: -- km/h</p>
+			    <!-- 用來顯示不同城市天氣資料的按鈕 -->
+			    <button id="sapporo-btn">札幌</button>
+			    <button id="otaru-btn">小樽</button>
+			    <button id="biei-btn">美瑛</button>
+			    <button id="noboribetsu-btn">登別</button>
 			</div>
-
 
 		</div>
 		
@@ -3341,91 +3339,98 @@ document.head.appendChild(style);
 
 	</script>
 	<script>
-// 使用 OpenWeatherMap API 獲取天氣數據
-const apiKey = "YOUR_OPENWEATHERMAP_API_KEY";
+// Open-Meteo API - 天氣數據的獲取
+const weatherApiUrl = "https://api.open-meteo.com/v1/forecast";
+
+// 這裡定義每個城市的座標
 const cities = {
-    sapporo: "Sapporo,jp",
-    biei: "Biei,jp",
-    otaru: "Otaru,jp",
-    noboribetsu: "Noboribetsu,jp"
+    sapporo: { latitude: 43.0667, longitude: 141.3500 },
+    otaru: { latitude: 43.1900, longitude: 140.9940 },
+    biei: { latitude: 43.5333, longitude: 142.4000 },
+    noboribetsu: { latitude: 42.3800, longitude: 141.0000 }
 };
 
-// 顯示天氣數據的函數
-async function fetchWeather(city) {
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${cities[city]}&units=metric&appid=${apiKey}`);
-    const data = await response.json();
-    displayWeather(data);
+// 這是更新顯示天氣資料的函數
+function updateWeatherDisplay(data, cityName) {
+    const locationName = document.getElementById("location-name");
+    const temperature = document.getElementById("temperature");
+    const description = document.getElementById("description");
+    const humidity = document.getElementById("humidity");
+    const windspeed = document.getElementById("windspeed");
+
+    locationName.textContent = cityName + " 的天氣";
+    temperature.textContent = `溫度: ${data.current_weather.temperature} °C`;
+    description.textContent = `天氣狀況: ${data.current_weather.weathercode}`;
+    humidity.textContent = `濕度: ${data.current_weather.humidity}%`;
+    windspeed.textContent = `風速: ${data.current_weather.windspeed} km/h`;
 }
 
-// 顯示天氣信息
-function displayWeather(data) {
-    const weatherDisplay = document.getElementById("weather-display");
-    weatherDisplay.innerHTML = ""; // 清空顯示區域
+// 呼叫 API 獲取指定城市的天氣資料
+async function getWeatherData(city) {
+    const { latitude, longitude } = cities[city];
+    
+    // API 請求 URL，這裡使用了 Open-Meteo 的即時天氣接口
+    const url = `${weatherApiUrl}?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
 
-    // 顯示每個時段的天氣數據
-    data.list.slice(0, 8).forEach((forecast) => { // 只顯示未來8個時段的數據
-        const time = new Date(forecast.dt * 1000).toLocaleTimeString(); // 時間
-        const temp = forecast.main.temp; // 氣溫
-        const weather = forecast.weather[0].description; // 天氣狀況
-        const icon = `http://openweathermap.org/img/w/${forecast.weather[0].icon}.png`; // 天氣圖標
-
-        const weatherTimeElement = document.createElement("div");
-        weatherTimeElement.classList.add("weather-time");
-        weatherTimeElement.innerHTML = `
-            <p>${time}</p>
-            <img src="${icon}" alt="${weather}">
-            <p>${temp}°C</p>
-            <p>${weather}</p>
-        `;
-        weatherDisplay.appendChild(weatherTimeElement);
-    });
-}
-
-// 初始顯示札幌的天氣
-fetchWeather("sapporo");
-
-// 點擊地區切換
-document.getElementById("sapporoBtn").addEventListener("click", () => fetchWeather("sapporo"));
-document.getElementById("bieiBtn").addEventListener("click", () => fetchWeather("biei"));
-document.getElementById("otaruBtn").addEventListener("click", () => fetchWeather("otaru"));
-document.getElementById("noboribetsuBtn").addEventListener("click", () => fetchWeather("noboribetsu"));
-
-
-// 當點擊天氣按鈕時顯示天氣頁面
-const weatherBtn = document.querySelector('button[data-page="weather-page"]');
-const weatherPage = document.getElementById("weather-page");
-
-weatherBtn.addEventListener("click", () => {
-    showPage('weather-page'); // 顯示天氣頁面
-
-    // 當天氣頁面首次加載時，插入天氣iframe
-    if (!weatherPage.hasChildNodes()) {
-        const iframe = document.createElement("iframe");
-        iframe.src = "https://weather.com/zh-TW/weather/tenday/l/Minami+ku+Hokkaido+061+2274+Japan?canonicalCityId=6285feb8ef82e47f3bba03de7c7ce58c";
-        iframe.width = "100%";
-        iframe.height = "600";  // 設置高度，您可以根據需要調整
-        iframe.frameBorder = "0";  // 移除邊框
-        iframe.style.border = "none";  // 移除邊框
-        weatherPage.appendChild(iframe);  // 插入iframe
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        // 更新網頁上的天氣顯示
+        updateWeatherDisplay(data, city.charAt(0).toUpperCase() + city.slice(1));
+    } catch (error) {
+        console.error("獲取天氣資料失敗:", error);
     }
+}
+
+// 點擊天氣按鈕顯示天氣頁面
+document.getElementById("weather-btn").addEventListener("click", () => {
+    document.getElementById("weather-page").style.display = "block"; // 顯示天氣頁面
+    showPage("weather-page"); // 顯示天氣頁面並隱藏其他頁面
 });
 
-// 顯示頁面控制
+// 為每個城市按鈕綁定事件
+document.getElementById("sapporo-btn").addEventListener("click", () => {
+    showWeatherPage("sapporo");
+});
+document.getElementById("otaru-btn").addEventListener("click", () => {
+    showWeatherPage("otaru");
+});
+document.getElementById("biei-btn").addEventListener("click", () => {
+    showWeatherPage("biei");
+});
+document.getElementById("noboribetsu-btn").addEventListener("click", () => {
+    showWeatherPage("noboribetsu");
+});
+
+// 顯示天氣頁面並載入天氣資料
+function showWeatherPage(city) {
+    const weatherPage = document.getElementById("weather-page");
+    weatherPage.style.display = "block"; // 顯示天氣頁面
+
+    // 載入天氣資料
+    getWeatherData(city);
+}
+
+// 當前頁面控制
 let currentPageId = "home-page"; // 預設首頁頁面
 
 // 顯示頁面
 function showPage(targetId) {
+    // 隱藏當前頁面
     const currentPage = document.getElementById(currentPageId);
     if (currentPage) {
-        currentPage.style.display = "none"; // 隱藏當前頁面
+        currentPage.style.display = "none";
     }
 
+    // 顯示目標頁面
     const targetPage = document.getElementById(targetId);
     if (targetPage) {
-        targetPage.style.display = "block"; // 顯示目標頁面
+        targetPage.style.display = "block";
         currentPageId = targetId;
     }
 }
+
 
 
 

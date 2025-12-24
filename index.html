@@ -2239,7 +2239,7 @@
 	<script>
 		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
-		let navBtn = null;
+		
 		
 		document.addEventListener("DOMContentLoaded", () => {
 			navBtn = document.getElementById("navBtn");
@@ -3324,8 +3324,8 @@ function showPage(targetId) {
 
 </script>
 <script>
-let navBtn = document.getElementById("navBtn");  // 返回按鈕
-let currentPageId = "home-page";  // 預設為首頁
+let navBtn = document.getElementById("navBtn");  // 確保 navBtn 只有在這裡宣告一次
+
 
 // 顯示指定頁面
 function showPage(targetId) {
@@ -3373,7 +3373,6 @@ function goBack() {
 document.addEventListener("DOMContentLoaded", () => {
     showPage("home-page");  // 預設顯示首頁
 });
-
 
 </script>
 </body>

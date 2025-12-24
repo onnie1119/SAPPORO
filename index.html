@@ -2926,19 +2926,22 @@
 		}
 		
 		function showTicket() {
-			isMainPage = false;
+		    isMainPage = false;
 		
-		  	document.querySelector(".container").style.display = "none";
-		  	document.getElementById("exchange-page").style.display = "none";
-		  	document.getElementById("packing-page").style.display = "none";
-			const ticketPage = document.getElementById("ticket-page");
-		  	ticketPage.style.display = "block";
-			ticketPage.classList.remove("fade-in");
-		  	void ticketPage.offsetWidth;
-		  	ticketPage.classList.add("fade-in");
-			scrollBtn.classList.remove("show");
-		  	setNavBack();
+		    document.querySelector(".container").style.display = "none";
+		    document.getElementById("exchange-page").style.display = "none";
+		    document.getElementById("packing-page").style.display = "none";
+		    const ticketPage = document.getElementById("ticket-page");
+		    ticketPage.style.display = "block";
+		    ticketPage.classList.remove("fade-in");
+		    void ticketPage.offsetWidth;
+		    ticketPage.classList.add("fade-in");
+		    scrollBtn.classList.remove("show");
+		
+		    // 顯示 BACK 按鈕
+		    setNavBack();
 		}
+
 		
 		
 		function goBack() {
@@ -3377,8 +3380,9 @@ let navBtn = document.getElementById("navBtn");
 
 // 顯示返回按鈕
 function setNavBack() {
-    navBtn.style.display = "block";  // 顯示返回按鈕
-    navBtn.onclick = goBack;  // 設置返回邏輯
+    navBtn.textContent = "BACK";  // 按鈕文字顯示為 BACK
+    navBtn.onclick = goBack;  // 點擊事件
+    navBtn.classList.add("show");  // 顯示按鈕
 }
 
 function goBack() {

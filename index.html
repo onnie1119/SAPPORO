@@ -3344,6 +3344,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+	document.getElementById('hotel').onclick = function() {
+        const backBtn = document.getElementById('backBtn');
+        backBtn.classList.add('show');  // 显示返回按钮
+    };
 	
 document.getElementById('backBtn').onclick = function() {
     // 获取当前页面元素

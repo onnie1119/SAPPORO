@@ -1355,9 +1355,7 @@
 	  	pointer-events: auto; /* 允許點擊 */
 	}
 
-	/* 返回按鈕顯示/隱藏 */
 #navBtn {
-    display: none;  /* 初始隱藏 */
     position: fixed;
     bottom: 20px;
     left: 50%;
@@ -1368,9 +1366,13 @@
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
-    z-index: 9999;
+    z-index: 1000;
+    display: none; /* 初始隱藏 */
 }
 
+#navBtn.show {
+    display: block; /* 當 show 類別存在時顯示 */
+}
 /* 顯示返回按鈕時 */
 .show {
     display: block;
@@ -3354,6 +3356,21 @@ function showPage(targetId) {
 
 </script>
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const appRoot = document.getElementById("app-root");
+    const backBtn = document.getElementById("navBtn");
+
+    // 在某些情況下顯示 back 按鈕
+    if (appRoot) {
+        appRoot.classList.add("show"); // 確保 show 類別被加到 #app-root
+    }
+
+    // 顯示返回按鈕
+    if (backBtn) {
+        backBtn.style.display = "block";
+    }
+});
+
 // 確保變數只被宣告一次
 let currentPageId = "home-page"; // 預設為首頁
 let navBtn = document.getElementById("navBtn");
@@ -3364,26 +3381,30 @@ function setNavBack() {
     navBtn.onclick = goBack;  // 設置返回邏輯
 }
 
-// 返回上一頁
 function goBack() {
-    document.querySelector(".ticket-category-list").style.display = "flex";  // 顯示選項列表
-    document.getElementById("ticketContent").style.display = "none";  // 隱藏內容
-    navBtn.style.display = "none";  // 隱藏返回按鈕
+    const ticketList = document.querySelector(".ticket-category-list");
+    const backBtn = document.getElementById("navBtn");
+    
+    if (ticketLevel === "hotel" || ticketLevel === "flight") {
+        ticketList.innerHTML = originalTicketCategoryHTML;
+        ticketList.style.display = "flex";
+        ticketLevel = "list";
+        backBtn.style.display = "none"; // 返回後隱藏返回按鈕
+        return;
+    }
+
+    if (ticketLevel === "content") {
+        document.getElementById("ticketContent").style.display = "none";
+        ticketList.style.display = "flex";
+        ticketLevel = "list";
+        backBtn.style.display = "none"; // 返回後隱藏返回按鈕
+        return;
+    }
+
+    // 返回到主頁
+    backToMain();
 }
 
-// 點擊選項時顯示相應內容
-document.querySelectorAll(".ticket-category").forEach(button => {
-    button.addEventListener("click", () => {
-        const target = button.getAttribute("data-target");  // 獲取目標區域
-        document.querySelector(".ticket-category-list").style.display = "none";  // 隱藏選項列表
-        document.getElementById("ticketContent").style.display = "block";  // 顯示內容頁面
-        setNavBack();  // 顯示返回按鈕
-
-        // 設置頁面標題和內容
-        document.getElementById("ticketContentTitle").textContent = target.charAt(0).toUpperCase() + target.slice(1);  // 設置標題
-        document.getElementById("ticketContentBody").innerHTML = ticketData[target].body;  // 顯示內容
-    });
-});
 </script>
 </body>
 </html>

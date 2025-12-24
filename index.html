@@ -3348,10 +3348,15 @@ document.addEventListener("DOMContentLoaded", () => {
 document.getElementById('hotel').onclick = function() {
     const backBtn = document.getElementById('backBtn');
     backBtn.classList.add('show');  // 显示返回按钮
-	const backBtn = document.getElementById('menuBtn');
-    menuBtn.classList.add('hidden');  // 显示返回按钮
+	
 };
 
+document.getElementById('hotel').onclick = function() {
+	const backBtn = document.getElementById('menuBtn');
+    menuBtn.classList.add('hidden');  // 显示返回按钮
+
+};
+	
 document.getElementById('backBtn').onclick = function() {
     // 获取 ticket-page 元素
     const ticketPage = document.getElementById('ticket-page');

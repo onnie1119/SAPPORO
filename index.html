@@ -1349,7 +1349,14 @@
 	    width: 50px;
 	    height: 50px;
 	}
-
+		
+	#backBtn {
+	    background: none;
+	    border: none;
+	    font-size: 20px;
+	    cursor: pointer;
+	    visibility: hidden;  /* 初始狀態隱藏 */
+	}
 
 </style>
 </head>
@@ -1358,6 +1365,7 @@
   		<button class="menu-btn" id="menuBtn" aria-label="menu">
     		<div></div> <!-- 這是中間的線 -->
   		</button>
+		<button id="backBtn" class="back-btn" style="visibility: hidden;"><span class="icon-corner-up-left"></span></button>
 	</div>
 	<nav class="bottom-nav">
 		<button data-page="home-page" class="active">
@@ -3324,6 +3332,45 @@ function showPage(targetId) {
 }
 
 
+
+</script>
+<script>
+		// 設置返回按鈕的顯示和點擊邏輯
+	document.addEventListener("DOMContentLoaded", () => {
+	    const backBtn = document.getElementById("backBtn");
+	
+	    // 點擊返回按鈕時執行返回上一層
+	    backBtn.addEventListener("click", () => {
+	        window.history.back(); // 返回上一頁
+	    });
+	
+	    // 顯示返回按鈕的邏輯，當顯示飯店或航班資訊頁面時顯示返回按鈕
+	    function showHotelOrFlightPage() {
+	        // 顯示返回按鈕
+	        backBtn.style.visibility = "visible";
+	
+	        // 顯示飯店或航班內容，隱藏其他頁面（根據你的邏輯）
+	        document.getElementById("hotelPage").style.display = "block";
+	        document.getElementById("flightPage").style.display = "block";
+	    }
+	
+	    // 隱藏返回按鈕的邏輯，當返回上一頁時隱藏返回按鈕
+	    function hideBackBtn() {
+	        backBtn.style.visibility = "hidden";
+	    }
+	
+	    // 這裡假設有一個觸發顯示飯店資訊的按鈕或邏輯
+	    document.getElementById("showHotelPageBtn").addEventListener("click", () => {
+	        showHotelOrFlightPage();
+	    });
+	
+	    // 這裡假設有一個觸發顯示航班資訊的按鈕或邏輯
+	    document.getElementById("showFlightPageBtn").addEventListener("click", () => {
+	        showHotelOrFlightPage();
+	    });
+	
+	    // 你可以根據需要增加其他頁面邏輯，例如隱藏返回按鈕的頁面
+	});
 
 </script>
 </body>

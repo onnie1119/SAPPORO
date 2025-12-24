@@ -3330,94 +3330,48 @@ function showPage(targetId) {
 
 </script>
 <script>
-// 確保頁面已經加載完畢
 document.addEventListener("DOMContentLoaded", () => {
-    // 選擇所有的 ticket-category bg-blue 元素
-    const ticketCategory = document.querySelectorAll('.ticket-category.bg-blue');
-    
-    // 為每個元素添加點擊事件
-    ticketCategory.forEach(item => {
-        item.addEventListener('click', () => {
-            // 選擇 ticket-page 並加上 .show 類別來顯示它
-            const ticketPage = document.getElementById('ticket-page');
-            ticketPage.classList.add('show');
-        });
-    });
-});
-	document.getElementById('hotel').onclick = function() {
+    // 點擊“酒店”或“航班”後顯示返回按鈕
+    document.getElementById('hotel').onclick = function() {
         const backBtn = document.getElementById('backBtn');
-        backBtn.classList.add('show');  // 显示返回按钮
+        if (backBtn) {
+            backBtn.classList.add('show');  // 顯示返回按鈕
+        }
+
+        // 隱藏當前頁面，顯示 ticket-page
+        const ticketPage = document.getElementById('ticket-page');
+        if (ticketPage) {
+            ticketPage.style.display = 'block';
+        }
+
+        // 更新當前頁面狀態
+        const currentPage = document.getElementById('current-page');
+        if (currentPage) {
+            currentPage.style.display = 'none';
+        }
     };
-	
-document.getElementById('backBtn').onclick = function() {
-    // 获取当前页面元素
-    const currentPage = document.getElementById('current-page');
-    
-    // 获取 ticket-page 元素
-    const ticketPage = document.getElementById('ticket-page');
-    
-    // 隐藏当前页面
-    if (currentPage) {
-        currentPage.style.display = "none";  // 隐藏当前页面
-    }
 
-    // 显示 ticket-page
-    if (ticketPage) {
-        ticketPage.style.display = "block";  // 显示 ticket-page
-    }
+    // 點擊返回按鈕
+    document.getElementById('backBtn').onclick = function() {
+        // 隱藏 ticket-page，並顯示上一頁
+        const ticketPage = document.getElementById('ticket-page');
+        if (ticketPage) {
+            ticketPage.style.display = 'none';  // 隱藏 ticket-page
+        }
 
-    // 隐藏返回按钮
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) {
-        backBtn.style.display = "none";  // 隐藏返回按钮
-    }
-};
+        // 顯示上一頁（在此情況下為 hotel 或 flight 頁面）
+        const currentPage = document.getElementById('current-page');
+        if (currentPage) {
+            currentPage.style.display = 'block';  // 顯示上一頁
+        }
 
-// 示例：在某个事件触发后显示 `backBtn`
-document.getElementById('someElement').onclick = function() {
-    // 显示返回按钮
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) {
-        backBtn.style.display = "block";  // 显示返回按钮
-    }
-
-    // 隐藏当前页面
-    const currentPage = document.getElementById('current-page');
-    if (currentPage) {
-        currentPage.style.display = "none";  // 隐藏当前页面
-    }
-
-    // 显示 ticket-page
-    const ticketPage = document.getElementById('ticket-page');
-    if (ticketPage) {
-        ticketPage.style.display = "block";  // 显示 ticket-page
-    }
-};
-
-// 你可以模拟点击 `ticket-page` 按钮来触发页面跳转
-document.getElementById('backBtn').onclick = function() {
-    const ticketPage = document.getElementById('ticket-page');
-    if (ticketPage) {
-        ticketPage.style.display = "block";  // 显示 ticket-page
-    }
-
-    // 隐藏当前页面
-    const currentPage = document.getElementById('current-page');
-    if (currentPage) {
-        currentPage.style.display = "none";  // 隐藏当前页面
-    }
-
-    // 隐藏返回按钮
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) {
-        backBtn.style.display = "none";  // 隐藏返回按钮
-    }
-};
-
-
-
-
-
+        // 隱藏返回按鈕
+        const backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            backBtn.classList.remove('show');  // 隱藏返回按鈕
+        }
+    };
+});
 
 </script>
 </body>

@@ -3033,7 +3033,7 @@
 	</script>
 	<script>
 		const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
-		let currentPageId = "home-page";
+		
 		
 		function getCurrentPage() {
 			return document.getElementById(currentPageId);
@@ -3324,8 +3324,9 @@ function showPage(targetId) {
 
 </script>
 <script>
-let navBtn = document.getElementById("navBtn");  // 確保 navBtn 只有在這裡宣告一次
-
+// 確保變數只被宣告一次
+let currentPageId = "home-page"; // 預設為首頁
+let navBtn = document.getElementById("navBtn");
 
 // 顯示指定頁面
 function showPage(targetId) {
@@ -3339,7 +3340,7 @@ function showPage(targetId) {
     const targetPage = document.getElementById(targetId);
     if (targetPage) {
         targetPage.style.display = "block";
-        currentPageId = targetId;  // 更新當前頁面ID
+        currentPageId = targetId; // 更新當前頁面ID
     }
 
     // 控制返回按鈕顯示
@@ -3373,6 +3374,7 @@ function goBack() {
 document.addEventListener("DOMContentLoaded", () => {
     showPage("home-page");  // 預設顯示首頁
 });
+
 
 </script>
 </body>

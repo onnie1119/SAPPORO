@@ -2159,15 +2159,17 @@
 			<!-- === 電子憑證（請務必放在 body 最底部） === -->
             <div id="ticket-page" class="ticket-page">
 				<div class="ticket-category-list">
-					<div class="ticket-category bg-blue" data-target="hotel">
-						<div class="icon">
-							<img src="images/57.png" alt="folder">
+					
+						<div class="ticket-category bg-blue" data-target="hotel" id="hotel">
+							<div class="icon">
+								<img src="images/57.png" alt="folder">
+							</div>
+							<div class="text">
+								<span class="title">飯店住宿</span>
+							</div>
+							<div class="more">⋮</div>
 						</div>
-						<div class="text">
-							<span class="title">飯店住宿</span>
-						</div>
-						<div class="more">⋮</div>
-					</div>
+					
 					<div class="ticket-category bg-yellow" data-target="flight">
 						<div class="icon">
  							<img src="images/58.png" alt="folder">
@@ -3337,7 +3339,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
-
+	document.getElementById('hotel').onclick = function() {
+  // 獲取目標元素
+  let element = document.getElementById('backBtn');
+  // 添加 CSS 類別
+  element.classList.add('show');
+};
 </script>
 </body>
 </html>

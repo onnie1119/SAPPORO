@@ -3348,15 +3348,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		  element.classList.add('show');
 	};
 
+
+	
 	document.getElementById('backBtn').onclick = function() {
-		  // 獲取目標元素
-		  let element = document.getElementById('backBtn');
-		  // 添加 CSS 類別
-		  element.classList.add('show');
+	    window.history.back();  // 回到上一層頁面
 	};
-document.getElementById('backBtn').onclick = function() {
-    window.history.back();  // 回到上一層頁面
-};
 
 </script>
 </body>

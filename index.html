@@ -3330,60 +3330,41 @@ function showPage(targetId) {
 
 </script>
 <script>
-document.getElementById('backBtn').onclick = function() {
-    // 隱藏當前顯示的內容
-    const hotelGroup = document.querySelector('.hotel-group');
-    const ticketCategoryList = document.querySelector('.ticket-category-list');
-    
-    // 隱藏電子憑證頁面
-    if (hotelGroup) {
-        hotelGroup.style.display = "none";  // 隱藏內容
-    }
-
-    // 顯示選單內容
-    if (ticketCategoryList) {
-        ticketCategoryList.style.display = "flex";  // 顯示選單
-        ticketCategoryList.classList.add('fade-in'); // 確保添加 fade-in 動畫
-    }
-
-    // 隱藏返回按鈕
+document.addEventListener("DOMContentLoaded", function() {
     const backBtn = document.getElementById('backBtn');
+    const hotelBtn = document.getElementById('hotel');
+
     if (backBtn) {
-        backBtn.style.visibility = "hidden";  // 隱藏返回按鈕
+        backBtn.onclick = function() {
+            const hotelGroup = document.querySelector('.hotel-group');
+            const ticketCategoryList = document.querySelector('.ticket-category-list');
+            const ticketPage = document.getElementById('ticket-page');
+
+            if (hotelGroup) hotelGroup.style.display = "none";
+            if (ticketCategoryList) {
+                ticketCategoryList.style.display = "flex";
+                ticketCategoryList.classList.add('fade-in');
+            }
+            backBtn.style.visibility = "hidden";
+            if (ticketPage) ticketPage.style.display = "block";
+        };
     }
 
-    // 顯示電子票據選單
-    const ticketPage = document.getElementById('ticket-page');
-    if (ticketPage) {
-        ticketPage.style.display = "block";  // 顯示選單頁
-    }
-};
+    if (hotelBtn) {
+        hotelBtn.onclick = function() {
+            const backBtn = document.getElementById('backBtn');
+            const hotelGroup = document.querySelector('.hotel-group');
+            const ticketCategoryList = document.querySelector('.ticket-category-list');
+            const ticketContent = document.getElementById('ticketContent');
 
-// 當選擇某個分類（如hotel或flight）時顯示返回按鈕
-document.getElementById('hotel').onclick = function() {
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) {
-        backBtn.style.visibility = "visible";  // 顯示返回按鈕
+            if (backBtn) backBtn.style.visibility = "visible";
+            if (hotelGroup) hotelGroup.style.display = "block";
+            if (ticketCategoryList) ticketCategoryList.style.display = "none";
+            if (ticketContent) ticketContent.style.display = "none";
+        };
     }
+});
 
-    // 顯示酒店相關內容
-    const hotelGroup = document.querySelector('.hotel-group');
-    if (hotelGroup) {
-        hotelGroup.style.display = "block";  // 顯示酒店內容
-    }
-
-    // 隱藏選單內容
-    const ticketCategoryList = document.querySelector('.ticket-category-list');
-    if (ticketCategoryList) {
-        ticketCategoryList.style.display = "none";  // 隱藏選單內容
-    }
-
-    // 隱藏其他的內容
-    const ticketContent = document.getElementById('ticketContent');
-    if (ticketContent) {
-        ticketContent.style.display = "none";  // 隱藏內容
-    }
-};
 </script>
 </body>
 </html>

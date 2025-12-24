@@ -3246,98 +3246,7 @@
 		});
 
 	</script>
-	<script>
-// 震動動畫類別
-const vibrateClass = "vibrate";
-
-// 假設頁面列表
-const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page"];
-let currentPageId = "home-page"; // 當前頁面的ID
-
-// 點擊選單項目時的處理
-const menuItems = document.querySelectorAll(".menu-content li");
-
-// 點擊選單時的邏輯
-menuItems.forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.dataset.target; // 獲取目標頁面ID
-    const currentPage = getCurrentPage(); // 獲取當前頁面
-    const currentPageId = currentPage.id; // 當前頁面的ID
-
-    // 如果點擊的是當前頁面，則觸發震動效果
-    if (currentPageId === targetId) {
-      // 為選單項目添加震動效果
-      item.classList.add(vibrateClass);
-
-      // 移除震動效果（動畫結束後）
-      setTimeout(() => {
-        item.classList.remove(vibrateClass);
-      }, 300); // 持續震動的時間
-    } else {
-      // 正常切換頁面邏輯
-      showPage(targetId);
-    }
-  });
-});
-
-// 獲取當前頁面的元素
-function getCurrentPage() {
-  return document.getElementById(currentPageId);
-}
-
-// 顯示指定頁面
-function showPage(targetId) {
-  if (!PAGES.includes(targetId)) return; // 確保目標頁面有效
-
-  // 隱藏所有頁面
-  PAGES.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-  });
-
-  // 顯示目標頁面
-  const target = document.getElementById(targetId);
-  if (target) {
-    target.style.display = "block";
-    currentPageId = targetId; // 更新當前頁面的ID
-  }
-
-  // 滾動到頁面頂部
-  scrollCurrentPageToTop();
-}
-
-// 滾動到當前頁面頂部
-function scrollCurrentPageToTop() {
-  const page = getCurrentPage();
-  if (page) {
-    page.scrollTo({ top: 0, behavior: "smooth" });
-  }
-}
-
-// 顯示首頁
-function showHome() {
-  showPage("home-page");
-}
-
-// 增加震動效果的 CSS
-const style = document.createElement("style");
-style.innerHTML = `
-  @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
-  }
-
-  .vibrate {
-    animation: shake 0.3s ease-in-out;
-  }
-`;
-document.head.appendChild(style);
-
-
-	</script>
+	
 	<script>
 // Open-Meteo API - 天氣數據的獲取
 const weatherApiUrl = "https://api.open-meteo.com/v1/forecast";
@@ -3358,6 +3267,7 @@ function updateWeatherDisplay(data, cityName) {
     const humidity = document.getElementById("humidity");
     const windspeed = document.getElementById("windspeed");
 
+    // 更新天氣顯示
     locationName.textContent = cityName + " 的天氣";
     temperature.textContent = `溫度: ${data.current_weather.temperature} °C`;
     description.textContent = `天氣狀況: ${data.current_weather.weathercode}`;
@@ -3384,9 +3294,12 @@ async function getWeatherData(city) {
 }
 
 // 點擊天氣按鈕顯示天氣頁面
-document.getElementById("weather-btn").addEventListener("click", () => {
+document.querySelector('[data-page="weather-page"]').addEventListener("click", () => {
+    showPage("weather-page"); // 顯示天氣頁面
     document.getElementById("weather-page").style.display = "block"; // 顯示天氣頁面
-    showPage("weather-page"); // 顯示天氣頁面並隱藏其他頁面
+
+    // 顯示天氣頁面後載入初始天氣資料，這裡以札幌為例
+    getWeatherData("sapporo");
 });
 
 // 為每個城市按鈕綁定事件
@@ -3430,7 +3343,6 @@ function showPage(targetId) {
         currentPageId = targetId;
     }
 }
-
 
 
 </script>

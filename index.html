@@ -3331,56 +3331,52 @@ function showPage(targetId) {
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. 點擊酒店或航班分類，顯示電子票據頁面
-  document.querySelectorAll('.ticket-category.bg-blue').forEach(item => {
+  // 點擊分類顯示內容
+  document.querySelectorAll('.ticket-category').forEach(item => {
     item.addEventListener('click', () => {
-      // 顯示 ticket-page
+      const key = item.getAttribute('data-target'); // 取得目標分類
+
+      // 隱藏 ticket-category-list 並顯示 ticket-page
       const ticketPage = document.getElementById('ticket-page');
       ticketPage.style.display = 'block';
 
-      // 隱藏主頁
-      const homePage = document.getElementById('home-page');
-      if (homePage) {
-        homePage.style.display = 'none';
-      }
+      // 隱藏 ticket-category-list
+      const ticketCategoryList = document.querySelector('.ticket-category-list');
+      ticketCategoryList.style.display = 'none';
 
-      // 顯示酒店或航班內容
-      const key = item.getAttribute('data-target'); // hotel 或 flight
-      const list = document.querySelector(".ticket-category-list");
-      list.style.display = 'none'; // 隱藏列表頁
+      // 顯示對應的內容
+      const ticketContent = document.getElementById('ticketContent');
+      ticketContent.classList.remove('hidden'); // 顯示內容
 
-      const ticketContent = document.getElementById("ticketContent");
-      ticketContent.style.display = 'block'; // 顯示 ticketContent
+      // 填充對應內容
       ticketContent.innerHTML = ticketData[key].body;
 
       // 顯示返回按鈕
       const backBtn = document.getElementById('backBtn');
-      backBtn.classList.add('show'); // 顯示返回按鈕
+      backBtn.classList.add('show');
     });
   });
 
-  // 2. 點擊返回按鈕，返回上一層頁面
+  // 點擊返回按鈕，隱藏 ticketContent 並返回上一頁
   document.getElementById('backBtn').onclick = function() {
-    const ticketPage = document.getElementById('ticket-page');
-    ticketPage.style.display = 'none'; // 隱藏 ticket-page
+    // 隱藏 ticketContent
+    const ticketContent = document.getElementById('ticketContent');
+    ticketContent.classList.add('hidden');
 
-    // 顯示主頁
-    const homePage = document.getElementById('home-page');
-    if (homePage) {
-      homePage.style.display = 'block';
-    }
+    // 顯示 ticket-category-list
+    const ticketCategoryList = document.querySelector('.ticket-category-list');
+    ticketCategoryList.style.display = 'flex';
+
+    // 隱藏 ticket-page
+    const ticketPage = document.getElementById('ticket-page');
+    ticketPage.style.display = 'none';
 
     // 隱藏返回按鈕
     const backBtn = document.getElementById('backBtn');
-    backBtn.classList.remove('show'); // 隱藏返回按鈕
-
-    // 顯示主頁分類
-    const ticketContent = document.getElementById("ticketContent");
-    ticketContent.style.display = 'none'; // 隱藏 ticketContent
-    const list = document.querySelector(".ticket-category-list");
-    list.style.display = 'flex'; // 顯示票據列表
+    backBtn.classList.remove('show');
   };
 });
+
 
 
 </script>

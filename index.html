@@ -3259,7 +3259,7 @@ const cities = {
     noboribetsu: { latitude: 42.3800, longitude: 141.0000 }
 };
 
-// 這是更新顯示天氣資料的函數
+// 更新顯示天氣資料的函數
 function updateWeatherDisplay(data, cityName) {
     const locationName = document.getElementById("location-name");
     const temperature = document.getElementById("temperature");
@@ -3296,7 +3296,6 @@ async function getWeatherData(city) {
 // 點擊天氣按鈕顯示天氣頁面
 document.querySelector('[data-page="weather-page"]').addEventListener("click", () => {
     showPage("weather-page"); // 顯示天氣頁面
-    document.getElementById("weather-page").style.display = "block"; // 顯示天氣頁面
 
     // 顯示天氣頁面後載入初始天氣資料，這裡以札幌為例
     getWeatherData("sapporo");
@@ -3343,6 +3342,7 @@ function showPage(targetId) {
         currentPageId = targetId;
     }
 }
+
 
 
 </script>

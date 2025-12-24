@@ -1341,7 +1341,7 @@
 		color:white;
 	}
 /* 顯示時 */
-#backBtn.show {
+.show {
     visibility: visible; /* 顯示 */
     opacity: 1;
     transition: visibility 0s 0s, opacity 0.3s ease;
@@ -3323,44 +3323,20 @@ function showPage(targetId) {
 
 </script>
 <script>
-		// 設置返回按鈕的顯示和點擊邏輯
-	document.addEventListener("DOMContentLoaded", () => {
-	    const backBtn = document.getElementById("backBtn");
-	
-	    // 點擊返回按鈕時執行返回上一層
-	    backBtn.addEventListener("click", () => {
-	        window.history.back(); // 返回上一頁
-	    });
-	
-	    // 顯示返回按鈕的邏輯，當顯示飯店或航班資訊頁面時顯示返回按鈕
-	    function showHotelOrFlightPage() {
-	        // 顯示返回按鈕
-	        backBtn.style.visibility = "visible";
-	
-	        // 顯示飯店或航班內容，隱藏其他頁面（根據你的邏輯）
-	        document.getElementById("hotelPage").style.display = "block";
-	        document.getElementById("flightPage").style.display = "block";
-	    }
-	
-	   // 確保返回按鈕顯示
-function showBackButton() {
-    const backBtn = document.getElementById("backBtn");
-    backBtn.classList.add("show"); // 顯示返回按鈕
-}
-
-// 確保返回按鈕隱藏
-function hideBackButton() {
-    const backBtn = document.getElementById("backBtn");
-    backBtn.classList.remove("show"); // 隱藏返回按鈕
-}
-
-// 當顯示航班資訊或飯店資訊頁面時，顯示返回按鈕
-document.getElementById("flight-page").addEventListener("click", showBackButton);
-document.getElementById("hotel-page").addEventListener("click", showBackButton);
-
-// 當進入其他頁面時隱藏返回按鈕
-document.getElementById("home-page").addEventListener("click", hideBackButton);
-
+// 確保頁面已經加載完畢
+document.addEventListener("DOMContentLoaded", () => {
+    // 選擇所有的 ticket-category bg-blue 元素
+    const ticketCategory = document.querySelectorAll('.ticket-category.bg-blue');
+    
+    // 為每個元素添加點擊事件
+    ticketCategory.forEach(item => {
+        item.addEventListener('click', () => {
+            // 選擇 ticket-page 並加上 .show 類別來顯示它
+            const ticketPage = document.getElementById('ticket-page');
+            ticketPage.classList.add('show');
+        });
+    });
+});
 
 </script>
 </body>

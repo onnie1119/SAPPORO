@@ -1354,6 +1354,33 @@
 	  	visibility: visible;
 	  	pointer-events: auto; /* 允許點擊 */
 	}
+
+	/* 返回按鈕顯示/隱藏 */
+#navBtn {
+    display: none;  /* 初始隱藏 */
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #3A7AFE;
+    color: #fff;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 9999;
+}
+
+/* 顯示返回按鈕時 */
+.show {
+    display: block;
+}
+
+/* 隱藏內容頁面 */
+#ticketContent {
+    display: none;
+}
+
 </style>
 </head>
 <body>
@@ -3333,33 +3360,30 @@ let navBtn = document.getElementById("navBtn");
 
 // 顯示返回按鈕
 function setNavBack() {
-    navBtn.textContent = "BACK";
-    navBtn.onclick = goBack;
-    navBtn.classList.add("show");  // 顯示返回按鈕
+    navBtn.style.display = "block";  // 顯示返回按鈕
+    navBtn.onclick = goBack;  // 設置返回邏輯
 }
 
-// 返回上一頁的邏輯
+// 返回上一頁
 function goBack() {
-    const ticketList = document.querySelector(".ticket-category-list");
-    ticketList.style.display = "flex";  // 顯示列表
-    document.getElementById("ticketContent").style.display = "none";  // 隱藏當前內容
-    navBtn.classList.remove("show");  // 隱藏返回按鈕
+    document.querySelector(".ticket-category-list").style.display = "flex";  // 顯示選項列表
+    document.getElementById("ticketContent").style.display = "none";  // 隱藏內容
+    navBtn.style.display = "none";  // 隱藏返回按鈕
 }
 
-// 點擊 `ticket-category` 顯示對應的內容並顯示返回按鈕
+// 點擊選項時顯示相應內容
 document.querySelectorAll(".ticket-category").forEach(button => {
     button.addEventListener("click", () => {
-        const target = button.getAttribute("data-target");  // 獲取目標
-        document.querySelector(".ticket-category-list").style.display = "none";  // 隱藏列表
+        const target = button.getAttribute("data-target");  // 獲取目標區域
+        document.querySelector(".ticket-category-list").style.display = "none";  // 隱藏選項列表
         document.getElementById("ticketContent").style.display = "block";  // 顯示內容頁面
         setNavBack();  // 顯示返回按鈕
-        
-        // 顯示相應內容頁面（根據 target 顯示不同的內容）
+
+        // 設置頁面標題和內容
         document.getElementById("ticketContentTitle").textContent = target.charAt(0).toUpperCase() + target.slice(1);  // 設置標題
         document.getElementById("ticketContentBody").innerHTML = ticketData[target].body;  // 顯示內容
     });
 });
-
 </script>
 </body>
 </html>

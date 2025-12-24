@@ -3306,7 +3306,6 @@ document.head.appendChild(style);
 
 	</script>
 	<script>
-  // 點擊按鈕切換到天氣頁面
 // 點擊按鈕切換到天氣頁面
 const weatherBtn = document.querySelector('button[data-page="weather-page"]');
 
@@ -3322,7 +3321,11 @@ weatherBtn.addEventListener('click', () => {
     iframe.height = "600";  // 設置高度，您可以根據需要調整
     iframe.frameBorder = "0";  // 移除邊框
     iframe.style.border = "none";  // 移除邊框
+    iframe.style.display = "block";  // 確保顯示
+    console.log("Inserting iframe into weather page."); // 調試信息
     weatherPage.appendChild(iframe);  // 插入 iframe
+  } else {
+    console.log("Weather page already has content.");
   }
 });
 
@@ -3347,6 +3350,7 @@ function showPage(targetId) {
   const weatherPage = document.getElementById('weather-page');
   if (weatherPage) {
     weatherPage.style.display = "block";  // 顯示天氣頁面
+    console.log("Weather page is now visible.");
   }
 }
 

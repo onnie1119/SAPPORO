@@ -3332,21 +3332,27 @@ function showPage(targetId) {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const ticketCategoryList = document.querySelector('.ticket-category-list');
-  const ticketContent = document.getElementById('ticketContent');
   const backBtn = document.getElementById('backBtn');
   const ticketPage = document.getElementById('ticket-page');
 
-  // 顯示對應內容
+  // 點擊分類後顯示內容
   document.querySelectorAll('.ticket-category').forEach(item => {
     item.addEventListener('click', () => {
       const key = item.getAttribute('data-target');  // 獲取選擇的分類（如：hotel，flight等）
 
+      // 隱藏所有內容（如 hotel-group 等）
+      document.querySelectorAll('.hotel-group').forEach(group => {
+        group.style.display = 'none';
+      });
+
+      // 顯示對應的內容頁
+      const targetContent = document.querySelector(`.${key}-group`);
+      if (targetContent) {
+        targetContent.style.display = 'block';  // 顯示對應的內容
+      }
+
       // 隱藏分類列表
       ticketCategoryList.style.display = 'none';
-
-      // 顯示內容頁並更新內容
-      ticketContent.style.display = 'block';
-      ticketContent.innerHTML = ticketData[key].body; // 更新內容
 
       // 顯示返回按鈕
       backBtn.style.display = 'block';  // 顯示返回按鈕
@@ -3358,16 +3364,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // 顯示分類列表
     ticketCategoryList.style.display = 'flex';
 
-    // 隱藏內容頁
-    ticketContent.style.display = 'none';
+    // 隱藏所有的內容區域
+    document.querySelectorAll('.hotel-group').forEach(group => {
+      group.style.display = 'none';  // 隱藏所有內容
+    });
 
     // 隱藏返回按鈕
     backBtn.style.display = 'none';
   });
 });
-
-
-
 
 </script>
 </body>

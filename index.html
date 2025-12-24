@@ -3345,31 +3345,65 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 	
-document.getElementById('hotel').onclick = function() {
-    const backBtn = document.getElementById('backBtn');
-    backBtn.classList.add('show');  // 显示返回按钮
-	
-};
-
-	
 document.getElementById('backBtn').onclick = function() {
-    // 获取 ticket-page 页面元素
-    const ticketPage = document.getElementById('ticket-page');
-
-    // 如果 ticket-page 存在，显示它
-    if (ticketPage) {
-        ticketPage.style.display = "block";  // 显示 ticket-page
-    }
-
     // 获取当前页面元素
-    const currentPage = document.querySelector('.current-page');  // 假设你当前页面的 class 为 'current-page'
+    const currentPage = document.getElementById('current-page');
     
-    // 如果当前页面存在，隐藏它
+    // 获取 ticket-page 元素
+    const ticketPage = document.getElementById('ticket-page');
+    
+    // 隐藏当前页面
     if (currentPage) {
         currentPage.style.display = "none";  // 隐藏当前页面
     }
 
-    // 隐藏返回按钮（如果需要）
+    // 显示 ticket-page
+    if (ticketPage) {
+        ticketPage.style.display = "block";  // 显示 ticket-page
+    }
+
+    // 隐藏返回按钮
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.style.display = "none";  // 隐藏返回按钮
+    }
+};
+
+// 示例：在某个事件触发后显示 `backBtn`
+document.getElementById('someElement').onclick = function() {
+    // 显示返回按钮
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.style.display = "block";  // 显示返回按钮
+    }
+
+    // 隐藏当前页面
+    const currentPage = document.getElementById('current-page');
+    if (currentPage) {
+        currentPage.style.display = "none";  // 隐藏当前页面
+    }
+
+    // 显示 ticket-page
+    const ticketPage = document.getElementById('ticket-page');
+    if (ticketPage) {
+        ticketPage.style.display = "block";  // 显示 ticket-page
+    }
+};
+
+// 你可以模拟点击 `ticket-page` 按钮来触发页面跳转
+document.getElementById('backBtn').onclick = function() {
+    const ticketPage = document.getElementById('ticket-page');
+    if (ticketPage) {
+        ticketPage.style.display = "block";  // 显示 ticket-page
+    }
+
+    // 隐藏当前页面
+    const currentPage = document.getElementById('current-page');
+    if (currentPage) {
+        currentPage.style.display = "none";  // 隐藏当前页面
+    }
+
+    // 隐藏返回按钮
     const backBtn = document.getElementById('backBtn');
     if (backBtn) {
         backBtn.style.display = "none";  // 隐藏返回按钮

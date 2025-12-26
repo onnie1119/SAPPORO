@@ -1374,11 +1374,11 @@
   content: "\e900"; /* ❌ 不用這個，下面會用 span 方式 */
 }
 
-/* 隱藏原本三條線 */
+/* 返回模式：徹底隱藏漢堡線 */
 .menu-btn.back::before,
 .menu-btn.back::after,
-.menu-btn.back div {
-  display: none;
+.menu-btn.back > div {
+  display: none !important;
 }
 
 /* 用 ::after 顯示 icon */

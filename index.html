@@ -1417,17 +1417,22 @@
 	}
 
 	@keyframes pageNudge {
-	  0%   { transform: translate3d(0,0,0); }
-	  20%  { transform: translate3d(-8px,0,0); }
-	  40%  { transform: translate3d(8px,0,0); }
-	  60%  { transform: translate3d(-5px,0,0); }
-	  80%  { transform: translate3d(5px,0,0); }
-	  100% { transform: translate3d(0,0,0); }
+	  0%   { transform: translateX(0); }
+	  20%  { transform: translateX(-8px); }
+	  40%  { transform: translateX(8px); }
+	  60%  { transform: translateX(-5px); }
+	  80%  { transform: translateX(5px); }
+	  100% { transform: translateX(0); }
 	}
 	
-	.page-nudge {
+	.page-inner.nudge {
 	  animation: pageNudge 0.28s ease;
 	}
+
+
+	.fade-in {
+  animation: fadeIn 0.4s ease;
+}
 
 
 </style>
@@ -1490,6 +1495,7 @@
 			<span class="icon-arrow-thin-up"></span>
 		</button>
 		<div class="content-pages">
+			<div class="page-inner">
 			<div id="home-page" class="container">
 				<div class="day-tabs-wrapper">
 					<div class="day-tabs-arrow left" id="arrow-left"><span class="icon-arrow-left"></span></div>
@@ -2313,7 +2319,8 @@
 			    <button id="biei-btn">美瑛</button>
 			    <button id="noboribetsu-btn">登別</button>
 			</div>
-
+		</div>
+			
 		</div>
 		
         
@@ -3183,12 +3190,22 @@
 		  const page = document.getElementById(currentPageId);
 		  if (!page) return;
 		
-		  page.classList.remove("page-nudge");
-		  void page.offsetWidth;     // 強制 reflow，確保動畫重播
-		  page.classList.add("page-nudge");
+		  const inner = page.querySelector(".page-inner");
+		  if (!inner) return;
 		
-		  setTimeout(() => page.classList.remove("page-nudge"), 320);
+		  inner.classList.remove("nudge");
+		  void inner.offsetWidth;     // 強制 reflow，確保動畫重播
+		  inner.classList.add("nudge");
+		
+		  setTimeout(() => inner.classList.remove("nudge"), 300);
 		}
+
+		if (targetId === currentPageId) {
+		  nudgeCurrentPage();
+		  closeMenu();   // 或其他收合行為
+		  return;
+		}
+
 
 			function setBottomNavActive(pageId) {
 		  document.querySelectorAll(".bottom-nav button").forEach(b => {

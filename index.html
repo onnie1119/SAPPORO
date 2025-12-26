@@ -1430,7 +1430,23 @@
 	}
 	
 	.day-anim-right { animation: daySlideInFromRight .42s cubic-bezier(.2, .9, .2, 1); }
-	.day-anim-left  { animation: daySlideInFromLeft  .42s cubic-bezier(.2, .9, .2, 1); }
+	.day-anim-left  { animation: daySlideInFromLeft  .42s cubic-bezier(.2, .9, .2, 1); 
+					}
+	/* iOS Full Screen Menu 過渡效果 */
+	#iosFullMenu{
+	  display: none;                 /* 平常不顯示 */
+	  opacity: 0;
+	  transform: translateY(-12px);
+	  transition: opacity .22s ease, transform .22s ease;
+	  pointer-events: none;          /* 關閉時不能點 */
+	}
+	
+	/* 打開狀態 */
+	#iosFullMenu.menu-open{
+	  opacity: 1;
+	  transform: translateY(0);
+	  pointer-events: auto;
+	}
 
 
 </style>
@@ -3134,18 +3150,34 @@
 		  	const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page, .weather-page");
 		 	const topbar = document.getElementById("topbar");
 
-			// 展開選單
-			menuBtn.addEventListener("click", () => {
-				iosFullMenu.style.display = "flex";  // 顯示選單
-				topbar.style.display = "none";  // 隱藏 topbar
-		  	});
-		
-		  	// 關閉選單
-			closeBtn.addEventListener("click", () => {
-				iosFullMenu.style.display = "none";  // 隱藏選單
-				topbar.style.display = "flex";  // 恢復顯示 topbar
-			});
-		
+			function openMenu() {
+			  iosMenu.style.display = "flex";   // 先顯示，才能動畫
+			  topbar.style.display = "none";
+			
+			  // 下一幀加 class，觸發 CSS transition
+			  requestAnimationFrame(() => {
+			    iosMenu.classList.add("menu-open");
+			  });
+			}
+			
+			function closeMenu() {
+			  iosMenu.classList.remove("menu-open");
+			  topbar.style.display = "flex";
+			
+			  // 等動畫結束再隱藏
+			  setTimeout(() => {
+			    iosMenu.style.display = "none";
+			  }, 240); // 這個數字要 >= CSS transition 時間
+			}
+
+			menuBtn.onclick = () => {
+			  if (navMode === "back") return; // back 模式交給你原本的邏輯
+			  openMenu();
+			};
+			
+			menuClose.onclick = closeMenu;
+
+			
 			// 點擊選單項目後切換頁面
 			menuItems.forEach(item => {
 				item.addEventListener("click", () => {

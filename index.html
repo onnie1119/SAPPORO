@@ -3243,7 +3243,20 @@
 		
 		function showPage(targetId) {
 		  	if (!PAGES.includes(targetId)) return;
-		
+			
+			// ✅ 只要「離開 ticket-page」就重置票據 & 左上按鈕
+			if (currentPageId === "ticket-page" && targetId !== "ticket-page") {
+			    resetTicketPage(); // 票據回到清單
+			    resetNavMenu();    // 左上角回漢堡
+			  }
+			
+			// ✅ 只要「進入 ticket-page」也確保是清單狀態
+			if (targetId === "ticket-page") {
+			    resetTicketPage(); // 確保從任何地方回票據都會是清單
+			    // 進票據是漢堡 or 箭頭？這裡通常保持漢堡
+			    resetNavMenu();
+			}
+			
 		  	// 全部先隱藏 + 移除動畫 class
 		  	PAGES.forEach(id => {
 		    	const el = document.getElementById(id);

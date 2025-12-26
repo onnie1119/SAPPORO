@@ -1056,7 +1056,8 @@
 		display: none;
 	  	margin: 0;  /* 確保沒有額外的 margin */
 	  	padding: 0;  /* 確保沒有額外的 padding */
-	  	position: relative;}
+	  	position: relative;
+		touch-action: pan-y;}
 		
 	#app-root.show {
 	  	animation: fadeIn 0.4s ease forwards;
@@ -3376,24 +3377,6 @@ function showWeatherPage(city) {
     getWeatherData(city);
 }
 
-// 當前頁面控制
-let currentPageId = "home-page"; // 預設首頁頁面
-
-// 顯示頁面
-function showPage(targetId) {
-    // 隱藏當前頁面
-    const currentPage = document.getElementById(currentPageId);
-    if (currentPage) {
-        currentPage.style.display = "none";
-    }
-
-    // 顯示目標頁面
-    const targetPage = document.getElementById(targetId);
-    if (targetPage) {
-        targetPage.style.display = "block";
-        currentPageId = targetId;
-    }
-}
 
 
 
@@ -3441,80 +3424,68 @@ function backToTicketList() {
 
 </script>
 <script>
-/* =========================
-   Swipe 切換主頁面（左右滑）
-   排除：行程 Day Tabs
-========================= */
+/* ========= Swipe 切頁（綁 app-root，最穩） ========= */
 
-const SWIPE_MIN_X = 60;   // 至少滑 60px 才切頁
-const SWIPE_MAX_Y = 50;   // 垂直偏移太大就不切
-let startX = 0;
-let startY = 0;
-let swiping = false;
+const SWIPE_MIN_X = 60;
+const SWIPE_MAX_Y = 60;
 
-/* 不允許觸發切頁的區域 */
-function isInteractiveTarget(el) {
-  // 行程頁 Day Tabs（左右滑只捲動，不切頁）
-  if (currentPageId === "home-page" && el.closest("#dayTabsScroll")) {
-    return true;
-  }
+let sx = 0, sy = 0;
+let tracking = false;
 
-  return !!el.closest(
-    'input, textarea, select, button, a, ' +
-    '.num-pad, .packing-list, .ticket-category-list'
-  );
-}
-
-/* 底部按鈕 active 同步 */
 function setBottomNavActive(pageId) {
   document.querySelectorAll(".bottom-nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.page === pageId);
   });
 }
 
-/* 根據方向切頁 */
-function swipeTo(offset) {
-  const index = PAGES.indexOf(currentPageId);
-  if (index === -1) return;
+function isInteractiveTarget(el) {
+  // 行程頁 Day Tabs：禁止切頁（讓它自己水平捲動）
+  if (currentPageId === "home-page" && el.closest("#dayTabsScroll")) return true;
 
-  const next = index + offset;
+  return !!el.closest(
+    "input, textarea, select, button, a, " +
+    ".num-pad, .packing-list, .ticket-category-list"
+  );
+}
+
+function swipeTo(offset) {
+  const idx = PAGES.indexOf(currentPageId);
+  if (idx === -1) return;
+
+  const next = idx + offset;
   if (next < 0 || next >= PAGES.length) return;
 
-  // ⭐ 你問的這兩行就在這裡 ⭐
   showPage(PAGES[next]);
   setBottomNavActive(PAGES[next]);
 }
 
-/* 綁定 swipe（只綁目前頁） */
-function bindSwipe() {
-  const page = document.getElementById(currentPageId);
-  if (!page) return;
+document.addEventListener("DOMContentLoaded", () => {
+  const root = document.getElementById("app-root");
+  if (!root) return;
 
-  page.ontouchstart = null;
-  page.ontouchmove = null;
-  page.ontouchend = null;
-
-  page.addEventListener("touchstart", e => {
+  root.addEventListener("touchstart", (e) => {
     if (isInteractiveTarget(e.target)) return;
     const t = e.touches[0];
-    startX = t.clientX;
-    startY = t.clientY;
-    swiping = true;
+    sx = t.clientX;
+    sy = t.clientY;
+    tracking = true;
   }, { passive: true });
 
-  page.addEventListener("touchmove", e => {
-    if (!swiping) return;
-    const t = e.touches[0];
-    const dx = t.clientX - startX;
-    const dy = t.clientY - startY;
+  root.addEventListener("touchend", (e) => {
+    if (!tracking) return;
+    tracking = false;
 
-    // 垂直滑動為主 → 當作捲動
-    if (Math.abs(dy) > Math.abs(dx)) {
-      swiping = false;
-    }
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+
+    if (Math.abs(dy) > SWIPE_MAX_Y) return;
+
+    if (dx <= -SWIPE_MIN_X) swipeTo(+1); // 左滑 → 下一頁
+    else if (dx >= SWIPE_MIN_X) swipeTo(-1); // 右滑 → 上一頁
   }, { passive: true });
+});
 
-  page.a
 
 	
 	function isInteractiveTarget(el) {

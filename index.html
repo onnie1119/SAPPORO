@@ -2415,7 +2415,9 @@
 			  // ⭐ 如果你有加我前面那個 syncDayTabs，記得保留
 			  if (typeof syncDayTabs === "function") syncDayTabs(dayNumber);
 			
-			  window.scrollTo({ top: 0, behavior: "smooth" });
+			 const home = document.getElementById("home-page");
+			if (home) home.scrollTo({ top: 0, behavior: "smooth" });
+
 		}
 
 		

@@ -1369,6 +1369,24 @@
 .hidden{
 	display:none;
 }
+		/* 返回模式：用 icon 字型 */
+.menu-btn.back::before {
+  content: "\e900"; /* ❌ 不用這個，下面會用 span 方式 */
+}
+
+/* 隱藏原本三條線 */
+.menu-btn.back::before,
+.menu-btn.back::after,
+.menu-btn.back div {
+  display: none;
+}
+
+/* 用 ::after 顯示 icon */
+.menu-btn.back::after {
+  display: block;
+  content: "";
+}
+
 </style>
 </head>
 <body>
@@ -3366,13 +3384,22 @@ function showPage(targetId) {
 	function setNavBack() {
 		  navMode = "back";
 		  const menuBtn = document.getElementById("menuBtn");
-		  if (menuBtn) menuBtn.classList.add("back");
+		  if (!menuBtn) return;
+		
+		  menuBtn.classList.add("back");
+		
+		  // 插入你的 icon
+		  menuBtn.innerHTML = '<span class="icon-arrow-left"></span>';
 		}
+
 		
 		function resetNavMenu() {
 		  navMode = "menu";
 		  const menuBtn = document.getElementById("menuBtn");
-		  if (menuBtn) menuBtn.classList.remove("back");
+		  if (!menuBtn) return;
+		
+		  menuBtn.classList.remove("back");
+		  menuBtn.innerHTML = '<div></div>'; // 還原中間那條線
 		}
 
 

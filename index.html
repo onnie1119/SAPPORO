@@ -3129,7 +3129,12 @@
 			});
 		}
 		
-		
+			function setBottomNavActive(pageId) {
+		  document.querySelectorAll(".bottom-nav button").forEach(b => {
+		    b.classList.toggle("active", b.dataset.page === pageId);
+		  });
+		}
+
 		/* =========================
 		   TOP 按鈕控制（關鍵）
 		========================= */
@@ -3433,6 +3438,95 @@ function backToTicketList() {
 }
 
 
+
+</script>
+<script>
+/* =========================
+   Swipe 切換主頁面（左右滑）
+   排除：行程 Day Tabs
+========================= */
+
+const SWIPE_MIN_X = 60;   // 至少滑 60px 才切頁
+const SWIPE_MAX_Y = 50;   // 垂直偏移太大就不切
+let startX = 0;
+let startY = 0;
+let swiping = false;
+
+/* 不允許觸發切頁的區域 */
+function isInteractiveTarget(el) {
+  // 行程頁 Day Tabs（左右滑只捲動，不切頁）
+  if (currentPageId === "home-page" && el.closest("#dayTabsScroll")) {
+    return true;
+  }
+
+  return !!el.closest(
+    'input, textarea, select, button, a, ' +
+    '.num-pad, .packing-list, .ticket-category-list'
+  );
+}
+
+/* 底部按鈕 active 同步 */
+function setBottomNavActive(pageId) {
+  document.querySelectorAll(".bottom-nav button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.page === pageId);
+  });
+}
+
+/* 根據方向切頁 */
+function swipeTo(offset) {
+  const index = PAGES.indexOf(currentPageId);
+  if (index === -1) return;
+
+  const next = index + offset;
+  if (next < 0 || next >= PAGES.length) return;
+
+  // ⭐ 你問的這兩行就在這裡 ⭐
+  showPage(PAGES[next]);
+  setBottomNavActive(PAGES[next]);
+}
+
+/* 綁定 swipe（只綁目前頁） */
+function bindSwipe() {
+  const page = document.getElementById(currentPageId);
+  if (!page) return;
+
+  page.ontouchstart = null;
+  page.ontouchmove = null;
+  page.ontouchend = null;
+
+  page.addEventListener("touchstart", e => {
+    if (isInteractiveTarget(e.target)) return;
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    swiping = true;
+  }, { passive: true });
+
+  page.addEventListener("touchmove", e => {
+    if (!swiping) return;
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    // 垂直滑動為主 → 當作捲動
+    if (Math.abs(dy) > Math.abs(dx)) {
+      swiping = false;
+    }
+  }, { passive: true });
+
+  page.a
+
+	
+	function isInteractiveTarget(el) {
+  // 行程頁上方 Day Tabs 區域：不要觸發切頁
+  if (currentPageId === "home-page" && el.closest("#dayTabsScroll")) return true;
+
+  // 其他互動區也不要觸發切頁（避免按鈕/輸入時誤切）
+  return !!el.closest(
+    'input, textarea, select, button, a, ' +
+    '.num-pad, .packing-list, .ticket-category-list'
+  );
+}
 
 </script>
 </body>

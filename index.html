@@ -2849,14 +2849,20 @@
 			
 		  	// ⭐ 住宿 / 航班：留在電子憑證頁
 		  	if (key === "hotel" || key === "flight") {
-		    	const list = document.querySelector(".ticket-category-list");
-				document.getElementById("ticketContent").style.display = "none";
-				list.style.display = "flex";
-				list.innerHTML = ticketData[key].body;
-				playFadeIn(list); // ⭐ 關鍵動畫
-				ticketLevel = key; // hotel / flight
-				return;
+			  const list = document.querySelector(".ticket-category-list");
+			  document.getElementById("ticketContent").style.display = "none";
+			  list.style.display = "flex";
+			  list.innerHTML = ticketData[key].body;
+			  playFadeIn(list);
+			  ticketLevel = key; // hotel / flight
+			
+			  if (key === "flight") {
+			    setNavBack();   // ⭐ 左上變成「上一頁」
+			  }
+			
+			  return;
 			}
+
 		
 		  	// ⭐ 其他分類：內容頁模式
 		  	document.getElementById("ticketContentTitle").textContent =
@@ -3327,6 +3333,39 @@ function showPage(targetId) {
 }
 
 
+
+</script>
+<script>
+	function setNavBack() {
+  const menuBtn = document.getElementById("menuBtn");
+  if (!menuBtn) return;
+
+  menuBtn.innerHTML = "←";
+  menuBtn.onclick = backToTicketList;
+}
+
+function resetNavMenu() {
+  const menuBtn = document.getElementById("menuBtn");
+  if (!menuBtn) return;
+
+  menuBtn.innerHTML = ""; // 如果你是用 CSS 畫三條線，這行可留空
+  menuBtn.onclick = openMenu; // 👈 換成你原本開選單的 function
+}
+function backToTicketList() {
+  const list = document.querySelector(".ticket-category-list");
+  const content = document.getElementById("ticketContent");
+
+  if (list) {
+    list.innerHTML = originalTicketCategoryHTML; // 你原本有存
+    list.style.display = "flex";
+    playFadeIn(list);
+  }
+
+  if (content) content.style.display = "none";
+
+  ticketLevel = "list";
+  resetNavMenu(); // ⭐ 左上恢復成選單
+}
 
 </script>
 </body>

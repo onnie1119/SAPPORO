@@ -2868,19 +2868,18 @@
 			
 		  	// ⭐ 住宿 / 航班：留在電子憑證頁
 			if (key === "hotel" || key === "flight") {
-			  const list = document.querySelector(".ticket-category-list");
-			  document.getElementById("ticketContent").style.display = "none";
-			  list.style.display = "flex";
-			  list.innerHTML = ticketData[key].body;
-			  playFadeIn(list);
-			  ticketLevel = key;
-			
-			  if (key === "flight") {
-			    setNavBack();   // ⭐ 切成返回模式
-			  }
-			
-			  return;
-			}
+				  const list = document.querySelector(".ticket-category-list");
+				  document.getElementById("ticketContent").style.display = "none";
+				  list.style.display = "flex";
+				  list.innerHTML = ticketData[key].body;
+				  playFadeIn(list);
+				  ticketLevel = key;
+				
+				  if (key === "flight") setNavBack();
+				
+				  return;
+				}
+
 
 
 		
@@ -3135,14 +3134,13 @@
 		const iosMenu   = document.getElementById("iosFullMenu");
 		const topbar    = document.querySelector(".topbar");
 		
-		menuBtn.addEventListener("click", () => {
-			  if (navMode === "back") {
-			    backToTicketList();
-			  } else {
-			    iosFullMenu.style.display = "flex";
-			    topbar.style.display = "none";
-			  }
-		});
+		menuBtn.addEventListener("click", function (e) {
+		  if (navMode === "back") {
+		    e.preventDefault();
+		    e.stopImmediatePropagation(); // ⭐ 關鍵：阻止後面所有 click listener
+		    backToTicketList();
+		  }
+		}, true); // ⭐ 用 capture phase，搶在最前面
 		
 		if (menuBtn && iosMenu) {
 			menuBtn.onclick = () => {
@@ -3366,20 +3364,17 @@ function showPage(targetId) {
 </script>
 <script>
 	function setNavBack() {
-	  const menuBtn = document.getElementById("menuBtn");
-	  if (!menuBtn) return;
-	
-	  navMode = "back";
-	  menuBtn.classList.add("back"); // 你已經有的箭頭樣式
-	}
-	
-	function resetNavMenu() {
-	  const menuBtn = document.getElementById("menuBtn");
-	  if (!menuBtn) return;
-	
-	  navMode = "menu";
-	  menuBtn.classList.remove("back");
-	}
+		  navMode = "back";
+		  const menuBtn = document.getElementById("menuBtn");
+		  if (menuBtn) menuBtn.classList.add("back");
+		}
+		
+		function resetNavMenu() {
+		  navMode = "menu";
+		  const menuBtn = document.getElementById("menuBtn");
+		  if (menuBtn) menuBtn.classList.remove("back");
+		}
+
 
 
 function backToTicketList() {
@@ -3391,12 +3386,12 @@ function backToTicketList() {
     list.style.display = "flex";
     playFadeIn(list);
   }
-
   if (content) content.style.display = "none";
 
   ticketLevel = "list";
-  resetNavMenu(); // ⭐ 回到選單模式
+  resetNavMenu();
 }
+
 
 
 </script>

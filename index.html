@@ -3227,7 +3227,7 @@
 	</script>
 	<script>
 		const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
-		
+		let currentPageId = "home-page";   // ✅ 加這行
 		
 		function getCurrentPage() {
 			return document.getElementById(currentPageId);

@@ -301,8 +301,8 @@
 	
 	
 	@keyframes fadeIn {
-	  	from { opacity: 0; }
-	  	to { opacity: 1; }}
+	  	from { opacity: 0; transform: translateY(10px); }
+	  	to { opacity: 1; transform: translateY(0); }}
 	
 	.toggle-switch {
 	  	display: flex;
@@ -1416,25 +1416,6 @@
 	  	transform: translateX(0);
 	}
 
-	@keyframes pageNudge {
-	  0%   { transform: translateX(0); }
-	  20%  { transform: translateX(-8px); }
-	  40%  { transform: translateX(8px); }
-	  60%  { transform: translateX(-5px); }
-	  80%  { transform: translateX(5px); }
-	  100% { transform: translateX(0); }
-	}
-	
-	.page-inner.nudge {
-	  animation: pageNudge 0.28s ease;
-	}
-
-
-	.fade-in {
-  animation: fadeIn 0.4s ease;
-}
-
-
 </style>
 </head>
 <body>
@@ -1495,7 +1476,6 @@
 			<span class="icon-arrow-thin-up"></span>
 		</button>
 		<div class="content-pages">
-			<div class="page-inner">
 			<div id="home-page" class="container">
 				<div class="day-tabs-wrapper">
 					<div class="day-tabs-arrow left" id="arrow-left"><span class="icon-arrow-left"></span></div>
@@ -2319,8 +2299,7 @@
 			    <button id="biei-btn">美瑛</button>
 			    <button id="noboribetsu-btn">登別</button>
 			</div>
-		</div>
-			
+
 		</div>
 		
         
@@ -3117,23 +3096,19 @@
 		
 			// 點擊選單項目後切換頁面
 			menuItems.forEach(item => {
-  				item.addEventListener("click", () => {
-			    const targetId = item.dataset.target;
-			
-			    // ⭐ 已在該頁 → 只震動提示
-			    if (targetId === currentPageId) {
-			      nudgeCurrentPage();
-			      closeMenu();
-			      return;
-			    }
-			
-			    // ⭐ 不同頁 → 正常切頁
-			    showPage(targetId);
-			    setBottomNavActive(targetId);
-			    closeMenu();
-			  });
-			});
-
+				item.addEventListener("click", () => {
+					const targetId = item.getAttribute("data-target");
+					contentPages.forEach(page => {
+						page.classList.remove("active");
+			  		});
+					const targetPage = document.getElementById(targetId);
+			  		if (targetPage) {
+						targetPage.classList.add("active");
+			 		 }
+					iosFullMenu.style.display = "none";
+			  		topbar.style.display = "flex";  // 恢復顯示 topbar
+				});
+	  		});
 		});
 	</script>
 	<script>
@@ -3151,16 +3126,6 @@
 			}
 		}
 		
-		function nudgeCurrentPage() {
-		  	const page = document.getElementById(currentPageId);
-		  	if (!page) return;
-		
-		  	page.classList.remove("page-nudge");
-		  	// 強制 reflow，確保動畫能重播
-		  	void page.offsetWidth;
-		  	page.classList.add("page-nudge");
-		}
-
 		function showPage(targetId) {
 		  	if (!PAGES.includes(targetId)) return;
 		
@@ -3186,27 +3151,7 @@
 		  	});
 		}
 
-		function nudgeCurrentPage() {
-		  const page = document.getElementById(currentPageId);
-		  if (!page) return;
 		
-		  const inner = page.querySelector(".page-inner");
-		  if (!inner) return;
-		
-		  inner.classList.remove("nudge");
-		  void inner.offsetWidth;     // 強制 reflow，確保動畫重播
-		  inner.classList.add("nudge");
-		
-		  setTimeout(() => inner.classList.remove("nudge"), 300);
-		}
-
-		if (targetId === currentPageId) {
-		  nudgeCurrentPage();
-		  closeMenu();   // 或其他收合行為
-		  return;
-		}
-
-
 			function setBottomNavActive(pageId) {
 		  document.querySelectorAll(".bottom-nav button").forEach(b => {
 		    b.classList.toggle("active", b.dataset.page === pageId);
@@ -3362,17 +3307,17 @@
 		}
 		
 		document.querySelectorAll(".bottom-nav button").forEach(btn => {
-			btn.addEventListener("click", () => {
-		    	const page = btn.dataset.page;
+		  btn.addEventListener("click", () => {
+		    const page = btn.dataset.page;
 		
-		    	if (page === currentPageId) {
-		      		nudgeCurrentPage();
-		      		return;
-		    	}
+		    // 切頁（用你已經有的）
+		    showPage(page);
 		
-		    	showPage(page);
-		    	setBottomNavActive(page);
-		  	});
+		    // active 樣式
+		    document.querySelectorAll(".bottom-nav button")
+		      .forEach(b => b.classList.remove("active"));
+		    btn.classList.add("active");
+		  });
 		});
 
 	</script>

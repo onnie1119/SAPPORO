@@ -29,6 +29,12 @@
 		font-family: 'Noto Sans TC', sans-serif; 
 		color: #444;/* 或是 100vh、120vh 都能用 */
 		padding-bottom: 0px;}
+
+	:root{
+		  --topbar-h: 80px;      /* 你的 topbar 大概 25px padding + 實際高度，先用 80 */
+		  --bottom-nav-h: 80px;  /* 你 bottom-nav 寫死 80px */
+		}
+
 	
     hr{
 		width: 100%;
@@ -51,7 +57,8 @@
 		padding-top: 65px;
 		position: relative;
 		background-color: #F6F9FC;
-		margin-bottom:8rem;}
+		
+		padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));}
 
     .day-tabs {
 		display: flex;
@@ -1254,10 +1261,14 @@
 		padding-top: 0px;}
 		
 	/* 讓 home-page 本身成為滾動容器 */
-	#home-page.active {
-		height: calc(100vh - 80px); /* 扣掉 topbar */
-		overflow-y: auto;
+	#home-page.active{
+		height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h));
+ 		overflow-y: auto;
+  		-webkit-overflow-scrolling: touch;
+  		padding-bottom: env(safe-area-inset-bottom);
+  		box-sizing: border-box;
 	}
+
 		
 	/* ===== 底部固定選單 ===== */
 	.bottom-nav {
@@ -1453,24 +1464,7 @@
 	  pointer-events: auto;
 	}
 
-	.bottom-nav::before{
-	  content: "";
-	  position: absolute;
-	  left: 0;
-	  right: 0;
-	  top: -32px;
-	  height: 32px;
 	
-	  /* ⭐⭐⭐ 關鍵這一行 ⭐⭐⭐ */
-	  pointer-events: none;
-	
-	  background: linear-gradient(
-	    to top,
-	    rgba(255,255,255,1),
-	    rgba(255,255,255,0)
-	  );
-	}
-
 </style>
 </head>
 <body>

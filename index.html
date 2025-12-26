@@ -1478,6 +1478,146 @@
 	  pointer-events: auto;
 	}
 
+
+	/* ===== iPhone Weather-ish UI ===== */
+		.weather-page{
+		  padding-top: calc(var(--topbar-h) + 14px);
+		  padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 16px);
+		  min-height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h));
+		  overflow-y: auto;
+		  -webkit-overflow-scrolling: touch;
+		
+		  /* 背景做 iOS 天氣那種漸層霧面 */
+		  background:
+		    radial-gradient(1200px 600px at 20% 0%, rgba(255,255,255,.75), rgba(255,255,255,0) 55%),
+		    linear-gradient(180deg, #6aa7ff 0%, #cfe5ff 55%, #f6f9fc 100%);
+		}
+		
+		.wx-wrap{
+		  max-width: 560px;
+		  margin: 0 auto;
+		  padding: 12px 18px 0;
+		}
+		
+		.wx-hero{
+		  color: rgba(255,255,255,.95);
+		  text-align: center;
+		  padding: 18px 10px 14px;
+		  margin-top: 6px;
+		}
+		
+		.wx-city{
+		  font-size: 28px;
+		  font-weight: 600;
+		  letter-spacing: 1px;
+		  text-shadow: 0 8px 24px rgba(0,0,0,.18);
+		}
+		
+		.wx-temp{
+		  font-size: 92px;
+		  font-weight: 600;
+		  line-height: 1;
+		  margin-top: 8px;
+		  text-shadow: 0 10px 30px rgba(0,0,0,.18);
+		}
+		
+		.wx-unit{
+		  font-size: 54px;
+		  vertical-align: 26px;
+		  margin-left: 2px;
+		}
+		
+		.wx-desc{
+		  margin-top: 6px;
+		  font-size: 18px;
+		  opacity: .95;
+		}
+		
+		.wx-sub{
+		  margin-top: 8px;
+		  font-size: 15px;
+		  opacity: .9;
+		}
+		
+		.wx-grid{
+		  display: grid;
+		  grid-template-columns: 1fr 1fr;
+		  gap: 12px;
+		  margin-top: 10px;
+		}
+		
+		.wx-card{
+		  background: rgba(255,255,255,.55);
+		  border: 1px solid rgba(255,255,255,.55);
+		  border-radius: 18px;
+		  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+		  backdrop-filter: blur(10px);
+		  padding: 14px 14px 12px;
+		  color: #1c1c1e;
+		}
+		
+		.wx-card-title{
+		  font-size: 13px;
+		  letter-spacing: 1px;
+		  color: rgba(28,28,30,.65);
+		  margin-bottom: 8px;
+		}
+		
+		.wx-card-value{
+		  font-size: 28px;
+		  font-weight: 600;
+		  color: rgba(28,28,30,.95);
+		}
+		
+		.wx-card-unit{
+		  font-size: 14px;
+		  font-weight: 600;
+		  color: rgba(28,28,30,.65);
+		  margin-left: 6px;
+		}
+		
+		.wx-pills{
+		  margin-top: 14px;
+		  display: flex;
+		  gap: 10px;
+		  overflow-x: auto;
+		  -webkit-overflow-scrolling: touch;
+		  padding: 4px 2px 6px;
+		}
+		.wx-pills::-webkit-scrollbar{ display:none; }
+		
+		.wx-pill{
+		  flex: 0 0 auto;
+		  border: 1px solid rgba(255,255,255,.65);
+		  background: rgba(255,255,255,.35);
+		  color: rgba(28,28,30,.92);
+		  border-radius: 999px;
+		  padding: 10px 14px;
+		  font-size: 15px;
+		  box-shadow: 0 8px 22px rgba(0,0,0,.10);
+		  backdrop-filter: blur(10px);
+		  cursor: pointer;
+		}
+		.wx-pill.active{
+		  background: rgba(255,255,255,.8);
+		  border-color: rgba(255,255,255,.85);
+		}
+		
+		.wx-note{
+		  margin-top: 14px;
+		}
+		.wx-note-text{
+		  font-size: 16px;
+		  color: rgba(28,28,30,.85);
+		}
+		
+		/* 小螢幕時卡片變一欄 */
+		@media (max-width: 380px){
+		  .wx-temp{ font-size: 78px; }
+		  .wx-unit{ font-size: 44px; vertical-align: 20px; }
+		  .wx-grid{ grid-template-columns: 1fr; }
+		}
+
 	
 </style>
 </head>
@@ -2349,18 +2489,49 @@
             </div>
 			
 	       	<!-- 這是天氣頁面 -->
-			<div id="weather-page" style="display: none;">
-			 	<p id="location-name">選擇一個城市查看天氣</p>
-			    <p id="temperature">溫度: -- °C</p>
-			    <p id="description">天氣狀況: --</p>
-			    <p id="humidity">濕度: --%</p>
-			    <p id="windspeed">風速: -- km/h</p>
-			    <!-- 用來顯示不同城市天氣資料的按鈕 -->
-			    <button id="sapporo-btn">札幌</button>
-			    <button id="otaru-btn">小樽</button>
-			    <button id="biei-btn">美瑛</button>
-			    <button id="noboribetsu-btn">登別</button>
+			<div id="weather-page" class="weather-page" style="display:none;">
+				  <div class="wx-wrap">
+				    <!-- Header -->
+				    <div class="wx-hero">
+				      <div class="wx-city" id="location-name">札幌</div>
+				      <div class="wx-temp">
+				        <span id="temperatureVal">--</span><span class="wx-unit">°</span>
+				      </div>
+				      <div class="wx-desc" id="descriptionText">--</div>
+				      <div class="wx-sub" id="wxSub">--</div>
+				    </div>
+				
+				    <!-- Metrics cards -->
+				    <div class="wx-grid">
+				      <div class="wx-card">
+				        <div class="wx-card-title">濕度</div>
+				        <div class="wx-card-value"><span id="humidityVal">--</span><span class="wx-card-unit">%</span></div>
+				      </div>
+				
+				      <div class="wx-card">
+				        <div class="wx-card-title">風速</div>
+				        <div class="wx-card-value"><span id="windspeedVal">--</span><span class="wx-card-unit"> km/h</span></div>
+				      </div>
+				    </div>
+				
+				    <!-- City switch -->
+				    <div class="wx-pills" aria-label="選擇城市">
+				      <button class="wx-pill active" data-city="sapporo">札幌</button>
+				      <button class="wx-pill" data-city="otaru">小樽</button>
+				      <button class="wx-pill" data-city="biei">美瑛</button>
+				      <button class="wx-pill" data-city="noboribetsu">登別</button>
+				    </div>
+				
+				    <!-- (可選) 放一個「今日提示」卡片 -->
+				    <div class="wx-card wx-note">
+				      <div class="wx-card-title">小提醒</div>
+				      <div class="wx-note-text" id="wxTip">載入天氣中…</div>
+				    </div>
+				
+				    <div style="height: 18px;"></div>
+				  </div>
 			</div>
+
 
 		</div>
 		
@@ -3450,86 +3621,158 @@
 	</script>
 	
 	<script>
-// Open-Meteo API - 天氣數據的獲取
-const weatherApiUrl = "https://api.open-meteo.com/v1/forecast";
+/* =========================
+   Weather Page (Open-Meteo)
+   - iPhone-style UI update
+   - Pills switch city
+   - When entering weather-page, auto load Sapporo
+========================= */
 
-// 這裡定義每個城市的座標
-const cities = {
-    sapporo: { latitude: 43.0667, longitude: 141.3500 },
-    otaru: { latitude: 43.1900, longitude: 140.9940 },
-    biei: { latitude: 43.5333, longitude: 142.4000 },
-    noboribetsu: { latitude: 42.3800, longitude: 141.0000 }
-};
+(function () {
+  const weatherApiUrl = "https://api.open-meteo.com/v1/forecast";
 
-// 更新顯示天氣資料的函數
-function updateWeatherDisplay(data, cityName) {
-    const locationName = document.getElementById("location-name");
-    const temperature = document.getElementById("temperature");
-    const description = document.getElementById("description");
-    const humidity = document.getElementById("humidity");
-    const windspeed = document.getElementById("windspeed");
+  // 城市座標
+  const cities = {
+    sapporo:    { latitude: 43.0667, longitude: 141.3500 },
+    otaru:      { latitude: 43.1900, longitude: 140.9940 },
+    biei:       { latitude: 43.5333, longitude: 142.4000 },
+    noboribetsu:{ latitude: 42.3800, longitude: 141.0000 }
+  };
 
-    // 更新天氣顯示
-    locationName.textContent = cityName + " 的天氣";
-    temperature.textContent = `溫度: ${data.current_weather.temperature} °C`;
-    description.textContent = `天氣狀況: ${data.current_weather.weathercode}`;
-    humidity.textContent = `濕度: ${data.current_weather.humidity}%`;
-    windspeed.textContent = `風速: ${data.current_weather.windspeed} km/h`;
-}
+  const cityNameZhMap = {
+    sapporo: "札幌",
+    otaru: "小樽",
+    biei: "美瑛",
+    noboribetsu: "登別"
+  };
 
-// 呼叫 API 獲取指定城市的天氣資料
-async function getWeatherData(city) {
-    const { latitude, longitude } = cities[city];
-    
-    // API 請求 URL，這裡使用了 Open-Meteo 的即時天氣接口
-    const url = `${weatherApiUrl}?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+  function $(id) { return document.getElementById(id); }
+
+  function weatherCodeToText(code){
+    const map = {
+      0:"晴朗",
+      1:"多雲", 2:"多雲", 3:"陰天",
+      45:"有霧", 48:"霧霾",
+      51:"毛毛雨", 53:"小雨", 55:"中雨",
+      61:"小雨", 63:"中雨", 65:"大雨",
+      71:"小雪", 73:"中雪", 75:"大雪",
+      80:"陣雨", 81:"強陣雨", 82:"暴雨",
+      95:"雷雨"
+    };
+    return map[code] ?? `天氣代碼 ${code}`;
+  }
+
+  function updateWeatherDisplay(data, cityNameZh) {
+    const cw = data && data.current_weather ? data.current_weather : {};
+
+    const cityEl = $("location-name");
+    const tempEl = $("temperatureVal");
+    const descEl = $("descriptionText");
+    const humEl  = $("humidityVal");
+    const windEl = $("windspeedVal");
+    const tipEl  = $("wxTip");
+    const subEl  = $("wxSub");
+
+    if (cityEl) cityEl.textContent = cityNameZh || "天氣";
+    if (tempEl) tempEl.textContent = (cw.temperature != null) ? Math.round(cw.temperature) : "--";
+    if (descEl) descEl.textContent = (cw.weathercode != null) ? weatherCodeToText(cw.weathercode) : "--";
+
+    // ⚠️ Open-Meteo 的 current_weather 沒有 humidity（要濕度需改 API 參數）
+    if (humEl) humEl.textContent = "--";
+
+    if (windEl) windEl.textContent = (cw.windspeed != null) ? Math.round(cw.windspeed) : "--";
+
+    const time = cw.time ? cw.time.replace("T"," ") : "";
+    const windDir = (cw.winddirection != null) ? `${cw.winddirection}°` : "";
+    if (subEl) subEl.textContent = [time ? `更新：${time}` : "", windDir ? `風向：${windDir}` : ""].filter(Boolean).join("　");
+
+    if (tipEl) {
+      if (cw.temperature == null || cw.weathercode == null) {
+        tipEl.textContent = "載入失敗，請稍後再試。";
+      } else {
+        tipEl.textContent = `目前 ${cityNameZh} ${Math.round(cw.temperature)}°，${weatherCodeToText(cw.weathercode)}。`;
+      }
+    }
+  }
+
+  async function getWeatherData(cityKey) {
+    const city = cities[cityKey];
+    if (!city) return;
+
+    const url = `${weatherApiUrl}?latitude=${city.latitude}&longitude=${city.longitude}&current_weather=true`;
 
     try {
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        // 更新網頁上的天氣顯示
-        updateWeatherDisplay(data, city.charAt(0).toUpperCase() + city.slice(1));
-    } catch (error) {
-        console.error("獲取天氣資料失敗:", error);
+      const res = await fetch(url);
+      const data = await res.json();
+      updateWeatherDisplay(data, cityNameZhMap[cityKey] || cityKey);
+    } catch (err) {
+      console.error("獲取天氣資料失敗:", err);
+      updateWeatherDisplay({}, cityNameZhMap[cityKey] || cityKey);
     }
-}
+  }
 
-// 點擊天氣按鈕顯示天氣頁面
-document.querySelector('[data-page="weather-page"]').addEventListener("click", () => {
-    showPage("weather-page"); // 顯示天氣頁面
+  function setActivePill(cityKey) {
+    document.querySelectorAll(".wx-pill").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.city === cityKey);
+    });
+  }
 
-    // 顯示天氣頁面後載入初始天氣資料，這裡以札幌為例
-    getWeatherData("sapporo");
-});
+  // 1) Pill 切換城市
+  function bindPills() {
+    document.querySelectorAll(".wx-pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cityKey = btn.dataset.city;
+        setActivePill(cityKey);
+        getWeatherData(cityKey);
+      });
+    });
+  }
 
-// 為每個城市按鈕綁定事件
-document.getElementById("sapporo-btn").addEventListener("click", () => {
-    showWeatherPage("sapporo");
-});
-document.getElementById("otaru-btn").addEventListener("click", () => {
-    showWeatherPage("otaru");
-});
-document.getElementById("biei-btn").addEventListener("click", () => {
-    showWeatherPage("biei");
-});
-document.getElementById("noboribetsu-btn").addEventListener("click", () => {
-    showWeatherPage("noboribetsu");
-});
+  // 2) 底部選單進入天氣頁：統一走 showPage，並自動載入札幌
+  function bindBottomNavEnterWeather() {
+    const weatherBtn = document.querySelector('.bottom-nav button[data-page="weather-page"]');
+    if (!weatherBtn) return;
 
-// 顯示天氣頁面並載入天氣資料
-function showWeatherPage(city) {
-    const weatherPage = document.getElementById("weather-page");
-    weatherPage.style.display = "block"; // 顯示天氣頁面
+    // 避免重複綁定
+    if (weatherBtn.dataset.wxBound === "1") return;
+    weatherBtn.dataset.wxBound = "1";
 
-    // 載入天氣資料
-    getWeatherData(city);
-}
+    weatherBtn.addEventListener("click", () => {
+      if (typeof showPage === "function") showPage("weather-page");
 
+      // 預設札幌
+      setActivePill("sapporo");
+      getWeatherData("sapporo");
+    });
+  }
 
+  // 3) 左上全螢幕選單進入天氣頁：監聽點擊後，如果 target=weather-page 也自動載入
+  function bindMenuEnterWeather() {
+    document.querySelectorAll('.menu-content li[data-target="weather-page"]').forEach(li => {
+      if (li.dataset.wxBound === "1") return;
+      li.dataset.wxBound = "1";
 
+      li.addEventListener("click", () => {
+        // 你原本已經會 closeMenu() + showPage("weather-page")
+        // 這裡只補「載入札幌」
+        setTimeout(() => {
+          setActivePill("sapporo");
+          getWeatherData("sapporo");
+        }, 0);
+      });
+    });
+  }
 
+  // 初始化（script 在 body 最後：可直接跑）
+  bindPills();
+  bindBottomNavEnterWeather();
+  bindMenuEnterWeather();
+
+  // 如果你一開始就想顯示天氣頁，也可以解除註解：
+  // setActivePill("sapporo"); getWeatherData("sapporo");
+})();
 </script>
+
 <script>
 	function setNavBack() {
 		  navMode = "back";

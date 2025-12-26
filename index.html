@@ -2896,17 +2896,18 @@
 			
 		  	// ⭐ 住宿 / 航班：留在電子憑證頁
 			if (key === "hotel" || key === "flight") {
-				  const list = document.querySelector(".ticket-category-list");
-				  document.getElementById("ticketContent").style.display = "none";
-				  list.style.display = "flex";
-				  list.innerHTML = ticketData[key].body;
-				  playFadeIn(list);
-				  ticketLevel = key;
-				
-				  if (key === "flight") setNavBack();
-				
-				  return;
-				}
+			  	const list = document.querySelector(".ticket-category-list");
+			  	document.getElementById("ticketContent").style.display = "none";
+			  	list.style.display = "flex";
+			  	list.innerHTML = ticketData[key].body;
+			  	playFadeIn(list);
+			  	ticketLevel = key;
+			
+			  	// ⭐ 航班 & 飯店 都啟用返回鍵
+			  	setNavBack();
+			
+			  	return;
+			}
 
 
 

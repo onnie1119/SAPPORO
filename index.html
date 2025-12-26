@@ -30,9 +30,10 @@
 		color: #444;/* 或是 100vh、120vh 都能用 */
 		padding-bottom: 0px;}
 
+
 	:root{
-		  --topbar-h: 80px;      /* 你的 topbar 大概 25px padding + 實際高度，先用 80 */
-		  --bottom-nav-h: 80px;  /* 你 bottom-nav 寫死 80px */
+		  --topbar-h: 0px;
+		  --bottom-nav-h: 0px;
 		}
 
 	
@@ -1261,12 +1262,12 @@
 		padding-top: 0px;}
 		
 	/* 讓 home-page 本身成為滾動容器 */
-	#home-page.active{
-		height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h));
- 		overflow-y: auto;
-  		-webkit-overflow-scrolling: touch;
-  		padding-bottom: env(safe-area-inset-bottom);
-  		box-sizing: border-box;
+	#home-page{
+	  height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h));
+	  overflow-y: auto;
+	  -webkit-overflow-scrolling: touch;
+	  padding-bottom: env(safe-area-inset-bottom);
+	  box-sizing: border-box;
 	}
 
 		
@@ -3611,6 +3612,22 @@ showDay = function(dayNumber, dir = "right") {
   }, { passive: true });
 })();
 
+</script>
+	<script>
+  function syncBarsHeight(){
+    const topbar = document.getElementById("topbar");
+    const bottom = document.querySelector(".bottom-nav");
+
+    const topH = topbar ? topbar.getBoundingClientRect().height : 0;
+    const botH = bottom ? bottom.getBoundingClientRect().height : 0;
+
+    document.documentElement.style.setProperty("--topbar-h", `${topH}px`);
+    document.documentElement.style.setProperty("--bottom-nav-h", `${botH}px`);
+  }
+
+  // ⭐ 不用 DOMContentLoaded，因為 script 在 body 最後
+  syncBarsHeight();
+  window.addEventListener("resize", syncBarsHeight);
 </script>
 </body>
 </html>

@@ -3206,21 +3206,16 @@
 			menuClose.onclick = closeMenu;
 
 			
-			// 點擊選單項目後切換頁面
-			menuItems.forEach(item => {
-				item.addEventListener("click", () => {
-					const targetId = item.getAttribute("data-target");
-					contentPages.forEach(page => {
-						page.classList.remove("active");
-			  		});
-					const targetPage = document.getElementById(targetId);
-			  		if (targetPage) {
-						targetPage.classList.add("active");
-			 		 }
-					iosFullMenu.style.display = "none";
-			  		topbar.style.display = "flex";  // 恢復顯示 topbar
-				});
-	  		});
+			document.querySelectorAll(".menu-content li").forEach(li => {
+			  li.addEventListener("click", () => {
+			    const target = li.dataset.target;
+			
+			    closeMenu();                 // 關左上選單
+			    showPage(target);            // 統一切頁入口
+			    setBottomNavActive(target);  // 同步底部選單 active
+			  });
+			});
+
 		});
 	</script>
 	<script>

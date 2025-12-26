@@ -301,8 +301,8 @@
 	
 	
 	@keyframes fadeIn {
-	  	from { opacity: 0; transform: translateY(10px); }
-	  	to { opacity: 1; transform: translateY(0); }}
+	  	from { opacity: 0; }
+	  	to { opacity: 1; }}
 	
 	.toggle-switch {
 	  	display: flex;
@@ -1416,18 +1416,19 @@
 	  	transform: translateX(0);
 	}
 
-	/* 已在該頁 → 輕微震動提示 */
-	@keyframes page-nudge {
-	  	0%   { transform: translateX(0); }
-	  	25%  { transform: translateX(-4px); }
-	  	50%  { transform: translateX(4px); }
-	  	75%  { transform: translateX(-2px); }
-	  	100% { transform: translateX(0); }
+	@keyframes pageNudge {
+	  0%   { transform: translate3d(0,0,0); }
+	  20%  { transform: translate3d(-8px,0,0); }
+	  40%  { transform: translate3d(8px,0,0); }
+	  60%  { transform: translate3d(-5px,0,0); }
+	  80%  { transform: translate3d(5px,0,0); }
+	  100% { transform: translate3d(0,0,0); }
 	}
 	
 	.page-nudge {
-	 	 animation: page-nudge 0.25s ease;
+	  animation: pageNudge 0.28s ease;
 	}
+
 
 </style>
 </head>
@@ -3178,7 +3179,17 @@
 		  	});
 		}
 
+		function nudgeCurrentPage() {
+		  const page = document.getElementById(currentPageId);
+		  if (!page) return;
 		
+		  page.classList.remove("page-nudge");
+		  void page.offsetWidth;     // 強制 reflow，確保動畫重播
+		  page.classList.add("page-nudge");
+		
+		  setTimeout(() => page.classList.remove("page-nudge"), 320);
+		}
+
 			function setBottomNavActive(pageId) {
 		  document.querySelectorAll(".bottom-nav button").forEach(b => {
 		    b.classList.toggle("active", b.dataset.page === pageId);

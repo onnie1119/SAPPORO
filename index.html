@@ -1359,43 +1359,43 @@
 		color:white;
 		visibility: hidden;
 	}
-/* 顯示時 */
-#backBtn.show {
-    visibility: visible !important; /* 顯示 */
-    opacity: 1;
-    transition: visibility 0s 0s, opacity 0.3s ease;
-}
-
-.hidden{
-	display:none;
-}
-		/* 返回模式：用 icon 字型 */
-.menu-btn.back::before {
-  content: "\e900"; /* ❌ 不用這個，下面會用 span 方式 */
-}
-
-/* 返回模式：徹底隱藏漢堡線 */
-.menu-btn.back::before,
-.menu-btn.back::after,
-.menu-btn.back > div {
-  display: none !important;
-}
-
-/* 用 ::after 顯示 icon */
-.menu-btn.back::after {
-  display: block;
-  content: "";
-}
-/* 返回箭頭樣式 */
-.menu-btn.back .icon-arrow-left {
-  position: absolute;
-  left: 14px;        /* 👉 往左/右調整 */
-  top: 50%;
-  transform: translateY(-50%);
-  
-  font-size: 22px;   /* 👉 箭頭大小 */
-  color: white;      /* 👉 箭頭顏色 */
-}
+		
+	/* 顯示時 */
+	#backBtn.show {
+	    visibility: visible !important; /* 顯示 */
+	    opacity: 1;
+	    transition: visibility 0s 0s, opacity 0.3s ease;
+	}
+	
+	.hidden{
+		display:none;
+	}
+		
+	.menu-btn.back::before {
+	  	content: "\e900"; /* ❌ 不用這個，下面會用 span 方式 */
+	}
+	
+	/* 返回模式：徹底隱藏漢堡線 */
+	.menu-btn.back::before,
+	.menu-btn.back::after,
+	.menu-btn.back > div {
+	  	display: none !important;
+	}
+	
+	/* 用 ::after 顯示 icon */
+	.menu-btn.back::after {
+	  	display: block;
+	  	content: "";
+	}
+	/* 返回箭頭樣式 */
+	.menu-btn.back .icon-arrow-left {
+	  	position: absolute;
+	  	left: -3px;        /* 👉 往左/右調整 */
+	  	top: 50%;
+	  	transform: translateY(-50%);
+		font-size: 30px;   /* 👉 箭頭大小 */
+	  	color: white;      /* 👉 箭頭顏色 */
+	}
 
 </style>
 </head>

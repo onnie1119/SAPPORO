@@ -2346,9 +2346,31 @@
 			tabs.forEach((tab, index) => {
 				tab.classList.toggle("active", index === dayNumber - 1);
 			});
+			// ✅ 讓上方 Day Tab 跟著切換，並自動捲到看得到的位置
+			syncDayTabs(dayNumber);
+
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		}
 		
+		function syncDayTabs(dayNumber) {
+			  const scrollEl = document.getElementById("dayTabsScroll");
+			  const tabs = document.querySelectorAll("#dayTabsScroll .day-tab");
+			  if (!tabs.length) return;
+			
+			  // 1) active 樣式同步
+			  tabs.forEach((tab, idx) => tab.classList.toggle("active", idx === dayNumber - 1));
+			
+			  // 2) 捲到可視範圍（置中）
+			  const activeTab = tabs[dayNumber - 1];
+			  if (scrollEl && activeTab) {
+			    const left = activeTab.offsetLeft - (scrollEl.clientWidth / 2) + (activeTab.clientWidth / 2);
+			    scrollEl.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+			  }
+			
+			  // 3) 你有左右箭頭的話，順便更新
+			  if (typeof updateArrows === "function") updateArrows();
+			}
+
 		// ===========================
 		// 2. Day Tabs 左右箭頭
 		// ===========================

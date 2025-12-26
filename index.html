@@ -1453,6 +1453,23 @@
 	  pointer-events: auto;
 	}
 
+	.bottom-nav::before{
+	  content: "";
+	  position: absolute;
+	  left: 0;
+	  right: 0;
+	  top: -32px;
+	  height: 32px;
+	
+	  /* ⭐⭐⭐ 關鍵這一行 ⭐⭐⭐ */
+	  pointer-events: none;
+	
+	  background: linear-gradient(
+	    to top,
+	    rgba(255,255,255,1),
+	    rgba(255,255,255,0)
+	  );
+	}
 
 </style>
 </head>

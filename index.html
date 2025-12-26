@@ -2405,7 +2405,8 @@
 		const arrowRight = document.getElementById("arrow-right");
 		
 		function updateArrows() {
-			if (!scrollEl) return;
+			
+			if (!scrollEl || !arrowLeft || !arrowRight) return;  // ✅ 加這行
 			const max = scrollEl.scrollWidth - scrollEl.clientWidth;
 			arrowLeft.style.opacity  = scrollEl.scrollLeft > 10 ? "1" : "0";
 			arrowRight.style.opacity = scrollEl.scrollLeft < max - 10 ? "1" : "0";
@@ -3352,7 +3353,7 @@
 			if (!home || !topbar) return;
 			home.style.marginTop = "0px";
 			requestAnimationFrame(() => {
-			  	target.scrollTop = 0;
+			  	home.scrollTop = 0;
 			  	bindScrollListener(); // ⭐ 每次切頁重新決定 TOP
 			});
 			isFirstHomeRender = false;
@@ -3510,10 +3511,11 @@ function getTotalDays() {
 
 // 讓任何地方呼叫 showDay 都會同步 currentDay
 const _showDay = showDay;
-showDay = function(dayNumber) {
+showDay = function(dayNumber, dir = "right") {
   currentDay = dayNumber;
-  _showDay(dayNumber);
+  _showDay(dayNumber, dir);
 };
+
 
 (function bindHomeSwipeForDays() {
   const home = document.getElementById("home-page");
@@ -3554,12 +3556,11 @@ showDay = function(dayNumber) {
     const totalDays = getTotalDays();
 
     if (dx <= -SWIPE_MIN_X) {
-      // 左滑 → 下一天
-      if (currentDay < totalDays) showDay(currentDay + 1);
-    } else if (dx >= SWIPE_MIN_X) {
-      // 右滑 → 上一天
-      if (currentDay > 1) showDay(currentDay - 1);
-    }
+  if (currentDay < totalDays) showDay(currentDay + 1, "right");
+} else if (dx >= SWIPE_MIN_X) {
+  if (currentDay > 1) showDay(currentDay - 1, "left");
+}
+
   }, { passive: true });
 })();
 

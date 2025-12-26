@@ -1420,6 +1420,20 @@
 	  	transform: translateX(0);
 	}
 
+	/* Day 切換：滑入動畫 */
+	@keyframes daySlideInFromRight {
+	  from { opacity: 0; transform: translateX(18px); }
+	  to   { opacity: 1; transform: translateX(0); }
+	}
+	
+	@keyframes daySlideInFromLeft {
+	  from { opacity: 0; transform: translateX(-18px); }
+	  to   { opacity: 1; transform: translateX(0); }
+	}
+	
+	.day-anim-right { animation: daySlideInFromRight .22s ease; }
+	.day-anim-left  { animation: daySlideInFromLeft  .22s ease; }
+
 </style>
 </head>
 <body>
@@ -2331,26 +2345,38 @@
 		// ===========================
 		// 1. 行程切換
 		// ===========================
-		function showDay(dayNumber) {
-			const sections = document.querySelectorAll(".day-section");
-			const tabs = document.querySelectorAll(".day-tab");
-			sections.forEach((section, index) => {
-				if (index === dayNumber - 1) {
-					section.style.display = "block";
-					requestAnimationFrame(() => section.classList.add("fade-in"));
-				} else {
-					section.style.display = "none";
-					section.classList.remove("fade-in");
-				}
-			});
-			tabs.forEach((tab, index) => {
-				tab.classList.toggle("active", index === dayNumber - 1);
-			});
-			// ✅ 讓上方 Day Tab 跟著切換，並自動捲到看得到的位置
-			syncDayTabs(dayNumber);
-
-			window.scrollTo({ top: 0, behavior: "smooth" });
+		function showDay(dayNumber, dir = "right") {
+			  const sections = document.querySelectorAll(".day-section");
+			  const tabs = document.querySelectorAll(".day-tab");
+			
+			  sections.forEach((section, index) => {
+			    if (index === dayNumber - 1) {
+			      section.style.display = "block";
+			
+			      // 先清掉舊動畫 class，確保可重播
+			      section.classList.remove("day-anim-right", "day-anim-left");
+			      void section.offsetWidth;
+			
+			      // 依方向套動畫
+			      section.classList.add(dir === "left" ? "day-anim-left" : "day-anim-right");
+			
+			    } else {
+			      section.style.display = "none";
+			      section.classList.remove("day-anim-right", "day-anim-left");
+			    }
+			  });
+			
+			  // 上方 tab active
+			  tabs.forEach((tab, index) => {
+			    tab.classList.toggle("active", index === dayNumber - 1);
+			  });
+			
+			  // ⭐ 如果你有加我前面那個 syncDayTabs，記得保留
+			  if (typeof syncDayTabs === "function") syncDayTabs(dayNumber);
+			
+			  window.scrollTo({ top: 0, behavior: "smooth" });
 		}
+
 		
 		function syncDayTabs(dayNumber) {
 			  const scrollEl = document.getElementById("dayTabsScroll");

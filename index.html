@@ -2260,7 +2260,8 @@
 	<script>
 		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
-		
+		let navMode = "menu"; // menu | back
+
 		
 		document.addEventListener("DOMContentLoaded", () => {
 			navBtn = document.getElementById("navBtn");
@@ -2866,7 +2867,7 @@
 			}
 			
 		  	// ⭐ 住宿 / 航班：留在電子憑證頁
-		 if (key === "hotel" || key === "flight") {
+			if (key === "hotel" || key === "flight") {
 			  const list = document.querySelector(".ticket-category-list");
 			  document.getElementById("ticketContent").style.display = "none";
 			  list.style.display = "flex";
@@ -2875,7 +2876,7 @@
 			  ticketLevel = key;
 			
 			  if (key === "flight") {
-			    setNavBack();   // ⭐ 漢堡 → ←
+			    setNavBack();   // ⭐ 切成返回模式
 			  }
 			
 			  return;
@@ -3134,12 +3135,14 @@
 		const iosMenu   = document.getElementById("iosFullMenu");
 		const topbar    = document.querySelector(".topbar");
 		
-		function openMenu() {
-			  iosFullMenu.style.display = "flex";
-			  topbar.style.display = "none";
-			}
-			
-			menuBtn.addEventListener("click", openMenu);
+		menuBtn.addEventListener("click", () => {
+			  if (navMode === "back") {
+			    backToTicketList();
+			  } else {
+			    iosFullMenu.style.display = "flex";
+			    topbar.style.display = "none";
+			  }
+		});
 		
 		if (menuBtn && iosMenu) {
 			menuBtn.onclick = () => {
@@ -3363,28 +3366,21 @@ function showPage(targetId) {
 </script>
 <script>
 	function setNavBack() {
-  const menuBtn = document.getElementById("menuBtn");
-  if (!menuBtn) return;
+	  const menuBtn = document.getElementById("menuBtn");
+	  if (!menuBtn) return;
+	
+	  navMode = "back";
+	  menuBtn.classList.add("back"); // 你已經有的箭頭樣式
+	}
+	
+	function resetNavMenu() {
+	  const menuBtn = document.getElementById("menuBtn");
+	  if (!menuBtn) return;
+	
+	  navMode = "menu";
+	  menuBtn.classList.remove("back");
+	}
 
-  menuBtn.classList.add("back");
-
-  // 移除原本開選單的監聽
-  menuBtn.removeEventListener("click", openMenu);
-  // 改成回上一頁
-  menuBtn.addEventListener("click", backToTicketList);
-}
-
-function resetNavMenu() {
-  const menuBtn = document.getElementById("menuBtn");
-  if (!menuBtn) return;
-
-  menuBtn.classList.remove("back");
-
-  // 移除返回監聽
-  menuBtn.removeEventListener("click", backToTicketList);
-  // 加回開選單
-  menuBtn.addEventListener("click", openMenu);
-}
 
 function backToTicketList() {
   const list = document.querySelector(".ticket-category-list");
@@ -3399,7 +3395,7 @@ function backToTicketList() {
   if (content) content.style.display = "none";
 
   ticketLevel = "list";
-  resetNavMenu(); // ⭐ ← → ☰
+  resetNavMenu(); // ⭐ 回到選單模式
 }
 
 

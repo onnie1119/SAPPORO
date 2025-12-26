@@ -3329,8 +3329,5 @@ function showPage(targetId) {
 
 
 </script>
-<script> document.addEventListener("DOMContentLoaded", function() { const backBtn = document.getElementById('backBtn'); const hotelBtn = document.getElementById('hotel'); const hotelGroup = document.querySelector('.hotel-group'); const ticketCategoryList = document.querySelector('.ticket-category-list'); const ticketContent = document.getElementById('ticketContent'); 
-																   backBtn.onclick = function() { hotelGroup.style.display = "none"; ticketCategoryList.style.display = "flex"; ticketCategoryList.classList.add('fade-in'); if (ticketContent) ticketContent.style.display = "none"; backBtn.style.visibility = "hidden"; }; 
-																   hotelBtn.onclick = function() { backBtn.style.visibility = "visible"; hotelGroup.style.display = "block"; ticketCategoryList.style.display = "none"; if (ticketContent) ticketContent.style.display = "none"; }; }); </script>
 </body>
 </html>

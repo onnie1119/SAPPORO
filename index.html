@@ -1400,6 +1400,23 @@
 	  	color: white;      /* 👉 箭頭顏色 */
 	}
 
+	/* 基本切頁過渡（淡入 + 小位移） */
+	.content-pages > .container,
+	.content-pages > .packing-page,
+	.content-pages > .ticket-page,
+	.content-pages > .exchange-page,
+	.content-pages > .weather-page{
+	  	opacity: 0;
+	  	transform: translateX(10px);
+	  	transition: opacity .22s ease, transform .22s ease;
+	  	will-change: opacity, transform;
+	}
+	
+	.content-pages > .page-active{
+	  	opacity: 1;
+	  	transform: translateX(0);
+	}
+
 </style>
 </head>
 <body>
@@ -3111,25 +3128,30 @@
 		}
 		
 		function showPage(targetId) {
-			if (!PAGES.includes(targetId)) return;
-			if (targetId !== "home-page") {
-				const home = document.getElementById("home-page");
-				if (home) home.style.marginTop = "";
-		 	}
-			PAGES.forEach(id => {
-				const el = document.getElementById(id);
-				if (el) el.style.display = "none";
-		  	});
+		  	if (!PAGES.includes(targetId)) return;
 		
-			const target = document.getElementById(targetId);
-			if (!target) return;
-			target.style.display = "block";
-		  	currentPageId = targetId;
-			requestAnimationFrame(() => {
-				target.scrollTop = 0;
-				bindScrollListener(); // ⭐ 只綁目前頁面
+		  	// 全部先隱藏 + 移除動畫 class
+		  	PAGES.forEach(id => {
+		    	const el = document.getElementById(id);
+		    	if (!el) return;
+		    	el.classList.remove("page-active");
+		    	el.style.display = "none";
 			});
+		
+		  	const target = document.getElementById(targetId);
+		  	if (!target) return;
+		
+		  	// 先顯示，再下一幀加 class 觸發 transition
+		  	target.style.display = "block";
+		  	currentPageId = targetId;
+		
+		  	requestAnimationFrame(() => {
+		    	target.classList.add("page-active");
+		    	target.scrollTop = 0;
+		    	bindScrollListener();
+		  	});
 		}
+
 		
 			function setBottomNavActive(pageId) {
 		  document.querySelectorAll(".bottom-nav button").forEach(b => {

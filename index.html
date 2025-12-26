@@ -3450,54 +3450,49 @@ function backToTicketList() {
 
 </script>
 <script>
-/* ========= Swipe 切頁（綁 app-root，最穩） ========= */
+// ========= 行程頁（home-page）左右滑：切換天數 =========
 
-const SWIPE_MIN_X = 60;
-const SWIPE_MAX_Y = 60;
+// 目前第幾天（初始跟你一開始 showDay(1) 對齊）
+let currentDay = 1;
 
-let sx = 0, sy = 0;
-let tracking = false;
-
-function setBottomNavActive(pageId) {
-  document.querySelectorAll(".bottom-nav button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.page === pageId);
-  });
+// 自動抓總天數（有幾個 .day-section 就算幾天）
+function getTotalDays() {
+  return document.querySelectorAll(".day-section").length;
 }
 
-function isInteractiveTarget(el) {
-  // 行程頁 Day Tabs：禁止切頁（讓它自己水平捲動）
-  if (currentPageId === "home-page" && el.closest("#dayTabsScroll")) return true;
+// 讓任何地方呼叫 showDay 都會同步 currentDay
+const _showDay = showDay;
+showDay = function(dayNumber) {
+  currentDay = dayNumber;
+  _showDay(dayNumber);
+};
 
-  return !!el.closest(
-    "input, textarea, select, button, a, " +
-    ".num-pad, .packing-list, .ticket-category-list"
-  );
-}
+(function bindHomeSwipeForDays() {
+  const home = document.getElementById("home-page");
+  if (!home) return;
 
-function swipeTo(offset) {
-  const idx = PAGES.indexOf(currentPageId);
-  if (idx === -1) return;
+  const SWIPE_MIN_X = 60; // 左右滑至少距離
+  const SWIPE_MAX_Y = 70; // 上下偏移太多就當作捲動
+  let sx = 0, sy = 0, tracking = false;
 
-  const next = idx + offset;
-  if (next < 0 || next >= PAGES.length) return;
+  function isBlocked(el) {
+    // ✅ 建議保留：上方 Day Tabs 仍然可以左右滑「捲動 tabs」
+    // 如果你想連 tabs 區也滑一下就切天數，把這行刪掉即可
+    if (el.closest("#dayTabsScroll")) return true;
 
-  showPage(PAGES[next]);
-  setBottomNavActive(PAGES[next]);
-}
+    // 其他互動元素避免誤觸
+    return !!el.closest("input, textarea, select, button, a");
+  }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const root = document.getElementById("app-root");
-  if (!root) return;
-
-  root.addEventListener("touchstart", (e) => {
-    if (isInteractiveTarget(e.target)) return;
+  home.addEventListener("touchstart", (e) => {
+    if (isBlocked(e.target)) return;
     const t = e.touches[0];
     sx = t.clientX;
     sy = t.clientY;
     tracking = true;
   }, { passive: true });
 
-  root.addEventListener("touchend", (e) => {
+  home.addEventListener("touchend", (e) => {
     if (!tracking) return;
     tracking = false;
 
@@ -3505,25 +3500,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const dx = t.clientX - sx;
     const dy = t.clientY - sy;
 
+    // 垂直滑太多：當作上下捲動，不切天數
     if (Math.abs(dy) > SWIPE_MAX_Y) return;
 
-    if (dx <= -SWIPE_MIN_X) swipeTo(+1); // 左滑 → 下一頁
-    else if (dx >= SWIPE_MIN_X) swipeTo(-1); // 右滑 → 上一頁
+    const totalDays = getTotalDays();
+
+    if (dx <= -SWIPE_MIN_X) {
+      // 左滑 → 下一天
+      if (currentDay < totalDays) showDay(currentDay + 1);
+    } else if (dx >= SWIPE_MIN_X) {
+      // 右滑 → 上一天
+      if (currentDay > 1) showDay(currentDay - 1);
+    }
   }, { passive: true });
-});
-
-
-	
-	function isInteractiveTarget(el) {
-  // 行程頁上方 Day Tabs 區域：不要觸發切頁
-  if (currentPageId === "home-page" && el.closest("#dayTabsScroll")) return true;
-
-  // 其他互動區也不要觸發切頁（避免按鈕/輸入時誤切）
-  return !!el.closest(
-    'input, textarea, select, button, a, ' +
-    '.num-pad, .packing-list, .ticket-category-list'
-  );
-}
+})();
 
 </script>
 </body>

@@ -1168,8 +1168,26 @@
 	
 	.menu-btn.open div {
 	  	opacity: 0; /* 中間的線會隱藏 */}
+
+		
+		/* === 返回模式 === */
+	.menu-btn.back::before {
+	  top: 50%;
+	  transform: rotate(-45deg) translate(-4px, -4px);
+	  width: 12px;
+	}
 	
+	.menu-btn.back::after {
+	  bottom: 50%;
+	  transform: rotate(45deg) translate(-4px, 4px);
+	  width: 12px;
+	}
 	
+	.menu-btn.back div {
+	  opacity: 0; /* 中間那條隱藏 */
+	}
+		
+
 	.ios-full-menu.show {
 	  	display: flex; /* 顯示選單 */
 	  	opacity: 1; /* 使選單顯示 */}/* 選單項目 */
@@ -2848,20 +2866,21 @@
 			}
 			
 		  	// ⭐ 住宿 / 航班：留在電子憑證頁
-		  	if (key === "hotel" || key === "flight") {
+		 if (key === "hotel" || key === "flight") {
 			  const list = document.querySelector(".ticket-category-list");
 			  document.getElementById("ticketContent").style.display = "none";
 			  list.style.display = "flex";
 			  list.innerHTML = ticketData[key].body;
 			  playFadeIn(list);
-			  ticketLevel = key; // hotel / flight
+			  ticketLevel = key;
 			
 			  if (key === "flight") {
-			    setNavBack();   // ⭐ 左上變成「上一頁」
+			    setNavBack();   // ⭐ 漢堡 → ←
 			  }
 			
 			  return;
 			}
+
 
 		
 		  	// ⭐ 其他分類：內容頁模式
@@ -3115,6 +3134,13 @@
 		const iosMenu   = document.getElementById("iosFullMenu");
 		const topbar    = document.querySelector(".topbar");
 		
+		function openMenu() {
+			  iosFullMenu.style.display = "flex";
+			  topbar.style.display = "none";
+			}
+			
+			menuBtn.addEventListener("click", openMenu);
+		
 		if (menuBtn && iosMenu) {
 			menuBtn.onclick = () => {
 				iosMenu.style.display = "flex";
@@ -3340,23 +3366,32 @@ function showPage(targetId) {
   const menuBtn = document.getElementById("menuBtn");
   if (!menuBtn) return;
 
-  menuBtn.innerHTML = "←";
-  menuBtn.onclick = backToTicketList;
+  menuBtn.classList.add("back");
+
+  // 移除原本開選單的監聽
+  menuBtn.removeEventListener("click", openMenu);
+  // 改成回上一頁
+  menuBtn.addEventListener("click", backToTicketList);
 }
 
 function resetNavMenu() {
   const menuBtn = document.getElementById("menuBtn");
   if (!menuBtn) return;
 
-  menuBtn.innerHTML = ""; // 如果你是用 CSS 畫三條線，這行可留空
-  menuBtn.onclick = openMenu; // 👈 換成你原本開選單的 function
+  menuBtn.classList.remove("back");
+
+  // 移除返回監聽
+  menuBtn.removeEventListener("click", backToTicketList);
+  // 加回開選單
+  menuBtn.addEventListener("click", openMenu);
 }
+
 function backToTicketList() {
   const list = document.querySelector(".ticket-category-list");
   const content = document.getElementById("ticketContent");
 
   if (list) {
-    list.innerHTML = originalTicketCategoryHTML; // 你原本有存
+    list.innerHTML = originalTicketCategoryHTML;
     list.style.display = "flex";
     playFadeIn(list);
   }
@@ -3364,8 +3399,9 @@ function backToTicketList() {
   if (content) content.style.display = "none";
 
   ticketLevel = "list";
-  resetNavMenu(); // ⭐ 左上恢復成選單
+  resetNavMenu(); // ⭐ ← → ☰
 }
+
 
 </script>
 </body>

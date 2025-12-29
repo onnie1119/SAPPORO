@@ -4291,17 +4291,49 @@ async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}){
     const data = await res.json();
 
     // current
-    const tempNow = data?.current_weather?.temperature;
-    const codeNow = data?.current_weather?.weathercode;
-    const tempNowInt = Number.isFinite(tempNow) ? Math.round(tempNow) : NaN;
+   const tempNow = data?.current_weather?.temperature;
+const tempNowInt = Number.isFinite(tempNow) ? Math.round(tempNow) : NaN;
 
-    // daily today hi/lo
-    const hi = data?.daily?.temperature_2m_max?.[0];
-    const lo = data?.daily?.temperature_2m_min?.[0];
-    const hiInt = Number.isFinite(hi) ? Math.round(hi) : NaN;
-    const loInt = Number.isFinite(lo) ? Math.round(lo) : NaN;
+// hourly
+const hTimes = data?.hourly?.time || [];
+const hTemps = data?.hourly?.temperature_2m || [];
+const hCodes = data?.hourly?.weathercode || [];
+const hWinds = data?.hourly?.windspeed_10m || [];
 
-    renderHeader({ cityName: city.name, tempNowInt, codeNow, hiInt, loInt });
+const startIdx = nearestHourIndex(hTimes);
+const sliceTimes = hTimes.slice(startIdx, startIdx + 24);
+const sliceTemps = hTemps.slice(startIdx, startIdx + 24);
+const sliceCodes = hCodes.slice(startIdx, startIdx + 24);
+const sliceWinds = hWinds.slice(startIdx, startIdx + 24);
+
+// ✅ 用 hourly 的「現在那格」當作主天氣碼
+const codeNow = Number.isFinite(sliceCodes?.[0]) ? sliceCodes[0] : (data?.current_weather?.weathercode ?? 0);
+
+// daily hi/lo
+const hi = data?.daily?.temperature_2m_max?.[0];
+const lo = data?.daily?.temperature_2m_min?.[0];
+const hiInt = Number.isFinite(hi) ? Math.round(hi) : NaN;
+const loInt = Number.isFinite(lo) ? Math.round(lo) : NaN;
+
+// ✅ header/背景都用 codeNow（hourly 的）
+renderHeader({
+  cityName: city.name,
+  tempNowInt,
+  codeNow,
+  hiInt,
+  loInt
+});
+
+// ✅ 24 小時渲染
+renderHourly24({
+  timesISO: sliceTimes,
+  temps: sliceTemps,
+  codes: sliceCodes
+});
+
+// ✅ 背景雪/雲/晴也用同一個 codeNow
+setWeatherBgByCode(codeNow);
+
 
     // ✅ 套用「日出/白天/日落/黑夜」背景（用該城市經緯度）
     const sunInfo = await applyLocalSunBg({

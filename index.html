@@ -1518,14 +1518,46 @@
    radial-gradient(circle at 25% 35%, rgb(0 83 255 / 42%), transparent 55%), radial-gradient(circle at 75% 40%, rgba(255, 255, 255, 0.28), transparent 60%), linear-gradient(180deg, #9dceff, rgb(94 62 255));
   filter: blur(0px);
 }
+/* 雪：::after 只負責「雪點」 */
 .weather-page.wx-bg-snow::after{
-  /* 簡單飄雪點點 */
-  background-image:radial-gradient(circle at 25% 35%, rgb(0 83 255 / 42%), transparent 55%), radial-gradient(circle at 75% 40%, rgba(255, 255, 255, 0.28), transparent 60%), linear-gradient(180deg, #9dceff, rgb(94 62 255));
-  background-size: 120px 120px, 180px 180px, 240px 240px;
-  background-position: 0 0, 30px 40px, 70px 10px;
-  animation: wxSnowFall 6s linear infinite;
-  opacity: 0.65;
+  content:"";
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+  z-index:0;          /* 背景層 */
+  opacity: 0.9;
+  filter: blur(.2px) drop-shadow(0 0 2px rgba(255,255,255,.35));
+
+  /* ✅ 3 層雪點（不同大小/密度） */
+  background-image:
+    radial-gradient(2.2px 2.2px at 20px 30px, rgba(255,255,255,.95) 60%, transparent 61%),
+    radial-gradient(1.6px 1.6px at 80px 90px, rgba(255,255,255,.80) 60%, transparent 61%),
+    radial-gradient(1.1px 1.1px at 140px 50px, rgba(255,255,255,.65) 60%, transparent 61%);
+
+  /* ✅ 讓它可以「重複鋪滿」 */
+  background-repeat: repeat;
+  background-size: 180px 180px, 140px 140px, 110px 110px;
+
+  /* ✅ 用 background-position 來移動雪（不要用 transform 去推整張圖層） */
+  animation: snowMove 7s linear infinite;
 }
+
+/* 讓三層雪用不同速度/方向（更自然） */
+@keyframes snowMove{
+  0%{
+    background-position:
+      0 -200px,
+      30px -300px,
+      -20px -250px;
+  }
+  100%{
+    background-position:
+      0 900px,
+      80px 1100px,
+      -60px 1000px;
+  }
+}
+
 @keyframes wxSnowFall{
   from{ transform: translateY(-40px); }
   to  { transform: translateY(40px); }

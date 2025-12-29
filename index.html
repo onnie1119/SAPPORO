@@ -4100,11 +4100,18 @@ function bindWeatherSwipe(){
   const page = document.getElementById("weather-page");
   if (!page) return;
 
-  const SWIPE_MIN_X = 60;
+  const SWIPE_MIN_X = 80;   // 稍微拉高門檻，避免誤觸
   const SWIPE_MAX_Y = 70;
+
   let sx = 0, sy = 0, tracking = false;
 
   page.addEventListener("touchstart", (e) => {
+    // ✅ 如果起點在 24hr 橫向滑動區，就不要啟動切城市手勢
+    if (e.target.closest("#wxHourly")) {
+      tracking = false;
+      return;
+    }
+
     const t = e.touches[0];
     sx = t.clientX;
     sy = t.clientY;
@@ -4118,6 +4125,7 @@ function bindWeatherSwipe(){
     const t = e.changedTouches[0];
     const dx = t.clientX - sx;
     const dy = t.clientY - sy;
+
     if (Math.abs(dy) > SWIPE_MAX_Y) return;
 
     if (dx <= -SWIPE_MIN_X){

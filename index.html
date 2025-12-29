@@ -3949,6 +3949,14 @@ function weekdayLabel(dateObj){
   const map = ["日","一","二","三","四","五","六"];
   return `週${map[dateObj.getDay()]}`;
 }
+function nextHourIndex(timesISO){
+  const now = Date.now();
+  for (let i = 0; i < timesISO.length; i++){
+    const t = new Date(timesISO[i]).getTime();
+    if (t > now) return i; // 嚴格大於：保證是「下一個」整點
+  }
+  return timesISO.length - 1;
+}
 
 /* ---------- 提醒（下雪/局部多雲/刮風 + 日出日落） ---------- */
 function codeToEvent(code){
@@ -4161,17 +4169,23 @@ function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
   wxEl("wxHiLo").textContent = `最高 ${Number.isFinite(hiInt) ? hiInt : "--"}° / 最低 ${Number.isFinite(loInt) ? loInt : "--"}°`;
 }
 
-function renderHourly24({ timesISO, temps, codes }){
+function renderHourly24({ timesISO, temps, codes, nowTemp, nowCode }){
   const wrap = wxEl("wxHourly");
   if (!wrap) return;
 
-  wrap.innerHTML = timesISO.map((tISO, i) => {
+  // ① 第一格：永遠「現在」（不是整點）
+  const nowCard = `
+    <div class="wx-hour">
+      <div class="wx-hour-time">現在</div>
+      <img class="wx-hour-icon" src="${wxIconSrc(weatherCodeToIconKey(nowCode))}" alt="now">
+      <div class="wx-hour-temp">${Math.round(nowTemp)}°</div>
+    </div>
+  `;
+
+  // ② 後面：用整點 18/19/20...
+  const hourCards = timesISO.map((tISO, i) => {
     const d = new Date(tISO);
-  const now = Date.now();
-const isNow = Math.abs(new Date(tISO).getTime() - now) < 30 * 60 * 1000;
-
-const timeStr = isNow ? "現在" : hourLabel(d);
-
+    const timeStr = hourLabel(d);     // 18, 19...
     const tempInt = Math.round(temps[i]);
     const iconKey = weatherCodeToIconKey(codes[i]);
     const iconSrc = wxIconSrc(iconKey);
@@ -4184,6 +4198,8 @@ const timeStr = isNow ? "現在" : hourLabel(d);
       </div>
     `;
   }).join("");
+
+  wrap.innerHTML = nowCard + hourCards;
 }
 
 function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
@@ -4257,24 +4273,20 @@ async function loadAndRenderWeather(){
     setFxClass(page, weatherCodeToFxClass(codeNow));    // wx-bg-*
 
     // hourly 24hr
-    const hTimes = data?.hourly?.time || [];
-    const hTemps = data?.hourly?.temperature_2m || [];
-    const hCodes = data?.hourly?.weathercode || [];
-    const hWinds = data?.hourly?.windspeed_10m || [];
+   const startIdx = nextHourIndex(hTimes);   // ✅ 下一個整點，不用管快不快 18:00
+const sliceTimes = hTimes.slice(startIdx, startIdx + 24);
+const sliceTemps = hTemps.slice(startIdx, startIdx + 24);
+const sliceCodes = hCodes.slice(startIdx, startIdx + 24);
+const sliceWinds = hWinds.slice(startIdx, startIdx + 24);
 
-    if (hTimes.length < 1){
-      wxEl("wxHourlyNote").textContent = "沒有抓到每小時資料";
-      return;
-    }
+renderHourly24({
+  timesISO: sliceTimes,
+  temps: sliceTemps,
+  codes: sliceCodes,
+  nowTemp: tempNow,   // ✅ 用 current_weather 當「現在」
+  nowCode: codeNow
+});
 
-    const startIdx = firstFutureHourIndex(hTimes);
-
-    const sliceTimes = hTimes.slice(startIdx, startIdx + 24);
-    const sliceTemps = hTemps.slice(startIdx, startIdx + 24);
-    const sliceCodes = hCodes.slice(startIdx, startIdx + 24);
-    const sliceWinds = hWinds.slice(startIdx, startIdx + 24);
-
-    renderHourly24({ timesISO: sliceTimes, temps: sliceTemps, codes: sliceCodes });
 
     // 24hr note：含日出/日落
     const sunEvents = buildSunEvents(data?.daily);

@@ -4277,6 +4277,77 @@ document.addEventListener("click", (e) => {
 });
 
 	</script>
+<script>
+function setBgClass(page, cls){
+  page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
+  page.classList.add(cls);
+}
+
+/**
+ * 判斷當地時間所在區間：日出 / 白天 / 日落 / 黑夜
+ * @param {number} nowLocalMs     當地時間戳 (ms)
+ * @param {number} sunriseLocalMs 當地日出時間戳 (ms)
+ * @param {number} sunsetLocalMs  當地日落時間戳 (ms)
+ * @param {number} twilightMin    緩衝分鐘數（建議 30~60）
+ */
+function getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, twilightMin = 45){
+  const t = twilightMin * 60 * 1000;
+
+  const sunriseStart = sunriseLocalMs - t;
+  const sunriseEnd   = sunriseLocalMs + t;
+  const sunsetStart  = sunsetLocalMs - t;
+  const sunsetEnd    = sunsetLocalMs + t;
+
+  if (nowLocalMs >= sunriseStart && nowLocalMs < sunriseEnd) return "sunrise";
+  if (nowLocalMs >= sunriseEnd   && nowLocalMs < sunsetStart) return "day";
+  if (nowLocalMs >= sunsetStart  && nowLocalMs < sunsetEnd) return "sunset";
+  return "night";
+}
+
+/**
+ * 用 Open-Meteo 取得：utc_offset_seconds + 今日 sunrise/sunset(UTC)
+ * 你切城市時呼叫這個，把背景跟當地時間一起算好
+ */
+async function applyLocalSunBg({ lat, lon }){
+  const page = document.getElementById("weather-page");
+  if (!page) return;
+
+  // ✅ 用 UTC 拿 sunrise/sunset + 拿 utc_offset_seconds
+  const url =
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${lat}&longitude=${lon}` +
+    `&daily=sunrise,sunset&forecast_days=1` +
+    `&current_weather=true` +
+    `&timezone=UTC`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const offsetSec = data.utc_offset_seconds ?? 0;
+
+  // sunrise/sunset 是 UTC 字串（帶 Z 或可被當 UTC 解析）
+  const sunriseUtcMs = Date.parse(data.daily.sunrise[0] + "Z");
+  const sunsetUtcMs  = Date.parse(data.daily.sunset[0] + "Z");
+
+  // ✅ 轉成「當地時間戳」
+  const sunriseLocalMs = sunriseUtcMs + offsetSec * 1000;
+  const sunsetLocalMs  = sunsetUtcMs  + offsetSec * 1000;
+
+  // ✅ 現在 UTC -> 當地
+  const nowUtcMs = Date.now();
+  const nowLocalMs = nowUtcMs + offsetSec * 1000;
+
+  const phase = getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, 45);
+
+  if (phase === "sunrise") setBgClass(page, "bg-sunrise");
+  else if (phase === "day") setBgClass(page, "bg-day");
+  else if (phase === "sunset") setBgClass(page, "bg-sunset");
+  else setBgClass(page, "bg-night");
+}
+
+/* 範例：札幌 */
+applyLocalSunBg({ lat: 43.0618, lon: 141.3545 });
+</script>
 
 
 <script>

@@ -1715,6 +1715,137 @@
   border-radius: 999px;
   background:linear-gradient(90deg, #afffff, #14dffd); /* 橘色 min-max */
 }
+.weather-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  transition: background 0.6s ease;
+}
+
+/* 內容層（避免被 ::before/::after 蓋住） */
+.weather-page .content {
+  position: relative;
+  z-index: 2;
+  padding: 24px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ===== 4 種背景狀態 ===== */
+
+/* 白天・沒下雪 */
+.weather-page.bg-day-clear {
+  background: linear-gradient(180deg, #b7d9f4 0%, #eaf4ff 60%, #ffffff 100%);
+}
+.weather-page.bg-day-clear .content {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* 黑夜・沒下雪 */
+.weather-page.bg-night-clear {
+  background: linear-gradient(180deg, #0b1d2d 0%, #122b44 60%, #0b1d2d 100%);
+}
+
+/* 白天・下雪 */
+.weather-page.bg-day-snow {
+  background: linear-gradient(180deg, #cfe3f6 0%, #f3f7fb 70%, #ffffff 100%);
+}
+.weather-page.bg-day-snow .content {
+  color: rgba(0, 0, 0, 0.82);
+}
+
+/* 黑夜・下雪 */
+.weather-page.bg-night-snow {
+  background: linear-gradient(180deg, #0a1625 0%, #14283f 60%, #0a1625 100%);
+}
+
+/* ===== 微動畫層：::before（光感/星星） ===== */
+.weather-page::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+/* 白天光感 */
+.weather-page.bg-day-clear::before,
+.weather-page.bg-day-snow::before {
+  opacity: 1;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.65),
+    transparent 60%
+  );
+  animation: dayGlow 12s ease-in-out infinite;
+}
+
+/* 夜晚星點（沒下雪時更明顯） */
+.weather-page.bg-night-clear::before {
+  opacity: 1;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.85), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.65), transparent),
+    radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,.55), transparent),
+    radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,.5), transparent);
+  animation: starTwinkle 8s ease-in-out infinite;
+}
+
+/* 夜晚下雪時星星弱一些（不搶雪） */
+.weather-page.bg-night-snow::before {
+  opacity: 0.5;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.55), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.4), transparent);
+  animation: starTwinkle 8s ease-in-out infinite;
+}
+
+/* ===== 落雪層：::after（只在 snow 狀態啟用） ===== */
+.weather-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 1;
+}
+
+.weather-page.bg-day-snow::after,
+.weather-page.bg-night-snow::after {
+  opacity: 1;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,.85), transparent),
+    radial-gradient(1.5px 1.5px at 40% 60%, rgba(255,255,255,.75), transparent),
+    radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,.65), transparent),
+    radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,.55), transparent),
+    radial-gradient(1px 1px at 25% 75%, rgba(255,255,255,.5), transparent);
+  animation: snowFall 14s linear infinite;
+}
+
+/* 動畫 */
+@keyframes dayGlow {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(20px); opacity: 0.9; }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes snowFall {
+  from { background-position: 0 -200px; }
+  to   { background-position: 0 600px; }
+}
+
+/* 無障礙：如果使用者偏好減少動畫 */
+@media (prefers-reduced-motion: reduce) {
+  .weather-page::before,
+  .weather-page::after {
+    animation: none !important;
+  }
+}
 
 </style>
 </head>
@@ -4213,7 +4344,45 @@ document.addEventListener("click", (e) => {
 });
 
 	</script>
+<script>
+	function applyWeatherBackground({ weatherCode, isDay }) {
+  const page = document.getElementById("weather-page");
+  if (!page) return;
 
+  // 清除所有背景 class
+  page.classList.remove(
+    "bg-day-clear",
+    "bg-night-clear",
+    "bg-day-snow",
+    "bg-night-snow"
+  );
+
+  // 這裡用 Open-Meteo 常見的雪代碼範圍（可依你資料來源調整）
+  const isSnow =
+    (weatherCode >= 71 && weatherCode <= 77) || // snow fall
+    weatherCode === 85 || weatherCode === 86;   // snow showers
+
+  if (isSnow && isDay) page.classList.add("bg-day-snow");
+  else if (isSnow && !isDay) page.classList.add("bg-night-snow");
+  else if (!isSnow && isDay) page.classList.add("bg-day-clear");
+  else page.classList.add("bg-night-clear");
+}
+
+/* ===== 範例呼叫（測試用） ===== */
+(function demo() {
+  // 你可以改這兩個值測試
+  const demoWeatherCode = 71; // 71=下雪，0=晴
+  const demoIsDay = true;     // true=白天, false=黑夜
+
+  applyWeatherBackground({ weatherCode: demoWeatherCode, isDay: demoIsDay });
+
+  const status = document.getElementById("status");
+  if (status) {
+    status.textContent = `weatherCode=${demoWeatherCode}, isDay=${demoIsDay}`;
+  }
+})();
+
+</script>
 
 <script>
 	function setNavBack() {

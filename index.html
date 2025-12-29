@@ -3444,10 +3444,9 @@
 			    resetNavMenu();
 			  }
 			if (targetId === "weather-page") {
-	 			if (window.WeatherUI && typeof window.WeatherUI.onEnter === "function") {
-    				window.WeatherUI.onEnter();
-  				}
+ 			 if (typeof initWeatherPageOnce === "function") initWeatherPageOnce();
 			}
+
 
 
 

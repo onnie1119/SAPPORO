@@ -1728,7 +1728,28 @@
 .wx-day-icon{ width:22px; height:22px; object-fit:contain; }
 .wx-day-desc{ font-size:14px; opacity:.9; }
 .wx-day-right{ min-width:92px; text-align:right; font-weight:600; }
-	
+	.wx-temp{
+  position: relative;
+  display: flex;
+  justify-content: center;   /* 整組置中 */
+  align-items: flex-start;
+  line-height: 1;
+}
+
+#temperatureVal{
+  font-size: 84px;           /* 你可依需求調 */
+  font-weight: 700;
+  line-height: 1;
+}
+
+.wx-unit{
+  position: absolute;        /* 🔑 關鍵 */
+  right: -18px;              /* 不影響置中 */
+  top: 10px;
+  font-size: 28px;
+  opacity: .9;
+}
+
 </style>
 </head>
 <body>
@@ -2612,13 +2633,7 @@
       <div class="wx-sub" id="wxSub">更新：--</div>
     </div>
 
-    <!-- City switch (可左右滑) -->
-    <div class="wx-pills" id="wxCityPills" aria-label="選擇城市">
-      <button class="wx-pill active" data-city="sapporo">札幌</button>
-      <button class="wx-pill" data-city="otaru">小樽</button>
-      <button class="wx-pill" data-city="biei">美瑛</button>
-      <button class="wx-pill" data-city="noboribetsu">登別</button>
-    </div>
+    
 
     <!-- 24hr hourly forecast -->
     <div class="wx-card wx-hourly-card">

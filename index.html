@@ -3583,12 +3583,12 @@
 			    // 進票據是漢堡 or 箭頭？這裡通常保持漢堡
 			    resetNavMenu();
 			  }
-			
-			  if (targetId === "weather-page") {
-				  initWeatherPageOnce();
-				  renderDots();
-				  loadAndRenderWeather();
-				}
+			if (pageId === "weather-page") {
+  				if (window.WeatherUI && typeof window.WeatherUI.onEnter === "function") {
+    				window.WeatherUI.onEnter();
+  				}
+			}
+
 
 			  // 下面照你原本 showPage 的邏輯
 			  PAGES.forEach(id => {

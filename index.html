@@ -4335,22 +4335,7 @@ function backToTicketList() {
   resetNavMenu();
 }
 
-function setWeatherLoading(isLoading){
-  const wrap = document.querySelector("#weather-page .wx-wrap");
-  if (!wrap) return;
-  wrap.classList.toggle("is-loading", isLoading);
-}
 
-// 切換城市時：
-async function switchCity(city){
-  setWeatherLoading(true);
-
-  // 先不要清空 wxHourly / wxWeek，讓舊資料撐著高度
-  const data = await fetchWeather(city); // 你的 API
-
-  renderWeather(data); // 一次性更新內容
-  setWeatherLoading(false);
-}
 
 
 </script>
@@ -4421,6 +4406,24 @@ showDay = function(dayNumber, dir = "right") {
 })();
 
 </script>
+	<script>
+		function setWeatherLoading(isLoading){
+  const wrap = document.querySelector("#weather-page .wx-wrap");
+  if (!wrap) return;
+  wrap.classList.toggle("is-loading", isLoading);
+}
+
+// 切換城市時：
+async function switchCity(city){
+  setWeatherLoading(true);
+
+  // 先不要清空 wxHourly / wxWeek，讓舊資料撐著高度
+  const data = await fetchWeather(city); // 你的 API
+
+  renderWeather(data); // 一次性更新內容
+  setWeatherLoading(false);
+}
+	</script>
 	<script>
   function syncBarsHeight(){
     const topbar = document.getElementById("topbar");

@@ -4029,20 +4029,15 @@ function buildNoteString({ hourlyTimesISO, hourlyCodes, hourlyWindMS, sunEvents=
 }
 
 /* ---------- 工具：找最近的 hourly index ---------- */
-function nearestHourIndex(timesISO){
+function firstFutureHourIndex(timesISO){
   const now = Date.now();
-  let best = 0;
-  let bestDiff = Infinity;
-  for (let i=0; i<timesISO.length; i++){
+  for (let i = 0; i < timesISO.length; i++){
     const t = new Date(timesISO[i]).getTime();
-    const diff = Math.abs(t - now);
-    if (diff < bestDiff){
-      bestDiff = diff;
-      best = i;
-    }
+    if (t >= now) return i;
   }
-  return best;
+  return timesISO.length - 1;
 }
+
 
 /* ============================
    State / DOM
@@ -4172,7 +4167,11 @@ function renderHourly24({ timesISO, temps, codes }){
 
   wrap.innerHTML = timesISO.map((tISO, i) => {
     const d = new Date(tISO);
-    const timeStr = (i === 0) ? "現在" : hourLabel(d);
+  const now = Date.now();
+const isNow = Math.abs(new Date(tISO).getTime() - now) < 30 * 60 * 1000;
+
+const timeStr = isNow ? "現在" : hourLabel(d);
+
     const tempInt = Math.round(temps[i]);
     const iconKey = weatherCodeToIconKey(codes[i]);
     const iconSrc = wxIconSrc(iconKey);
@@ -4268,7 +4267,8 @@ async function loadAndRenderWeather(){
       return;
     }
 
-    const startIdx = nearestHourIndex(hTimes);
+    const startIdx = firstFutureHourIndex(hTimes);
+
     const sliceTimes = hTimes.slice(startIdx, startIdx + 24);
     const sliceTemps = hTemps.slice(startIdx, startIdx + 24);
     const sliceCodes = hCodes.slice(startIdx, startIdx + 24);

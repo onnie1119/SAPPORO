@@ -269,7 +269,7 @@
 	.exchange-page {
 		display: none;
 		position: relative;
-		top: 4.5rem;
+		top: 3.8rem;
 		min-height:680px;
 		text-align: center;
 		padding: 0px 20px;
@@ -321,14 +321,14 @@
 	  	display: flex;
 	  	align-items: center;
 	  	gap: 10px;
-	  	font-size:20px;
+	  	font-size:18px;
 	  	cursor: pointer;
 	  	margin: 10px 0;}
 	
 	.toggle-track {
 	  	position: relative;
-	  	width: 60px;
-	  	height: 30px;
+	  	width: 57px;
+	  	height: 27px;
 	  	background: #ccc;
 	  	border-radius: 15px;
 	  	transition: background 0.3s ease;}
@@ -337,8 +337,8 @@
 	  	position: absolute;
 	  	top: 0px;
 	  	left: 0px;
-	  	width: 30px;
-	  	height: 30px;
+	  	width: 27px;
+	  	height: 27px;
 	  	background: #3a7afe;
 	  	border-radius: 50%;
 	  	transition: left 0.3s ease;}
@@ -680,7 +680,7 @@
 	  	background: #F6F9FC;
 	  	min-height: 430px;
 	  	padding: 24px 20px;
-		padding-top:102px;
+		padding-top:87px;
 		padding-bottom: 120px;
 		animation: fadeIn 0.4s ease;}
 	
@@ -700,10 +700,10 @@
 		margin: 20px 0;
 		margin-top: 8px;
 		margin-bottom: 3px;
-		padding: 22px 14px;
+		padding: 24px 14px;
 	  	display: flex;
 	  	align-items: center;
-	  	gap: 8px;
+	  	gap: 5px;
 	  	cursor: pointer;
 		position: relative;
 		box-shadow: 0 0px 5px rgb(0 0 0 / 10%);}
@@ -758,7 +758,7 @@
 	
 	/* 右側三點 */
 	.ticket-category .more {
-	  	font-size: 25px;
+	  	font-size: 20px;
 	  	color: #8E8E93;
 	  	padding: 4px 6px;}
 	
@@ -767,7 +767,7 @@
 		margin-top: 20px;}
 
 	#ticketContentTitle {
-	  	font-size: 22px;
+	  	font-size: 20px;
 	  	font-weight: 600;
 	  	margin-bottom: 12px;}
 		
@@ -1618,6 +1618,47 @@
 		  .wx-unit{ font-size: 44px; vertical-align: 20px; }
 		  .wx-grid{ grid-template-columns: 1fr; }
 		}
+
+		/* 城市 pills：可左右滑 */
+.wx-pills{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 6px 2px;
+}
+.wx-pills::-webkit-scrollbar{ display:none; }
+.wx-pill{
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* 24hr：水平滑 */
+.wx-hourly{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 10px 2px 4px;
+}
+.wx-hourly::-webkit-scrollbar{ display:none; }
+
+.wx-hour{
+  flex: 0 0 auto;
+  width: 78px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.55);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+  text-align:center;
+  scroll-snap-align: start;
+}
+
+.wx-hour .t{ font-size: 14px; opacity: .75; }
+.wx-hour .w{ font-size: 13px; margin-top: 6px; opacity: .9; }
+.wx-hour .c{ font-size: 20px; font-weight: 700; margin-top: 8px; }
 
 	
 </style>
@@ -2490,48 +2531,36 @@
             </div>
 			
 	       	<!-- 這是天氣頁面 -->
-			<div id="weather-page" class="weather-page" style="display:none;">
-				  <div class="wx-wrap">
-				    <!-- Header -->
-				    <div class="wx-hero">
-				      <div class="wx-city" id="location-name">札幌</div>
-				      <div class="wx-temp">
-				        <span id="temperatureVal">--</span><span class="wx-unit">°</span>
-				      </div>
-				      <div class="wx-desc" id="descriptionText">--</div>
-				      <div class="wx-sub" id="wxSub">--</div>
-				    </div>
-				
-				    <!-- Metrics cards -->
-				    <div class="wx-grid">
-				      <div class="wx-card">
-				        <div class="wx-card-title">濕度</div>
-				        <div class="wx-card-value"><span id="humidityVal">--</span><span class="wx-card-unit">%</span></div>
-				      </div>
-				
-				      <div class="wx-card">
-				        <div class="wx-card-title">風速</div>
-				        <div class="wx-card-value"><span id="windspeedVal">--</span><span class="wx-card-unit"> km/h</span></div>
-				      </div>
-				    </div>
-				
-				    <!-- City switch -->
-				    <div class="wx-pills" aria-label="選擇城市">
-				      <button class="wx-pill active" data-city="sapporo">札幌</button>
-				      <button class="wx-pill" data-city="otaru">小樽</button>
-				      <button class="wx-pill" data-city="biei">美瑛</button>
-				      <button class="wx-pill" data-city="noboribetsu">登別</button>
-				    </div>
-				
-				    <!-- (可選) 放一個「今日提示」卡片 -->
-				    <div class="wx-card wx-note">
-				      <div class="wx-card-title">小提醒</div>
-				      <div class="wx-note-text" id="wxTip">載入天氣中…</div>
-				    </div>
-				
-				    <div style="height: 18px;"></div>
-				  </div>
-			</div>
+			<!-- 這是天氣頁面 -->
+<div id="weather-page" class="weather-page" style="display:none;">
+  <div class="wx-wrap">
+    <!-- Header -->
+    <div class="wx-hero">
+      <div class="wx-city" id="location-name">札幌</div>
+      <div class="wx-temp">
+        <span id="temperatureVal">--</span><span class="wx-unit">°</span>
+      </div>
+      <div class="wx-desc" id="descriptionText">--</div>
+      <div class="wx-sub" id="wxSub">更新：--</div>
+    </div>
+
+    <!-- City switch (可左右滑) -->
+    <div class="wx-pills" id="wxCityPills" aria-label="選擇城市">
+      <button class="wx-pill active" data-city="sapporo">札幌</button>
+      <button class="wx-pill" data-city="otaru">小樽</button>
+      <button class="wx-pill" data-city="biei">美瑛</button>
+      <button class="wx-pill" data-city="noboribetsu">登別</button>
+    </div>
+
+    <!-- 24hr hourly forecast -->
+    <div class="wx-card wx-hourly-card">
+      <div class="wx-card-title">24 小時預報</div>
+      <div class="wx-hourly" id="wxHourly"></div>
+    </div>
+
+    <div style="height: 18px;"></div>
+  </div>
+</div>
 
 
 		</div>
@@ -3624,155 +3653,246 @@
 	<script>
 /* =========================
    Weather Page (Open-Meteo)
-   - iPhone-style UI update
-   - Pills switch city
-   - When entering weather-page, auto load Sapporo
+   - No humidity/wind cards
+   - City pills horizontal swipe
+   - 24hr hourly forecast scroller
 ========================= */
 
-(function () {
+(function WeatherApp(){
   const weatherApiUrl = "https://api.open-meteo.com/v1/forecast";
 
-  // 城市座標
-  const cities = {
-    sapporo:    { latitude: 43.0667, longitude: 141.3500 },
-    otaru:      { latitude: 43.1900, longitude: 140.9940 },
-    biei:       { latitude: 43.5333, longitude: 142.4000 },
-    noboribetsu:{ latitude: 42.3800, longitude: 141.0000 }
+  // 北海道城市座標
+  const CITIES = {
+    sapporo:     { name: "札幌", latitude: 43.0667, longitude: 141.3500 },
+    otaru:       { name: "小樽", latitude: 43.1900, longitude: 140.9940 },
+    biei:        { name: "美瑛", latitude: 43.5333, longitude: 142.4000 },
+    noboribetsu: { name: "登別", latitude: 42.3800, longitude: 141.0000 }
   };
 
-  const cityNameZhMap = {
-    sapporo: "札幌",
-    otaru: "小樽",
-    biei: "美瑛",
-    noboribetsu: "登別"
+  // Open-Meteo WMO weather code → 中文
+  const WX_TEXT = {
+    0: "晴朗",
+    1: "晴時多雲",
+    2: "多雲",
+    3: "陰天",
+    45: "有霧",
+    48: "霧凇",
+    51: "毛毛雨",
+    53: "小雨",
+    55: "中雨",
+    56: "凍毛毛雨",
+    57: "凍雨",
+    61: "小雨",
+    63: "中雨",
+    65: "大雨",
+    66: "凍雨",
+    67: "強凍雨",
+    71: "小雪",
+    73: "中雪",
+    75: "大雪",
+    77: "霰",
+    80: "陣雨",
+    81: "強陣雨",
+    82: "暴陣雨",
+    85: "陣雪",
+    86: "強陣雪",
+    95: "雷雨",
+    96: "雷雨冰雹",
+    99: "強雷雨冰雹"
   };
 
-  function $(id) { return document.getElementById(id); }
+  // DOM
+  const elCity   = () => document.getElementById("location-name");
+  const elTemp   = () => document.getElementById("temperatureVal");
+  const elDesc   = () => document.getElementById("descriptionText");
+  const elSub    = () => document.getElementById("wxSub");
+  const elHourly = () => document.getElementById("wxHourly");
+  const elPills  = () => document.getElementById("wxCityPills");
 
-  function weatherCodeToText(code){
-    const map = {
-      0:"晴朗",
-      1:"多雲", 2:"多雲", 3:"陰天",
-      45:"有霧", 48:"霧霾",
-      51:"毛毛雨", 53:"小雨", 55:"中雨",
-      61:"小雨", 63:"中雨", 65:"大雨",
-      71:"小雪", 73:"中雪", 75:"大雪",
-      80:"陣雨", 81:"強陣雨", 82:"暴雨",
-      95:"雷雨"
-    };
-    return map[code] ?? `天氣代碼 ${code}`;
+  let currentCityKey = "sapporo";
+  let inited = false;
+  const cache = new Map(); // cityKey -> { ts, data }
+
+  function fmtTimeHHmm(iso){
+    // iso: "2025-12-29T01:15"
+    if (!iso) return "--";
+    const t = iso.split("T")[1] || "";
+    return t.slice(0,5) || "--";
   }
 
-  function updateWeatherDisplay(data, cityNameZh) {
-    const cw = data && data.current_weather ? data.current_weather : {};
-
-    const cityEl = $("location-name");
-    const tempEl = $("temperatureVal");
-    const descEl = $("descriptionText");
-    const humEl  = $("humidityVal");
-    const windEl = $("windspeedVal");
-    const tipEl  = $("wxTip");
-    const subEl  = $("wxSub");
-
-    if (cityEl) cityEl.textContent = cityNameZh || "天氣";
-    if (tempEl) tempEl.textContent = (cw.temperature != null) ? Math.round(cw.temperature) : "--";
-    if (descEl) descEl.textContent = (cw.weathercode != null) ? weatherCodeToText(cw.weathercode) : "--";
-
-    // ⚠️ Open-Meteo 的 current_weather 沒有 humidity（要濕度需改 API 參數）
-    if (humEl) humEl.textContent = "--";
-
-    if (windEl) windEl.textContent = (cw.windspeed != null) ? Math.round(cw.windspeed) : "--";
-
-    const time = cw.time ? cw.time.replace("T"," ") : "";
-    const windDir = (cw.winddirection != null) ? `${cw.winddirection}°` : "";
-    if (subEl) subEl.textContent = [time ? `更新：${time}` : "", windDir ? `風向：${windDir}` : ""].filter(Boolean).join("　");
-
-    if (tipEl) {
-      if (cw.temperature == null || cw.weathercode == null) {
-        tipEl.textContent = "載入失敗，請稍後再試。";
-      } else {
-        tipEl.textContent = `目前 ${cityNameZh} ${Math.round(cw.temperature)}°，${weatherCodeToText(cw.weathercode)}。`;
-      }
-    }
+  function fmtUpdate(iso){
+    // 顯示 "更新：2025-12-29 01:15"
+    if (!iso) return "更新：--";
+    return "更新：" + iso.replace("T", " ");
   }
 
-  async function getWeatherData(cityKey) {
-    const city = cities[cityKey];
-    if (!city) return;
-
-    const url = `${weatherApiUrl}?latitude=${city.latitude}&longitude=${city.longitude}&current_weather=true`;
-
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      updateWeatherDisplay(data, cityNameZhMap[cityKey] || cityKey);
-    } catch (err) {
-      console.error("獲取天氣資料失敗:", err);
-      updateWeatherDisplay({}, cityNameZhMap[cityKey] || cityKey);
-    }
+  function wxText(code){
+    return WX_TEXT[code] ?? `代碼 ${code}`;
   }
 
-  function setActivePill(cityKey) {
-    document.querySelectorAll(".wx-pill").forEach(btn => {
+  function setActivePill(cityKey){
+    const pills = elPills();
+    if (!pills) return;
+    pills.querySelectorAll(".wx-pill").forEach(btn=>{
       btn.classList.toggle("active", btn.dataset.city === cityKey);
     });
+
+    // 讓 active 的 pill 捲到中間（滑動時更像 iPhone）
+    const active = pills.querySelector(`.wx-pill[data-city="${cityKey}"]`);
+    if (active && pills.scrollTo) {
+      const left = active.offsetLeft - (pills.clientWidth/2) + (active.clientWidth/2);
+      pills.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    }
   }
 
-  // 1) Pill 切換城市
-  function bindPills() {
-    document.querySelectorAll(".wx-pill").forEach(btn => {
-      btn.addEventListener("click", () => {
+  function buildUrl(cityKey){
+    const c = CITIES[cityKey];
+    // ✅ current_weather：拿現在溫度/天氣code/更新時間
+    // ✅ hourly：拿 24hr 溫度 + 天氣code
+    // ✅ timezone：用日本（北海道）
+    // ✅ forecast_days=2：避免跨日 24 小時不夠
+    return `${weatherApiUrl}?latitude=${c.latitude}&longitude=${c.longitude}`
+      + `&current_weather=true`
+      + `&hourly=temperature_2m,weathercode`
+      + `&forecast_days=2`
+      + `&timezone=Asia%2FTokyo`;
+  }
+
+  async function fetchWeather(cityKey){
+    // 簡單快取：10 分鐘內不重打（你也說不是秒級更新）
+    const hit = cache.get(cityKey);
+    const now = Date.now();
+    if (hit && (now - hit.ts) < 10*60*1000) return hit.data;
+
+    const url = buildUrl(cityKey);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Weather API failed");
+    const data = await res.json();
+    cache.set(cityKey, { ts: now, data });
+    return data;
+  }
+
+  function pickNext24Hours(data){
+    const times = data?.hourly?.time || [];
+    const temps = data?.hourly?.temperature_2m || [];
+    const codes = data?.hourly?.weathercode || [];
+
+    // 用 current_weather.time 當作「現在」基準
+    const nowIso = data?.current_weather?.time;
+    let startIdx = 0;
+
+    if (nowIso && times.length){
+      // 找到 >= now 的第一個 index
+      const idx = times.findIndex(t => t >= nowIso);
+      startIdx = idx >= 0 ? idx : 0;
+    }
+
+    // 取 24 筆
+    const out = [];
+    for (let i = startIdx; i < Math.min(startIdx + 24, times.length); i++){
+      out.push({
+        time: times[i],
+        temp: temps[i],
+        code: codes[i]
+      });
+    }
+
+    // 如果資料太少（極少見），就改抓最前面 24
+    if (out.length < 24 && times.length >= 24){
+      out.length = 0;
+      for (let i = 0; i < 24; i++){
+        out.push({ time: times[i], temp: temps[i], code: codes[i] });
+      }
+    }
+    return out;
+  }
+
+  function render(cityKey, data){
+    const c = CITIES[cityKey];
+    const cw = data?.current_weather;
+
+    if (elCity()) elCity().textContent = c.name;
+    if (elTemp()) elTemp().textContent = (cw?.temperature ?? "--");
+    if (elDesc()) elDesc().textContent = wxText(cw?.weathercode);
+    if (elSub()) elSub().textContent = fmtUpdate(cw?.time);
+
+    // 24hr
+    const list = pickNext24Hours(data);
+    const hourlyWrap = elHourly();
+    if (!hourlyWrap) return;
+
+    hourlyWrap.innerHTML = list.map(item=>{
+      const hhmm = fmtTimeHHmm(item.time);
+      const t = (item.temp ?? "--");
+      const w = wxText(item.code);
+      return `
+        <div class="wx-hour">
+          <div class="t">${hhmm}</div>
+          <div class="w">${w}</div>
+          <div class="c">${Math.round(t)}°</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function loadCity(cityKey){
+    currentCityKey = cityKey;
+    setActivePill(cityKey);
+
+    // loading state
+    if (elDesc()) elDesc().textContent = "載入中…";
+    if (elTemp()) elTemp().textContent = "--";
+    if (elSub()) elSub().textContent = "更新：--";
+    if (elHourly()) elHourly().innerHTML = "";
+
+    try{
+      const data = await fetchWeather(cityKey);
+      render(cityKey, data);
+    }catch(err){
+      console.error(err);
+      if (elDesc()) elDesc().textContent = "讀取失敗（請檢查網路）";
+    }
+  }
+
+  function bindUI(){
+    if (inited) return;
+    inited = true;
+
+    // pills 點擊（事件委派）
+    const pills = elPills();
+    if (pills){
+      pills.addEventListener("click", (e)=>{
+        const btn = e.target.closest(".wx-pill");
+        if (!btn) return;
         const cityKey = btn.dataset.city;
-        setActivePill(cityKey);
-        getWeatherData(cityKey);
+        if (!CITIES[cityKey]) return;
+        loadCity(cityKey);
       });
-    });
+    }
   }
 
-  // 2) 底部選單進入天氣頁：統一走 showPage，並自動載入札幌
-  function bindBottomNavEnterWeather() {
-    const weatherBtn = document.querySelector('.bottom-nav button[data-page="weather-page"]');
-    if (!weatherBtn) return;
+  // 對外：給你的 showPage 呼叫用
+  window.__openWeatherPage = function(){
+    bindUI();
+    // 每次進天氣頁都刷新一次（但有 10 分鐘快取，不會狂打）
+    loadCity(currentCityKey || "sapporo");
+  };
 
-    // 避免重複綁定
-    if (weatherBtn.dataset.wxBound === "1") return;
-    weatherBtn.dataset.wxBound = "1";
-
-    weatherBtn.addEventListener("click", () => {
-      if (typeof showPage === "function") showPage("weather-page");
-
-      // 預設札幌
-      setActivePill("sapporo");
-      getWeatherData("sapporo");
+  // ✅ 如果你是「點底部選單」進天氣頁：這裡幫你掛一次
+  // 你原本 bottom-nav 已經有 listener 會 showPage(page)
+  // 我們只補「當 page 是 weather-page，就呼叫 __openWeatherPage」
+  document.querySelectorAll(".bottom-nav button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if (btn.dataset.page === "weather-page"){
+        // 等 showPage 把 DOM 顯示出來再載入
+        requestAnimationFrame(()=> window.__openWeatherPage());
+      }
     });
-  }
+  });
 
-  // 3) 左上全螢幕選單進入天氣頁：監聽點擊後，如果 target=weather-page 也自動載入
-  function bindMenuEnterWeather() {
-    document.querySelectorAll('.menu-content li[data-target="weather-page"]').forEach(li => {
-      if (li.dataset.wxBound === "1") return;
-      li.dataset.wxBound = "1";
-
-      li.addEventListener("click", () => {
-        // 你原本已經會 closeMenu() + showPage("weather-page")
-        // 這裡只補「載入札幌」
-        setTimeout(() => {
-          setActivePill("sapporo");
-          getWeatherData("sapporo");
-        }, 0);
-      });
-    });
-  }
-
-  // 初始化（script 在 body 最後：可直接跑）
-  bindPills();
-  bindBottomNavEnterWeather();
-  bindMenuEnterWeather();
-
-  // 如果你一開始就想顯示天氣頁，也可以解除註解：
-  // setActivePill("sapporo"); getWeatherData("sapporo");
 })();
 </script>
+
 
 <script>
 	function setNavBack() {

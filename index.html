@@ -1665,6 +1665,29 @@
   height: 22px;
   object-fit: contain;
 }
+/* 24hr 橫向滑 */
+#wxHourly{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:12px 6px 4px;
+  scroll-snap-type:x mandatory;
+}
+#wxHourly::-webkit-scrollbar{ display:none; }
+
+.wx-hour{
+  flex:0 0 auto;
+  width:84px;
+  background:rgba(255,255,255,0.55);
+  border-radius:16px;
+  padding:12px 10px;
+  text-align:center;
+  scroll-snap-align:start;
+}
+.wx-hour-time{ font-size:14px; opacity:.85; }
+.wx-hour-icon{ width:24px; height:24px; object-fit:contain; display:block; margin:8px auto 0; }
+.wx-hour-temp{ font-size:18px; margin-top:6px; font-weight:600; }
 	
 </style>
 </head>
@@ -3656,177 +3679,185 @@
 	</script>
 	
 	<script>
-// ===== Weather (Open-Meteo) =====
-const WX = {
-  api: "https://api.open-meteo.com/v1/forecast",
-  cities: {
-    sapporo: { name: "札幌", latitude: 43.0667, longitude: 141.35, tz: "Asia/Tokyo" },
-    otaru: { name: "小樽", latitude: 43.19, longitude: 140.994, tz: "Asia/Tokyo" },
-    biei: { name: "美瑛", latitude: 43.5333, longitude: 142.4, tz: "Asia/Tokyo" },
-    noboribetsu: { name: "登別", latitude: 42.3800, longitude: 141.0000, tz: "Asia/Tokyo" },
+// =========================
+// Weather Page (Open-Meteo) - matches your HTML
+// ids used: location-name, temperatureVal, descriptionText, wxSub, wxHourly
+// =========================
+(function () {
+  const API = "https://api.open-meteo.com/v1/forecast";
+  const CITIES = {
+    sapporo:     { name: "札幌", latitude: 43.0667, longitude: 141.35,  tz: "Asia/Tokyo" },
+    otaru:       { name: "小樽", latitude: 43.19,   longitude: 140.994, tz: "Asia/Tokyo" },
+    biei:        { name: "美瑛", latitude: 43.5333, longitude: 142.4,   tz: "Asia/Tokyo" },
+    noboribetsu: { name: "登別", latitude: 42.38,   longitude: 141.0,   tz: "Asia/Tokyo" },
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  function codeToText(code) {
+    if (code === 0) return "晴朗";
+    if (code === 1 || code === 2) return "晴時多雲";
+    if (code === 3) return "多雲";
+    if (code === 45 || code === 48) return "起霧";
+    if ([71, 73, 75, 77].includes(code)) return "下雪";
+    if ([85, 86].includes(code)) return "大雪";
+    if ([61, 63, 65, 80, 81, 82].includes(code)) return "下雨";
+    return "--";
   }
-};
 
-// 你的 icon 對照
-function weatherIcon(code) {
-  if (code === 0) return "images/sun.png";
-  if (code === 1 || code === 2) return "images/sun.png";
-  if (code === 3) return "images/cloud.png";
-  if (code === 45 || code === 48) return "images/breeze.png";
-  if ([51,53,55,56,57].includes(code)) return "images/breeze.png";
-  if ([61,63,65,66,67,80,81,82].includes(code)) return "images/breeze.png";
-  if ([71,73,75,77].includes(code)) return "images/snow.png";
-  if ([85,86].includes(code)) return "images/bigsnow.png";
-  if ([95,96,99].includes(code)) return "images/cloud.png";
-  return "images/cloud.png";
-}
+  // 你有放的 icons：cloud.png / sun.png / breeze.png / bigsnow.png / snow.png
+  function weatherIcon(code) {
+    if (code === 0) return "images/sun.png";
+    if (code === 1 || code === 2) return "images/sun.png";
+    if (code === 3) return "images/cloud.png";
+    if (code === 45 || code === 48) return "images/breeze.png";
+    if ([71, 73, 75, 77].includes(code)) return "images/snow.png";
+    if ([85, 86].includes(code)) return "images/bigsnow.png";
+    return "images/cloud.png";
+  }
 
-function codeToText(code){
-  if (code === 0) return "晴朗";
-  if (code === 1 || code === 2) return "晴時多雲";
-  if (code === 3) return "多雲";
-  if (code === 45 || code === 48) return "起霧";
-  if ([51,53,55,56,57].includes(code)) return "毛毛雨";
-  if ([61,63,65,66,67,80,81,82].includes(code)) return "下雨";
-  if ([71,73,75,77].includes(code)) return "下雪";
-  if ([85,86].includes(code)) return "大雪";
-  if ([95,96,99].includes(code)) return "雷雨";
-  return "--";
-}
+  function fmtUpdate(iso) {
+    if (!iso) return "--";
+    return iso.replace("T", " ");
+  }
 
-function fmtUpdateTime(iso){
-  if (!iso) return "--";
-  // iso: "2025-12-29T01:15"
-  const s = iso.replace("T", " ");
-  return s;
-}
+  async function fetchWeather(cityKey) {
+    const c = CITIES[cityKey];
+    const url =
+      `${API}?latitude=${c.latitude}&longitude=${c.longitude}` +
+      `&timezone=${encodeURIComponent(c.tz)}` +
+      `&current=temperature_2m,weather_code,wind_direction_10m` +
+      `&hourly=temperature_2m,weather_code` +
+      `&forecast_days=3`;
 
-// DOM refs（你現在頁面上的 id）
-const elCity = document.getElementById("location-name");
-const elTemp = document.getElementById("temperatureVal");
-const elDesc = document.getElementById("descriptionText");
-const elSub  = document.getElementById("wxSub");
-const elTip  = document.getElementById("wxTip");
+    console.log("[WX] fetch:", cityKey, url);
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("fetch failed: " + res.status);
+    return await res.json();
+  }
 
-// 你要放 24hr 的容器：請在 HTML 裡準備一個 div，例如：<div id="wxHourlyRow"></div>
-// 如果你還沒放，這段會安全跳過
-const elHourlyRow = document.getElementById("wxHourlyRow");
+  function renderCurrent(data, cityKey) {
+    const c = CITIES[cityKey];
+    const t = data?.current?.temperature_2m;
+    const code = data?.current?.weather_code;
+    const updated = data?.current?.time;
+    const windDir = data?.current?.wind_direction_10m;
 
-// 抓資料（新版欄位）
-async function fetchWeather(cityKey){
-  const c = WX.cities[cityKey];
-  const url =
-    `${WX.api}?latitude=${c.latitude}&longitude=${c.longitude}` +
-    `&timezone=${encodeURIComponent(c.tz)}` +
-    `&current=temperature_2m,weather_code,wind_direction_10m` +
-    `&hourly=temperature_2m,weather_code` +
-    `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
-    `&forecast_days=7`;
+    if ($("location-name")) $("location-name").textContent = c.name;
+    if ($("temperatureVal")) $("temperatureVal").textContent = (t ?? "--");
+    if ($("descriptionText")) $("descriptionText").textContent = codeToText(code);
+    if ($("wxSub")) $("wxSub").textContent = `更新：${fmtUpdate(updated)}　風向：${windDir ?? "--"}°`;
+  }
 
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error("fetch failed: " + res.status);
-  return await res.json();
-}
+  function renderHourly24(data) {
+    const box = $("wxHourly");
+    if (!box) return;
 
-// 更新 UI（現在 + 24hr）
-function renderWeather(data, cityKey){
-  const c = WX.cities[cityKey];
+    const times = data?.hourly?.time || [];
+    const temps = data?.hourly?.temperature_2m || [];
+    const codes = data?.hourly?.weather_code || [];
 
-  // current
-  const t = data?.current?.temperature_2m;
-  const code = data?.current?.weather_code;
-  const updated = data?.current?.time;
+    box.innerHTML = "";
 
-  elCity.textContent = c.name;
-  elTemp.textContent = (t ?? "--");
-  elDesc.textContent = codeToText(code);
-  elSub.textContent = `更新：${fmtUpdateTime(updated)}　風向：${data?.current?.wind_direction_10m ?? "--"}°`;
+    if (!times.length) return;
 
-  // tip
-  elTip.textContent = (t != null && code != null)
-    ? `目前 ${c.name} ${t}°，${codeToText(code)}。`
-    : "載入天氣中…";
-
-  // 24hr（從現在那一小時開始取 24 筆）
-  if (elHourlyRow && data?.hourly?.time?.length) {
-    const times = data.hourly.time;
-    const temps = data.hourly.temperature_2m;
-    const codes = data.hourly.weather_code;
-
-    // 找到最接近 current.time 的 index
-    const nowIso = data.current.time;
+    // 從 current.time 開始切 24 筆
+    const nowIso = data?.current?.time;
     let startIdx = times.indexOf(nowIso);
     if (startIdx < 0) startIdx = 0;
-
-    elHourlyRow.innerHTML = "";
 
     for (let i = 0; i < 24; i++) {
       const idx = startIdx + i;
       if (idx >= times.length) break;
 
-      const hour = times[idx].slice(11, 13); // "01"
+      const hour = times[idx].slice(11, 13);
       const temp = temps[idx];
-      const wcode = codes[idx];
+      const code = codes[idx];
 
       const item = document.createElement("div");
       item.className = "wx-hour";
 
-      const label = document.createElement("div");
-      label.className = "wx-hour-t";
-      label.textContent = (i === 0) ? "現在" : `${Number(hour)}時`;
+      const tEl = document.createElement("div");
+      tEl.className = "wx-hour-time";
+      tEl.textContent = (i === 0) ? "現在" : `${Number(hour)}時`;
 
-      const iconBox = document.createElement("div");
-      iconBox.className = "wx-hour-i";
-      iconBox.innerHTML = "";
       const img = document.createElement("img");
-      img.src = weatherIcon(wcode);
-      img.alt = "";
-      img.className = "wx-icon";
-      iconBox.appendChild(img);
+      img.className = "wx-hour-icon";
+      img.src = weatherIcon(code);
+      img.alt = codeToText(code);
 
-      const tv = document.createElement("div");
-      tv.className = "wx-hour-v";
-      tv.textContent = `${Math.round(temp)}°`;
+      // 圖片載入失敗時給 fallback（避免你看到空白）
+      img.onerror = () => {
+        img.style.display = "none";
+      };
 
-      item.appendChild(label);
-      item.appendChild(iconBox);
-      item.appendChild(tv);
+      const vEl = document.createElement("div");
+      vEl.className = "wx-hour-temp";
+      vEl.textContent = `${Math.round(temp)}°`;
 
-      elHourlyRow.appendChild(item);
+      item.appendChild(tEl);
+      item.appendChild(img);
+      item.appendChild(vEl);
+      box.appendChild(item);
     }
   }
-}
 
-let wxLoading = false;
-async function loadCity(cityKey){
-  if (wxLoading) return;
-  wxLoading = true;
-  try {
-    elTip.textContent = "載入天氣中…";
-    const data = await fetchWeather(cityKey);
-    renderWeather(data, cityKey);
-  } catch (e) {
-    console.error(e);
-    elTip.textContent = "載入失敗，請確認網路或 API 參數。";
-  } finally {
-    wxLoading = false;
+  let loading = false;
+  async function loadCity(cityKey) {
+    if (loading) return;
+    loading = true;
+
+    // 先顯示 loading 狀態
+    if ($("temperatureVal")) $("temperatureVal").textContent = "--";
+    if ($("descriptionText")) $("descriptionText").textContent = "--";
+    if ($("wxSub")) $("wxSub").textContent = "更新：載入中…";
+    if ($("wxHourly")) $("wxHourly").innerHTML = "";
+
+    try {
+      const data = await fetchWeather(cityKey);
+      renderCurrent(data, cityKey);
+      renderHourly24(data);
+      console.log("[WX] render ok:", cityKey, data);
+    } catch (e) {
+      console.error("[WX] load failed:", e);
+      if ($("wxSub")) $("wxSub").textContent = "更新：載入失敗（看 Console 錯誤）";
+    } finally {
+      loading = false;
+    }
   }
-}
 
-// pills 綁定
-document.querySelectorAll(".wx-pill").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".wx-pill").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    loadCity(btn.dataset.city);
+  function bindCityPills() {
+    document.querySelectorAll(".wx-pill").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".wx-pill").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        loadCity(btn.dataset.city);
+      });
+    });
+  }
+
+  // ✅ 切到 weather-page 時自動載入
+  function hookShowPage() {
+    if (typeof window.showPage !== "function") {
+      console.warn("[WX] 找不到 showPage()，把這段 JS 放到所有 script 最後面");
+      return;
+    }
+    const _showPage = window.showPage;
+    window.showPage = function (targetId) {
+      _showPage(targetId);
+      if (targetId === "weather-page") {
+        const active = document.querySelector(".wx-pill.active")?.dataset.city || "sapporo";
+        loadCity(active);
+      }
+    };
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    bindCityPills();
+    hookShowPage();
+    console.log("[WX] init done");
   });
-});
-
-// 當你切到 weather-page 時，記得呼叫 loadCity（例如 showPage 進來後）
-function initWeatherPage(){
-  const active = document.querySelector(".wx-pill.active")?.dataset.city || "sapporo";
-  loadCity(active);
-}
+})();
 
 </script>
 

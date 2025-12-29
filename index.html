@@ -1480,7 +1480,7 @@
 	}
 
 
-	/* ========== Weather iPhone-like UI ========== */
+/* ========== Weather iPhone-like UI ========== */
 .weather-page{
   /* 讓背景動畫能完整鋪底 */
   min-height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h));
@@ -1489,126 +1489,175 @@
   padding-right: 18px;
   padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 18px);
   box-sizing: border-box;
+
   position: relative;
   overflow: hidden;
+
+  /* ✅ 只讓本體負責「底色」 */
+  background: transparent; /* 預設不畫，避免進頁面先閃紫色 */
+  transition: background 600ms ease;
 }
 
-/* 背景微動畫：用 class 切換 */
+/* ✅ loading 時：全部動畫層先關掉，避免閃一下 */
+.weather-page.is-loading{
+  background: transparent !important;
+}
+.weather-page.is-loading::before,
+.weather-page.is-loading::after{
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+/* ========== 背景層級整理：::before 光感 / ::after 雪 / 內容最上 ========== */
 .weather-page::before,
 .weather-page::after{
   content:"";
   position:absolute;
-  inset:-40px;
   pointer-events:none;
-  z-index:0;
 }
 
-.weather-page.wx-bg-cloudy::before{
-  background:radial-gradient(circle at 40% 35%, rgb(0 161 255 / 62%), #00000000 55%), radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.28), transparent 60%), linear-gradient(180deg, #cae3ff, rgb(7 100 255));
-  animation: wxCloudMove 10s ease-in-out infinite alternate;
-  filter: blur(0px);
+/* 光感層（雲感/日光/星光都放這） */
+.weather-page::before{
+  inset:-40px;
+  z-index:0;
+  opacity:0;                 /* 預設不顯示，等 class 觸發 */
+  transition: opacity .35s ease;
 }
+
+/* 雪層（只有下雪才開） */
+.weather-page::after{
+  inset:-25%;
+  z-index:1;
+  opacity:0;
+  transition: opacity .25s ease;
+}
+
+/* 內容層 */
+.wx-wrap{
+  position: relative;
+  z-index:2;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ========== 4 種時間段底色（只改這裡就能換漸層） ========== */
+/* 日出（晨曦） */
+.weather-page.bg-sunrise{
+  background: linear-gradient(180deg,
+    #bfe9ff 0%,
+    #7ab6ff 45%,
+    #3f7bff 100%
+  );
+}
+/* 白天（淺藍 → 深藍） */
+.weather-page.bg-day{
+  background: linear-gradient(180deg,
+    #cfefff 0%,
+    #6cb8ff 50%,
+    #1d63ff 100%
+  );
+}
+/* 日落（黃昏） */
+.weather-page.bg-sunset{
+  background: linear-gradient(180deg,
+    #5b8dff 0%,
+    #7a63ff 45%,
+    #2a1b5e 100%
+  );
+}
+/* 黑夜 */
+.weather-page.bg-night{
+  background: linear-gradient(180deg,
+    #071427 0%,
+    #0b2444 55%,
+    #040a14 100%
+  );
+}
+
+/* ========== 微動畫模式（wx- 只負責光感/雪，不碰底色） ========== */
+/* ✅ 晴 / 多雲 都用同一套光感（你要區分再加強即可） */
+.weather-page.wx-bg-clear::before,
+.weather-page.wx-bg-cloudy::before,
+.weather-page.wx-bg-snow::before{
+  opacity:.9;
+  background:
+    radial-gradient(circle at 40% 35%, rgb(0 161 255 / 28%), transparent 55%),
+    radial-gradient(circle at 50% 40%, rgba(255,255,255,.16), transparent 60%);
+  animation: wxCloudMove 10s ease-in-out infinite alternate;
+}
+
+/* 光感漂移 */
 @keyframes wxCloudMove{
   from{ transform: translate3d(-10px, -8px, 0); }
   to  { transform: translate3d(10px, 8px, 0); }
 }
 
-.weather-page.wx-bg-snow::before{
-  background:radial-gradient(circle at 40% 35%, rgb(0 161 255 / 62%), #00000000 55%), radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.28), transparent 60%), linear-gradient(180deg, #cae3ff, rgb(7 100 255));
-  filter: blur(0px);
-}
+/* ========== 下雪（只在 wx-bg-snow 開雪層） ========== */
 .weather-page.wx-bg-snow::after{
-  content:"";
-  position:absolute;
-  inset:-25%;
-  pointer-events:none;
-  z-index:2;
-  opacity:.9;
-  filter: blur(.35px) drop-shadow(0 0 3px rgba(255,255,255,.35));
+  opacity:.70; /* ✅ 控制「看起來」的雪量（越小越淡） */
+  filter: blur(.35px) drop-shadow(0 0 3px rgba(255,255,255,.22));
 
-  /* 多一點雪點 + 大小混合（打散） */
+  /* ✅ 雪點：大小混合、數量比你原本少一點（你說要減少數量） */
   background-image:
-    /* 大顆雪（2 層） */
-    radial-gradient(3.6px 3.6px at 18% 22%, rgba(255,255,255,.72) 60%, transparent 61%),
-    radial-gradient(3.2px 3.2px at 75% 30%, rgba(255,255,255,.68) 60%, transparent 61%),
+    /* 大顆（少） */
+    radial-gradient(3.4px 3.4px at 18% 22%, rgba(255,255,255,.62) 60%, transparent 61%),
+    radial-gradient(3.1px 3.1px at 75% 30%, rgba(255,255,255,.58) 60%, transparent 61%),
 
-    /* 中顆雪（2 層） */
-    radial-gradient(2.6px 2.6px at 42% 65%, rgba(255,255,255,.58) 60%, transparent 61%),
-    radial-gradient(2.4px 2.4px at 60% 48%, rgba(255,255,255,.55) 60%, transparent 61%),
+    /* 中顆（中） */
+    radial-gradient(2.5px 2.5px at 42% 65%, rgba(255,255,255,.50) 60%, transparent 61%),
+    radial-gradient(2.3px 2.3px at 60% 48%, rgba(255,255,255,.48) 60%, transparent 61%),
 
-    /* 小顆雪（2 層） */
-    radial-gradient(1.8px 1.8px at 85% 80%, rgba(255,255,255,.45) 60%, transparent 61%),
-    radial-gradient(1.6px 1.6px at 25% 55%, rgba(255,255,255,.42) 60%, transparent 61%);
+    /* 小顆（多） */
+    radial-gradient(1.7px 1.7px at 85% 80%, rgba(255,255,255,.40) 60%, transparent 61%),
+    radial-gradient(1.5px 1.5px at 25% 55%, rgba(255,255,255,.38) 60%, transparent 61%);
 
   background-repeat: repeat;
 
-  /* ⬅️ 關鍵：尺寸變大 = 雪變疏 */
+  /* ✅ 尺寸越大＝越疏（也就是雪量變少） */
   background-size:
-    360px 320px,
-    420px 380px,
+    380px 340px,
+    440px 400px,
+    320px 300px,
     300px 280px,
-    280px 260px,
-    220px 200px,
-    200px 180px;
+    240px 220px,
+    220px 200px;
 
-  /* ✅ 三段式：下落同時左右飄，且每層偏移不一樣 */
-  animation: snowDrift 60s linear infinite;
+  /* ✅ 慢一點 + 左右飄（不會直線太快） */
+  animation: snowDrift 70s linear infinite;
 }
 
-/* 左右飄＋下落（S 型） */
+/* ✅ 左右飄＋下落（S 型） */
 @keyframes snowDrift{
   0%{
     background-position:
-      0 -300px,
-      60px -480px,
-      -40px -420px,
-      90px -360px,
-      -70px -400px,
-      30px -380px;
+      0 -320px,
+      60px -520px,
+      -40px -460px,
+      90px -400px,
+      -70px -440px,
+      30px -420px;
   }
   50%{
     background-position:
-      80px 380px,
-      20px 580px,
-      120px 520px,
-      40px 460px,
-      150px 500px,
-      -20px 480px;
+      90px 420px,
+      10px 640px,
+      140px 580px,
+      30px 520px,
+      170px 560px,
+      -30px 540px;
   }
   100%{
     background-position:
-      -40px 1050px,
-      140px 1250px,
-      30px 1180px,
-      170px 1100px,
-      60px 1220px,
-      90px 1160px;
+      -50px 1120px,
+      160px 1360px,
+      20px 1280px,
+      190px 1200px,
+      80px 1340px,
+      110px 1260px;
   }
 }
 
-
-@keyframes wxSnowFall{
-  from{ transform: translateY(-40px); }
-  to  { transform: translateY(40px); }
-}
-
-.weather-page.wx-bg-clear::before{
-  background:radial-gradient(circle at 40% 35%, rgb(0 161 255 / 62%), #00000000 55%), radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.28), transparent 60%), linear-gradient(180deg, #cae3ff, rgb(7 100 255));
-  animation: wxClearPulse 8s ease-in-out infinite alternate;
-}
-@keyframes wxClearPulse{
-  from{ transform: scale(1); opacity: .95; }
-  to  { transform: scale(1.03); opacity: 1; }
-}
-
-.wx-wrap{
-  position: relative;
-  z-index: 1; /* 蓋在背景之上 */
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-/* 圓點 */
+/* ========== 圓點 ========== */
 .wx-dots{
   display:flex;
   gap:8px;
@@ -1630,7 +1679,7 @@
   transform: scale(1.2);
 }
 
-/* Header */
+/* ========== Header ========== */
 .wx-hero{
   text-align:center;
   color: rgba(255,255,255,0.95);
@@ -1660,17 +1709,10 @@
   font-size: 34px;
   opacity: 0.95;
 }
-.wx-desc{
-  font-size: 18px;
-  opacity: 0.95;
-}
-.wx-hilo{
-  font-size: 16px;
-  opacity: 0.9;
-  margin-top: 6px;
-}
+.wx-desc{ font-size: 18px; opacity: 0.95; }
+.wx-hilo{ font-size: 16px; opacity: 0.9; margin-top: 6px; }
 
-/* 卡片 */
+/* ========== 卡片 ========== */
 .wx-card{
   background: rgba(255,255,255,0.16);
   border: 1px solid rgba(255,255,255,0.18);
@@ -1694,7 +1736,7 @@
   margin-bottom: 10px;
 }
 
-/* 24hr 橫向滑動 */
+/* ========== 24hr 橫向滑動 ========== */
 .wx-hourly{
   display:flex;
   gap: 10px;
@@ -1732,7 +1774,7 @@
   color: rgba(255,255,255,0.95);
 }
 
-/* 7 days */
+/* ========== 7 days ========== */
 .wx-week{
   display:flex;
   flex-direction: column;
@@ -1745,10 +1787,7 @@
   align-items:center;
   color: rgba(255,255,255,0.95);
 }
-.wx-week-day{
-  font-size: 14px;
-  opacity: .95;
-}
+.wx-week-day{ font-size: 14px; opacity: .95; }
 .wx-week-icon{
   width: 22px;
   height: 22px;
@@ -1773,51 +1812,19 @@
   top:0;
   height: 5px;
   border-radius: 999px;
-  background:linear-gradient(90deg, #afffff, #14dffd); /* 橘色 min-max */
+  background:linear-gradient(90deg, #afffff, #14dffd);
 }
 
-/* 固定兩塊的最小高度，避免空資料高度變 0 */
-#wxHourly { min-height: 92px; } /* 你一列 hour 卡片大概高度 */
-#wxWeek   { min-height: 220px; } /* 7 天列表大概高度 */
-/* 統一背景切換動畫 */
-.weather-page{
-  transition: background 600ms ease;
-}
+/* ✅ 固定兩塊的最小高度，避免切換地區載入時高度變 0 造成閃一下 */
+#wxHourly{ min-height: 92px; }
+#wxWeek{ min-height: 220px; }
 
-/* 日出（晨曦） */
-.weather-page.bg-sunrise{
-  background: linear-gradient(180deg,
-    #bfe9ff 0%,
-    #7ab6ff 45%,
-    #3f7bff 100%
-  );
-}
-
-/* 白天 */
-.weather-page.bg-day{
-  background: linear-gradient(180deg,
-    #bfe9ff 0%,
-    #4ea3ff 55%,
-    #1d5bff 100%
-  );
-}
-
-/* 日落（黃昏） */
-.weather-page.bg-sunset{
-  background: linear-gradient(180deg,
-    #5b8dff 0%,
-    #7a63ff 45%,
-    #2a1b5e 100%
-  );
-}
-
-/* 黑夜 */
-.weather-page.bg-night{
-  background: linear-gradient(180deg,
-    #071427 0%,
-    #0b2444 55%,
-    #040a14 100%
-  );
+/* 無障礙：減少動畫 */
+@media (prefers-reduced-motion: reduce) {
+  .weather-page::before,
+  .weather-page::after {
+    animation: none !important;
+  }
 }
 
 </style>
@@ -3821,25 +3828,25 @@
 
 	</script>
 	
-	<script>
+<script>
 /* ============================
-   Weather Page (All-in-One)
+   Weather Page (Unified JS)
+   - background: bg-* (sunrise/day/sunset/night)
+   - effect: wx-bg-* (clear/cloudy/snow)
+   - loading: is-loading
 ============================ */
 
-// ---- 你要改城市在這裡 ----
+/* ---------- 城市設定 ---------- */
 const WX_CITIES = [
-  { key: "sapporo",    name: "札幌",   latitude: 43.0667, longitude: 141.3500 },
-  { key: "otaru",      name: "小樽",   latitude: 43.1900, longitude: 140.9940 },
-  { key: "biei",       name: "美瑛",   latitude: 43.5333, longitude: 142.4000 },
-  { key: "noboribetsu",name: "登別",   latitude: 42.3800, longitude: 141.0000 }
+  { key: "sapporo",     name: "札幌",   latitude: 43.0667, longitude: 141.3500 },
+  { key: "otaru",       name: "小樽",   latitude: 43.1900, longitude: 140.9940 },
+  { key: "biei",        name: "美瑛",   latitude: 43.5333, longitude: 142.4000 },
+  { key: "noboribetsu", name: "登別",   latitude: 42.3800, longitude: 141.0000 }
 ];
 
-// ---- icon 對照表（你有新增 icon：把檔名在這裡對上） ----
-// 建議你把 icon 放在 images/weather/ 之類固定資料夾
-// 例：images/weather/snow.png、images/weather/cloudy.png...
-const WX_ICON_BASE = "images/"; // <<<<<< 你 icon 放哪就改這
+/* ---------- icon 設定 ---------- */
+const WX_ICON_BASE = "images/"; // 你的 icon 資料夾
 const WX_ICON_MAP = {
-  // 基本
   clear: "clear.png",
   partly_cloudy: "partly_cloudy.png",
   cloudy: "cloudy.png",
@@ -3854,14 +3861,12 @@ const WX_ICON_MAP = {
   sunset: "sunset.png",
   unknown: "unknown.png"
 };
-
 function wxIconSrc(key){
   return WX_ICON_BASE + (WX_ICON_MAP[key] || WX_ICON_MAP.unknown);
 }
 
-// ---- Open-Meteo 天氣碼轉文字/圖示 ----
+/* ---------- Open-Meteo code mapping ---------- */
 function weatherCodeToText(code){
-  // 你可依你的 icon/文案再細分
   if (code === 0) return "晴天";
   if ([1].includes(code)) return "大致晴朗";
   if ([2].includes(code)) return "局部多雲";
@@ -3875,7 +3880,6 @@ function weatherCodeToText(code){
   if ([95,96,99].includes(code)) return "雷雨";
   return "天氣變化";
 }
-
 function weatherCodeToIconKey(code){
   if (code === 0) return "clear";
   if ([1,2].includes(code)) return "partly_cloudy";
@@ -3889,15 +3893,56 @@ function weatherCodeToIconKey(code){
   if ([95,96,99].includes(code)) return "thunder";
   return "unknown";
 }
-
-// 背景：只做大方向（雪/多雲/晴）
-function weatherCodeToBgClass(code){
+/* 特效背景：雪/多雲/晴 */
+function weatherCodeToFxClass(code){
   if ([71,73,75,77,85,86].includes(code)) return "wx-bg-snow";
   if ([2,3,45,48].includes(code)) return "wx-bg-cloudy";
   return "wx-bg-clear";
 }
 
-// ---- 上午/下午時間文字 ----
+/* ---------- 日出/白天/日落/黑夜（用當地時間） ---------- */
+function setBgClass(page, cls){
+  page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
+  page.classList.add(cls);
+}
+function getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, twilightMin = 45){
+  const t = twilightMin * 60 * 1000;
+  const sunriseStart = sunriseLocalMs - t;
+  const sunriseEnd   = sunriseLocalMs + t;
+  const sunsetStart  = sunsetLocalMs - t;
+  const sunsetEnd    = sunsetLocalMs + t;
+
+  if (nowLocalMs >= sunriseStart && nowLocalMs < sunriseEnd) return "sunrise";
+  if (nowLocalMs >= sunriseEnd   && nowLocalMs < sunsetStart) return "day";
+  if (nowLocalMs >= sunsetStart  && nowLocalMs < sunsetEnd) return "sunset";
+  return "night";
+}
+/* 直接用「同一包 forecast 回來的 timezone/utc_offset」算當地時間 */
+function applySunBgFromForecast(data){
+  const page = document.getElementById("weather-page");
+  if (!page) return;
+
+  const offsetSec = Number(data?.utc_offset_seconds ?? 0);
+  const sunriseISO = data?.daily?.sunrise?.[0];
+  const sunsetISO  = data?.daily?.sunset?.[0];
+  if (!sunriseISO || !sunsetISO) return;
+
+  // Open-Meteo 在 timezone=auto 時，daily.sunrise/sunset 會是「當地時間字串」
+  // ✅ 做法：把它當「當地時間」解析，再補上 offset，變成一致的時間戳比較安全
+  // 這裡用 offsetSec 來把「現在」轉當地，再用 Date(sunriseISO) 直接解析（通常能正確）
+  const sunriseLocalMs = new Date(sunriseISO).getTime();
+  const sunsetLocalMs  = new Date(sunsetISO).getTime();
+
+  const nowLocalMs = Date.now() + offsetSec * 1000;
+
+  const phase = getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, 45);
+  if (phase === "sunrise") setBgClass(page, "bg-sunrise");
+  else if (phase === "day") setBgClass(page, "bg-day");
+  else if (phase === "sunset") setBgClass(page, "bg-sunset");
+  else setBgClass(page, "bg-night");
+}
+
+/* ---------- 時間文字 ---------- */
 function apHourLabel(dateObj){
   const h = dateObj.getHours();
   const ap = h < 12 ? "上午" : "下午";
@@ -3909,22 +3954,25 @@ function formatApTime(dateObj){
   return `${ap}${h12}時`;
 }
 function formatApRange(startDate, endDate){
-  // 區間顯示：上午3時-5時 / 上午11時-下午1時
   const s = apHourLabel(startDate);
   const e = apHourLabel(endDate);
   if (s.ap === e.ap) return `${s.ap}${s.h12}時-${e.h12}時`;
   return `${s.ap}${s.h12}時-${e.ap}${e.h12}時`;
 }
+function pad2(n){ return String(n).padStart(2,"0"); }
+function hourLabel(dateObj){ return `${pad2(dateObj.getHours())}`; }
+function weekdayLabel(dateObj){
+  const map = ["日","一","二","三","四","五","六"];
+  return `週${map[dateObj.getDay()]}`;
+}
 
-// ---- 事件分類（給提醒字串用）----
+/* ---------- 提醒（下雪/局部多雲/刮風 + 日出日落） ---------- */
 function codeToEvent(code){
-  // 你想要的事件：下雪 / 局部多雲
   if ([71,73,75,77,85,86].includes(code)) return "下雪";
   if (code === 2) return "局部多雲";
   return null;
 }
 function windToEvent(windMS){
-  // 刮風門檻：>= 10 m/s 你可調整
   if (!Number.isFinite(windMS)) return null;
   return windMS >= 10 ? "刮風" : null;
 }
@@ -3971,15 +4019,11 @@ function buildEventSegments(hourlyTimesISO, hourlyCodes, hourlyWindMS){
     }
   }
   if (cur) segs.push(cur);
-
   return segs;
 }
-
 function buildNoteString({ hourlyTimesISO, hourlyCodes, hourlyWindMS, sunEvents=[] }){
   const segs = buildEventSegments(hourlyTimesISO, hourlyCodes, hourlyWindMS);
   const sunSegs = (sunEvents || []).map(e => ({ type: e.type, start: e.at, end: e.at }));
-
-  // 合併排序
   const all = [...segs, ...sunSegs].sort((a,b)=>a.start - b.start);
   if (!all.length) return "今天沒有明顯的氣候變化。";
 
@@ -4000,7 +4044,7 @@ function buildNoteString({ hourlyTimesISO, hourlyCodes, hourlyWindMS, sunEvents=
   return `${fromPart}${nextPart}`;
 }
 
-// ---- 工具：找「現在時間」在 hourly 裡最接近的 index ----
+/* ---------- 工具：找最近的 hourly index ---------- */
 function nearestHourIndex(timesISO){
   const now = Date.now();
   let best = 0;
@@ -4016,18 +4060,6 @@ function nearestHourIndex(timesISO){
   return best;
 }
 
-function pad2(n){ return String(n).padStart(2,"0"); }
-function hourLabel(dateObj){
-  // 顯示「HH」或「現在」
-  const h = dateObj.getHours();
-  return `${pad2(h)}`;
-}
-
-function weekdayLabel(dateObj){
-  const map = ["日","一","二","三","四","五","六"];
-  return `週${map[dateObj.getDay()]}`;
-}
-
 /* ============================
    State / DOM
 ============================ */
@@ -4040,18 +4072,19 @@ function initWeatherPageOnce(){
   if (wxInited) return;
   wxInited = true;
 
-  // dots
   renderDots();
 
   // 點擊 dots 切換
   const dots = wxEl("wxDots");
-  dots.addEventListener("click", (e) => {
-    const dot = e.target.closest(".wx-dot");
-    if (!dot) return;
-    const idx = Number(dot.dataset.index);
-    if (!Number.isFinite(idx)) return;
-    switchCity(idx);
-  });
+  if (dots){
+    dots.addEventListener("click", (e) => {
+      const dot = e.target.closest(".wx-dot");
+      if (!dot) return;
+      const idx = Number(dot.dataset.index);
+      if (!Number.isFinite(idx)) return;
+      switchCity(idx);
+    });
+  }
 
   // 左右滑切換
   bindWeatherSwipe();
@@ -4100,10 +4133,8 @@ function bindWeatherSwipe(){
     if (Math.abs(dy) > SWIPE_MAX_Y) return;
 
     if (dx <= -SWIPE_MIN_X){
-      // next
       switchCity(Math.min(WX_CITIES.length - 1, wxCityIndex + 1));
     } else if (dx >= SWIPE_MIN_X){
-      // prev
       switchCity(Math.max(0, wxCityIndex - 1));
     }
   }, { passive:true });
@@ -4120,11 +4151,6 @@ async function switchCity(index){
    Fetch + Render
 ============================ */
 function buildWeatherApiUrl(city){
-  // 這裡拉你需要的：
-  // - current_weather: temperature, weathercode, windspeed
-  // - hourly: temperature_2m, weathercode, windspeed_10m
-  // - daily: max/min, weathercode, sunrise, sunset
-  // timezone=auto 讓時間跟地點對齊（顯示小時很重要）
   const base = "https://api.open-meteo.com/v1/forecast";
   const params = new URLSearchParams({
     latitude: city.latitude,
@@ -4137,12 +4163,16 @@ function buildWeatherApiUrl(city){
   return `${base}?${params.toString()}`;
 }
 
-function setWeatherBgByCode(code){
+function setFxClass(page, fxClass){
+  page.classList.remove("wx-bg-snow","wx-bg-cloudy","wx-bg-clear");
+  page.classList.add(fxClass);
+}
+
+/* ✅ 統一：載入狀態（避免閃） */
+function setLoading(isLoading){
   const page = document.getElementById("weather-page");
   if (!page) return;
-
-  page.classList.remove("wx-bg-snow","wx-bg-cloudy","wx-bg-clear");
-  page.classList.add(weatherCodeToBgClass(code));
+  page.classList.toggle("is-loading", !!isLoading);
 }
 
 function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
@@ -4150,8 +4180,6 @@ function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
   wxEl("wxTemp").textContent = Number.isFinite(tempNowInt) ? String(tempNowInt) : "--";
   wxEl("wxDesc").textContent = weatherCodeToText(codeNow);
   wxEl("wxHiLo").textContent = `最高 ${Number.isFinite(hiInt) ? hiInt : "--"}° / 最低 ${Number.isFinite(loInt) ? loInt : "--"}°`;
-
-  setWeatherBgByCode(codeNow);
 }
 
 function renderHourly24({ timesISO, temps, codes }){
@@ -4179,7 +4207,6 @@ function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
   const wrap = wxEl("wxWeek");
   if (!wrap) return;
 
-  // 算全週 min/max 用來做 bar 的比例
   const allMin = Math.min(...minArr.map(n=>Number(n)));
   const allMax = Math.max(...maxArr.map(n=>Number(n)));
   const span = Math.max(1, allMax - allMin);
@@ -4194,7 +4221,6 @@ function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
     const iconKey = weatherCodeToIconKey(code);
     const iconSrc = wxIconSrc(iconKey);
 
-    // 橘色條在整個 bar 的位置
     const leftPct = ((minT - allMin) / span) * 100;
     const widthPct = ((maxT - minT) / span) * 100;
 
@@ -4216,7 +4242,12 @@ async function loadAndRenderWeather(){
   const city = WX_CITIES[wxCityIndex];
   if (!city) return;
 
-  // 先顯示 loading
+  const page = document.getElementById("weather-page");
+  if (!page) return;
+
+  setLoading(true);
+
+  // 先填入不跳高度的 placeholder（避免閃）
   wxEl("wxHourlyNote").textContent = "載入中…";
   wxEl("wxHourly").innerHTML = "";
   wxEl("wxWeek").innerHTML = "";
@@ -4226,26 +4257,23 @@ async function loadAndRenderWeather(){
     const res = await fetch(url);
     const data = await res.json();
 
-    // current
     const tempNow = data?.current_weather?.temperature;
     const codeNow = data?.current_weather?.weathercode;
     const tempNowInt = Number.isFinite(tempNow) ? Math.round(tempNow) : NaN;
 
-    // daily today hi/lo
     const hi = data?.daily?.temperature_2m_max?.[0];
     const lo = data?.daily?.temperature_2m_min?.[0];
     const hiInt = Number.isFinite(hi) ? Math.round(hi) : NaN;
     const loInt = Number.isFinite(lo) ? Math.round(lo) : NaN;
 
-    renderHeader({
-      cityName: city.name,
-      tempNowInt,
-      codeNow,
-      hiInt,
-      loInt
-    });
+    // 1) 先渲染文字
+    renderHeader({ cityName: city.name, tempNowInt, codeNow, hiInt, loInt });
 
-    // hourly (抓接下來 24hr)
+    // 2) 再套背景（底色 + 特效）
+    applySunBgFromForecast(data);                       // bg-*
+    setFxClass(page, weatherCodeToFxClass(codeNow));    // wx-bg-*
+
+    // hourly 24hr
     const hTimes = data?.hourly?.time || [];
     const hTemps = data?.hourly?.temperature_2m || [];
     const hCodes = data?.hourly?.weathercode || [];
@@ -4262,11 +4290,7 @@ async function loadAndRenderWeather(){
     const sliceCodes = hCodes.slice(startIdx, startIdx + 24);
     const sliceWinds = hWinds.slice(startIdx, startIdx + 24);
 
-    renderHourly24({
-      timesISO: sliceTimes,
-      temps: sliceTemps,
-      codes: sliceCodes
-    });
+    renderHourly24({ timesISO: sliceTimes, temps: sliceTemps, codes: sliceCodes });
 
     // 24hr note：含日出/日落
     const sunEvents = buildSunEvents(data?.daily);
@@ -4291,103 +4315,34 @@ async function loadAndRenderWeather(){
         dailyCodes: dCodes.slice(0, 7)
       });
     }
-
   }catch(err){
     console.error(err);
     wxEl("wxHourlyNote").textContent = "天氣載入失敗（請看 console）";
+  }finally{
+    setLoading(false);
   }
 }
 
 /* ============================
    Entry hook
 ============================ */
-// 你原本已經有 showPage(pageId) 的統一切頁：
-// 請在 showPage() 內「進入 weather-page」時呼叫這兩行：
-//   initWeatherPageOnce();
-//   loadAndRenderWeather();
-//
-// 如果你不想改 showPage，也可以保留下面這個監聽底部按鈕（擇一，不要兩個都做）
+/* 你原本如果有 showPage("weather-page")：
+   進入 weather-page 時呼叫：
+   initWeatherPageOnce();
+   loadAndRenderWeather();
+*/
+
+// 若你沒改 showPage，就用底部按鈕監聽（擇一）
 document.addEventListener("click", (e) => {
   const btn = e.target.closest('.bottom-nav button[data-page="weather-page"]');
   if (!btn) return;
 
   initWeatherPageOnce();
-  renderDots();
+  renderDots();          // 保險：確保 dots 跟 index 同步
   loadAndRenderWeather();
 });
-
-	</script>
-<script>
-function setBgClass(page, cls){
-  page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
-  page.classList.add(cls);
-}
-
-/**
- * 判斷當地時間所在區間：日出 / 白天 / 日落 / 黑夜
- * @param {number} nowLocalMs     當地時間戳 (ms)
- * @param {number} sunriseLocalMs 當地日出時間戳 (ms)
- * @param {number} sunsetLocalMs  當地日落時間戳 (ms)
- * @param {number} twilightMin    緩衝分鐘數（建議 30~60）
- */
-function getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, twilightMin = 45){
-  const t = twilightMin * 60 * 1000;
-
-  const sunriseStart = sunriseLocalMs - t;
-  const sunriseEnd   = sunriseLocalMs + t;
-  const sunsetStart  = sunsetLocalMs - t;
-  const sunsetEnd    = sunsetLocalMs + t;
-
-  if (nowLocalMs >= sunriseStart && nowLocalMs < sunriseEnd) return "sunrise";
-  if (nowLocalMs >= sunriseEnd   && nowLocalMs < sunsetStart) return "day";
-  if (nowLocalMs >= sunsetStart  && nowLocalMs < sunsetEnd) return "sunset";
-  return "night";
-}
-
-/**
- * 用 Open-Meteo 取得：utc_offset_seconds + 今日 sunrise/sunset(UTC)
- * 你切城市時呼叫這個，把背景跟當地時間一起算好
- */
-async function applyLocalSunBg({ lat, lon }){
-  const page = document.getElementById("weather-page");
-  if (!page) return;
-
-  // ✅ 用 UTC 拿 sunrise/sunset + 拿 utc_offset_seconds
-  const url =
-    `https://api.open-meteo.com/v1/forecast` +
-    `?latitude=${lat}&longitude=${lon}` +
-    `&daily=sunrise,sunset&forecast_days=1` +
-    `&current_weather=true` +
-    `&timezone=UTC`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  const offsetSec = data.utc_offset_seconds ?? 0;
-
-  // sunrise/sunset 是 UTC 字串（帶 Z 或可被當 UTC 解析）
-  const sunriseUtcMs = Date.parse(data.daily.sunrise[0] + "Z");
-  const sunsetUtcMs  = Date.parse(data.daily.sunset[0] + "Z");
-
-  // ✅ 轉成「當地時間戳」
-  const sunriseLocalMs = sunriseUtcMs + offsetSec * 1000;
-  const sunsetLocalMs  = sunsetUtcMs  + offsetSec * 1000;
-
-  // ✅ 現在 UTC -> 當地
-  const nowUtcMs = Date.now();
-  const nowLocalMs = nowUtcMs + offsetSec * 1000;
-
-  const phase = getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, 45);
-
-  if (phase === "sunrise") setBgClass(page, "bg-sunrise");
-  else if (phase === "day") setBgClass(page, "bg-day");
-  else if (phase === "sunset") setBgClass(page, "bg-sunset");
-  else setBgClass(page, "bg-night");
-}
-
-/* 範例：札幌 */
-applyLocalSunBg({ lat: 43.0618, lon: 141.3545 });
 </script>
+
 
 
 <script>

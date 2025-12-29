@@ -1525,56 +1525,65 @@
   pointer-events:none;
   z-index:2;
   opacity:.9;
-  filter: blur(.25px) drop-shadow(0 0 2px rgba(255,255,255,.28));
+  filter: blur(.35px) drop-shadow(0 0 3px rgba(255,255,255,.35));
 
   /* 多一點雪點 + 大小混合（打散） */
   background-image:
-    radial-gradient(2.4px 2.4px at 12% 18%, rgba(255,255,255,.95) 60%, transparent 61%),
-    radial-gradient(2.0px 2.0px at 78% 32%, rgba(255,255,255,.85) 60%, transparent 61%),
-    radial-gradient(1.6px 1.6px at 35% 70%, rgba(255,255,255,.75) 60%, transparent 61%),
-    radial-gradient(1.2px 1.2px at 55% 45%, rgba(255,255,255,.65) 60%, transparent 61%),
-    radial-gradient(1.0px 1.0px at 90% 80%, rgba(255,255,255,.55) 60%, transparent 61%);
+    /* 大顆雪 */
+    radial-gradient(3.6px 3.6px at 12% 18%, rgba(255,255,255,.95) 60%, transparent 61%),
+    radial-gradient(3.2px 3.2px at 78% 32%, rgba(255,255,255,.88) 60%, transparent 61%),
+
+    /* 中顆雪 */
+    radial-gradient(2.8px 2.8px at 35% 70%, rgba(255,255,255,.78) 60%, transparent 61%),
+    radial-gradient(2.4px 2.4px at 55% 45%, rgba(255,255,255,.72) 60%, transparent 61%),
+
+    /* 小顆雪 */
+    radial-gradient(1.8px 1.8px at 90% 80%, rgba(255,255,255,.62) 60%, transparent 61%),
+    radial-gradient(1.6px 1.6px at 22% 58%, rgba(255,255,255,.55) 60%, transparent 61%);
 
   background-repeat: repeat;
 
   /* ✅ 故意用「不整除」的尺寸，避免對齊感 */
-  background-size:
-    233px 217px,
-    197px 251px,
-    173px 189px,
-    149px 163px,
-    127px 141px;
+ background-size:
+    260px 240px,
+    300px 280px,
+    220px 210px,
+    200px 190px,
+    160px 150px,
+    140px 130px;
 
   /* ✅ 三段式：下落同時左右飄，且每層偏移不一樣 */
-  animation: snowDrift 16s linear infinite;
+  animation: snowDrift 60s linear infinite;
 }
 
+/* 左右飄＋下落（S 型） */
 @keyframes snowDrift{
   0%{
     background-position:
-      0 -260px,
-      40px -420px,
-      -30px -360px,
-      70px -300px,
-      -60px -340px;
+      0 -300px,
+      60px -480px,
+      -40px -420px,
+      90px -360px,
+      -70px -400px,
+      30px -380px;
   }
   50%{
-    /* 中段往右飄一些，速度也比較像風 */
     background-position:
-      60px 320px,
-      10px 520px,
-      90px 460px,
-      30px 420px,
-      120px 480px;
+      80px 380px,
+      20px 580px,
+      120px 520px,
+      40px 460px,
+      150px 500px,
+      -20px 480px;
   }
   100%{
-    /* 尾段再往左一點，形成 S 型漂移 */
     background-position:
-      -20px 980px,
-      110px 1180px,
-      10px 1120px,
-      140px 1080px,
-      40px 1160px;
+      -40px 1050px,
+      140px 1250px,
+      30px 1180px,
+      170px 1100px,
+      60px 1220px,
+      90px 1160px;
   }
 }
 

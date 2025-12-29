@@ -1529,28 +1529,28 @@
 
   /* 多一點雪點 + 大小混合（打散） */
   background-image:
-    /* 大顆雪 */
-    radial-gradient(3.6px 3.6px at 12% 18%, rgba(255,255,255,.95) 60%, transparent 61%),
-    radial-gradient(3.2px 3.2px at 78% 32%, rgba(255,255,255,.88) 60%, transparent 61%),
+    /* 大顆雪（2 層） */
+    radial-gradient(3.6px 3.6px at 18% 22%, rgba(255,255,255,.72) 60%, transparent 61%),
+    radial-gradient(3.2px 3.2px at 75% 30%, rgba(255,255,255,.68) 60%, transparent 61%),
 
-    /* 中顆雪 */
-    radial-gradient(2.8px 2.8px at 35% 70%, rgba(255,255,255,.78) 60%, transparent 61%),
-    radial-gradient(2.4px 2.4px at 55% 45%, rgba(255,255,255,.72) 60%, transparent 61%),
+    /* 中顆雪（2 層） */
+    radial-gradient(2.6px 2.6px at 42% 65%, rgba(255,255,255,.58) 60%, transparent 61%),
+    radial-gradient(2.4px 2.4px at 60% 48%, rgba(255,255,255,.55) 60%, transparent 61%),
 
-    /* 小顆雪 */
-    radial-gradient(1.8px 1.8px at 90% 80%, rgba(255,255,255,.62) 60%, transparent 61%),
-    radial-gradient(1.6px 1.6px at 22% 58%, rgba(255,255,255,.55) 60%, transparent 61%);
+    /* 小顆雪（2 層） */
+    radial-gradient(1.8px 1.8px at 85% 80%, rgba(255,255,255,.45) 60%, transparent 61%),
+    radial-gradient(1.6px 1.6px at 25% 55%, rgba(255,255,255,.42) 60%, transparent 61%);
 
   background-repeat: repeat;
 
-  /* ✅ 故意用「不整除」的尺寸，避免對齊感 */
- background-size:
-    260px 240px,
+  /* ⬅️ 關鍵：尺寸變大 = 雪變疏 */
+  background-size:
+    360px 320px,
+    420px 380px,
     300px 280px,
-    220px 210px,
-    200px 190px,
-    160px 150px,
-    140px 130px;
+    280px 260px,
+    220px 200px,
+    200px 180px;
 
   /* ✅ 三段式：下落同時左右飄，且每層偏移不一樣 */
   animation: snowDrift 60s linear infinite;

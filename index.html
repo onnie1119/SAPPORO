@@ -1775,24 +1775,7 @@
   border-radius: 999px;
   background:linear-gradient(90deg, #afffff, #14dffd); /* 橘色 min-max */
 }
-/* wx-wrap 當作定位容器 */
-.wx-wrap { position: relative; }
 
-/* 切換城市時加上這個 class：is-loading */
-.wx-wrap.is-loading::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius: 18px;
-  background: rgba(0,0,0,0.10);   /* 很淡的遮罩 */
-  backdrop-filter: blur(2px);
-  z-index: 50;
-}
-
-/* 也可以讓內容略淡，表示正在更新但不改高度 */
-.wx-wrap.is-loading{
-  opacity: .92;
-}
 /* 固定兩塊的最小高度，避免空資料高度變 0 */
 #wxHourly { min-height: 92px; } /* 你一列 hour 卡片大概高度 */
 #wxWeek   { min-height: 220px; } /* 7 天列表大概高度 */
@@ -4406,24 +4389,7 @@ showDay = function(dayNumber, dir = "right") {
 })();
 
 </script>
-	<script>
-		function setWeatherLoading(isLoading){
-  const wrap = document.querySelector("#weather-page .wx-wrap");
-  if (!wrap) return;
-  wrap.classList.toggle("is-loading", isLoading);
-}
 
-// 切換城市時：
-async function switchCity(city){
-  setWeatherLoading(true);
-
-  // 先不要清空 wxHourly / wxWeek，讓舊資料撐著高度
-  const data = await fetchWeather(city); // 你的 API
-
-  renderWeather(data); // 一次性更新內容
-  setWeatherLoading(false);
-}
-	</script>
 	<script>
   function syncBarsHeight(){
     const topbar = document.getElementById("topbar");

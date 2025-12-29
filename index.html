@@ -1779,6 +1779,46 @@
 /* 固定兩塊的最小高度，避免空資料高度變 0 */
 #wxHourly { min-height: 92px; } /* 你一列 hour 卡片大概高度 */
 #wxWeek   { min-height: 220px; } /* 7 天列表大概高度 */
+/* 統一背景切換動畫 */
+.weather-page{
+  transition: background 600ms ease;
+}
+
+/* 日出（晨曦） */
+.weather-page.bg-sunrise{
+  background: linear-gradient(180deg,
+    #bfe9ff 0%,
+    #7ab6ff 45%,
+    #3f7bff 100%
+  );
+}
+
+/* 白天 */
+.weather-page.bg-day{
+  background: linear-gradient(180deg,
+    #bfe9ff 0%,
+    #4ea3ff 55%,
+    #1d5bff 100%
+  );
+}
+
+/* 日落（黃昏） */
+.weather-page.bg-sunset{
+  background: linear-gradient(180deg,
+    #5b8dff 0%,
+    #7a63ff 45%,
+    #2a1b5e 100%
+  );
+}
+
+/* 黑夜 */
+.weather-page.bg-night{
+  background: linear-gradient(180deg,
+    #071427 0%,
+    #0b2444 55%,
+    #040a14 100%
+  );
+}
 
 </style>
 </head>

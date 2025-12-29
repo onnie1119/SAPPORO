@@ -1688,6 +1688,46 @@
 .wx-hour-time{ font-size:14px; opacity:.85; }
 .wx-hour-icon{ width:24px; height:24px; object-fit:contain; display:block; margin:8px auto 0; }
 .wx-hour-temp{ font-size:18px; margin-top:6px; font-weight:600; }
+/* top dots */
+.wx-dots{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  padding:10px 0 4px;
+}
+.wx-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:rgba(255,255,255,0.45);
+}
+.wx-dot.active{ background:rgba(255,255,255,0.95); }
+
+/* weekly list */
+#wxDaily{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:12px 6px 4px;
+}
+.wx-day-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:rgba(255,255,255,0.35);
+  border-radius:14px;
+  padding:10px 12px;
+}
+.wx-day-left{ min-width:64px; }
+.wx-day-name{ font-size:16px; font-weight:600; }
+.wx-day-mid{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:1;
+  justify-content:center;
+}
+.wx-day-icon{ width:22px; height:22px; object-fit:contain; }
+.wx-day-desc{ font-size:14px; opacity:.9; }
+.wx-day-right{ min-width:92px; text-align:right; font-weight:600; }
 	
 </style>
 </head>
@@ -2588,6 +2628,11 @@
 
     <div style="height: 18px;"></div>
   </div>
+</div>
+<!-- 7-day forecast -->
+<div class="wx-card wx-daily-card">
+  <div class="wx-card-title">一週天氣</div>
+  <div class="wx-daily" id="wxDaily"></div>
 </div>
 
 
@@ -3680,17 +3725,20 @@
 	
 	<script>
 // =========================
-// Weather Page (Open-Meteo) - matches your HTML
-// ids used: location-name, temperatureVal, descriptionText, wxSub, wxHourly
+// Weather Page (Open-Meteo) - Swipe cities + dots + 24h + 7-day
+// Requires these DOM ids:
+// location-name, temperatureVal, descriptionText, wxHourly, wxDaily
+// and a container with id="weather-page"
 // =========================
 (function () {
   const API = "https://api.open-meteo.com/v1/forecast";
-  const CITIES = {
-    sapporo:     { name: "札幌", latitude: 43.0667, longitude: 141.35,  tz: "Asia/Tokyo" },
-    otaru:       { name: "小樽", latitude: 43.19,   longitude: 140.994, tz: "Asia/Tokyo" },
-    biei:        { name: "美瑛", latitude: 43.5333, longitude: 142.4,   tz: "Asia/Tokyo" },
-    noboribetsu: { name: "登別", latitude: 42.38,   longitude: 141.0,   tz: "Asia/Tokyo" },
-  };
+
+  const CITIES = [
+    { key: "sapporo",     name: "札幌", latitude: 43.0667, longitude: 141.35,  tz: "Asia/Tokyo" },
+    { key: "otaru",       name: "小樽", latitude: 43.19,   longitude: 140.994, tz: "Asia/Tokyo" },
+    { key: "biei",        name: "美瑛", latitude: 43.5333, longitude: 142.4,   tz: "Asia/Tokyo" },
+    { key: "noboribetsu", name: "登別", latitude: 42.38,   longitude: 141.0,   tz: "Asia/Tokyo" },
+  ];
 
   const $ = (id) => document.getElementById(id);
 
@@ -3705,7 +3753,7 @@
     return "--";
   }
 
-  // 你有放的 icons：cloud.png / sun.png / breeze.png / bigsnow.png / snow.png
+  // Your icons: cloud.png / sun.png / breeze.png / bigsnow.png / snow.png
   function weatherIcon(code) {
     if (code === 0) return "images/sun.png";
     if (code === 1 || code === 2) return "images/sun.png";
@@ -3716,37 +3764,43 @@
     return "images/cloud.png";
   }
 
-  function fmtUpdate(iso) {
-    if (!iso) return "--";
-    return iso.replace("T", " ");
+  function dayLabel(isoDate) {
+    // isoDate: "YYYY-MM-DD"
+    const d = new Date(isoDate + "T00:00:00");
+    const map = ["日", "一", "二", "三", "四", "五", "六"];
+    return `週${map[d.getDay()]}`;
   }
 
-  async function fetchWeather(cityKey) {
-    const c = CITIES[cityKey];
+  async function fetchWeather(city) {
     const url =
-      `${API}?latitude=${c.latitude}&longitude=${c.longitude}` +
-      `&timezone=${encodeURIComponent(c.tz)}` +
-      `&current=temperature_2m,weather_code,wind_direction_10m` +
+      `${API}?latitude=${city.latitude}&longitude=${city.longitude}` +
+      `&timezone=${encodeURIComponent(city.tz)}` +
+      `&current=temperature_2m,weather_code` +
       `&hourly=temperature_2m,weather_code` +
-      `&forecast_days=3`;
+      `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
+      `&forecast_days=7`;
 
-    console.log("[WX] fetch:", cityKey, url);
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("fetch failed: " + res.status);
     return await res.json();
   }
 
-  function renderCurrent(data, cityKey) {
-    const c = CITIES[cityKey];
+  function renderCurrent(data, city) {
     const t = data?.current?.temperature_2m;
     const code = data?.current?.weather_code;
-    const updated = data?.current?.time;
-    const windDir = data?.current?.wind_direction_10m;
 
-    if ($("location-name")) $("location-name").textContent = c.name;
-    if ($("temperatureVal")) $("temperatureVal").textContent = (t ?? "--");
+    if ($("location-name")) $("location-name").textContent = city.name;
+    if ($("temperatureVal")) $("temperatureVal").textContent = (t == null ? "--" : Math.round(t));
     if ($("descriptionText")) $("descriptionText").textContent = codeToText(code);
-    if ($("wxSub")) $("wxSub").textContent = `更新：${fmtUpdate(updated)}　風向：${windDir ?? "--"}°`;
+
+    // 額外補上「最高/最低」：放到 descriptionText 下方（如果你沒有這個元素就跳過）
+    const dailyMax = data?.daily?.temperature_2m_max?.[0];
+    const dailyMin = data?.daily?.temperature_2m_min?.[0];
+    const subEl = $("wxSub");
+    if (subEl) {
+      if (dailyMax == null || dailyMin == null) subEl.textContent = "";
+      else subEl.textContent = `最高 ${Math.round(dailyMax)}°　最低 ${Math.round(dailyMin)}°`;
+    }
   }
 
   function renderHourly24(data) {
@@ -3758,10 +3812,8 @@
     const codes = data?.hourly?.weather_code || [];
 
     box.innerHTML = "";
-
     if (!times.length) return;
 
-    // 從 current.time 開始切 24 筆
     const nowIso = data?.current?.time;
     let startIdx = times.indexOf(nowIso);
     if (startIdx < 0) startIdx = 0;
@@ -3785,11 +3837,7 @@
       img.className = "wx-hour-icon";
       img.src = weatherIcon(code);
       img.alt = codeToText(code);
-
-      // 圖片載入失敗時給 fallback（避免你看到空白）
-      img.onerror = () => {
-        img.style.display = "none";
-      };
+      img.onerror = () => (img.style.display = "none");
 
       const vEl = document.createElement("div");
       vEl.className = "wx-hour-temp";
@@ -3802,60 +3850,165 @@
     }
   }
 
+  function renderDaily7(data) {
+    const box = $("wxDaily");
+    if (!box) return;
+
+    const dates = data?.daily?.time || [];
+    const maxs  = data?.daily?.temperature_2m_max || [];
+    const mins  = data?.daily?.temperature_2m_min || [];
+    const codes = data?.daily?.weather_code || [];
+
+    box.innerHTML = "";
+    if (!dates.length) return;
+
+    for (let i = 0; i < Math.min(7, dates.length); i++) {
+      const row = document.createElement("div");
+      row.className = "wx-day-row";
+
+      const left = document.createElement("div");
+      left.className = "wx-day-left";
+      left.innerHTML = `
+        <div class="wx-day-name">${i === 0 ? "今天" : dayLabel(dates[i])}</div>
+      `;
+
+      const mid = document.createElement("div");
+      mid.className = "wx-day-mid";
+      const img = document.createElement("img");
+      img.className = "wx-day-icon";
+      img.src = weatherIcon(codes[i]);
+      img.alt = codeToText(codes[i]);
+      img.onerror = () => (img.style.display = "none");
+      const desc = document.createElement("div");
+      desc.className = "wx-day-desc";
+      desc.textContent = codeToText(codes[i]);
+      mid.appendChild(img);
+      mid.appendChild(desc);
+
+      const right = document.createElement("div");
+      right.className = "wx-day-right";
+      right.textContent = `${Math.round(mins[i])}° / ${Math.round(maxs[i])}°`;
+
+      row.appendChild(left);
+      row.appendChild(mid);
+      row.appendChild(right);
+      box.appendChild(row);
+    }
+  }
+
+  // -------------------------
+  // Dots UI + Swipe
+  // -------------------------
+  let currentIndex = 0;
   let loading = false;
-  async function loadCity(cityKey) {
+
+  function ensureDots() {
+    const page = $("weather-page");
+    if (!page) return;
+
+    let dotsWrap = page.querySelector(".wx-dots");
+    if (!dotsWrap) {
+      dotsWrap = document.createElement("div");
+      dotsWrap.className = "wx-dots";
+      // 放在最上方 hero 前面
+      const hero = page.querySelector(".wx-hero");
+      if (hero) hero.parentNode.insertBefore(dotsWrap, hero);
+      else page.prepend(dotsWrap);
+    }
+
+    dotsWrap.innerHTML = "";
+    CITIES.forEach((_, i) => {
+      const dot = document.createElement("span");
+      dot.className = "wx-dot" + (i === currentIndex ? " active" : "");
+      dot.addEventListener("click", () => goTo(i));
+      dotsWrap.appendChild(dot);
+    });
+  }
+
+  function updateDots() {
+    const dots = document.querySelectorAll("#weather-page .wx-dot");
+    dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+  }
+
+  async function loadCityByIndex(idx) {
     if (loading) return;
     loading = true;
 
-    // 先顯示 loading 狀態
+    const city = CITIES[idx];
+
+    // loading placeholders
     if ($("temperatureVal")) $("temperatureVal").textContent = "--";
     if ($("descriptionText")) $("descriptionText").textContent = "--";
-    if ($("wxSub")) $("wxSub").textContent = "更新：載入中…";
     if ($("wxHourly")) $("wxHourly").innerHTML = "";
+    if ($("wxDaily")) $("wxDaily").innerHTML = "";
 
     try {
-      const data = await fetchWeather(cityKey);
-      renderCurrent(data, cityKey);
+      const data = await fetchWeather(city);
+      renderCurrent(data, city);
       renderHourly24(data);
-      console.log("[WX] render ok:", cityKey, data);
+      renderDaily7(data);
     } catch (e) {
       console.error("[WX] load failed:", e);
-      if ($("wxSub")) $("wxSub").textContent = "更新：載入失敗（看 Console 錯誤）";
     } finally {
       loading = false;
     }
   }
 
-  function bindCityPills() {
-    document.querySelectorAll(".wx-pill").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".wx-pill").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        loadCity(btn.dataset.city);
-      });
-    });
+  function goTo(idx) {
+    if (idx < 0 || idx >= CITIES.length) return;
+    currentIndex = idx;
+    updateDots();
+    loadCityByIndex(currentIndex);
   }
 
-  // ✅ 切到 weather-page 時自動載入
+  function bindSwipe() {
+    const page = $("weather-page");
+    if (!page) return;
+
+    const SWIPE_MIN_X = 60;
+    const SWIPE_MAX_Y = 70;
+    let sx = 0, sy = 0, tracking = false;
+
+    page.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      sx = t.clientX;
+      sy = t.clientY;
+      tracking = true;
+    }, { passive: true });
+
+    page.addEventListener("touchend", (e) => {
+      if (!tracking) return;
+      tracking = false;
+
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx;
+      const dy = t.clientY - sy;
+
+      if (Math.abs(dy) > SWIPE_MAX_Y) return;
+
+      if (dx <= -SWIPE_MIN_X) goTo(currentIndex + 1); // next
+      else if (dx >= SWIPE_MIN_X) goTo(currentIndex - 1); // prev
+    }, { passive: true });
+  }
+
+  // -------------------------
+  // Hook showPage: enter weather -> load
+  // -------------------------
   function hookShowPage() {
-    if (typeof window.showPage !== "function") {
-      console.warn("[WX] 找不到 showPage()，把這段 JS 放到所有 script 最後面");
-      return;
-    }
+    if (typeof window.showPage !== "function") return;
     const _showPage = window.showPage;
     window.showPage = function (targetId) {
       _showPage(targetId);
       if (targetId === "weather-page") {
-        const active = document.querySelector(".wx-pill.active")?.dataset.city || "sapporo";
-        loadCity(active);
+        ensureDots();
+        bindSwipe();
+        goTo(currentIndex);
       }
     };
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    bindCityPills();
     hookShowPage();
-    console.log("[WX] init done");
   });
 })();
 

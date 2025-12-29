@@ -4238,7 +4238,8 @@ function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
 
   wrap.innerHTML = dailyTimesISO.map((tISO, i) => {
     const d = new Date(tISO);
-    const day = weekdayLabel(d);
+   const day = (i === 0) ? "今天" : weekdayLabel(d);
+
 
     const minT = Math.round(minArr[i]);
     const maxT = Math.round(maxArr[i]);

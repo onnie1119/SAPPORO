@@ -1802,25 +1802,59 @@
 }
 
 /* ===== 落雪層：::after（只在 snow 狀態啟用） ===== */
-.weather-page::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  z-index: 1;
+.weather-page::after{
+  content:"";
+  position:absolute;
+  inset:-10%;
+  pointer-events:none;
+  opacity:0;
+  z-index:1;
+
+  /* 雪更亮一點 + 微糊讓白點更顯眼 */
+  filter: blur(0.2px) drop-shadow(0 0 2px rgba(255,255,255,.35));
+  transition: opacity .25s ease;
 }
 
 .weather-page.bg-day-snow::after,
-.weather-page.bg-night-snow::after {
-  opacity: 1;
+.weather-page.bg-night-snow::after{
+  opacity:1;
+
+  /* ✅ 三層雪：大顆/中顆/小顆（密度明顯提升） */
   background-image:
-    radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,.85), transparent),
-    radial-gradient(1.5px 1.5px at 40% 60%, rgba(255,255,255,.75), transparent),
-    radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,.65), transparent),
-    radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,.55), transparent),
-    radial-gradient(1px 1px at 25% 75%, rgba(255,255,255,.5), transparent);
-  animation: snowFall 14s linear infinite;
+    /* 大顆少量 */
+    radial-gradient(2.8px 2.8px at 10% 15%, rgba(255,255,255,.85), transparent 60%),
+    radial-gradient(2.6px 2.6px at 35% 40%, rgba(255,255,255,.8),  transparent 60%),
+    radial-gradient(2.4px 2.4px at 70% 25%, rgba(255,255,255,.78), transparent 60%),
+    radial-gradient(2.6px 2.6px at 90% 70%, rgba(255,255,255,.75), transparent 60%),
+
+    /* 中顆密度 */
+    radial-gradient(1.8px 1.8px at 15% 60%, rgba(255,255,255,.72), transparent 60%),
+    radial-gradient(1.7px 1.7px at 28% 20%, rgba(255,255,255,.68), transparent 60%),
+    radial-gradient(1.6px 1.6px at 50% 75%, rgba(255,255,255,.65), transparent 60%),
+    radial-gradient(1.7px 1.7px at 78% 55%, rgba(255,255,255,.62), transparent 60%),
+    radial-gradient(1.6px 1.6px at 92% 35%, rgba(255,255,255,.6),  transparent 60%),
+
+    /* 小顆超密（讓「下雪感」出來） */
+    radial-gradient(1.2px 1.2px at 5%  45%, rgba(255,255,255,.55), transparent 60%),
+    radial-gradient(1.1px 1.1px at 22% 85%, rgba(255,255,255,.5),  transparent 60%),
+    radial-gradient(1.0px 1.0px at 40% 10%, rgba(255,255,255,.48), transparent 60%),
+    radial-gradient(1.1px 1.1px at 60% 35%, rgba(255,255,255,.45), transparent 60%),
+    radial-gradient(1.0px 1.0px at 75% 90%, rgba(255,255,255,.42), transparent 60%),
+    radial-gradient(1.1px 1.1px at 88% 15%, rgba(255,255,255,.4),  transparent 60%);
+
+  /* ✅ 三層不同速度，視覺會「一直在下」 */
+  background-size:
+    220px 220px, 260px 260px, 240px 240px, 280px 280px,
+    180px 180px, 200px 200px, 190px 190px, 210px 210px, 230px 230px,
+    140px 140px, 160px 160px, 150px 150px, 170px 170px, 155px 155px, 165px 165px;
+
+  animation: snowFallA 9s linear infinite;
+}
+
+/* 三段動畫：更自然，不像一張圖在滑 */
+@keyframes snowFallA{
+  0%   { background-position: 0 -300px; }
+  100% { background-position: 0 900px; }
 }
 
 /* 動畫 */

@@ -4158,8 +4158,14 @@ function initWeatherPageOnce(){
 
 async function switchCity(index){
   if (index === wxCityIndex) return;
+
   wxCityIndex = index;
   setDotsActive();
+
+  // ✅ 切換地區：先回到初始頁面狀態
+  resetWeatherView();
+
+  // ✅ 重新抓資料 + 重新渲染
   await loadAndRenderWeather();
 }
 
@@ -4471,6 +4477,22 @@ function backToTicketList() {
   resetNavMenu();
 }
 
+function resetWeatherView(){
+  const page = document.getElementById("weather-page");
+  if (!page) return;
+
+  // ✅ 整個天氣頁面回到最上面
+  // 用 window scroll（如果你的天氣頁面是跟整頁一起滾）
+  window.scrollTo({ top: 0, behavior: "instant" }); // 部分瀏覽器不認 instant，沒關係
+
+  // ✅ 24hr 橫向捲動回到最左
+  const hourly = document.getElementById("wxHourly");
+  if (hourly) hourly.scrollLeft = 0;
+
+  // ✅ 如果你未來把 week 做成橫向，也順便保險
+  const week = document.getElementById("wxWeek");
+  if (week) week.scrollLeft = 0;
+}
 
 
 

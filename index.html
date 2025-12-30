@@ -3944,8 +3944,8 @@ function weatherCodeToText(code){
 
 function weatherCodeToIconKey(code, isNight){
   if (code === 0) return "clear";
-  if ([1,2].includes(code)) return "partly_cloudy";
-  if (code === 3) return "cloudy";
+  if ([1,2].includes(code)) return isNight ? "cloudy" : "partly_cloudy";
+  if (code === 3) return isNight ? "cloudy" : "cloudy";
   if ([45,48].includes(code)) return "fog";
   if ([51,53,55,56,57].includes(code)) return "rain";
   if ([61,63].includes(code)) return "rain";
@@ -3954,6 +3954,10 @@ function weatherCodeToIconKey(code, isNight){
   if (code === 86) return "heavy_snow";
   if ([95,96,99].includes(code)) return "thunder";
   return "unknown";
+}
+
+function isSnowCode(code){
+  return [71,73,75,77,85,86].includes(code);
 }
 
 /* ============================
@@ -4097,20 +4101,19 @@ async function applyLocalSunBg({ lat, lon, fakeNowLocalMs = null }){
     `?latitude=${lat}&longitude=${lon}` +
     `&daily=sunrise,sunset&forecast_days=1` +
     `&current_weather=true` +
-    `&timezone=UTC`;
+    `&timezone=auto`;
 
   const res = await fetch(url);
   const data = await res.json();
 
   const offsetSec = data.utc_offset_seconds ?? 0;
 
-  // sunrise/sunset 可能已帶 Z；保險起見：沒帶 Z 才補
   const srRaw = data?.daily?.sunrise?.[0];
   const ssRaw = data?.daily?.sunset?.[0];
   if (!srRaw || !ssRaw) return null;
 
-  const sunriseUtcMs = Date.parse(srRaw.endsWith("Z") ? srRaw : (srRaw + "Z"));
-  const sunsetUtcMs  = Date.parse(ssRaw.endsWith("Z") ? ssRaw : (ssRaw + "Z"));
+  const sunriseUtcMs = Date.parse(srRaw);
+  const sunsetUtcMs  = Date.parse(ssRaw);
 
   const sunriseLocalMs = sunriseUtcMs + offsetSec * 1000;
   const sunsetLocalMs  = sunsetUtcMs  + offsetSec * 1000;
@@ -4423,6 +4426,7 @@ async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}) {
     wxEl("wxHourlyNote").textContent = "天氣載入失敗（請看 console）";
   }
 }
+
 
 
 

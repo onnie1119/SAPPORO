@@ -4230,16 +4230,18 @@ class SnowBackground {
     this.windTarget = rand(-p.wind, p.wind);
     this.windT = 0;
 
-    this.particles = Array.from({length:p.count}).map(()=>({
-      x: rand(0, this.w),
-      y: rand(0, this.h),
-      r: rand(p.rMin, p.rMax),
-      vy: rand(p.vyMin, p.vyMax),
-      vx: rand(-p.wind, p.wind),
-      sway: rand(0.25, 1.2),
-      phase: rand(0, Math.PI*2),
-      opacity: rand(0.20, 0.65),
-    }));
+  this.particles = Array.from({length:p.count}).map(()=>({
+  x: rand(0, this.w),
+  y: rand(0, this.h),
+  r: rand(p.rMin, p.rMax),
+  vy: rand(p.vyMin, p.vyMax),
+  vx: rand(-p.wind, p.wind),
+  // ✅ 把規律 sin 的 sway 拿掉，改用微亂流
+  tx: rand(-0.08, 0.08),     // 當下的橫向微漂
+  tvx: rand(0.001, 0.006),   // 橫向微漂的變化速度
+  opacity: rand(0.45, 0.90), // ✅ 這裡順便讓雪更不淡（原本 0.20~0.65 太淡）
+}));
+
   }
 
   _stepWind(){
@@ -4288,16 +4290,21 @@ class SnowBackground {
 ctx.clearRect(0, 0, this.w, this.h);
 
 for (const s of this.particles) {
-  s.phase += 0.1 * dt;
-  const swayX = Math.sin(s.phase) * s.sway;
+ // ✅ 微亂流：不規律、很小幅度、比較像真雪
+s.tx += (Math.random() - 0.5) * s.tvx * dt;
+s.tx = clamp(s.tx, -0.18, 0.18);
 
-  s.x += (s.vx + wind) * 0.85 * dt + swayX * 0.55 * dt;
+// 原本水平速度 + 風 + 微亂流
+s.x += (s.vx + wind + s.tx) * 0.75 * dt;
+
   s.y += s.vy * 1.15 * dt;
 
   if (s.x < -12) s.x = this.w + 12;
   if (s.x > this.w + 12) s.x = -12;
 
   if (s.y > this.h + 12) {
+	s.tx = rand(-0.08, 0.08);
+	s.tvx = rand(0.001, 0.006);
     s.y = rand(-120, -10);
     s.x = rand(0, this.w);
     s.r = rand(this.params.rMin, this.params.rMax);
@@ -4310,8 +4317,8 @@ for (const s of this.particles) {
   // ⭐ 柔邊：中心較亮，邊緣漸淡到透明
   const r = s.r;
   const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
-  g.addColorStop(0.0, `rgba(255,255,255,${0.40 * s.opacity})`);
-  g.addColorStop(0.45, `rgba(255,255,255,${0.18 * s.opacity})`);
+  g.addColorStop(0.0, `rgba(255,255,255,${0.75 * s.opacity})`);
+  g.addColorStop(0.45, `rgba(255,255,255,${0.28 * s.opacity})`);
   g.addColorStop(1.0, `rgba(255,255,255,0)`);
 
   ctx.fillStyle = g;

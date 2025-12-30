@@ -4141,14 +4141,14 @@ function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
   wxEl("wxIcon").src = wxIconSrc(iconKey);
 }
 
-async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}){
+async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}) {
   const city = WX_CITIES[wxCityIndex];
   if (!city) return;
 
   // loading（保留高度避免閃）
   wxEl("wxHourlyNote").textContent = "載入中…";
 
-  try{
+  try {
     const url = buildWeatherApiUrl(city);
     const res = await fetch(url);
     const data = await res.json();
@@ -4179,18 +4179,22 @@ async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}){
     const hCodes = data?.hourly?.weathercode || [];
     const hWinds = data?.hourly?.windspeed_10m || [];
 
-    if (!hTimes.length){
+    if (!hTimes.length) {
       wxEl("wxHourlyNote").textContent = "沒有抓到每小時資料";
       return;
     }
 
     // 找離 now 最近的 index（用假時間的話，這裡就用假時間去對齊）
     const nowMs = fakeNowLocalMs != null ? fakeNowLocalMs : Date.now();
-    let best = 0, bestDiff = Infinity;
-    for (let i=0; i<hTimes.length; i++){
+    let best = 0,
+      bestDiff = Infinity;
+    for (let i = 0; i < hTimes.length; i++) {
       const t = new Date(hTimes[i]).getTime();
       const diff = Math.abs(t - nowMs);
-      if (diff < bestDiff){ bestDiff = diff; best = i; }
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        best = i;
+      }
     }
 
     const sliceTimes = hTimes.slice(best, best + 24);
@@ -4220,7 +4224,7 @@ async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}){
     const dMax = data?.daily?.temperature_2m_max || [];
     const dMin = data?.daily?.temperature_2m_min || [];
     const dCodes = data?.daily?.weathercode || [];
-    if (dTimes.length){
+    if (dTimes.length) {
       renderWeek({
         dailyTimesISO: dTimes.slice(0, 7),
         maxArr: dMax.slice(0, 7),
@@ -4229,11 +4233,28 @@ async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}){
       });
     }
 
-  }catch(err){
+  } catch (err) {
     console.error(err);
     wxEl("wxHourlyNote").textContent = "天氣載入失敗（請看 console）";
   }
 }
+
+function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }) {
+  wxEl("wxCity").textContent = cityName;
+  wxEl("wxTemp").textContent = Number.isFinite(tempNowInt) ? String(tempNowInt) : "--";
+  wxEl("wxDesc").textContent = weatherCodeToText(codeNow);
+  wxEl("wxHiLo").textContent =
+    `最高 ${Number.isFinite(hiInt) ? hiInt : "--"}° / 最低 ${Number.isFinite(loInt) ? loInt : "--"}°`;
+
+  const iconKey = weatherCodeToIconKey(codeNow, false); // 使用白天图标
+  const iconElement = wxEl("wxIcon"); // 確保找到元素
+  if (iconElement) {
+    iconElement.src = wxIconSrc(iconKey);
+  } else {
+    console.error("wxIcon element not found");
+  }
+}
+
 
 
 /* ============================

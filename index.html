@@ -4587,20 +4587,20 @@ function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLoc
       : false;
 
     let iconKey;
-    let markerText = "";
-    if (i === sunriseIdx){ iconKey = "sunrise"; markerText = "日出"; }
-    else if (i === sunsetIdx){ iconKey = "sunset"; markerText = "日落"; }
-    else iconKey = weatherCodeToIconKey(codeN, night);
+	if (i === sunriseIdx) iconKey = "sunrise";
+	else if (i === sunsetIdx) iconKey = "sunset";
+	else iconKey = weatherCodeToIconKey(codeN, night);
+
 
     const timeLabel = (i === 0) ? "現在" : formatHourAmPmFromLocalMs(hourLocalMs);
 
     return `
-      <div class="wx-hour">
-        <div class="wx-hour-time">${timeLabel}</div>
-        ${markerText ? `<div class="wx-hour-marker">${markerText}</div>` : `<div class="wx-hour-marker wx-hour-marker--empty">.</div>`}
-        <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
-        <div class="wx-hour-temp">${Math.round(tempC)}°</div>
-      </div>
+     <div class="wx-hour">
+		  <div class="wx-hour-time">${timeLabel}</div>
+		  <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
+		  <div class="wx-hour-temp">${Math.round(tempC)}°</div>
+	</div>
+
     `;
   }).join("");
 }

@@ -4287,7 +4287,7 @@ class SnowBackground {
 ctx.clearRect(0, 0, this.w, this.h);
 
 for (const s of this.particles) {
-  s.phase += 0.012 * dt;
+  s.phase += 0.1 * dt;
   const swayX = Math.sin(s.phase) * s.sway;
 
   s.x += (s.vx + wind) * 0.85 * dt + swayX * 0.55 * dt;
@@ -4309,8 +4309,8 @@ for (const s of this.particles) {
   // ⭐ 柔邊：中心較亮，邊緣漸淡到透明
   const r = s.r;
   const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
-  g.addColorStop(0.0, `rgba(255,255,255,${0.22 * s.opacity})`);
-  g.addColorStop(0.45, `rgba(255,255,255,${0.10 * s.opacity})`);
+  g.addColorStop(0.0, `rgba(255,255,255,${0.40 * s.opacity})`);
+  g.addColorStop(0.45, `rgba(255,255,255,${0.18 * s.opacity})`);
   g.addColorStop(1.0, `rgba(255,255,255,0)`);
 
   ctx.fillStyle = g;

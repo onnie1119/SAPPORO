@@ -3935,19 +3935,26 @@ function isSnowCode(code){
 }
 
 /* ✅ icon：夜晚多雲要用 night_cloudy */
-function weatherCodeToIconKey(code, isNight=false){
-  if (code === 0) return "clear";
-  if ([1,2].includes(code)) return isNight ? "night_cloudy" : "partly_cloudy";
-  if (code === 3) return "cloudy";
-  if ([45,48].includes(code)) return "fog";
-  if ([51,53,55,56,57].includes(code)) return "rain";
-  if ([61,63].includes(code)) return "rain";
-  if ([65,66,67].includes(code)) return "heavy_rain";
+function weatherCodeToIconKey(code, isNight){
+  // 下雪類：不分日夜
   if ([71,73,75,77,85].includes(code)) return "snow";
   if (code === 86) return "heavy_snow";
+
+  // 晴
+  if (code === 0) return isNight ? "clear_night" : "clear";
+
+  // 多雲 / 局部多雲
+  if ([1,2,3].includes(code)){
+    return isNight ? "night_cloudy" : "partly_cloudy";
+  }
+
+  // 其他
+  if ([45,48].includes(code)) return "fog";
   if ([95,96,99].includes(code)) return "thunder";
+
   return "unknown";
 }
+
 
 /* wx-bg-*（多雲/晴/雪） */
 function weatherCodeToBgClass(code){
@@ -4160,19 +4167,29 @@ function applyWeatherClasses({ codeNow, hasSnowNow }){
   const page = document.getElementById("weather-page");
   if (!page) return;
 
-  // 天氣類（晴/雲/雪）
+  // 天氣類背景（晴 / 雲 / 雪）
   page.classList.remove("wx-bg-snow","wx-bg-cloudy","wx-bg-clear");
   page.classList.add(weatherCodeToBgClass(codeNow));
 
-  // 雲漂浮（你要的雲動畫）：多雲/下雪才開
-  page.classList.toggle("has-clouds", weatherCodeToBgClass(codeNow) !== "wx-bg-clear");
+  // ===== 雲漂浮 =====
+  page.classList.toggle(
+    "has-clouds",
+    weatherCodeToBgClass(codeNow) !== "wx-bg-clear"
+  );
 
-  // ✅ 雪量狀態（重點）
+  // ===== 雪動畫（重點）=====
   page.classList.remove("snow-lite","snow-heavy");
-  // 無下雪也要「微微雪」
-  if (hasSnowNow) page.classList.add("snow-heavy");
-  else page.classList.add("snow-lite");
+
+  // ✅ 預設一定有微雪
+  page.classList.add("snow-lite");
+
+  // ✅ 如果「實際天氣是下雪」→ 變成大雪
+  if (hasSnowNow){
+    page.classList.remove("snow-lite");
+    page.classList.add("snow-heavy");
+  }
 }
+
 
 function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt, hasSnowNow }){
   wxEl("wxCity").textContent = cityName;

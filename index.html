@@ -3996,57 +3996,54 @@ function renderHourly24({ hourlyData, sunriseMs, sunsetMs }){
 }
 
 /* 主邏輯：處理背景、API 資料與 Icon 晝夜判斷 */
-async function loadAndRenderWeather() {
+
+async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}) {
   const city = WX_CITIES[wxCityIndex];
-  const page = wxEl("weather-page");
-  
+  if (!city) return;
+
+  const noteEl = wxEl("wxHourlyNote");
+  if (noteEl) noteEl.textContent = "載入中…";
+
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&timezone=auto`;
+    const url = buildWeatherApiUrl(city);
     const res = await fetch(url);
     const data = await res.json();
 
-    const sunriseMs = new Date(data.daily.sunrise[0]).getTime();
-    const sunsetMs = new Date(data.daily.sunset[0]).getTime();
-    const nowMs = Date.now();
-    const isNightNow = nowMs < sunriseMs || nowMs > sunsetMs;
+    if (!data.current_weather) throw new Error("API 資料異常");
 
-    // 1. 強制套用背景 Class (對接你的 CSS .weather-page.bg-xxx)
-    if (page) {
-      page.className = "weather-page"; // 重置 Class，確保基礎 class 存在
-      
-      const buffer = 45 * 60 * 1000;
-      let phase = "night";
-      if (nowMs >= sunriseMs - buffer && nowMs < sunriseMs + buffer) phase = "sunrise";
-      else if (nowMs >= sunriseMs + buffer && nowMs < sunsetMs - buffer) phase = "day";
-      else if (nowMs >= sunsetMs - buffer && nowMs < sunsetMs + buffer) phase = "sunset";
-
-      page.classList.add(`bg-${phase}`);
-      page.classList.add(weatherCodeToBgClass(data.current_weather.weathercode));
-      if (isSnowCode(data.current_weather.weathercode)) page.classList.add("has-snow");
-    }
-
-    // 2. 渲染 Header (傳入 isNightNow 以正確顯示現在圖示)
-    if (wxEl("wxCity")) wxEl("wxCity").textContent = city.name;
-    if (wxEl("wxTemp")) wxEl("wxTemp").textContent = Math.round(data.current_weather.temperature);
-    if (wxEl("wxDesc")) wxEl("wxDesc").textContent = weatherCodeToText(data.current_weather.weathercode);
-    if (wxEl("wxHiLo")) wxEl("wxHiLo").textContent = `最高 ${Math.round(data.daily.temperature_2m_max[0])}° / 最低 ${Math.round(data.daily.temperature_2m_min[0])}°`;
+    // 1. 渲染 Header (加入安全檢查)
+    const tempNow = Math.round(data.current_weather.temperature);
+    const codeNow = data.current_weather.weathercode;
+    const hi = Math.round(data.daily.temperature_2m_max[0]);
+    const lo = Math.round(data.daily.temperature_2m_min[0]);
     
-    const headIcon = wxEl("wxIcon");
-    if (headIcon) headIcon.src = wxIconSrc(weatherCodeToIconKey(data.current_weather.weathercode, isNightNow));
+    // 確保元素存在才賦值，防止報錯導致閃退
+    if (wxEl("wxCity")) wxEl("wxCity").textContent = city.name;
+    if (wxEl("wxTemp")) wxEl("wxTemp").textContent = tempNow;
+    if (wxEl("wxDesc")) wxEl("wxDesc").textContent = weatherCodeToText(codeNow);
+    if (wxEl("wxHiLo")) wxEl("wxHiLo").textContent = `最高 ${hi}° / 最低 ${lo}°`;
+
+    // 2. 背景處理
+    await applyLocalSunBg({ lat: city.latitude, lon: city.longitude, fakeNowLocalMs });
 
     // 3. 處理每小時預報
     const hTimes = data.hourly.time;
+    const nowMs = fakeNowLocalMs || Date.now();
     let startIdx = hTimes.findIndex(t => new Date(t).getTime() >= nowMs);
     if (startIdx === -1) startIdx = 0;
-    const hourlySlice = hTimes.slice(startIdx, startIdx + 24).map((t, idx) => ({
-      time: t,
-      temp: data.hourly.temperature_2m[startIdx + idx],
-      code: data.hourly.weathercode[startIdx + idx]
-    }));
 
-    renderHourly24({ hourlyData: hourlySlice, sunriseMs, sunsetMs });
+    const sliceTimes = hTimes.slice(startIdx, startIdx + 24);
+    const sliceTemps = data.hourly.temperature_2m.slice(startIdx, startIdx + 24);
+    const sliceCodes = data.hourly.weathercode.slice(startIdx, startIdx + 24);
 
-    // 4. 一週預報渲染 (不再因 wxIcon 缺失中斷)
+    renderHourly24({
+      timesISO: sliceTimes,
+      temps: sliceTemps,
+      codes: sliceCodes,
+      fakeNowLocalMs
+    });
+
+    // 4. 渲染一週預報
     renderWeek({
       dailyTimesISO: data.daily.time.slice(0, 7),
       maxArr: data.daily.temperature_2m_max.slice(0, 7),
@@ -4054,8 +4051,11 @@ async function loadAndRenderWeather() {
       dailyCodes: data.daily.weathercode.slice(0, 7)
     });
 
+    if (noteEl) noteEl.textContent = "資料更新完成";
+
   } catch (err) {
-    console.error("載入出錯", err);
+    console.error("天氣載入失敗:", err);
+    if (noteEl) noteEl.textContent = "天氣載入失敗，請檢查網路。";
   }
 }
 

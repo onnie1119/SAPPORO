@@ -4326,14 +4326,7 @@ function ensureSnowCanvas(){
 /* =========================================================
    [修改#2] 即時播報文字復原（顯示在 wxHourlyNote 或 wxNowBroadcast）
 ========================================================= */
-function buildNowBroadcast({ cityName, tempNow, codeNowN, windKmh }){
-  const parts = [];
-  if (cityName) parts.push(cityName);
-  if (Number.isFinite(tempNow)) parts.push(`目前 ${Math.round(tempNow)}°`);
-  parts.push(weatherCodeToText(codeNowN));
-  if (Number.isFinite(windKmh)) parts.push(`風速 ${Math.round(windKmh)} km/h`);
-  return parts.join("｜");
-}
+
 function setBroadcastText(text){
   // 你原本有 wxHourlyNote，我就優先塞這裡（符合「24小時那欄即時播報」）
   const noteEl = $("wxHourlyNote");
@@ -4470,6 +4463,171 @@ function nearestIndex(timesLocalMs, eventLocalMs){
     if (diff < bestDiff){ bestDiff=diff; best=i; }
   }
   return best;
+}
+
+/* =========================================================
+   ✅ 即時播報（智慧版）
+   - 先抓今天「時段變化」（早/午/晚/夜）
+   - 若變化不大 => 顯示注意事項
+========================================================= */
+
+// 把小時切成時段（你也可調整邊界）
+function getPeriodLabel(localMs){
+  const h = localHour(localMs); // 0~23 (UTC hour after offset)
+  if (h >= 5 && h < 11) return "早上";
+  if (h >= 11 && h < 17) return "下午";
+  if (h >= 17 && h < 22) return "晚上";
+  return "深夜";
+}
+
+// 依 code 粗分類（用你現有 code 規則）
+function wxKindFromCode(code){
+  if (isHeavySnowCode(code)) return "heavy_snow";
+  if (isSnowCode(code)) return "snow";
+  if ([95,96,99].includes(code)) return "thunder";
+  if ([45,48].includes(code)) return "fog";
+  if (isRainCode(code)) return "rain";
+  // 晴/雲當成 "fair"
+  if (code === 0) return "clear";
+  if ([1,2,3].includes(code)) return "cloud";
+  return "other";
+}
+
+function friendlyKindName(kind){
+  if (kind === "heavy_snow") return "大雪";
+  if (kind === "snow") return "下雪";
+  if (kind === "rain") return "降雨";
+  if (kind === "fog") return "起霧";
+  if (kind === "thunder") return "雷雨";
+  if (kind === "clear") return "晴朗";
+  if (kind === "cloud") return "多雲";
+  return "天氣變化";
+}
+
+// 取某段小時資料的「主導天氣」（用最多次出現的 kind）
+function dominantKind(codes){
+  const cnt = new Map();
+  for (const c of codes){
+    const k = wxKindFromCode(c);
+    cnt.set(k, (cnt.get(k) || 0) + 1);
+  }
+  let best = null, bestN = -1;
+  for (const [k,n] of cnt.entries()){
+    if (n > bestN){ bestN = n; best = k; }
+  }
+  return best || "other";
+}
+
+// 生成注意事項（變化不大時用）
+function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
+  const tips = [];
+
+  // 路滑/降雪
+  if (isSnowCode(codeNowN)) tips.push("路面可能結冰或濕滑，走路/開車放慢速度");
+  // 降雨
+  if (isRainCode(codeNowN)) tips.push("外出記得帶傘，注意鞋子防滑");
+  // 低溫
+  if (Number.isFinite(minT) && minT <= -5) tips.push("低溫注意保暖，手套/圍巾建議備著");
+  if (Number.isFinite(tempNow) && tempNow <= 0) tips.push("氣溫偏低，建議洋蔥式穿搭");
+  // 日夜溫差
+  if (Number.isFinite(minT) && Number.isFinite(maxT) && (maxT - minT) >= 10) tips.push("日夜溫差大，外套建議隨身");
+  // 風
+  if (Number.isFinite(windNow) && windNow >= 25) tips.push("風較強，體感更冷，帽子/防風外套更舒適");
+  // 霧
+  if ([45,48].includes(codeNowN)) tips.push("能見度可能較差，行車留意安全距離");
+
+  // 如果沒有任何 tips，給一個通用的
+  if (!tips.length) tips.push("天氣較穩定，出門前可再確認降水機率與體感溫度");
+
+  // 只取前 2~3 條，避免太長
+  return tips.slice(0, 3).join("；");
+}
+
+/**
+ * 主要播報：抓「今天時段變化」；沒有明顯變化就出注意事項
+ * 你需要傳入：24hr slice 的時間/溫度/天氣碼
+ */
+function buildSmartBroadcast({
+  cityName,
+  nowLocalMs,
+  tempNow,
+  windNow,
+  codeNowN,
+  dayMin,
+  dayMax,
+  sliceUnix,   // 24hr unix seconds array
+  sliceTemps,  // 24hr temps
+  sliceCodes,  // 24hr weathercode
+  offsetSec,
+}){
+  // 把 24hr slice 轉 localMs
+  const timesLocalMs = sliceUnix.map(sec => localMsFromUnix(sec, offsetSec));
+
+  // 只看「今天剩下的時間」：從現在開始到晚上/深夜
+  const idxNow = 0; // 你的 slice 已經從 nowFloorLocal 開始，所以第 0 格就是現在這個小時
+  const endIdx = Math.min(timesLocalMs.length, 24);
+
+  // 依時段分組：早上/下午/晚上/深夜
+  const buckets = new Map(); // period -> { codes:[], temps:[] }
+  for (let i = idxNow; i < endIdx; i++){
+    const p = getPeriodLabel(timesLocalMs[i]);
+    if (!buckets.has(p)) buckets.set(p, { codes: [], temps: [] });
+    buckets.get(p).codes.push(normalizeWeatherCode(sliceCodes[i], sliceTemps[i]));
+    buckets.get(p).temps.push(sliceTemps[i]);
+  }
+
+  const periods = ["早上","下午","晚上","深夜"].filter(p => buckets.has(p));
+
+  // 抓每個時段的主導天氣
+  const periodKinds = periods.map(p => ({
+    period: p,
+    kind: dominantKind(buckets.get(p).codes),
+  }));
+
+  // 找「變化點」：相鄰時段 kind 不同
+  const changes = [];
+  for (let i=0; i<periodKinds.length; i++){
+    if (i === 0) continue;
+    const prev = periodKinds[i-1];
+    const cur = periodKinds[i];
+    if (cur.kind !== prev.kind){
+      changes.push({ at: cur.period, from: prev.kind, to: cur.kind });
+    }
+  }
+
+  // 若偵測到變化：組成句子
+  if (changes.length){
+    // 只播前 2 個變化，避免太長
+    const top = changes.slice(0, 2).map(ch => {
+      // 比如：下午轉下雪 / 晚上轉降雨
+      return `${ch.at}${friendlyKindName(ch.to)}`;
+    }).join("，");
+
+    const nowPart = [
+      cityName ? cityName : null,
+      Number.isFinite(tempNow) ? `目前 ${Math.round(tempNow)}°` : null,
+      weatherCodeToText(codeNowN),
+    ].filter(Boolean).join("｜");
+
+    return `${nowPart}｜今天${top}`;
+  }
+
+  // 沒明顯變化 => 注意事項
+  const tips = buildTips({
+    tempNow,
+    minT: dayMin,
+    maxT: dayMax,
+    windNow,
+    codeNowN
+  });
+
+  const nowPart = [
+    cityName ? cityName : null,
+    Number.isFinite(tempNow) ? `目前 ${Math.round(tempNow)}°` : null,
+    weatherCodeToText(codeNowN),
+  ].filter(Boolean).join("｜");
+
+  return `${nowPart}｜${tips}`;
 }
 
 /* =========================================================

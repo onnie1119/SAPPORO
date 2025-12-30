@@ -4266,11 +4266,21 @@ function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }) {
 }
 
 /* 修正：渲染 24 小時預報，包含插入日出日落 */
-function renderHourly24({ hourlyData, sunriseMs, sunsetMs }) {
+/* 1. 補齊缺失的背景判斷函數 */
+function weatherCodeToBgClass(code) {
+  if (isSnowCode(code)) return "wx-bg-snow";
+  if ([1, 2, 3].includes(code)) return "wx-bg-cloudy";
+  if (code === 0) return "wx-bg-clear";
+  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return "wx-bg-rain";
+  return "wx-bg-cloudy"; 
+}
+
+/* 2. 修正後的渲染 24 小時預報 (含日出日落插入) */
+function renderHourly24({ hourlyData, sunriseMs, sunsetMs, fakeNowLocalMs }) {
   const wrap = document.getElementById("wxHourly");
   if (!wrap) return;
 
-  // 1. 準備渲染用的資料陣列
+  // 準備原始小時資料
   let displayList = hourlyData.map(item => ({
     type: 'hour',
     time: new Date(item.time).getTime(),
@@ -4278,43 +4288,38 @@ function renderHourly24({ hourlyData, sunriseMs, sunsetMs }) {
     code: item.code
   }));
 
-  // 2. 插入日出點 (如果在 24 小時範圍內)
+  // 插入日出日落點 (若在 24 小時範圍內)
   const rangeStart = displayList[0].time;
   const rangeEnd = displayList[displayList.length - 1].time;
 
-  if (sunriseMs >= rangeStart && sunriseMs <= rangeEnd) {
+  if (sunriseMs > rangeStart && sunriseMs < rangeEnd) {
     displayList.push({ type: 'sunrise', time: sunriseMs, label: '日出' });
   }
-  if (sunsetMs >= rangeStart && sunsetMs <= rangeEnd) {
+  if (sunsetMs > rangeStart && sunsetMs < rangeEnd) {
     displayList.push({ type: 'sunset', time: sunsetMs, label: '日落' });
   }
 
-  // 3. 重新按時間排序
+  // 排序確保時間連續
   displayList.sort((a, b) => a.time - b.time);
 
-  // 4. 生成 HTML
   wrap.innerHTML = displayList.map((item, i) => {
     const d = new Date(item.time);
-    
-    // 判斷該時間點是白天還是晚上 (用於切換 Icon)
+    // 判斷該點是否為夜晚 (日落後或日出前) 用於換 icon
     const isNight = item.time < sunriseMs || item.time > sunsetMs;
-    
-    // 如果是日出/日落點
+
     if (item.type === 'sunrise' || item.type === 'sunset') {
       const timeStr = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-      const iconKey = item.type; // 'sunrise' 或 'sunset'
       return `
-        <div class="wx-hour wx-special-event">
+        <div class="wx-hour wx-event">
           <div class="wx-hour-time">${timeStr}</div>
-          <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="event">
+          <img class="wx-hour-icon" src="${wxIconSrc(item.type)}" alt="event">
           <div class="wx-hour-temp">${item.label}</div>
         </div>
       `;
     }
 
-    // 一般小時點
     const timeStr = (i === 0) ? "現在" : pad2(d.getHours());
-    const iconKey = weatherCodeToIconKey(item.code, isNight);
+    const iconKey = weatherCodeToIconKey(item.code, isNight); // 傳入 isNight 區分白天深夜
 
     return `
       <div class="wx-hour">
@@ -4326,19 +4331,33 @@ function renderHourly24({ hourlyData, sunriseMs, sunsetMs }) {
   }).join("");
 }
 
-/* 修正：主邏輯讀取 API 並提取日出日落毫秒數 */
+/* 3. 修改後的主載入函數 */
 async function loadAndRenderWeather(fakeNowLocalMs = null) {
   const city = WX_CITIES[wxCityIndex];
+  const noteEl = document.getElementById("wxHourlyNote");
+  
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&timezone=auto`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current_weather=true&hourly=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&timezone=auto`;
     const res = await fetch(url);
     const data = await res.json();
 
-    // 獲取當天的日出日落毫秒數
+    // 取得當前城市今日的日出日落毫秒數
     const sunriseMs = new Date(data.daily.sunrise[0]).getTime();
     const sunsetMs = new Date(data.daily.sunset[0]).getTime();
 
-    // 處理 24 小時資料
+    // 處理 Header 與背景
+    renderHeader({
+      cityName: city.name,
+      tempNowInt: Math.round(data.current_weather.temperature),
+      codeNow: data.current_weather.weathercode,
+      hiInt: Math.round(data.daily.temperature_2m_max[0]),
+      loInt: Math.round(data.daily.temperature_2m_min[0])
+    });
+
+    applyWeatherClasses({ codeNow: data.current_weather.weathercode });
+    await applyLocalSunBg({ lat: city.latitude, lon: city.longitude, fakeNowLocalMs });
+
+    // 準備 24 小時小時切片
     const nowMs = fakeNowLocalMs || Date.now();
     const hTimes = data.hourly.time;
     let startIndex = hTimes.findIndex(t => new Date(t).getTime() >= nowMs);
@@ -4350,39 +4369,27 @@ async function loadAndRenderWeather(fakeNowLocalMs = null) {
       code: data.hourly.weathercode[startIndex + idx]
     }));
 
-    // 渲染 Header
-    renderHeader({
-      cityName: city.name,
-      tempNowInt: Math.round(data.current_weather.temperature),
-      codeNow: data.current_weather.weathercode,
-      hiInt: Math.round(data.daily.temperature_2m_max[0]),
-      loInt: Math.round(data.daily.temperature_2m_min[0])
-    });
-
-    // 執行 24 小時渲染 (傳入日出日落時間)
+    // 執行 24 小時渲染
     renderHourly24({
       hourlyData: hourlySlice,
       sunriseMs: sunriseMs,
-      sunsetMs: sunsetMs
+      sunsetMs: sunsetMs,
+      fakeNowLocalMs: nowMs
     });
 
-    // 背景切換 (原有邏輯)
-    applyWeatherClasses({ codeNow: data.current_weather.weathercode });
-    await applyLocalSunBg({ lat: city.latitude, lon: city.longitude, fakeNowLocalMs });
-
-    // 一週預報 (原有邏輯)
-    renderWeek({
-      dailyTimesISO: data.daily.time,
-      maxArr: data.daily.temperature_2m_max,
-      minArr: data.daily.temperature_2m_min,
-      dailyCodes: data.daily.weathercode
+    // 文字描述
+    noteEl.textContent = buildNoteString({
+      hourlyTimesISO: hTimes.slice(startIndex, startIndex + 24),
+      hourlyCodes: data.hourly.weathercode.slice(startIndex, startIndex + 24),
+      hourlyWindMS: data.hourly.windspeed_10m.slice(startIndex, startIndex + 24),
+      sunEvents: buildSunEvents(data.daily)
     });
 
   } catch (err) {
     console.error("載入失敗:", err);
+    if(noteEl) noteEl.textContent = "天氣載入失敗: " + err.message;
   }
 }
-
 
 function isNightTime(nowMs, sunriseMs, sunsetMs){
   return !(nowMs >= sunriseMs && nowMs < sunsetMs);

@@ -4268,7 +4268,7 @@ _pickParams(mode){
 
     ctx.beginPath();
     for (const s of this.particles){
-      s.phase += 0.02*dt;
+      s.phase += 0.012*dt;
       const swayX = Math.sin(s.phase)*s.sway;
 
       s.x += (s.vx + wind)*0.9*dt + swayX*0.6*dt;
@@ -4292,7 +4292,7 @@ _pickParams(mode){
       ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
     }
 
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
     ctx.fill();
 
     this.rafId = requestAnimationFrame(this._loop);

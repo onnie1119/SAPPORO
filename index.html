@@ -1808,13 +1808,14 @@
 .wx-week-min, .wx-week-max{
   font-size: 16px;
   opacity: .95;
-  text-align: center;
+  text-align: right;
 }
 .wx-week-bar{
   height: 4px;
   border-radius: 999px;
   background: rgb(255 255 255 / 8%);
   position: relative;
+  left: 10px;
   overflow: hidden;
 }
 .wx-week-bar > span{
@@ -4192,65 +4193,82 @@ function renderHourly24({
   const wrap = wxEl("wxHourly");
   if (!wrap) return;
 
-  // 整點前都叫「現在」；後面從下一整點開始：12/13/14...
-  const wallNextHour = ceilToNextHourWallMs(wallNow);
-  const endWall = wallNextHour + 23*60*60*1000;
+  const HOUR = 60 * 60 * 1000;
 
-  // 解析 hourly -> wall
+  // ✅ 整點前都叫「現在」，後面從下一整點開始
+  const wallNextHour = ceilToNextHourWallMs(wallNow);
+
+  // hourly -> wall ms
   const hourlyWall = hourlyTimesISO.map(parseLocalISOToWallMs);
 
-  // 找到第一個 >= nextHour 的資料 index
+  // 找到第一個 >= nextHour 的 index（用來對齊資料）
   let startIdx = hourlyWall.findIndex(t => Number.isFinite(t) && t >= wallNextHour);
   if (startIdx < 0) startIdx = 0;
 
-  // sunrise/sunset 是否落在接下來24h
-  const hasSunrise = (Number.isFinite(wallSunrise) && wallSunrise >= wallNextHour && wallSunrise <= endWall);
-  const hasSunset  = (Number.isFinite(wallSunset)  && wallSunset  >= wallNextHour && wallSunset  <= endWall);
-
-  const sunriseSlot = hasSunrise ? Math.floor((wallSunrise - wallNextHour)/(60*60*1000)) : null;
-  const sunsetSlot  = hasSunset  ? Math.floor((wallSunset  - wallNextHour)/(60*60*1000)) : null;
-
+  // ✅ 固定 24 格：第 0 格 = 現在 + 後 23 格 = nextHour 起
   const items = [];
 
-  // item0: 現在（current）
-  const isNightNow = isNightBySun(wallNow, wallSunrise, wallSunset);
+  // ---- 第 0 格：現在 ----
+  const isNightNow = (Number.isFinite(wallSunrise) && Number.isFinite(wallSunset))
+    ? isNightBySun(wallNow, wallSunrise, wallSunset)
+    : false;
+
   items.push({
-    label:"現在",
+    label: "現在",
     iconKey: weatherCodeToIconKey(codeNow, isNightNow),
-    temp: tempNowInt
+    temp: Number.isFinite(tempNowInt) ? tempNowInt : null
   });
 
-  // 23 slots
-  for (let i=0; i<23; i++){
-    // 插日出/日落 icon
-    if (sunriseSlot === i) items.push({ label: wallMsToHHMM(wallSunrise), iconKey:"sunrise", temp:null });
-    if (sunsetSlot  === i) items.push({ label: wallMsToHHMM(wallSunset),  iconKey:"sunset",  temp:null });
-
-    const showHour = (new Date(wallNextHour).getUTCHours() + i) % 24;
-    const label = pad2(showHour);
+  // ---- 後 23 格：nextHour / nextHour+1 ... ----
+  for (let i = 0; i < 23; i++){
+    const slotWall = wallNextHour + i * HOUR;       // 這格代表的時間（wall）
+    const hour24 = new Date(slotWall).getUTCHours(); // wall hour
+    const prefix = (hour24 >= 18) ? "晚上" : "早上";  // ✅ 依你的例子：18 之後算晚上，其它算早上
+    const label = `${prefix}${hour24}點`;
 
     const idx = startIdx + i;
-    const tWall = hourlyWall[idx];
     const temp = hourlyTemps[idx];
     const rawCode = hourlyCodes[idx];
     const code = normalizeWeatherCode(rawCode, temp);
 
-    const isNight = Number.isFinite(tWall)
-      ? isNightBySun(tWall, wallSunrise, wallSunset)
-      : isNightNow;
+    const isNight = (Number.isFinite(wallSunrise) && Number.isFinite(wallSunset))
+      ? isNightBySun(slotWall, wallSunrise, wallSunset)
+      : false;
 
     items.push({
       label,
       iconKey: weatherCodeToIconKey(code, isNight),
-      temp: Number.isFinite(temp) ? Math.round(temp) : null
+      temp: Number.isFinite(temp) ? Math.round(temp) : null,
+      slotWall
     });
   }
 
+  // ✅ 日出/日落 icon：不新增卡片，直接「替換」對應那一格的 icon
+  // - 不顯示幾點幾分
+  // - 溫度仍顯示（所以只換 icon，不動 temp）
+  function markEventIcon(eventWall, iconKey){
+    if (!Number.isFinite(eventWall)) return;
+
+    // 找這個 event 落在哪一格（1..23），0 是現在
+    const slot = Math.floor((eventWall - wallNextHour) / HOUR);
+    const itemIndex = 1 + clamp(slot, 0, 22);
+
+    // 只有在接下來 23 小時內才標
+    if (eventWall >= wallNextHour && eventWall < (wallNextHour + 23 * HOUR)){
+      if (items[itemIndex]) items[itemIndex].iconKey = iconKey;
+    }
+  }
+
+  markEventIcon(wallSunrise, "sunrise");
+  markEventIcon(wallSunset,  "sunset");
+
+  // ---- render ----
   wrap.innerHTML = items.map(it=>{
     const icon = wxIconSrc(it.iconKey);
-    const tempHtml = (it.temp==null)
+    const tempHtml = (it.temp == null)
       ? `<div class="wx-hour-temp">—</div>`
       : `<div class="wx-hour-temp">${it.temp}°</div>`;
+
     return `
       <div class="wx-hour ${it.iconKey==="sunrise"||it.iconKey==="sunset" ? "wx-hour-sun" : ""}">
         <div class="wx-hour-time">${it.label}</div>
@@ -4260,6 +4278,7 @@ function renderHourly24({
     `;
   }).join("");
 }
+
 
 function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
   const wrap = wxEl("wxWeek");

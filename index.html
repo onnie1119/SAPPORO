@@ -4258,9 +4258,10 @@ async function loadAndRenderWeather(debugSun=false){
     const res = await fetch(url);
     const data = await res.json();
 
-    const tempNow = data?.current_weather?.temperature;
-    const codeNow = data?.current_weather?.weathercode;
-    const tempNowInt = Number.isFinite(tempNow) ? Math.round(tempNow) : NaN;
+    const tempNow = data.current_weather.temperature;
+	const codeNowRaw = data.current_weather.weathercode;
+	const codeNow = normalizeWeatherCode(codeNowRaw, tempNow);
+
 
     const hi = data?.daily?.temperature_2m_max?.[0];
     const lo = data?.daily?.temperature_2m_min?.[0];
@@ -4296,7 +4297,10 @@ async function loadAndRenderWeather(debugSun=false){
 
     const sliceTimes = hTimes.slice(startIdx, startIdx + 24);
     const sliceTemps = hTemps.slice(startIdx, startIdx + 24);
-    const sliceCodes = hCodes.slice(startIdx, startIdx + 24);
+    const sliceCodes = hCodes
+  .slice(startIdx, startIdx + 24)
+  .map((code, i) => normalizeWeatherCode(code, sliceTemps[i]));
+
 
     // ✅ label：現在 / 下一整點開始 18/19/20...
     const labels = buildNextHoursLabels(sun.nowLocalMs, 24);
@@ -4316,7 +4320,10 @@ async function loadAndRenderWeather(debugSun=false){
     const dTimes = (data?.daily?.time || []).slice(0,7);
     const dMax   = (data?.daily?.temperature_2m_max || []).slice(0,7);
     const dMin   = (data?.daily?.temperature_2m_min || []).slice(0,7);
-    const dCodes = (data?.daily?.weathercode || []).slice(0,7);
+    const dCodes = data.daily.weathercode.map((code, i) => {
+  const avgTemp = (dMax[i] + dMin[i]) / 2;
+  return normalizeWeatherCode(code, avgTemp);
+});
 
     if (dTimes.length){
       renderWeek({
@@ -4358,7 +4365,15 @@ async function loadAndRenderWeather(debugSun=false){
  * delete window.__WX_MOCK_LOCAL_MS;
  * loadAndRenderWeather(true);
  */
+function normalizeWeatherCode(code, tempC){
+  // 降水類 code
+  const rainCodes = [51,53,55,56,57,61,63,65,66,67,80,81,82];
 
+  if (rainCodes.includes(code) && tempC <= 5{
+    return 71; // 當成「下雪」
+  }
+  return code;
+}
 </script>
 
 

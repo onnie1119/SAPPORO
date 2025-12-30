@@ -1482,270 +1482,350 @@
 
 /* ========== Weather iPhone-like UI ========== */
 /* =========================================================
-   Weather Page – FINAL CSS
-   與你目前 JS 完全對齊
+   Weather Page – Full CSS (Optimized)
+   - Layout / text / icons / cards
+   - 4 time backgrounds
+   - Snow-only effects: snow-lite (default) / snow-heavy (when snowing)
 ========================================================= */
 
-/* =========================
-   Base Layout
-========================= */
+/* -------------------------
+   Root helpers (optional)
+-------------------------- */
+:root{
+  --wx-maxw: 520px;
+
+  /* cards */
+  --wx-card-bg: rgba(255,255,255,0.16);
+  --wx-card-border: rgba(255,255,255,0.18);
+
+  /* text */
+  --wx-text: rgba(255,255,255,0.95);
+  --wx-text-soft: rgba(255,255,255,0.9);
+
+  /* spacing */
+  --wx-pad-x: 18px;
+}
+
+/* =========================================================
+   Page container
+========================================================= */
 .weather-page{
-  position: relative;
+  /* 讓背景動畫能完整鋪底 */
   min-height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h));
-  padding: 92px 18px calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 18px);
+  padding-top: 92px; /* topbar 固定高度，自行微調 */
+  padding-left: var(--wx-pad-x);
+  padding-right: var(--wx-pad-x);
+  padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 18px);
   box-sizing: border-box;
+
+  position: relative;
   overflow: hidden;
 
-  /* ⭐ 避免進頁面白閃 */
-  background: linear-gradient(180deg, #0b2444 0%, #040a14 100%);
+  /* 背景切換更順 */
   transition: background 600ms ease;
 }
 
-.wx-wrap{
+/* 內容層：永遠蓋在效果層之上 */
+.weather-page .wx-wrap{
   position: relative;
   z-index: 2;
-  max-width: 520px;
+  max-width: var(--wx-maxw);
   margin: 0 auto;
 }
 
-/* =========================
-   Time Backgrounds
-========================= */
-/* 日出 */
+/* 載入中：避免白底閃一下（你 JS 可加/移除這個 class） */
+.weather-page.is-loading{
+  background: linear-gradient(180deg, #0b2444 0%, #071427 100%);
+}
+
+/* =========================================================
+   4 Time backgrounds (你只要改這裡就能換漸層)
+========================================================= */
+/* 日出（晨曦） */
 .weather-page.bg-sunrise{
-  background: linear-gradient(180deg,
-    #bfe9ff 0%,
-    #7ab6ff 45%,
-    #3f7bff 100%
-  );
+  background: linear-gradient(180deg, #bfe9ff 0%, #fff1d0 55%, #3f7bff 100%);
 }
 
 /* 白天（淺藍 → 深藍） */
 .weather-page.bg-day{
-  background: linear-gradient(180deg,
-    #cfe9ff 0%,
-    #5faeff 55%,
-    #1d5bff 100%
-  );
+  background: linear-gradient(180deg, #d4f0ff 0%, #6fb7ff 55%, #0f64df 100%);
 }
 
-/* 日落 */
+/* 日落（黃昏） */
 .weather-page.bg-sunset{
-  background: linear-gradient(180deg,
-    #5b8dff 0%,
-    #7a63ff 45%,
-    #2a1b5e 100%
-  );
+  background: linear-gradient(180deg, #7aa7ff 0%, #ffd4f4 55%, #2a1b5e 100%);
 }
 
-/* 黑夜 */
+/* 黑夜（深 → 更黑） */
 .weather-page.bg-night{
-  background: linear-gradient(180deg,
-    #071427 0%,
-    #0b2444 55%,
-    #040a14 100%
-  );
+  background: linear-gradient(180deg, #0b2444 0%, #071427 55%, #040a14 100%);
 }
 
-/* =========================
-   Background Layers
-========================= */
-.weather-page::before,
+/* =========================================================
+   Snow-only background effects
+   - default: snow-lite
+   - snowing : snow-heavy
+========================================================= */
+
+/* 不要雲：::before 完全不使用 */
+.weather-page::before{
+  content:"";
+  display:none;
+}
+
+/* 飄雪層（共用基底） */
 .weather-page::after{
   content:"";
   position:absolute;
   inset:-20%;
   pointer-events:none;
+  z-index: 1;
+
+  opacity: 0;
+  transition: opacity .25s ease;
+
+  /* 讓雪點柔一點 */
+  filter: blur(.35px) drop-shadow(0 0 1.5px rgba(255,255,255,.25));
 }
 
-/* ---------- 雲漂浮（所有狀態都可） ---------- */
-.weather-page::before{
-  z-index: 0;
-  opacity: .55;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 60%),
-    radial-gradient(circle at 70% 40%, rgba(255,255,255,.25), transparent 65%);
-  animation: cloudMove 22s ease-in-out infinite alternate;
-}
-
-@keyframes cloudMove{
-  from{ transform: translate3d(-20px,-10px,0); }
-  to  { transform: translate3d(20px,10px,0); }
-}
-
-/* =========================
-   Snow Effects
-========================= */
-
-/* ⭐ 預設微微飄雪 */
+/* ⭐ 非下雪：預設微微飄雪（少、慢、細） */
 .weather-page.snow-lite::after{
-  z-index: 1;
   opacity: .55;
-  filter: blur(.4px);
   background-image:
-    radial-gradient(1.4px 1.4px at 20% 20%, rgba(255,255,255,.55), transparent 60%),
-    radial-gradient(1.2px 1.2px at 60% 40%, rgba(255,255,255,.5),  transparent 60%),
-    radial-gradient(1px   1px   at 80% 70%, rgba(255,255,255,.45), transparent 60%);
-  background-size: 260px 260px, 300px 300px, 220px 220px;
-  animation: snowFallLite 38s linear infinite;
+    radial-gradient(1.3px 1.3px at 20% 20%, rgba(255,255,255,.55), transparent 60%),
+    radial-gradient(1.1px 1.1px at 60% 40%, rgba(255,255,255,.50), transparent 60%),
+    radial-gradient(1.0px 1.0px at 80% 70%, rgba(255,255,255,.45), transparent 60%);
+  background-size: 280px 280px, 320px 320px, 240px 240px;
+  background-repeat: repeat;
+  animation: snowFallLite 40s linear infinite;
 }
 
-/* ⭐ 下雪時（比較明顯，但不誇張） */
+/* ⭐ 下雪：飄雪更明顯（較多、較大、較快） */
 .weather-page.snow-heavy::after{
-  z-index: 1;
   opacity: .9;
-  filter: blur(.35px) drop-shadow(0 0 2px rgba(255,255,255,.35));
   background-image:
-    radial-gradient(2.4px 2.4px at 15% 15%, rgba(255,255,255,.8), transparent 60%),
-    radial-gradient(2.2px 2.2px at 50% 40%, rgba(255,255,255,.75), transparent 60%),
-    radial-gradient(2px   2px   at 80% 60%, rgba(255,255,255,.7), transparent 60%),
-    radial-gradient(1.4px 1.4px at 30% 75%, rgba(255,255,255,.6), transparent 60%),
-    radial-gradient(1.2px 1.2px at 65% 85%, rgba(255,255,255,.55),transparent 60%);
-  background-size:
-    180px 180px,
-    220px 220px,
-    200px 200px,
-    160px 160px,
-    140px 140px;
+    radial-gradient(2.6px 2.6px at 15% 15%, rgba(255,255,255,.80), transparent 60%),
+    radial-gradient(2.4px 2.4px at 50% 40%, rgba(255,255,255,.75), transparent 60%),
+    radial-gradient(2.1px 2.1px at 80% 60%, rgba(255,255,255,.70), transparent 60%),
+    radial-gradient(1.5px 1.5px at 30% 75%, rgba(255,255,255,.62), transparent 60%),
+    radial-gradient(1.2px 1.2px at 65% 85%, rgba(255,255,255,.55), transparent 60%);
+  background-size: 190px 190px, 230px 230px, 210px 210px, 170px 170px, 150px 150px;
+  background-repeat: repeat;
   animation: snowFallHeavy 26s linear infinite;
 }
 
+/* 飄雪動畫：避免太直線（落下 + 微左右飄） */
 @keyframes snowFallLite{
-  from{ background-position: 0 -300px; }
-  to  { background-position: 0 900px; }
+  0%   { transform: translate3d(0,-220px,0) translateX(0); }
+  50%  { transform: translate3d(0,360px,0) translateX(18px); }
+  100% { transform: translate3d(0,920px,0) translateX(-10px); }
 }
 @keyframes snowFallHeavy{
-  from{ background-position: 0 -400px; }
-  to  { background-position: 0 1200px; }
+  0%   { transform: translate3d(0,-260px,0) translateX(0); }
+  50%  { transform: translate3d(0,480px,0) translateX(26px); }
+  100% { transform: translate3d(0,1250px,0) translateX(-16px); }
 }
 
-/* =========================
-   Dots (City switch)
-========================= */
+/* 無障礙：偏好減少動畫 */
+@media (prefers-reduced-motion: reduce){
+  .weather-page::after{ animation:none !important; }
+}
+
+/* =========================================================
+   Dots (city switch)
+========================================================= */
 .wx-dots{
   display:flex;
-  justify-content:center;
   gap:8px;
-  margin-bottom:10px;
+  justify-content:center;
+  align-items:center;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  z-index: 3;
 }
 .wx-dot{
   width:8px;
   height:8px;
-  border-radius:50%;
-  background: rgba(255,255,255,.45);
-  border:1px solid rgba(255,255,255,.35);
+  border-radius:999px;
+  background: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.35);
+  transition: transform .2s ease, background .2s ease;
+  cursor: pointer;
 }
 .wx-dot.active{
-  background: rgba(255,255,255,.95);
-  transform: scale(1.2);
+  background: rgba(255,255,255,0.92);
+  transform: scale(1.22);
 }
 
-/* =========================
-   Header
-========================= */
+/* =========================================================
+   Header (hero)
+========================================================= */
 .wx-hero{
   text-align:center;
-  color: rgba(255,255,255,.95);
-  margin-bottom:14px;
-  text-shadow: 0 6px 22px rgba(0,0,0,.25);
+  color: var(--wx-text);
+  margin-top: 6px;
+  margin-bottom: 12px;
+  text-shadow: 0 6px 22px rgba(0,0,0,0.18);
 }
-.wx-city{ font-size:22px; font-weight:600; }
+.wx-city{
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: .5px;
+}
 .wx-temp-center{
-  font-size:74px;
-  line-height:1.05;
-  margin:6px 0;
-  position:relative;
-  display:inline-block;
+  font-size: 74px;
+  font-weight: 650;
+  line-height: 1.05;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  display: inline-block;
+  position: relative;
+  padding-right: 10px; /* 留空給 ° */
 }
 .wx-temp-center::after{
-  content:"°";
+  content: "°";
   position:absolute;
-  right:-14px;
-  top:6px;
-  font-size:34px;
+  right:-2px;
+  top: 6px;
+  font-size: 34px;
+  opacity: 0.95;
 }
-.wx-desc{ font-size:18px; }
-.wx-hilo{ font-size:15px; opacity:.9; }
+#wxTemp{ display:inline-block; min-width: 40px; }
 
-/* =========================
+.wx-desc{
+  font-size: 18px;
+  opacity: 0.95;
+}
+.wx-hilo{
+  font-size: 16px;
+  opacity: 0.9;
+  margin-top: 6px;
+}
+
+/* =========================================================
    Cards
-========================= */
+========================================================= */
 .wx-card{
-  background: rgba(255,255,255,.16);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:16px;
-  padding:14px;
+  background: var(--wx-card-bg);
+  border: 1px solid var(--wx-card-border);
+  border-radius: 16px;
+  padding: 14px 14px;
   backdrop-filter: blur(10px);
-  margin-top:12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  margin-top: 12px;
 }
 .wx-card-title{
-  font-size:14px;
-  letter-spacing:1px;
-  margin-bottom:10px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  opacity: .95;
+  color: var(--wx-text);
+  margin-bottom: 10px;
+}
+.wx-hourly-note{
+  font-size: 14px;
+  color: var(--wx-text-soft);
+  opacity: .95;
+  margin-bottom: 10px;
 }
 
-/* =========================
-   24 Hour
-========================= */
-#wxHourly{ min-height:92px; }
+/* 固定最小高度：避免切城市載入時高度閃動 */
+#wxHourly { min-height: 92px; }
+#wxWeek   { min-height: 220px; }
 
+/* =========================================================
+   24h (horizontal)
+========================================================= */
 .wx-hourly{
   display:flex;
-  gap:10px;
-  overflow-x:auto;
-  -webkit-overflow-scrolling:touch;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
 }
 .wx-hourly::-webkit-scrollbar{ display:none; }
 
 .wx-hour{
-  width:62px;
+  flex: 0 0 auto;
+  width: 62px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.16);
   text-align:center;
-  padding:10px 6px;
-  border-radius:14px;
-  background: rgba(255,255,255,.14);
 }
-.wx-hour-time{ font-size:12px; margin-bottom:6px; }
+.wx-hour-time{
+  font-size: 12px;
+  opacity: 0.95;
+  color: var(--wx-text);
+  margin-bottom: 6px;
+}
+
+/* ✅ icon 樣式（你說我剛剛沒補） */
 .wx-hour-icon{
-  width:28px;
-  height:28px;
-  margin:0 auto 6px;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  margin: 0 auto 6px;
   display:block;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.18));
 }
-.wx-hour-temp{ font-size:15px; font-weight:600; }
 
-/* =========================
-   Week
-========================= */
-#wxWeek{ min-height:220px; }
+.wx-hour-temp{
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--wx-text);
+}
 
+/* =========================================================
+   Week (7 days)
+========================================================= */
+.wx-week{
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .wx-week-row{
   display:grid;
-  grid-template-columns: 54px 26px 36px 1fr 36px;
-  gap:10px;
+  grid-template-columns: 54px 30px 38px 1fr 42px;
+  gap: 10px;
   align-items:center;
+  color: var(--wx-text);
+}
+.wx-week-day{
+  font-size: 14px;
+  opacity: .95;
+}
+.wx-week-icon{
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display:block;
+  opacity: .98;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.16));
+}
+.wx-week-min, .wx-week-max{
+  font-size: 14px;
+  opacity: .95;
+  text-align: right;
 }
 .wx-week-bar{
-  height:5px;
-  border-radius:999px;
-  background: rgba(255,255,255,.2);
-  position:relative;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  position: relative;
+  overflow: hidden;
 }
-.wx-week-bar span{
+.wx-week-bar > span{
   position:absolute;
-  height:5px;
-  border-radius:999px;
-  background: linear-gradient(90deg,#ffd27a,#ff9f1a);
+  top:0;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #afffff, #14dffd);
 }
 
-/* =========================
-   Reduce motion
-========================= */
-@media (prefers-reduced-motion: reduce){
-  .weather-page::before,
-  .weather-page::after{
-    animation:none !important;
-  }
-}
+/* Small spacing helper */
+.wx-spacer{ height:18px; }
+
 
 
 </style>

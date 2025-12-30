@@ -3970,13 +3970,16 @@
 	</script>
 <script>
 /* =========================================================
-   Weather Page – FIXED + Enhanced Snow + Broadcast
+   Weather Page – FULL JS (Your original + fixes merged)
+   ---------------------------------------------------------
    ✅ 時區=auto + timeformat=unixtime（你原本就正確）
-   ✅ 24hr：現在 / 上午下午 1~12 時
+   ✅ 24hr：第0格=現在；其餘=上午/下午 1~12 時
    ✅ 24hr：日出/日落 icon + 文字標籤插入
-   ✅ 24hr：日出後=白天 icon，日落後=夜間 icon（保留你原本邏輯）
-   ✅ 雪：飄雪/下雪/大雪（非下雪預設=飄雪）+ Canvas 自然動態 + 永遠不空白
-   ✅ 24hr：即時播報文字復原（顯示在 wxHourlyNote / wxNowBroadcast）
+   ✅ 24hr：日出後=白天 icon，日落後=夜間 icon（night_ 開頭）
+   ✅ 雪：飄雪/下雪/大雪（非下雪預設=飄雪）
+      - Canvas 粒子：若隱若現、速度慢、大小偏大、方向有變化、永遠不空白
+      - 已自動建立 <canvas id="wxSnowCanvas">，不用你加 HTML
+   ✅ 即時播報：偏向「今天各時段變化」；沒變化就顯示注意事項
    ✅ 切城市：dots + 左右滑（不干擾 24hr 橫滑）
 ========================================================= */
 
@@ -4023,19 +4026,10 @@ let wxInited = false;
 let wxCityIndex = 0;
 
 /* =========================================================
-   [新增#1] 工具：clamp/rand + 12 小時 上午/下午（不受瀏覽器時區影響）
+   [A] Utilities: clamp / rand
 ========================================================= */
 function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 function rand(min, max){ return Math.random() * (max - min) + min; }
-
-// localMs 已經「加過 offset」=> 用 UTC 取 hour 才不會被瀏覽器時區影響
-function formatHourAmPmFromLocalMs(localMs){
-  const h = new Date(localMs).getUTCHours(); // 0~23
-  const ampm = h < 12 ? "上午" : "下午";
-  let h12 = h % 12;
-  if (h12 === 0) h12 = 12;
-  return `${ampm}${h12}時`;
-}
 
 /* ---------------- Helpers: time ----------------
    timeformat=unixtime => API 回來的是「秒」
@@ -4046,6 +4040,7 @@ function localMsFromUnix(unixSec, offsetSec){
   return (Number(unixSec) + Number(offsetSec)) * 1000;
 }
 function localHour(localMs){
+  // localMs 已加 offset => 用 UTC 取小時才不受瀏覽器時區影響
   return new Date(localMs).getUTCHours();
 }
 function localDateKey(localMs){
@@ -4055,6 +4050,15 @@ function floorToHourLocal(localMs){
   const d = new Date(localMs);
   d.setUTCMinutes(0,0,0);
   return d.getTime();
+}
+
+// ✅ 上午/下午 1~12 時（以 localMs 為準）
+function formatHourAmPmFromLocalMs(localMs){
+  const h = localHour(localMs); // 0~23
+  const ampm = h < 12 ? "上午" : "下午";
+  let h12 = h % 12;
+  if (h12 === 0) h12 = 12;
+  return `${ampm}${h12}時`;
 }
 
 /* ---------------- Weather normalize ---------------- */
@@ -4122,11 +4126,10 @@ function getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, twilightMin=45){
 }
 
 /* =========================================================
-   [修改#1] 雪狀態：flurry / snow / heavySnow
+   [B] Snow mode: flurry / snow / heavySnow
    - 非下雪 => flurry（預設）
    - 下雪 => snow
    - 大雪 => heavySnow
-   ※ 會加到 page class：snow-flurry / snow-snow / snow-heavy
 ========================================================= */
 function getSnowModeFromCode(codeNowN){
   if (isHeavySnowCode(codeNowN)) return "heavySnow";
@@ -4141,9 +4144,7 @@ function applySnowModeClass(page, mode){
 }
 
 /* =========================================================
-   [新增#2] Canvas 雪粒子（自然 + 不規則 + 永遠持續）
-   - 取代你原本 CSS 雪的「死板/空白段」問題
-   - 會自動建立/插入 <canvas id="wxSnowCanvas">
+   [C] Canvas Snow (subtle + larger flakes + slow + continuous)
 ========================================================= */
 class SnowBackground {
   constructor(opts){
@@ -4169,22 +4170,16 @@ class SnowBackground {
     this._init();
   }
 
- 
-// 依模式選參數（✅ 雪花更大，但仍若隱若現）
-_pickParams(mode){
-  // 大雪：大顆較多、但數量仍控制住
-  if (mode === "heavySnow") {
-    return { count: 110, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
+  // ✅ 若隱若現：少量、慢、顆粒偏大
+  _pickParams(mode){
+    if (mode === "heavySnow") {
+      return { count: 200, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
+    }
+    if (mode === "snow") {
+      return { count: 130, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
+    }
+    return { count: 80, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 }; // flurry
   }
-  // 下雪：顆粒明顯變大，但整體淡
-  if (mode === "snow") {
-    return { count: 80, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
-  }
-  // 飄雪（非下雪預設）：少量大顆慢慢飄
-  return { count: 40, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 };
-}
-
-
 
   _onResize(){
     const canvas = this.canvas;
@@ -4219,14 +4214,14 @@ _pickParams(mode){
       r: rand(p.rMin, p.rMax),
       vy: rand(p.vyMin, p.vyMax),
       vx: rand(-p.wind, p.wind),
-      sway: rand(0.2, 1.1),
+      sway: rand(0.25, 1.2),
       phase: rand(0, Math.PI*2),
-      opacity: rand(0.25, 0.95),
+      opacity: rand(0.20, 0.65),
     }));
   }
 
   _stepWind(){
-    this.windT += 1/600;
+    this.windT += 1/700; // 更慢的風向變化
     if (this.windT >= 1){
       this.windT = 0;
       this.windBase = this.windTarget;
@@ -4265,43 +4260,44 @@ _pickParams(mode){
 
     const ctx = this.ctx;
     const wind = this._stepWind();
-
     ctx.clearRect(0,0,this.w,this.h);
 
     ctx.beginPath();
     for (const s of this.particles){
-      s.phase += 0.012*dt;
-      const swayX = Math.sin(s.phase)*s.sway;
+      // ✅ 飄動更柔
+      s.phase += 0.012 * dt;
+      const swayX = Math.sin(s.phase) * s.sway;
 
-      s.x += (s.vx + wind)*0.9*dt + swayX*0.6*dt;
-      s.y += s.vy*1.2*dt;
+      s.x += (s.vx + wind) * 0.85 * dt + swayX * 0.55 * dt;
+      s.y += s.vy * 1.15 * dt;
 
-      if (s.x < -10) s.x = this.w + 10;
-      if (s.x > this.w + 10) s.x = -10;
+      if (s.x < -12) s.x = this.w + 12;
+      if (s.x > this.w + 12) s.x = -12;
 
-      // ✅ 永遠重生 => 不會空白
-      if (s.y > this.h + 10){
-        s.y = rand(-80, -10);
+      // ✅ 永遠重生 => 不空白
+      if (s.y > this.h + 12){
+        s.y = rand(-120, -10);
         s.x = rand(0, this.w);
         s.r = rand(this.params.rMin, this.params.rMax);
         s.vy = rand(this.params.vyMin, this.params.vyMax);
         s.vx = rand(-this.params.wind, this.params.wind);
-        s.sway = rand(0.2, 1.1);
-        s.opacity = rand(0.25, 0.95);
+        s.sway = rand(0.25, 1.2);
+        s.opacity = rand(0.20, 0.65);
       }
 
       ctx.moveTo(s.x, s.y);
       ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
     }
 
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    // ✅ 若隱若現：整體淡（想更明顯把 0.38 調到 0.45）
+    ctx.fillStyle = "rgba(255,255,255,0.38)";
     ctx.fill();
 
     this.rafId = requestAnimationFrame(this._loop);
   }
 }
 
-// 建立 canvas（只建一次）
+// 建立 Canvas（只建一次）
 let wxSnowBg = null;
 function ensureSnowCanvas(){
   const page = $("weather-page");
@@ -4314,29 +4310,140 @@ function ensureSnowCanvas(){
     c.style.position = "fixed";
     c.style.inset = "0";
     c.style.pointerEvents = "none";
-    c.style.zIndex = "0"; // 背景層
+    c.style.zIndex = "0"; // 最底層
     document.body.appendChild(c);
   }
-  // 確保內容在雪上面（避免播報文字被蓋住）
+
+  // 確保內容層在雪上面
   page.style.position ||= "relative";
   page.style.zIndex ||= "1";
+
   return c;
 }
 
 /* =========================================================
-   [修改#2] 即時播報文字復原（顯示在 wxHourlyNote 或 wxNowBroadcast）
+   [D] Smart Broadcast: 時段變化優先；沒變化就注意事項
+   - 顯示位置：優先 wxHourlyNote（你原本就有）
 ========================================================= */
-
 function setBroadcastText(text){
-  // 你原本有 wxHourlyNote，我就優先塞這裡（符合「24小時那欄即時播報」）
   const noteEl = $("wxHourlyNote");
   if (noteEl){
     noteEl.textContent = text || " ";
     return;
   }
-  // 若你之後想用獨立區塊，可放一個 <div id="wxNowBroadcast"></div>
   const bc = $("wxNowBroadcast");
   if (bc) bc.textContent = text || " ";
+}
+
+// 時段定義
+function getPeriodLabel(localMs){
+  const h = localHour(localMs);
+  if (h >= 5 && h < 11) return "早上";
+  if (h >= 11 && h < 17) return "下午";
+  if (h >= 17 && h < 22) return "晚上";
+  return "深夜";
+}
+
+function wxKindFromCode(code){
+  if (isHeavySnowCode(code)) return "heavy_snow";
+  if (isSnowCode(code)) return "snow";
+  if ([95,96,99].includes(code)) return "thunder";
+  if ([45,48].includes(code)) return "fog";
+  if (isRainCode(code)) return "rain";
+  if (code === 0) return "clear";
+  if ([1,2,3].includes(code)) return "cloud";
+  return "other";
+}
+
+function friendlyKindName(kind){
+  if (kind === "heavy_snow") return "大雪";
+  if (kind === "snow") return "下雪";
+  if (kind === "rain") return "降雨";
+  if (kind === "fog") return "起霧";
+  if (kind === "thunder") return "雷雨";
+  if (kind === "clear") return "晴朗";
+  if (kind === "cloud") return "多雲";
+  return "天氣變化";
+}
+
+function dominantKind(codes){
+  const cnt = new Map();
+  for (const c of codes){
+    const k = wxKindFromCode(c);
+    cnt.set(k, (cnt.get(k) || 0) + 1);
+  }
+  let best = null, bestN = -1;
+  for (const [k,n] of cnt.entries()){
+    if (n > bestN){ bestN = n; best = k; }
+  }
+  return best || "other";
+}
+
+function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
+  const tips = [];
+
+  if (isSnowCode(codeNowN)) tips.push("路面可能結冰或濕滑，走路/開車放慢速度");
+  if (isRainCode(codeNowN)) tips.push("外出記得帶傘，注意鞋子防滑");
+  if (Number.isFinite(minT) && minT <= -5) tips.push("低溫注意保暖，手套/圍巾建議備著");
+  if (Number.isFinite(tempNow) && tempNow <= 0) tips.push("氣溫偏低，建議洋蔥式穿搭");
+  if (Number.isFinite(minT) && Number.isFinite(maxT) && (maxT - minT) >= 10) tips.push("日夜溫差大，外套建議隨身");
+  if (Number.isFinite(windNow) && windNow >= 25) tips.push("風較強，體感更冷，帽子/防風外套更舒適");
+  if ([45,48].includes(codeNowN)) tips.push("能見度可能較差，行車留意安全距離");
+
+  if (!tips.length) tips.push("天氣較穩定，出門前可再確認降水機率與體感溫度");
+  return tips.slice(0, 3).join("；");
+}
+
+function buildSmartBroadcast({
+  cityName,
+  nowLocalMs,
+  tempNow,
+  windNow,
+  codeNowN,
+  dayMin,
+  dayMax,
+  sliceUnix,
+  sliceTemps,
+  sliceCodes,
+  offsetSec,
+}){
+  const timesLocalMs = sliceUnix.map(sec => localMsFromUnix(sec, offsetSec));
+
+  // 分時段
+  const buckets = new Map();
+  for (let i=0; i<timesLocalMs.length; i++){
+    const p = getPeriodLabel(timesLocalMs[i]);
+    if (!buckets.has(p)) buckets.set(p, { codes: [], temps: [] });
+    buckets.get(p).codes.push(normalizeWeatherCode(sliceCodes[i], sliceTemps[i]));
+    buckets.get(p).temps.push(sliceTemps[i]);
+  }
+
+  const periods = ["早上","下午","晚上","深夜"].filter(p => buckets.has(p));
+  const periodKinds = periods.map(p => ({ period: p, kind: dominantKind(buckets.get(p).codes) }));
+
+  // 找變化點（相鄰時段 kind 變了）
+  const changes = [];
+  for (let i=1; i<periodKinds.length; i++){
+    const prev = periodKinds[i-1];
+    const cur = periodKinds[i];
+    if (cur.kind !== prev.kind){
+      changes.push({ at: cur.period, to: cur.kind });
+    }
+  }
+
+  const nowPart = [
+    cityName ? cityName : null,
+    Number.isFinite(tempNow) ? `目前 ${Math.round(tempNow)}°` : null,
+    weatherCodeToText(codeNowN),
+  ].filter(Boolean).join("｜");
+
+  if (changes.length){
+    const top = changes.slice(0, 2).map(ch => `${ch.at}${friendlyKindName(ch.to)}`).join("，");
+    return `${nowPart}｜今天${top}`;
+  }
+
+  const tips = buildTips({ tempNow, minT: dayMin, maxT: dayMax, windNow, codeNowN });
+  return `${nowPart}｜${tips}`;
 }
 
 /* ---------------- Dots + Swipe ---------------- */
@@ -4372,6 +4479,7 @@ function bindWeatherSwipe(){
   let sx=0, sy=0, tracking=false;
 
   page.addEventListener("touchstart",(e)=>{
+    // ✅ 在 24hr 橫滑區，不切城市
     if (e.target.closest("#wxHourly")) return;
     const t = e.touches[0];
     sx=t.clientX; sy=t.clientY;
@@ -4465,175 +4573,7 @@ function nearestIndex(timesLocalMs, eventLocalMs){
   return best;
 }
 
-/* =========================================================
-   ✅ 即時播報（智慧版）
-   - 先抓今天「時段變化」（早/午/晚/夜）
-   - 若變化不大 => 顯示注意事項
-========================================================= */
-
-// 把小時切成時段（你也可調整邊界）
-function getPeriodLabel(localMs){
-  const h = localHour(localMs); // 0~23 (UTC hour after offset)
-  if (h >= 5 && h < 11) return "早上";
-  if (h >= 11 && h < 17) return "下午";
-  if (h >= 17 && h < 22) return "晚上";
-  return "深夜";
-}
-
-// 依 code 粗分類（用你現有 code 規則）
-function wxKindFromCode(code){
-  if (isHeavySnowCode(code)) return "heavy_snow";
-  if (isSnowCode(code)) return "snow";
-  if ([95,96,99].includes(code)) return "thunder";
-  if ([45,48].includes(code)) return "fog";
-  if (isRainCode(code)) return "rain";
-  // 晴/雲當成 "fair"
-  if (code === 0) return "clear";
-  if ([1,2,3].includes(code)) return "cloud";
-  return "other";
-}
-
-function friendlyKindName(kind){
-  if (kind === "heavy_snow") return "大雪";
-  if (kind === "snow") return "下雪";
-  if (kind === "rain") return "降雨";
-  if (kind === "fog") return "起霧";
-  if (kind === "thunder") return "雷雨";
-  if (kind === "clear") return "晴朗";
-  if (kind === "cloud") return "多雲";
-  return "天氣變化";
-}
-
-// 取某段小時資料的「主導天氣」（用最多次出現的 kind）
-function dominantKind(codes){
-  const cnt = new Map();
-  for (const c of codes){
-    const k = wxKindFromCode(c);
-    cnt.set(k, (cnt.get(k) || 0) + 1);
-  }
-  let best = null, bestN = -1;
-  for (const [k,n] of cnt.entries()){
-    if (n > bestN){ bestN = n; best = k; }
-  }
-  return best || "other";
-}
-
-// 生成注意事項（變化不大時用）
-function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
-  const tips = [];
-
-  // 路滑/降雪
-  if (isSnowCode(codeNowN)) tips.push("路面可能結冰或濕滑，走路/開車放慢速度");
-  // 降雨
-  if (isRainCode(codeNowN)) tips.push("外出記得帶傘，注意鞋子防滑");
-  // 低溫
-  if (Number.isFinite(minT) && minT <= -5) tips.push("低溫注意保暖，手套/圍巾建議備著");
-  if (Number.isFinite(tempNow) && tempNow <= 0) tips.push("氣溫偏低，建議洋蔥式穿搭");
-  // 日夜溫差
-  if (Number.isFinite(minT) && Number.isFinite(maxT) && (maxT - minT) >= 10) tips.push("日夜溫差大，外套建議隨身");
-  // 風
-  if (Number.isFinite(windNow) && windNow >= 25) tips.push("風較強，體感更冷，帽子/防風外套更舒適");
-  // 霧
-  if ([45,48].includes(codeNowN)) tips.push("能見度可能較差，行車留意安全距離");
-
-  // 如果沒有任何 tips，給一個通用的
-  if (!tips.length) tips.push("天氣較穩定，出門前可再確認降水機率與體感溫度");
-
-  // 只取前 2~3 條，避免太長
-  return tips.slice(0, 3).join("；");
-}
-
-/**
- * 主要播報：抓「今天時段變化」；沒有明顯變化就出注意事項
- * 你需要傳入：24hr slice 的時間/溫度/天氣碼
- */
-function buildSmartBroadcast({
-  cityName,
-  nowLocalMs,
-  tempNow,
-  windNow,
-  codeNowN,
-  dayMin,
-  dayMax,
-  sliceUnix,   // 24hr unix seconds array
-  sliceTemps,  // 24hr temps
-  sliceCodes,  // 24hr weathercode
-  offsetSec,
-}){
-  // 把 24hr slice 轉 localMs
-  const timesLocalMs = sliceUnix.map(sec => localMsFromUnix(sec, offsetSec));
-
-  // 只看「今天剩下的時間」：從現在開始到晚上/深夜
-  const idxNow = 0; // 你的 slice 已經從 nowFloorLocal 開始，所以第 0 格就是現在這個小時
-  const endIdx = Math.min(timesLocalMs.length, 24);
-
-  // 依時段分組：早上/下午/晚上/深夜
-  const buckets = new Map(); // period -> { codes:[], temps:[] }
-  for (let i = idxNow; i < endIdx; i++){
-    const p = getPeriodLabel(timesLocalMs[i]);
-    if (!buckets.has(p)) buckets.set(p, { codes: [], temps: [] });
-    buckets.get(p).codes.push(normalizeWeatherCode(sliceCodes[i], sliceTemps[i]));
-    buckets.get(p).temps.push(sliceTemps[i]);
-  }
-
-  const periods = ["早上","下午","晚上","深夜"].filter(p => buckets.has(p));
-
-  // 抓每個時段的主導天氣
-  const periodKinds = periods.map(p => ({
-    period: p,
-    kind: dominantKind(buckets.get(p).codes),
-  }));
-
-  // 找「變化點」：相鄰時段 kind 不同
-  const changes = [];
-  for (let i=0; i<periodKinds.length; i++){
-    if (i === 0) continue;
-    const prev = periodKinds[i-1];
-    const cur = periodKinds[i];
-    if (cur.kind !== prev.kind){
-      changes.push({ at: cur.period, from: prev.kind, to: cur.kind });
-    }
-  }
-
-  // 若偵測到變化：組成句子
-  if (changes.length){
-    // 只播前 2 個變化，避免太長
-    const top = changes.slice(0, 2).map(ch => {
-      // 比如：下午轉下雪 / 晚上轉降雨
-      return `${ch.at}${friendlyKindName(ch.to)}`;
-    }).join("，");
-
-    const nowPart = [
-      cityName ? cityName : null,
-      Number.isFinite(tempNow) ? `目前 ${Math.round(tempNow)}°` : null,
-      weatherCodeToText(codeNowN),
-    ].filter(Boolean).join("｜");
-
-    return `${nowPart}｜今天${top}`;
-  }
-
-  // 沒明顯變化 => 注意事項
-  const tips = buildTips({
-    tempNow,
-    minT: dayMin,
-    maxT: dayMax,
-    windNow,
-    codeNowN
-  });
-
-  const nowPart = [
-    cityName ? cityName : null,
-    Number.isFinite(tempNow) ? `目前 ${Math.round(tempNow)}°` : null,
-    weatherCodeToText(codeNowN),
-  ].filter(Boolean).join("｜");
-
-  return `${nowPart}｜${tips}`;
-}
-
-/* =========================================================
-   [修改#3] 24hr 時間顯示：上午/下午 1~12
-   + 日出/日落：除了 icon 再加文字標籤
-========================================================= */
+/* ---------------- 24hr render ---------------- */
 function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLocalMs }){
   const wrap = $("wxHourly");
   if (!wrap) return;
@@ -4670,13 +4610,12 @@ function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLoc
     else if (i === sunsetIdx){ iconKey = "sunset"; markerText = "日落"; }
     else iconKey = weatherCodeToIconKey(codeN, night);
 
-    // 時間：第 0 格仍顯示「現在」，其餘顯示 上午/下午 X時
     const timeLabel = (i === 0) ? "現在" : formatHourAmPmFromLocalMs(hourLocalMs);
 
     return `
       <div class="wx-hour">
         <div class="wx-hour-time">${timeLabel}</div>
-        ${markerText ? `<div class="wx-hour-marker">${markerText}</div>` : `<div class="wx-hour-marker wx-hour-marker--empty"></div>`}
+        ${markerText ? `<div class="wx-hour-marker">${markerText}</div>` : `<div class="wx-hour-marker wx-hour-marker--empty">.</div>`}
         <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
         <div class="wx-hour-temp">${Math.round(tempC)}°</div>
       </div>
@@ -4684,6 +4623,7 @@ function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLoc
   }).join("");
 }
 
+/* ---------------- Week render ---------------- */
 function renderWeek({ daily }){
   const wrap = $("wxWeek");
   if (!wrap) return;
@@ -4730,14 +4670,14 @@ async function loadAndRenderWeather(){
   const city = WX_CITIES[wxCityIndex];
   if (!page || !city) return;
 
-  // 先顯示載入提示
+  // 先顯示載入提示（避免空白）
   setBroadcastText("載入中…");
 
   try{
     const data = await fetch(buildWeatherApiUrl(city)).then(r=>r.json());
     const offsetSec = Number(data?.utc_offset_seconds ?? 0);
 
-    // 當地現在時間
+    // 當地現在時間（不受瀏覽器時區影響）
     const nowLocalMs = Date.now() + offsetSec*1000;
 
     const sunByDate = buildSunByDate(data?.daily, offsetSec);
@@ -4752,27 +4692,22 @@ async function loadAndRenderWeather(){
 
     // current
     const tempNow = data?.current_weather?.temperature;
-    const windNow = data?.current_weather?.windspeed; // km/h (open-meteo)
+    const windNow = data?.current_weather?.windspeed; // km/h
     const codeNow = data?.current_weather?.weathercode;
     const codeNowN = normalizeWeatherCode(codeNow, tempNow);
+
+    const dayMax = Number.isFinite(data?.daily?.temperature_2m_max?.[0]) ? Math.round(data.daily.temperature_2m_max[0]) : NaN;
+    const dayMin = Number.isFinite(data?.daily?.temperature_2m_min?.[0]) ? Math.round(data.daily.temperature_2m_min[0]) : NaN;
 
     renderHeader({
       cityName: city.name,
       tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
       codeNow: codeNowN,
-      hiInt: Number.isFinite(data?.daily?.temperature_2m_max?.[0]) ? Math.round(data.daily.temperature_2m_max[0]) : NaN,
-      loInt: Number.isFinite(data?.daily?.temperature_2m_min?.[0]) ? Math.round(data.daily.temperature_2m_min[0]) : NaN
+      hiInt: dayMax,
+      loInt: dayMin
     });
 
-    // ✅ 即時播報文字（修復消失）
-    setBroadcastText(buildNowBroadcast({
-      cityName: city.name,
-      tempNow,
-      codeNowN,
-      windKmh: windNow
-    }));
-
-    // ✅ 雪模式 + Canvas 雪動畫（非雪=飄雪；雪=下雪；大雪=大雪）
+    // ✅ Snow mode + Canvas
     const snowMode = getSnowModeFromCode(codeNowN);
     applySnowModeClass(page, snowMode);
 
@@ -4803,6 +4738,21 @@ async function loadAndRenderWeather(){
     const sliceUnix  = hUnix.slice(startIdx, startIdx+24);
     const sliceTemps = hTemps.slice(startIdx, startIdx+24);
     const sliceCodes = hCodes.slice(startIdx, startIdx+24);
+
+    // ✅ 智慧播報：先看時段變化，沒變化就注意事項
+    setBroadcastText(buildSmartBroadcast({
+      cityName: city.name,
+      nowLocalMs,
+      tempNow,
+      windNow,
+      codeNowN,
+      dayMin,
+      dayMax,
+      sliceUnix,
+      sliceTemps,
+      sliceCodes,
+      offsetSec,
+    }));
 
     renderHourly24({
       hourlyUnix: sliceUnix,
@@ -4849,11 +4799,13 @@ window.WX_DEBUG = {
   snowMode(mode="flurry"){
     const page = $("weather-page");
     if (!page) return;
-    applySnowModeClass(page, mode==="heavySnow"?"heavySnow":(mode==="snow"?"snow":"flurry"));
-    if (wxSnowBg) wxSnowBg.setMode(mode==="heavySnow"?"heavySnow":(mode==="snow"?"snow":"flurry"));
+    const m = mode==="heavySnow"?"heavySnow":(mode==="snow"?"snow":"flurry");
+    applySnowModeClass(page, m);
+    if (wxSnowBg) wxSnowBg.setMode(m);
   }
 };
 </script>
+
 
 <script>
 // ========= 行程頁（home-page）左右滑：切換天數 =========

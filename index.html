@@ -4423,11 +4423,34 @@ function buildSmartBroadcast({
   }
 
   if (changes.length){
-    const top = changes.slice(0, 2).map(ch => `${ch.at}${friendlyKindName(ch.to)}`).join("，");
-    return `今天${top}`;
+    const top = changes
+  .slice(0, 2)
+  .map(ch => buildNaturalChangeText(ch.at, ch.to))
+  .join("，");
+
+return top;
+
   }
 
   return buildTips({ tempNow, minT: dayMin, maxT: dayMax, windNow, codeNowN });
+}
+
+/* ---------------- 自然語感轉換（加強語句完整度） ---------------- */
+function buildNaturalChangeText(period, kind){
+  const k = friendlyKindName(kind);
+
+  switch (period){
+    case "早上":
+      return `今日早上${k}`;
+    case "下午":
+      return `今日下午開始${k}`;
+    case "晚上":
+      return `今晚開始${k}`;
+    case "深夜":
+      return `深夜將轉為${k}`;
+    default:
+      return `${period}${k}`;
+  }
 }
 
 /* ---------------- Dots + Swipe ---------------- */

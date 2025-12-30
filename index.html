@@ -4168,15 +4168,40 @@ class SnowBackground {
   }
 
   // ✅ 若隱若現：少量、慢、顆粒偏大
-  _pickParams(mode){
-    if (mode === "heavySnow") {
-      return { count: 60, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.2 };
-    }
-    if (mode === "snow") {
-      return { count: 40, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.1 };
-    }
-    return { count: 20, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.1 }; // flurry
+ _pickParams(mode){
+  if (mode === "heavySnow") {
+    return {
+      count: 45,        // ⬇ 比你現在 60 再少一點
+      rMin: 1.6,        // ⬆ 顆粒放大（少但看得到）
+      rMax: 3.6,
+      vyMin: 0.22,      // ⬇ 明顯變慢
+      vyMax: 0.65,
+      wind: 0.12        // ⬇ 橫向飄動變小
+    };
   }
+
+  if (mode === "snow") {
+    return {
+      count: 28,        // ⬇ 更稀疏
+      rMin: 1.4,
+      rMax: 3.0,
+      vyMin: 0.18,
+      vyMax: 0.55,
+      wind: 0.08
+    };
+  }
+
+  // flurry：幾乎感覺不到，但「存在感有」
+  return {
+    count: 14,
+    rMin: 1.2,
+    rMax: 2.6,
+    vyMin: 0.15,
+    vyMax: 0.45,
+    wind: 0.06
+  };
+}
+
 
   _onResize(){
     const canvas = this.canvas;
@@ -4259,34 +4284,42 @@ class SnowBackground {
     const wind = this._stepWind();
     ctx.clearRect(0,0,this.w,this.h);
 
-    ctx.beginPath();
-    for (const s of this.particles){
-      s.phase += 0.012 * dt;
-      const swayX = Math.sin(s.phase) * s.sway;
+    // ✅ 羽化柔邊：每顆用 radial gradient 畫（更像雪）
+ctx.clearRect(0, 0, this.w, this.h);
 
-      s.x += (s.vx + wind) * 0.85 * dt + swayX * 0.55 * dt;
-      s.y += s.vy * 1.15 * dt;
+for (const s of this.particles) {
+  s.phase += 0.012 * dt;
+  const swayX = Math.sin(s.phase) * s.sway;
 
-      if (s.x < -12) s.x = this.w + 12;
-      if (s.x > this.w + 12) s.x = -12;
+  s.x += (s.vx + wind) * 0.85 * dt + swayX * 0.55 * dt;
+  s.y += s.vy * 1.15 * dt;
 
-      if (s.y > this.h + 12){
-        s.y = rand(-120, -10);
-        s.x = rand(0, this.w);
-        s.r = rand(this.params.rMin, this.params.rMax);
-        s.vy = rand(this.params.vyMin, this.params.vyMax);
-        s.vx = rand(-this.params.wind, this.params.wind);
-        s.sway = rand(0.25, 1.2);
-        s.opacity = rand(0.20, 0.65);
-      }
+  if (s.x < -12) s.x = this.w + 12;
+  if (s.x > this.w + 12) s.x = -12;
 
-      ctx.moveTo(s.x, s.y);
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-    }
+  if (s.y > this.h + 12) {
+    s.y = rand(-120, -10);
+    s.x = rand(0, this.w);
+    s.r = rand(this.params.rMin, this.params.rMax);
+    s.vy = rand(this.params.vyMin, this.params.vyMax);
+    s.vx = rand(-this.params.wind, this.params.wind);
+    s.sway = rand(0.25, 1.2);
+    s.opacity = rand(0.20, 0.65);
+  }
 
-    // 若隱若現（想更明顯把 0.38 -> 0.45）
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
-    ctx.fill();
+  // ⭐ 柔邊：中心較亮，邊緣漸淡到透明
+  const r = s.r;
+  const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
+  g.addColorStop(0.0, `rgba(255,255,255,${0.22 * s.opacity})`);
+  g.addColorStop(0.45, `rgba(255,255,255,${0.10 * s.opacity})`);
+  g.addColorStop(1.0, `rgba(255,255,255,0)`);
+
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 
     this.rafId = requestAnimationFrame(this._loop);
   }

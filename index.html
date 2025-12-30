@@ -1826,6 +1826,52 @@
 /* Small spacing helper */
 .wx-spacer{ height:18px; }
 
+/* ✅ 內容在雪層上面 */
+.weather-page { position: relative; overflow: hidden; }
+.weather-page .wx-wrap { position: relative; z-index: 2; }
+
+/* ✅ 雪層（永遠存在，用 class 控制強度） */
+.weather-page::after{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+  z-index:1;
+  opacity:0.35; /* 預設微雪 */
+  filter: blur(.2px) drop-shadow(0 0 2px rgba(255,255,255,.25));
+
+  background-image:
+    radial-gradient(2.4px 2.4px at 10% 15%, rgba(255,255,255,.55) 60%, transparent 61%),
+    radial-gradient(2.0px 2.0px at 35% 40%, rgba(255,255,255,.50) 60%, transparent 61%),
+    radial-gradient(1.6px 1.6px at 70% 25%, rgba(255,255,255,.45) 60%, transparent 61%),
+    radial-gradient(1.4px 1.4px at 90% 70%, rgba(255,255,255,.40) 60%, transparent 61%),
+    radial-gradient(1.2px 1.2px at 22% 85%, rgba(255,255,255,.35) 60%, transparent 61%),
+    radial-gradient(1.0px 1.0px at 60% 55%, rgba(255,255,255,.30) 60%, transparent 61%);
+
+  background-repeat: repeat;
+  background-size: 380px 340px, 420px 380px, 340px 300px, 460px 420px, 300px 260px, 260px 220px;
+
+  animation: wxSnowDrift 18s linear infinite;
+}
+
+/* 微雪 */
+.weather-page.snow-light::after{
+  opacity: 0.28;
+  animation-duration: 22s;
+}
+
+/* 大雪（更密、更明顯） */
+.weather-page.snow-strong::after{
+  opacity: 0.62;
+  background-size: 260px 240px, 300px 270px, 240px 210px, 320px 290px, 220px 190px, 200px 170px;
+  animation-duration: 12s;
+}
+
+@keyframes wxSnowDrift{
+  0%   { transform: translate3d(-20px,-120px,0); }
+  50%  { transform: translate3d(30px, 380px,0); }
+  100% { transform: translate3d(-10px, 920px,0); }
+}
 
 
 </style>
@@ -4125,27 +4171,35 @@ function buildWeatherApiUrl(city){
 }
 
 /** ✅ 用 UTC 拿 sunrise/sunset，再用 offset 轉成「當地時間軸 ms」 */
-async function fetchSunUtcThenToLocalMs({ lat, lon, offsetSec }){
+async function fetchSunEventsLocal({ lat, lon, offsetSec, days = 2 }){
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${lat}&longitude=${lon}` +
-    `&daily=sunrise,sunset&forecast_days=1` +
+    `&daily=sunrise,sunset&forecast_days=${days}` +
     `&timezone=UTC`;
 
   const data = await fetch(url).then(r=>r.json());
-  const sr = data?.daily?.sunrise?.[0];
-  const ss = data?.daily?.sunset?.[0];
-  if (!sr || !ss) return null;
+  const sunriseArr = data?.daily?.sunrise || [];
+  const sunsetArr  = data?.daily?.sunset  || [];
 
-  // sr/ss 是 UTC（timezone=UTC），通常本身就帶 Z 或可直接 parse
-  const sunriseUtcMs = Date.parse(sr.endsWith("Z") ? sr : (sr + "Z"));
-  const sunsetUtcMs  = Date.parse(ss.endsWith("Z") ? ss : (ss + "Z"));
-
-  return {
-    sunriseLocalMs: utcToLocalMs(sunriseUtcMs, offsetSec),
-    sunsetLocalMs:  utcToLocalMs(sunsetUtcMs,  offsetSec)
+  const toLocal = (s) => {
+    if (!s) return null;
+    const utcMs = Date.parse(s.endsWith("Z") ? s : (s + "Z"));
+    return utcToLocalMs(utcMs, offsetSec);
   };
+
+  const sunriseLocal = sunriseArr.map(toLocal).filter(v=>v!=null);
+  const sunsetLocal  = sunsetArr.map(toLocal).filter(v=>v!=null);
+
+  // 做成事件清單
+  const events = [];
+  sunriseLocal.forEach(ms => events.push({ type:"sunrise", ms }));
+  sunsetLocal.forEach(ms  => events.push({ type:"sunset",  ms }));
+  events.sort((a,b)=>a.ms-b.ms);
+
+  return { sunriseLocal, sunsetLocal, events };
 }
+
 
 /* ============================
    Render
@@ -4201,7 +4255,8 @@ function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
  */
 function renderHourly24({
   temps, codes,
-  nowLocalMs, sunriseLocalMs, sunsetLocalMs
+  nowLocalMs, sunriseLocalMs, sunsetLocalMs,
+  sunEvents // ← 新增：未來24h內的日出日落事件
 }){
   const wrap = wxEl("wxHourly");
   if (!wrap) return;
@@ -4216,21 +4271,20 @@ function renderHourly24({
     const temp = temps[i];
     const codeN = normalizeWeatherCode(codes[i], temp);
 
-    // 這格代表的「小時區間」
+    // 這格的時間區間（當地時間軸）
     const slotStart = (i === 0) ? nowLocalMs : (nextHourMs + (i-1) * 3600*1000);
     const slotEnd   = slotStart + 3600*1000;
 
-    // 日出日落 icon：只要落在這格區間就吃掉（不會漏）
-    const sunriseInSlot = sunriseLocalMs >= slotStart && sunriseLocalMs < slotEnd;
-    const sunsetInSlot  = sunsetLocalMs  >= slotStart && sunsetLocalMs  < slotEnd;
+    // ✅ 找這格內是否有日出/日落事件（可能在明天早上）
+    const evt = (sunEvents || []).find(e => e.ms >= slotStart && e.ms < slotEnd);
 
-    // 判斷日夜：用區間中點更穩
+    // 用區間中點判斷日夜（更穩）
     const mid = (i === 0) ? nowLocalMs : (slotStart + 30*60*1000);
     const night = isNightBySun(mid, sunriseLocalMs, sunsetLocalMs);
 
     let iconKey;
-    if (sunriseInSlot) iconKey = "sunrise";
-    else if (sunsetInSlot) iconKey = "sunset";
+    if (evt?.type === "sunrise") iconKey = "sunrise";
+    else if (evt?.type === "sunset") iconKey = "sunset";
     else iconKey = safeIconKey(weatherCodeToIconKey(codeN, night));
 
     const timeStr = (i === 0) ? "現在" : hourLabelFromLocalMs(slotStart);
@@ -4244,6 +4298,7 @@ function renderHourly24({
     `;
   }).join("");
 }
+
 
 /* ============================
    Main
@@ -4260,50 +4315,35 @@ async function loadAndRenderWeather(){
     const data = await fetch(url).then(r=>r.json());
 
     const offsetSec = data?.utc_offset_seconds ?? 0;
+const nowL = localNowMs(offsetSec);
 
-    // ✅ 用 offsetSec 建立城市「當地時間軸」的現在
-    const nowL = localNowMs(offsetSec);
+// ✅ 抓 2 天日出日落（今天+明天），轉成當地時間軸
+const sunPack = await fetchSunEventsLocal({
+  lat: city.latitude,
+  lon: city.longitude,
+  offsetSec,
+  days: 2
+});
 
-    // ✅ 用 UTC 方式取日出日落，再轉成當地時間軸（解決你現在中午卻判黑夜）
-    const sun = await fetchSunUtcThenToLocalMs({
-      lat: city.latitude,
-      lon: city.longitude,
-      offsetSec
-    });
-    if (!sun){
-      throw new Error("Sunrise/Sunset missing");
-    }
-    const sunriseLocalMs = sun.sunriseLocalMs;
-    const sunsetLocalMs  = sun.sunsetLocalMs;
+// 用「今天」的 sunrise/sunset 來決定背景（通常 index 0 就是今天）
+const sunriseLocalMs = sunPack.sunriseLocal[0];
+const sunsetLocalMs  = sunPack.sunsetLocal[0];
 
-    // 記錄給 debug
-    WX_LAST.offsetSec = offsetSec;
-    WX_LAST.sunriseLocalMs = sunriseLocalMs;
-    WX_LAST.sunsetLocalMs = sunsetLocalMs;
+// ✅ 背景四段
+const phase = applySunPhaseBg({
+  page,
+  nowLocalMs: nowL,
+  sunriseLocalMs,
+  sunsetLocalMs
+});
 
-    // current
-    const tempNow = data?.current_weather?.temperature;
-    const codeNowRaw = data?.current_weather?.weathercode;
-    const codeNowN = normalizeWeatherCode(codeNowRaw, tempNow);
+// ✅ 雪：永遠有，下雪時加強
+applySnowIntensity(page, isSnowCode(codeNowN));
 
-    // ✅ 背景：依日出/日落四段
-    const phase = applySunPhaseBg({
-      page,
-      nowLocalMs: nowL,
-      sunriseLocalMs,
-      sunsetLocalMs
-    });
+// ✅ 篩出「未來 24 小時內」會遇到的日出/日落事件（這樣明天日出才會進來）
+const rangeEnd = nowL + 24 * 3600 * 1000;
+const sunEventsNext24h = (sunPack.events || []).filter(e => e.ms >= nowL && e.ms < rangeEnd);
 
-    // ✅ 飄雪：永遠有，雪天加強
-    applySnowIntensity(page, isSnowCode(codeNowN));
-
-    renderHeader({
-      cityName: city.name,
-      tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
-      codeNowText: weatherCodeToText(codeNowN),
-      hiInt: Math.round(data.daily.temperature_2m_max[0]),
-      loInt: Math.round(data.daily.temperature_2m_min[0])
-    });
 
     // 24h: 取最接近 nowL 的 index（用「當地時間軸 parse」避免瀏覽器時區）
     const hTimes = data?.hourly?.time || [];
@@ -4337,7 +4377,8 @@ async function loadAndRenderWeather(){
       codes: sliceCodes,
       nowLocalMs: nowL,
       sunriseLocalMs,
-      sunsetLocalMs
+      sunsetLocalMs,
+	  sunEvents: sunEventsNext24h
     });
 
     // note：顯示目前 phase（你可改成你原本那種文字）

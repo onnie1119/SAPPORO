@@ -1834,88 +1834,46 @@
 .weather-page .wx-wrap { position: relative; z-index: 2; }
 
 /* ✅ 雪層（永遠存在，用 class 控制強度） */
+/* 預設的雪的效果：*/
 .weather-page::after{
-  content:"";
-  position:absolute;
-  inset:-22%;
-  pointer-events:none;
-  z-index:1;
-  opacity:0.42; /* 預設 small：比你之前更明顯 */
-  filter: blur(.25px) drop-shadow(0 0 2px rgba(255,255,255,.22));
+  content: "";
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35; /* 預設微雪 */
+  filter: blur(.2px) drop-shadow(0 0 2px rgba(255,255,255,.25));
+  background-image:
+    radial-gradient(2.4px 2.4px at 10% 15%, rgba(255,255,255,.55) 60%, transparent 61%),
+    radial-gradient(2.0px 2.0px at 35% 40%, rgba(255,255,255,.50) 60%, transparent 61%),
+    radial-gradient(1.6px 1.6px at 70% 25%, rgba(255,255,255,.45) 60%, transparent 61%),
+    radial-gradient(1.4px 1.4px at 90% 70%, rgba(255,255,255,.40) 60%, transparent 61%),
+    radial-gradient(1.2px 1.2px at 22% 85%, rgba(255,255,255,.35) 60%, transparent 61%),
+    radial-gradient(1.0px 1.0px at 60% 55%, rgba(255,255,255,.30) 60%, transparent 61%);
   background-repeat: repeat;
+  background-size: 380px 340px, 420px 380px, 340px 300px, 460px 420px, 300px 260px, 260px 220px;
   animation: wxSnowDrift 18s linear infinite;
-
-  /* 基礎雪（small 用） */
-  background-image:
-    radial-gradient(2.6px 2.6px at 10% 15%, rgba(255,255,255,.55) 60%, transparent 61%),
-    radial-gradient(2.2px 2.2px at 35% 40%, rgba(255,255,255,.50) 60%, transparent 61%),
-    radial-gradient(1.8px 1.8px at 70% 25%, rgba(255,255,255,.46) 60%, transparent 61%),
-    radial-gradient(1.6px 1.6px at 90% 70%, rgba(255,255,255,.42) 60%, transparent 61%),
-    radial-gradient(1.3px 1.3px at 22% 85%, rgba(255,255,255,.36) 60%, transparent 61%),
-    radial-gradient(1.1px 1.1px at 60% 55%, rgba(255,255,255,.32) 60%, transparent 61%);
-  background-size:
-    320px 280px, 360px 320px, 300px 260px, 420px 380px, 280px 240px, 240px 210px;
 }
 
-/* 🌨️ 小雪：更明顯一點的微雪（預設） */
-.weather-page.snow-small::after{
-  opacity: 0.45;
-  animation-duration: 18s;
+/* 微雪：*/
+.weather-page.snow-light::after{
+  opacity: 0.28;
+  animation-duration: 22s;
 }
 
-/* 🌨️🌨️ 中雪：密度提高 + 速度快一點 */
-.weather-page.snow-medium::after{
+/* 大雪：更密、更明顯 */
+.weather-page.snow-strong::after{
   opacity: 0.62;
-  filter: blur(.2px) drop-shadow(0 0 3px rgba(255,255,255,.28));
-
-  background-image:
-    radial-gradient(3.2px 3.2px at 12% 18%, rgba(255,255,255,.62) 60%, transparent 61%),
-    radial-gradient(2.8px 2.8px at 38% 45%, rgba(255,255,255,.58) 60%, transparent 61%),
-    radial-gradient(2.4px 2.4px at 72% 28%, rgba(255,255,255,.54) 60%, transparent 61%),
-    radial-gradient(2.0px 2.0px at 88% 72%, rgba(255,255,255,.50) 60%, transparent 61%),
-    radial-gradient(1.7px 1.7px at 25% 82%, rgba(255,255,255,.46) 60%, transparent 61%),
-    radial-gradient(1.4px 1.4px at 60% 58%, rgba(255,255,255,.42) 60%, transparent 61%),
-    radial-gradient(1.2px 1.2px at 48% 20%, rgba(255,255,255,.40) 60%, transparent 61%),
-    radial-gradient(1.1px 1.1px at 80% 45%, rgba(255,255,255,.38) 60%, transparent 61%);
-
-  background-size:
-    240px 210px, 260px 230px, 220px 190px, 280px 250px,
-    200px 175px, 210px 180px, 190px 165px, 175px 150px;
-
-  animation-duration: 13s;
-}
-
-/* ❄️❄️❄️ 大雪：更密 + 更大顆 + 更快 */
-.weather-page.snow-large::after{
-  opacity: 0.78;
-  filter: blur(.18px) drop-shadow(0 0 4px rgba(255,255,255,.32));
-
-  background-image:
-    radial-gradient(4.2px 4.2px at 10% 20%, rgba(255,255,255,.70) 60%, transparent 61%),
-    radial-gradient(3.8px 3.8px at 35% 35%, rgba(255,255,255,.66) 60%, transparent 61%),
-    radial-gradient(3.4px 3.4px at 70% 25%, rgba(255,255,255,.62) 60%, transparent 61%),
-    radial-gradient(3.0px 3.0px at 90% 70%, rgba(255,255,255,.58) 60%, transparent 61%),
-
-    radial-gradient(2.4px 2.4px at 22% 85%, rgba(255,255,255,.54) 60%, transparent 61%),
-    radial-gradient(2.2px 2.2px at 55% 55%, rgba(255,255,255,.52) 60%, transparent 61%),
-    radial-gradient(2.0px 2.0px at 78% 42%, rgba(255,255,255,.50) 60%, transparent 61%),
-
-    radial-gradient(1.6px 1.6px at 45% 15%, rgba(255,255,255,.48) 60%, transparent 61%),
-    radial-gradient(1.4px 1.4px at 62% 80%, rgba(255,255,255,.46) 60%, transparent 61%);
-
-  background-size:
-    180px 160px, 200px 180px, 170px 150px, 220px 200px,
-    150px 135px, 160px 145px, 155px 140px,
-    135px 120px, 130px 115px;
-
-  animation-duration: 9s;
+  background-size: 260px 240px, 300px 270px, 240px 210px, 320px 290px, 220px 190px, 200px 170px;
+  animation-duration: 12s;
 }
 
 @keyframes wxSnowDrift{
-  0%   { transform: translate3d(-18px,-160px,0); }
-  50%  { transform: translate3d(32px, 420px,0); }
-  100% { transform: translate3d(-12px, 980px,0); }
+  0% { transform: translate3d(-20px,-120px,0); }
+  50% { transform: translate3d(30px, 380px,0); }
+  100% { transform: translate3d(-10px, 920px,0); }
 }
+
 
 
 
@@ -4219,6 +4177,7 @@ function renderHourly24({
     temp: Number.isFinite(tempNowInt) ? tempNowInt : null
   });
 
+  // ---- 後 23 格：nextHour / nextHour+1 ... ----
   for (let i = 0; i < 23; i++){
     const slotWall = wallNextHour + i * HOUR;       // 這格代表的時間（wall）
     const hour24 = new Date(slotWall).getUTCHours(); // wall hour
@@ -4235,32 +4194,22 @@ function renderHourly24({
       ? isNightBySun(slotWall, wallSunrise, wallSunset)
       : false;
 
+    // ---- 修正：日出和日落的特殊 icon ----
+    let iconKey = weatherCodeToIconKey(code, isNight);
+    if (new Date(slotWall).getTime() === wallSunrise) {
+      iconKey = "sunrise"; // 特別處理日出
+    }
+    if (new Date(slotWall).getTime() === wallSunset) {
+      iconKey = "sunset"; // 特別處理日落
+    }
+
     items.push({
       label,
-      iconKey: weatherCodeToIconKey(code, isNight),
+      iconKey: iconKey,
       temp: Number.isFinite(temp) ? Math.round(temp) : null,
       slotWall
     });
   }
-
-  // ✅ 日出/日落 icon：不新增卡片，直接「替換」對應那一格的 icon
-  // - 不顯示幾點幾分
-  // - 溫度仍顯示（所以只換 icon，不動 temp）
-  function markEventIcon(eventWall, iconKey){
-    if (!Number.isFinite(eventWall)) return;
-
-    // 找這個 event 落在哪一格（1..23），0 是現在
-    const slot = Math.floor((eventWall - wallNextHour) / HOUR);
-    const itemIndex = 1 + clamp(slot, 0, 22);
-
-    // 只有在接下來 23 小時內才標
-    if (eventWall >= wallNextHour && eventWall < (wallNextHour + 23 * HOUR)){
-      if (items[itemIndex]) items[itemIndex].iconKey = iconKey;
-    }
-  }
-
-  markEventIcon(wallSunrise, "sunrise");
-  markEventIcon(wallSunset,  "sunset");
 
   // ---- render ----
   wrap.innerHTML = items.map(it=>{
@@ -4278,6 +4227,7 @@ function renderHourly24({
     `;
   }).join("");
 }
+
 
 
 function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){

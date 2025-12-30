@@ -4170,12 +4170,12 @@ class SnowBackground {
   // ✅ 若隱若現：少量、慢、顆粒偏大
   _pickParams(mode){
     if (mode === "heavySnow") {
-      return { count: 60, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
+      return { count: 60, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.2 };
     }
     if (mode === "snow") {
-      return { count: 40, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
+      return { count: 40, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.1 };
     }
-    return { count: 20, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 }; // flurry
+    return { count: 20, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.1 }; // flurry
   }
 
   _onResize(){
@@ -4285,7 +4285,7 @@ class SnowBackground {
     }
 
     // 若隱若現（想更明顯把 0.38 -> 0.45）
-    ctx.fillStyle = "rgba(255,255,255,0.38)";
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.fill();
 
     this.rafId = requestAnimationFrame(this._loop);

@@ -3936,22 +3936,18 @@ function isSnowCode(code){
 
 /* ✅ icon：夜晚多雲要用 night_cloudy */
 function weatherCodeToIconKey(code, isNight){
-  // 下雪類：不分日夜
+  // 雪不分日夜
   if ([71,73,75,77,85].includes(code)) return "snow";
   if (code === 86) return "heavy_snow";
 
-  // 晴
+  // 晴：分日夜
   if (code === 0) return isNight ? "clear_night" : "clear";
 
-  // 多雲 / 局部多雲
-  if ([1,2,3].includes(code)){
-    return isNight ? "night_cloudy" : "partly_cloudy";
-  }
+  // 多雲/局部多雲：分日夜
+  if ([1,2,3].includes(code)) return isNight ? "night_cloudy" : "partly_cloudy";
 
-  // 其他
   if ([45,48].includes(code)) return "fog";
   if ([95,96,99].includes(code)) return "thunder";
-
   return "unknown";
 }
 
@@ -3971,6 +3967,10 @@ function pad2(n){ return String(n).padStart(2,"0"); }
 function weekdayLabel(dateObj){
   const map = ["日","一","二","三","四","五","六"];
   return `週${map[dateObj.getDay()]}`;
+}
+function isNightBySun(nowMs, sunriseMs, sunsetMs){
+  // 白天：sunrise <= now < sunset
+  return !(nowMs >= sunriseMs && nowMs < sunsetMs);
 }
 
 /* ============================
@@ -4296,6 +4296,9 @@ async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}){
     const url = buildWeatherApiUrl(city);
     const res = await fetch(url);
     const data = await res.json();
+    // === 當地日出 / 日落（timezone=auto，已是當地時間）===
+    const sunriseMs = new Date(data.daily.sunrise[0]).getTime();
+    const sunsetMs  = new Date(data.daily.sunset[0]).getTime();
 
     const tempNow = data?.current_weather?.temperature;
     const codeNow = data?.current_weather?.weathercode;

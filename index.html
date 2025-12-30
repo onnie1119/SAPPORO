@@ -4170,12 +4170,12 @@ class SnowBackground {
   // ✅ 若隱若現：少量、慢、顆粒偏大
   _pickParams(mode){
     if (mode === "heavySnow") {
-      return { count: 200, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
+      return { count: 60, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
     }
     if (mode === "snow") {
-      return { count: 130, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
+      return { count: 40, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
     }
-    return { count: 80, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 }; // flurry
+    return { count: 20, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 }; // flurry
   }
 
   _onResize(){

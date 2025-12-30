@@ -4169,19 +4169,21 @@ class SnowBackground {
     this._init();
   }
 
- // 依模式選參數（✅ 若隱若現：更少、更慢、更柔）
+ 
+// 依模式選參數（✅ 雪花更大，但仍若隱若現）
 _pickParams(mode){
-  // 大雪：比原本少很多，但仍看得出來是「大雪」
+  // 大雪：大顆較多、但數量仍控制住
   if (mode === "heavySnow") {
-    return { count: 220, rMin: 0.6, rMax: 2.0, vyMin: 0.35, vyMax: 1.10, wind: 0.22 };
+    return { count: 200, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
   }
-  // 下雪：更淡、更慢
+  // 下雪：顆粒明顯變大，但整體淡
   if (mode === "snow") {
-    return { count: 140, rMin: 0.5, rMax: 1.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
+    return { count: 130, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
   }
-  // 飄雪（非下雪預設）：非常淡、若有若無
-  return { count: 80, rMin: 0.45, rMax: 1.25, vyMin: 0.22, vyMax: 0.75, wind: 0.16 };
+  // 飄雪（非下雪預設）：少量大顆慢慢飄
+  return { count: 80, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 };
 }
+
 
 
   _onResize(){

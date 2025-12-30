@@ -4174,14 +4174,14 @@ class SnowBackground {
 _pickParams(mode){
   // 大雪：大顆較多、但數量仍控制住
   if (mode === "heavySnow") {
-    return { count: 200, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
+    return { count: 110, rMin: 1.2, rMax: 3.2, vyMin: 0.35, vyMax: 1.05, wind: 0.22 };
   }
   // 下雪：顆粒明顯變大，但整體淡
   if (mode === "snow") {
-    return { count: 130, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
+    return { count: 80, rMin: 1.0, rMax: 2.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
   }
   // 飄雪（非下雪預設）：少量大顆慢慢飄
-  return { count: 80, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 };
+  return { count: 40, rMin: 0.9, rMax: 2.2, vyMin: 0.22, vyMax: 0.75, wind: 0.16 };
 }
 
 
@@ -4294,7 +4294,7 @@ _pickParams(mode){
       ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
     }
 
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.fill();
 
     this.rafId = requestAnimationFrame(this._loop);

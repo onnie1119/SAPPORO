@@ -1644,8 +1644,8 @@
   z-index: 3;
 }
 .wx-dot{
-  width:8px;
-  height:8px;
+  width:5px;
+  height:5px;
   border-radius:999px;
   background: rgba(255,255,255,0.45);
   border: 1px solid rgba(255,255,255,0.35);
@@ -1674,18 +1674,18 @@
 }
 .wx-temp-center{
   font-size: 74px;
-  font-weight: 650;
+  
   line-height: 1.05;
   margin-top: 8px;
   margin-bottom: 6px;
   display: inline-block;
   position: relative;
-  padding-right: 10px; /* 留空給 ° */
+  padding-left: 5px;
 }
 .wx-temp-center::after{
   content: "°";
   position:absolute;
-  right:-2px;
+ 
   top: 6px;
   font-size: 34px;
   opacity: 0.95;
@@ -2766,14 +2766,14 @@
 			
 			    <!-- 24hr -->
 			    <div class="wx-card">
-			      <div class="wx-card-title">24 小時預報</div>
+			      
 			      <div class="wx-hourly-note" id="wxHourlyNote">載入中…</div>
 			      <div class="wx-hourly" id="wxHourly"></div>
 			    </div>
 			
 			    <!-- 7 days -->
 			    <div class="wx-card">
-			      <div class="wx-card-title">一週預報</div>
+			      <div class="wx-card-title"><span class="icon-sun"></span>一週天氣預報</div>
 			      <div class="wx-week" id="wxWeek"></div>
 			    </div>
 			

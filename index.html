@@ -4265,169 +4265,121 @@ function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }) {
   }
 }
 
-function renderHourly24({ timesISO, temps, codes, fakeNowLocalMs = null }){
-  const wrap = wxEl("wxHourly");
+/* 修正：渲染 24 小時預報，包含插入日出日落 */
+function renderHourly24({ hourlyData, sunriseMs, sunsetMs }) {
+  const wrap = document.getElementById("wxHourly");
   if (!wrap) return;
 
-  // ✅ 你的需求：假設現在 17:13 → 顯示「現在/18/19/20...」
-  // 做法：以 nowLocalMs 往上取整到下一個整點作為第一個 hour label
-  // 但資料仍用 sliceTimes[i] 的溫度/天氣碼
-	const nowMs = Date.now();
-const isNight = isNightTime(nowMs, sunriseLocalMs, sunsetLocalMs);
-const iconKey = weatherCodeToIconKey(codeNow, isNight);
+  // 1. 準備渲染用的資料陣列
+  let displayList = hourlyData.map(item => ({
+    type: 'hour',
+    time: new Date(item.time).getTime(),
+    temp: Math.round(item.temp),
+    code: item.code
+  }));
 
-  const nowMs = (fakeNowLocalMs != null) ? fakeNowLocalMs : Date.now();
-  const nextHour = new Date(nowMs);
-  nextHour.setMinutes(0,0,0);
-  nextHour.setHours(nextHour.getHours() + 1);
+  // 2. 插入日出點 (如果在 24 小時範圍內)
+  const rangeStart = displayList[0].time;
+  const rangeEnd = displayList[displayList.length - 1].time;
 
-  wrap.innerHTML = timesISO.map((tISO, i) => {
-    const tempInt = Math.round(temps[i]);
-    const iconKey = weatherCodeToIconKey(codes[i]);
-    const iconSrc = wxIconSrc(iconKey);
+  if (sunriseMs >= rangeStart && sunriseMs <= rangeEnd) {
+    displayList.push({ type: 'sunrise', time: sunriseMs, label: '日出' });
+  }
+  if (sunsetMs >= rangeStart && sunsetMs <= rangeEnd) {
+    displayList.push({ type: 'sunset', time: sunsetMs, label: '日落' });
+  }
 
-    const timeStr = (i === 0)
-      ? "現在"
-      : pad2((nextHour.getHours() + (i-1)) % 24);
+  // 3. 重新按時間排序
+  displayList.sort((a, b) => a.time - b.time);
+
+  // 4. 生成 HTML
+  wrap.innerHTML = displayList.map((item, i) => {
+    const d = new Date(item.time);
+    
+    // 判斷該時間點是白天還是晚上 (用於切換 Icon)
+    const isNight = item.time < sunriseMs || item.time > sunsetMs;
+    
+    // 如果是日出/日落點
+    if (item.type === 'sunrise' || item.type === 'sunset') {
+      const timeStr = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+      const iconKey = item.type; // 'sunrise' 或 'sunset'
+      return `
+        <div class="wx-hour wx-special-event">
+          <div class="wx-hour-time">${timeStr}</div>
+          <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="event">
+          <div class="wx-hour-temp">${item.label}</div>
+        </div>
+      `;
+    }
+
+    // 一般小時點
+    const timeStr = (i === 0) ? "現在" : pad2(d.getHours());
+    const iconKey = weatherCodeToIconKey(item.code, isNight);
 
     return `
       <div class="wx-hour">
         <div class="wx-hour-time">${timeStr}</div>
-        <img class="wx-hour-icon" src="${iconSrc}" alt="${iconKey}">
-        <div class="wx-hour-temp">${tempInt}°</div>
+        <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="icon">
+        <div class="wx-hour-temp">${item.temp}°</div>
       </div>
     `;
   }).join("");
 }
 
-function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
-  const wrap = wxEl("wxWeek");
-  if (!wrap) return;
-
-  const allMin = Math.min(...minArr.map(n=>Number(n)));
-  const allMax = Math.max(...maxArr.map(n=>Number(n)));
-  const span = Math.max(1, allMax - allMin);
-
-  wrap.innerHTML = dailyTimesISO.map((tISO, i) => {
-    const d = new Date(tISO);
-    const day = weekdayLabel(d);
-
-    const minT = Math.round(minArr[i]);
-    const maxT = Math.round(maxArr[i]);
-    const code = dailyCodes[i];
-    const iconKey = weatherCodeToIconKey(code);
-    const iconSrc = wxIconSrc(iconKey);
-
-    const leftPct = ((minT - allMin) / span) * 100;
-    const widthPct = ((maxT - minT) / span) * 100;
-
-    return `
-      <div class="wx-week-row">
-        <div class="wx-week-day">${day}</div>
-        <img class="wx-week-icon" src="${iconSrc}" alt="${iconKey}">
-        <div>${Math.round(minT)}°</div>
-        <div class="wx-week-bar"><span style="left:${leftPct}%;width:${widthPct}%"></span></div>
-        <div>${Math.round(maxT)}°</div>
-      </div>
-    `;
-  }).join("");
-}
-
-async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}) {
+/* 修正：主邏輯讀取 API 並提取日出日落毫秒數 */
+async function loadAndRenderWeather(fakeNowLocalMs = null) {
   const city = WX_CITIES[wxCityIndex];
-  if (!city) return;
-
-  // loading（保留高度避免閃）
-  wxEl("wxHourlyNote").textContent = "載入中…";
-
   try {
-    const url = buildWeatherApiUrl(city);
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current_weather=true&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&timezone=auto`;
     const res = await fetch(url);
     const data = await res.json();
 
-    // current
-    const tempNow = data?.current_weather?.temperature;
-    const codeNow = data?.current_weather?.weathercode;
-    const tempNowInt = Number.isFinite(tempNow) ? Math.round(tempNow) : NaN;
+    // 獲取當天的日出日落毫秒數
+    const sunriseMs = new Date(data.daily.sunrise[0]).getTime();
+    const sunsetMs = new Date(data.daily.sunset[0]).getTime();
 
-    // daily today hi/lo
-    const hi = data?.daily?.temperature_2m_max?.[0];
-    const lo = data?.daily?.temperature_2m_min?.[0];
-    const hiInt = Number.isFinite(hi) ? Math.round(hi) : NaN;
-    const loInt = Number.isFinite(lo) ? Math.round(lo) : NaN;
+    // 處理 24 小時資料
+    const nowMs = fakeNowLocalMs || Date.now();
+    const hTimes = data.hourly.time;
+    let startIndex = hTimes.findIndex(t => new Date(t).getTime() >= nowMs);
+    if (startIndex === -1) startIndex = 0;
 
-    renderHeader({ cityName: city.name, tempNowInt, codeNow, hiInt, loInt });
+    const hourlySlice = hTimes.slice(startIndex, startIndex + 24).map((t, idx) => ({
+      time: t,
+      temp: data.hourly.temperature_2m[startIndex + idx],
+      code: data.hourly.weathercode[startIndex + idx]
+    }));
 
-    // ✅ 套用「日出/白天/日落/黑夜」背景（用該城市經緯度）
-    const sunInfo = await applyLocalSunBg({
-      lat: city.latitude,
-      lon: city.longitude,
-      fakeNowLocalMs
+    // 渲染 Header
+    renderHeader({
+      cityName: city.name,
+      tempNowInt: Math.round(data.current_weather.temperature),
+      codeNow: data.current_weather.weathercode,
+      hiInt: Math.round(data.daily.temperature_2m_max[0]),
+      loInt: Math.round(data.daily.temperature_2m_min[0])
     });
 
-    // hourly (抓接下來 24hr)
-    const hTimes = data?.hourly?.time || [];
-    const hTemps = data?.hourly?.temperature_2m || [];
-    const hCodes = data?.hourly?.weathercode || [];
-    const hWinds = data?.hourly?.windspeed_10m || [];
-
-    if (!hTimes.length) {
-      wxEl("wxHourlyNote").textContent = "沒有抓到每小時資料";
-      return;
-    }
-
-    // 找離 now 最近的 index（用假時間的話，這裡就用假時間去對齊）
-    const nowMs = fakeNowLocalMs != null ? fakeNowLocalMs : Date.now();
-    let best = 0,
-      bestDiff = Infinity;
-    for (let i = 0; i < hTimes.length; i++) {
-      const t = new Date(hTimes[i]).getTime();
-      const diff = Math.abs(t - nowMs);
-      if (diff < bestDiff) {
-        bestDiff = diff;
-        best = i;
-      }
-    }
-
-    const sliceTimes = hTimes.slice(best, best + 24);
-    const sliceTemps = hTemps.slice(best, best + 24);
-    const sliceCodes = hCodes.slice(best, best + 24);
-    const sliceWinds = hWinds.slice(best, best + 24);
-
+    // 執行 24 小時渲染 (傳入日出日落時間)
     renderHourly24({
-      timesISO: sliceTimes,
-      temps: sliceTemps,
-      codes: sliceCodes,
-      fakeNowLocalMs
+      hourlyData: hourlySlice,
+      sunriseMs: sunriseMs,
+      sunsetMs: sunsetMs
     });
 
-    // 24hr note（含日出日落事件）
-    const sunEvents = buildSunEvents(data?.daily);
-    const note = buildNoteString({
-      hourlyTimesISO: sliceTimes,
-      hourlyCodes: sliceCodes,
-      hourlyWindMS: sliceWinds,
-      sunEvents
-    });
-    wxEl("wxHourlyNote").textContent = note;
+    // 背景切換 (原有邏輯)
+    applyWeatherClasses({ codeNow: data.current_weather.weathercode });
+    await applyLocalSunBg({ lat: city.latitude, lon: city.longitude, fakeNowLocalMs });
 
-    // week
-    const dTimes = data?.daily?.time || [];
-    const dMax = data?.daily?.temperature_2m_max || [];
-    const dMin = data?.daily?.temperature_2m_min || [];
-    const dCodes = data?.daily?.weathercode || [];
-    if (dTimes.length) {
-      renderWeek({
-        dailyTimesISO: dTimes.slice(0, 7),
-        maxArr: dMax.slice(0, 7),
-        minArr: dMin.slice(0, 7),
-        dailyCodes: dCodes.slice(0, 7)
-      });
-    }
+    // 一週預報 (原有邏輯)
+    renderWeek({
+      dailyTimesISO: data.daily.time,
+      maxArr: data.daily.temperature_2m_max,
+      minArr: data.daily.temperature_2m_min,
+      dailyCodes: data.daily.weathercode
+    });
 
   } catch (err) {
-    console.error(err);
-    wxEl("wxHourlyNote").textContent = "天氣載入失敗（請看 console）";
+    console.error("載入失敗:", err);
   }
 }
 

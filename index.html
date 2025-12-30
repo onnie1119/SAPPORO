@@ -4154,80 +4154,61 @@ function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
  * - 後面 23 格：從「下一個整點」開始
  * - 在日出/日落那一格：icon 強制換 sunrise/sunset
  */
-function renderHourly24({
-  timesISO, temps, codes,
-  sunInfo,
-  nowTemp, nowCode
-}){
-  const wrap = $("wxHourly");
+function getNextWholeHourMs(localNowMs){
+  const d = new Date(localNowMs);
+  d.setMinutes(0, 0, 0);
+  d.setHours(d.getHours() + 1); // 下一個整點
+  return d.getTime();
+}
+
+/**
+ * 24 小時：顯示「現在 / 下一整點 / 下一整點+1 ...」
+ * - 時間標籤用「當地時間」(utc_offset_seconds) 來算
+ * - 資料本身仍用 timesISO/temps/codes 渲染
+ */
+function renderHourly24({ timesISO, temps, codes, utcOffsetSeconds = 0, sunriseLocalMs = null, sunsetLocalMs = null }){
+  const wrap = document.getElementById("wxHourly");
   if (!wrap) return;
 
-  const sunriseMs = sunInfo?.sunriseLocalMs;
-  const sunsetMs  = sunInfo?.sunsetLocalMs;
-  const nowLocalMs = sunInfo?.nowLocalMs;
+  // ✅ 當地現在時間（ms）
+  const localNowMs = Date.now() + utcOffsetSeconds * 1000;
 
-  // next whole hour base for labels (現在/10/11/12...)
-  const nextHour = new Date(nowLocalMs);
-  nextHour.setUTCMinutes(0,0,0);
-  nextHour.setUTCHours(nextHour.getUTCHours() + 1);
+  // ✅ 下一個整點（當地）
+  const nextHourMs = getNextWholeHourMs(localNowMs);
+  const nextHourDate = new Date(nextHourMs);
+  const nextHourH = nextHourDate.getHours(); // 0~23
 
-  const items = [];
+  wrap.innerHTML = timesISO.map((tISO, i) => {
+    const tempInt = Math.round(temps[i]);
 
-  // 0) 現在
-  {
-    const isNightNow = (sunriseMs && sunsetMs)
-      ? !(nowLocalMs >= sunriseMs && nowLocalMs < sunsetMs)
-      : false;
-
-    const iconKeyNow = weatherCodeToIconKey(nowCode, isNightNow);
-
-    items.push({
-      label: "現在",
-      iconKey: iconKeyNow,
-      tempInt: Math.round(nowTemp),
-      sub: "" // 可加 "現在"
-    });
-  }
-
-  // 1..23) next hours
-  for (let i=0; i<23; i++){
-    const idx = i; // timesISO[0] 已是 next-hour 起點
-    const hourMs = isoLocalToLocalMs(timesISO[idx]);
-
-    const isNight = (sunriseMs && sunsetMs)
-      ? !(hourMs >= sunriseMs && hourMs < sunsetMs)
-      : false;
-
-    const tempInt = Math.round(temps[idx]);
-    const code = normalizeWeatherCode(codes[idx], temps[idx]);
-
-    // label: nextHour + i
-    const h = (nextHour.getUTCHours() + i) % 24;
-    let label = pad2(h);
-
-    // ✅ 日出/日落 slot icon
-    let iconKey = weatherCodeToIconKey(code, isNight);
-    let sub = "";
-
-    if (sunriseMs && Math.abs(hourMs - sunriseMs) <= 30 * 60 * 1000){
-      iconKey = "sunrise";
-      sub = "日出";
-    } else if (sunsetMs && Math.abs(hourMs - sunsetMs) <= 30 * 60 * 1000){
-      iconKey = "sunset";
-      sub = "日落";
+    // ---- 你的 iconKey 如果要日出/日落換日夜 icon，就用這段（可選）----
+    // 需要你有：weatherCodeToIconKey(code, isNight) 這種版本
+    // 如果你目前只有 weatherCodeToIconKey(code)，先用那個就好
+    let iconKey;
+    if (typeof isNightBySun === "function" && sunriseLocalMs && sunsetLocalMs && typeof weatherCodeToIconKey === "function" && weatherCodeToIconKey.length >= 2){
+      // 以「該小時的當地時間」判斷日夜
+      const hourLocalMs = Date.parse(tISO); // 因為 timezone=auto 的 time 本來就是當地時間字串
+      const isNight = isNightBySun(hourLocalMs, sunriseLocalMs, sunsetLocalMs);
+      iconKey = weatherCodeToIconKey(codes[i], isNight);
+    } else {
+      iconKey = weatherCodeToIconKey(codes[i]);
     }
 
-    items.push({ label, iconKey, tempInt, sub });
-  }
+    const iconSrc = wxIconSrc(iconKey);
 
-  wrap.innerHTML = items.map(it => `
-    <div class="wx-hour">
-      <div class="wx-hour-time">${it.label}</div>
-      <img class="wx-hour-icon" src="${wxIconSrc(it.iconKey)}" alt="${it.iconKey}">
-      <div class="wx-hour-temp">${it.tempInt}°</div>
-      ${it.sub ? `<div class="wx-hour-sub" style="font-size:11px;opacity:.85;margin-top:3px;">${it.sub}</div>` : ``}
-    </div>
-  `).join("");
+    // ✅ 標籤：0=現在；1=下一整點；2=下一整點+1...
+    const label = (i === 0)
+      ? "現在"
+      : String((nextHourH + (i - 1)) % 24).padStart(2, "0");
+
+    return `
+      <div class="wx-hour">
+        <div class="wx-hour-time">${label}</div>
+        <img class="wx-hour-icon" src="${iconSrc}" alt="${iconKey}">
+        <div class="wx-hour-temp">${tempInt}°</div>
+      </div>
+    `;
+  }).join("");
 }
 
 /** 7 days：第一行顯示「今日」 */
@@ -4331,12 +4312,12 @@ async function loadAndRenderWeather(){
     const sliceCodes = hCodes.slice(startIdx, startIdx + 23);
 
     renderHourly24({
-      timesISO: sliceTimes,
-      temps: sliceTemps,
-      codes: sliceCodes,
-      sunInfo,
-      nowTemp: tempNow,
-      nowCode: codeNow
+    	timesISO: sliceTimes,
+  		temps: sliceTemps,
+ 	 	codes: sliceCodes,
+  		utcOffsetSeconds,
+ 	 	sunriseLocalMs,
+ 	 	sunsetLocalMs
     });
 
     // note（你原本的提示字串先保留簡單）

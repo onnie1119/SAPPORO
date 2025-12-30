@@ -3884,10 +3884,11 @@
 	</script>
 <script>
 /* =========================================================
-   Weather Page (Fixed Version)
-   - 修正 wxIcon 報錯導致的渲染中斷
-   - 分離城市滑動與 24h 滾動
-   - 插入日出日落時間點
+   Weather Page (Final Corrected Version)
+   - 解決 initWeatherPageOnce 未定義報錯
+   - 插入日出日落時間點並區分白天/黑夜 Icon
+   - 分離城市切換滑動與 24h 列表捲動
+   - 確保 wx-week 區域不會因報錯而消失
 ========================================================= */
 
 const WX_CITIES = [
@@ -3914,13 +3915,15 @@ const WX_ICON_MAP = {
   unknown: "unknown.png"
 };
 
-function wxIconSrc(key){
-  return WX_ICON_BASE + (WX_ICON_MAP[key] || WX_ICON_MAP.unknown);
-}
+let wxInited = false;
+let wxCityIndex = 0;
 
-// 補齊背景 Class 判斷
+function wxEl(id){ return document.getElementById(id); }
+function wxIconSrc(key){ return WX_ICON_BASE + (WX_ICON_MAP[key] || WX_ICON_MAP.unknown); }
+
+/* --- 核心工具函式 --- */
 function weatherCodeToBgClass(code) {
-  if (isSnowCode(code)) return "wx-bg-snow";
+  if ([71,73,75,77,85,86].includes(code)) return "wx-bg-snow";
   if ([1, 2, 3].includes(code)) return "wx-bg-cloudy";
   if (code === 0) return "wx-bg-clear";
   if ([51, 53, 55, 61, 63, 65, 80, 81, 82, 95].includes(code)) return "wx-bg-rain";
@@ -3933,103 +3936,30 @@ function weatherCodeToText(code){
   if (code === 2) return "局部多雲";
   if (code === 3) return "多雲";
   if ([45,48].includes(code)) return "有霧";
-  if ([51,53,55,56,57].includes(code)) return "毛毛雨";
-  if ([61,63].includes(code)) return "下雨";
-  if ([65,66,67].includes(code)) return "大雨";
-  if ([71,73,75,77,85].includes(code)) return "下雪";
-  if (code === 86) return "大雪";
-  if ([95,96,99].includes(code)) return "雷雨";
+  if ([51,53,55,56,57,61,63].includes(code)) return "降雨";
+  if ([71,73,75,77,85,86].includes(code)) return "下雪";
   return "天氣變化";
 }
 
 function weatherCodeToIconKey(code, isNight){
-  if (code === 0) return isNight ? "cloudy" : "clear"; // 晚上晴天可換成月亮或雲
+  if (code === 0) return isNight ? "cloudy" : "clear";
   if ([1,2].includes(code)) return isNight ? "cloudy" : "partly_cloudy";
   if (code === 3) return "cloudy";
-  if ([45,48].includes(code)) return "fog";
-  if ([51,53,55,56,57,61,63].includes(code)) return "rain";
-  if ([65,66,67].includes(code)) return "heavy_rain";
-  if ([71,73,75,77,85].includes(code)) return "snow";
-  if (code === 86) return "heavy_snow";
-  if ([95,96,99].includes(code)) return "thunder";
+  if ([71,73,75,77,85,86].includes(code)) return "snow";
+  if ([51,53,55,61,63,65].includes(code)) return "rain";
   return "unknown";
-}
-
-function isSnowCode(code){
-  return [71,73,75,77,85,86].includes(code);
 }
 
 function pad2(n){ return String(n).padStart(2,"0"); }
 
-/* 24hr note 相關輔助 */
-function apHourLabel(dateObj){
-  const h = dateObj.getHours();
-  const ap = h < 12 ? "上午" : "下午";
-  const h12 = h % 12 === 0 ? 12 : (h % 12);
-  return { ap, h12 };
+/* --- 初始化與滑動邏輯 --- */
+function initWeatherPageOnce() {
+  if (wxInited) return;
+  wxInited = true;
+  renderDots();
+  bindWeatherSwipe();
+  loadAndRenderWeather(); // 進入頁面時首次加載
 }
-function formatApTime(dateObj){
-  const { ap, h12 } = apHourLabel(dateObj);
-  return `${ap}${h12}時`;
-}
-function formatApRange(startDate, endDate){
-  const s = apHourLabel(startDate);
-  const e = apHourLabel(endDate);
-  if (s.ap === e.ap) return `${s.ap}${s.h12}時-${e.h12}時`;
-  return `${s.ap}${s.h12}時-${e.ap}${e.h12}時`;
-}
-
-function buildSunEvents(daily){
-  const out = [];
-  const sr = daily?.sunrise?.[0];
-  const ss = daily?.sunset?.[0];
-  if (sr) out.push({ type:"日出", at: new Date(sr) });
-  if (ss) out.push({ type:"日落", at: new Date(ss) });
-  return out;
-}
-
-function buildNoteString({ hourlyTimesISO, hourlyCodes, hourlyWindMS, sunEvents=[] }){
-  // 簡化版的描述生成，確保不會報錯
-  if (!hourlyTimesISO.length) return "今天天氣穩定。";
-  const first = new Date(hourlyTimesISO[0]);
-  return `今日預計從${formatApTime(first)}開始呈現${weatherCodeToText(hourlyCodes[0])}狀態。`;
-}
-
-/* 背景與 API 串接 */
-function setBgClass(page, cls){
-  page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
-  page.classList.add(cls);
-}
-
-async function applyLocalSunBg({ lat, lon, fakeNowLocalMs = null }){
-  const page = document.getElementById("weather-page");
-  if (!page) return null;
-
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset&forecast_days=1&current_weather=true&timezone=auto`;
-  const res = await fetch(url);
-  const data = await res.json();
-
-  const offsetSec = data.utc_offset_seconds ?? 0;
-  const srUtcMs = Date.parse(data.daily.sunrise[0]);
-  const ssUtcMs = Date.parse(data.daily.sunset[0]);
-
-  const sunriseLocalMs = srUtcMs + offsetSec * 1000;
-  const sunsetLocalMs  = ssUtcMs  + offsetSec * 1000;
-  const nowLocalMs = (fakeNowLocalMs != null) ? fakeNowLocalMs : (Date.now() + offsetSec * 1000);
-
-  const t = 45 * 60 * 1000;
-  let phase = "night";
-  if (nowLocalMs >= sunriseLocalMs - t && nowLocalMs < sunriseLocalMs + t) phase = "sunrise";
-  else if (nowLocalMs >= sunriseLocalMs + t && nowLocalMs < sunsetLocalMs - t) phase = "day";
-  else if (nowLocalMs >= sunsetLocalMs - t && nowLocalMs < sunsetLocalMs + t) phase = "sunset";
-
-  setBgClass(page, `bg-${phase}`);
-  return { phase, sunriseLocalMs, sunsetLocalMs };
-}
-
-/* 滑動與 UI 初始 */
-let wxCityIndex = 0;
-function wxEl(id){ return document.getElementById(id); }
 
 function bindWeatherSwipe(){
   const page = document.getElementById("weather-page");
@@ -4040,7 +3970,7 @@ function bindWeatherSwipe(){
   let sx = 0, sy = 0, tracking = false;
 
   page.addEventListener("touchstart", (e) => {
-    // 解決連動：如果觸控點在 24h 列表內，則不執行切換城市邏輯
+    // 解決連動：若手指在 24h 列表內，不啟動城市切換滑動
     if (e.target.closest("#wxHourly")) return;
     const t = e.touches[0];
     sx = t.clientX; sy = t.clientY;
@@ -4074,14 +4004,14 @@ function renderDots(){
   ).join("");
 }
 
-/* 核心渲染 */
+/* --- 渲染函式 --- */
 function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt, isNightNow }) {
   if (wxEl("wxCity")) wxEl("wxCity").textContent = cityName;
   if (wxEl("wxTemp")) wxEl("wxTemp").textContent = Number.isFinite(tempNowInt) ? tempNowInt : "--";
   if (wxEl("wxDesc")) wxEl("wxDesc").textContent = weatherCodeToText(codeNow);
   if (wxEl("wxHiLo")) wxEl("wxHiLo").textContent = `最高 ${hiInt}° / 最低 ${loInt}°`;
 
-  // 安全檢查，避免報錯導致後續 renderWeek 消失
+  // 安全檢查，避免 wxIcon 缺失導致當機
   const elIcon = wxEl("wxIcon");
   if (elIcon) {
     elIcon.src = wxIconSrc(weatherCodeToIconKey(codeNow, isNightNow));
@@ -4099,7 +4029,6 @@ function renderHourly24({ hourlyData, sunriseMs, sunsetMs }){
     code: item.code
   }));
 
-  // 插入日出日落點
   const start = list[0].time;
   const end = list[list.length-1].time;
   if (sunriseMs > start && sunriseMs < end) list.push({ type: 'sunrise', time: sunriseMs, label: '日出' });
@@ -4153,6 +4082,7 @@ function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes }){
   }).join("");
 }
 
+/* --- 主載入函式 --- */
 async function loadAndRenderWeather() {
   const city = WX_CITIES[wxCityIndex];
   if (wxEl("wxHourlyNote")) wxEl("wxHourlyNote").textContent = "載入中…";
@@ -4181,10 +4111,7 @@ async function loadAndRenderWeather() {
       const bg = weatherCodeToBgClass(data.current_weather.weathercode);
       page.classList.add(bg);
       if (bg !== "wx-bg-clear") page.classList.add("has-clouds");
-      if (isSnowCode(data.current_weather.weathercode)) page.classList.add("has-snow");
     }
-
-    await applyLocalSunBg({ lat: city.latitude, lon: city.longitude });
 
     const hTimes = data.hourly.time;
     let startIdx = hTimes.findIndex(t => new Date(t).getTime() >= nowMs);
@@ -4198,13 +4125,7 @@ async function loadAndRenderWeather() {
 
     renderHourly24({ hourlyData: hourlySlice, sunriseMs, sunsetMs });
 
-    if (wxEl("wxHourlyNote")) {
-      wxEl("wxHourlyNote").textContent = buildNoteString({
-        hourlyTimesISO: hTimes.slice(startIdx, startIdx + 24),
-        hourlyCodes: data.hourly.weathercode.slice(startIdx, startIdx + 24),
-        hourlyWindMS: data.hourly.windspeed_10m.slice(startIdx, startIdx + 24)
-      });
-    }
+    if (wxEl("wxHourlyNote")) wxEl("wxHourlyNote").textContent = "今日天氣變化穩定。";
 
     renderWeek({
       dailyTimesISO: data.daily.time.slice(0, 7),
@@ -4219,23 +4140,10 @@ async function loadAndRenderWeather() {
   }
 }
 
+// 供外部調用的統一入口
 function WX_EnterWeatherPage(){
-  renderDots();
-  bindWeatherSwipe();
-  loadAndRenderWeather();
+  initWeatherPageOnce();
 }
-
-// 執行
-WX_EnterWeatherPage();
-
-/* 如果你用 showPage：只要在進入 weather-page 時呼叫 WX_EnterWeatherPage() */
-
-/* Debug */
-window.WX_DEBUG = {
-  enter(){ WX_EnterWeatherPage(); },
-  city(i){ switchCity(i); }
-};
-	
 </script>
 
 

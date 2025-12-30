@@ -4421,6 +4421,11 @@ function resetWeatherView(){
   if (week) week.scrollLeft = 0;
 }
 
+function WX_EnterWeatherPage(){
+  initWeatherPageOnce();
+  renderDots();
+  loadAndRenderWeather(true);
+}
 
 
 </script>

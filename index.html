@@ -4223,8 +4223,8 @@ function renderHourly24({
   for (let i = 0; i < 23; i++){
     const slotWall = wallNextHour + i * HOUR;       // 這格代表的時間（wall）
     const hour24 = new Date(slotWall).getUTCHours(); // wall hour
-    const prefix = (hour24 >= 18) ? "晚上" : "早上";  // ✅ 依你的例子：18 之後算晚上，其它算早上
-    const label = `${prefix}${hour24}點`;
+    const prefix = (hour24 >= 12) ? "下午" : "上午";  // ✅ 依你的例子：18 之後算晚上，其它算早上
+    const label = `${prefix}${hour24}時`;
 
     const idx = startIdx + i;
     const temp = hourlyTemps[idx];

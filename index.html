@@ -4272,6 +4272,10 @@ function renderHourly24({ timesISO, temps, codes, fakeNowLocalMs = null }){
   // ✅ 你的需求：假設現在 17:13 → 顯示「現在/18/19/20...」
   // 做法：以 nowLocalMs 往上取整到下一個整點作為第一個 hour label
   // 但資料仍用 sliceTimes[i] 的溫度/天氣碼
+	const nowMs = Date.now();
+const isNight = isNightTime(nowMs, sunriseLocalMs, sunsetLocalMs);
+const iconKey = weatherCodeToIconKey(codeNow, isNight);
+
   const nowMs = (fakeNowLocalMs != null) ? fakeNowLocalMs : Date.now();
   const nextHour = new Date(nowMs);
   nextHour.setMinutes(0,0,0);
@@ -4428,6 +4432,9 @@ async function loadAndRenderWeather({ fakeNowLocalMs = null } = {}) {
 }
 
 
+function isNightTime(nowMs, sunriseMs, sunsetMs){
+  return !(nowMs >= sunriseMs && nowMs < sunsetMs);
+}
 
 
 

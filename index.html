@@ -4169,11 +4169,20 @@ class SnowBackground {
     this._init();
   }
 
-  _pickParams(mode){
-    if (mode === "heavySnow") return { count: 520, rMin: 0.8, rMax: 3.0, vyMin: 0.9, vyMax: 3.0, wind: 0.6 };
-    if (mode === "snow")      return { count: 320, rMin: 0.7, rMax: 2.6, vyMin: 0.8, vyMax: 2.4, wind: 0.45 };
-    return { count: 180, rMin: 0.6, rMax: 2.0, vyMin: 0.6, vyMax: 1.9, wind: 0.5 }; // flurry
+ // 依模式選參數（✅ 若隱若現：更少、更慢、更柔）
+_pickParams(mode){
+  // 大雪：比原本少很多，但仍看得出來是「大雪」
+  if (mode === "heavySnow") {
+    return { count: 220, rMin: 0.6, rMax: 2.0, vyMin: 0.35, vyMax: 1.10, wind: 0.22 };
   }
+  // 下雪：更淡、更慢
+  if (mode === "snow") {
+    return { count: 140, rMin: 0.5, rMax: 1.6, vyMin: 0.28, vyMax: 0.90, wind: 0.18 };
+  }
+  // 飄雪（非下雪預設）：非常淡、若有若無
+  return { count: 80, rMin: 0.45, rMax: 1.25, vyMin: 0.22, vyMax: 0.75, wind: 0.16 };
+}
+
 
   _onResize(){
     const canvas = this.canvas;

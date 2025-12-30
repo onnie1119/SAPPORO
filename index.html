@@ -3681,6 +3681,7 @@
 				  initWeatherPageOnce();
 				  renderDots();
 				  loadAndRenderWeather();
+				  WX_EnterWeatherPage();
 				}
 
 			  // 下面照你原本 showPage 的邏輯
@@ -3876,21 +3877,19 @@
 	</script>
 <script>
 /* =========================================================
-   Weather Page – FULL WORKING JS (No undefined functions)
-   - dots click + page swipe (exclude 24h area)
-   - Open-Meteo timezone=auto (local times)
-   - Header / 24h / 7d
-   - BG phase: sunrise/day/sunset/night
-   - Snow: default light snow; if snow weather -> strong snow
-   - 24h labels: now/nextHour/...
-   - 7d first row: 今日
-   - City switch: reset scroll positions
-   - F12 helpers: window.WX_DEBUG
+   Weather Page – Correct Timezone + Sunrise/Sunset Icons
+   ✅ 不受瀏覽器時區影響（台灣看日本也準）
+   ✅ 24hr：現在/下一整點/...
+   ✅ 24hr：日出/日落格會插對應 icon
+   ✅ 24hr：日出後白天 icon、日落後夜間 icon
+   ✅ 雪動畫：永遠都有（非下雪=微雪，下雪=大雪）
+   ✅ 切城市：dots + 頁面左右滑（不干擾 24hr 橫滑）
+   ✅ 一週第一列：今日
+   ✅ 切城市會 reset scroll
+   ✅ 全域入口：WX_EnterWeatherPage()
 ========================================================= */
 
-/* ============================
-   Config
-============================ */
+/* ---------------- Config ---------------- */
 const WX_CITIES = [
   { key:"sapporo",     name:"札幌", latitude:43.0667, longitude:141.3500 },
   { key:"otaru",       name:"小樽", latitude:43.1900, longitude:140.9940 },
@@ -3898,7 +3897,7 @@ const WX_CITIES = [
   { key:"noboribetsu", name:"登別", latitude:42.3800, longitude:141.0000 }
 ];
 
-const WX_ICON_BASE = "images/"; // 你的 icon 資料夾（相對路徑）
+const WX_ICON_BASE = "images/";
 const WX_ICON_MAP = {
   // day
   clear: "clear.png",
@@ -3912,10 +3911,10 @@ const WX_ICON_MAP = {
   thunder: "thunder.png",
   wind: "wind.png",
   // night
-  night_clear: "night_clear.png",       // ← 若你沒有就會 fallback unknown
-  night_cloudy: "night_cloudy.png",     // ← 你新增的夜間多雲 icon
+  night_clear: "night_clear.png",
   night_partly_cloudy: "night_partly_cloudy.png",
-  // sunrise/sunset marker (optional)
+  night_cloudy: "night_cloudy.png",
+  // markers
   sunrise: "sunrise.png",
   sunset: "sunset.png",
   unknown: "unknown.png"
@@ -3925,32 +3924,44 @@ function wxIconSrc(key){
   return WX_ICON_BASE + (WX_ICON_MAP[key] || WX_ICON_MAP.unknown);
 }
 
-/* ============================
-   DOM ids you already have
-============================ */
+/* ---------------- DOM helpers ---------------- */
 function $(id){ return document.getElementById(id); }
 
-/* ============================
-   State
-============================ */
+/* ---------------- State ---------------- */
 let wxInited = false;
 let wxCityIndex = 0;
-let wxLastSun = null; // { sunriseMs, sunsetMs, nowMs, phase }
 
-/* ============================
-   Weather code helpers
-============================ */
-function isSnowCode(code){
-  return [71,73,75,77,85,86].includes(code);
+/* ---------------- Time helpers (IMPORTANT) ----------------
+   我們把「當地時間」用 localMs 表示：
+   localMs = utcMs + offsetMs
+   取小時/日期一律用 getUTCHours / toISOString（避免用瀏覽器本地時區）
+------------------------------------------------------------ */
+function parseUtcMs(isoNoZ){
+  if (!isoNoZ) return NaN;
+  const s = isoNoZ.endsWith("Z") ? isoNoZ : (isoNoZ + "Z");
+  return Date.parse(s);
 }
-function isRainCode(code){
-  return [51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code);
+function localDateKey(localMs){
+  // localMs 已經加過 offset，轉 ISO 會剛好對應「當地日期」
+  return new Date(localMs).toISOString().slice(0,10);
+}
+function pad2(n){ return String(n).padStart(2,"0"); }
+function localHour(localMs){
+  return new Date(localMs).getUTCHours();
+}
+function floorToHour(localMs){
+  const d = new Date(localMs);
+  d.setUTCMinutes(0,0,0);
+  return d.getTime();
 }
 
-/* 低溫把雨修正成雪（你要 ≤5°C） */
+/* ---------------- Weather helpers ---------------- */
+function isSnowCode(code){ return [71,73,75,77,85,86].includes(code); }
+function isRainCode(code){ return [51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code); }
+
+/* ≤5°C 的降水視為雪 */
 function normalizeWeatherCode(code, tempC){
   if (isRainCode(code) && Number.isFinite(tempC) && tempC <= 5){
-    // 讓強降水更像大雪
     if ([65,66,67,81,82].includes(code)) return 86;
     return 71;
   }
@@ -3972,24 +3983,19 @@ function weatherCodeToText(code){
   return "天氣變化";
 }
 
-/* 用日出日落判斷是否夜晚 */
-function isNightBySun(nowMs, sunriseMs, sunsetMs){
-  return !(nowMs >= sunriseMs && nowMs < sunsetMs);
+/* 日出後~日落前 = 白天 */
+function isNightBySun(localMs, sunriseLocalMs, sunsetLocalMs){
+  return !(localMs >= sunriseLocalMs && localMs < sunsetLocalMs);
 }
 
-/* code + day/night → icon key */
 function weatherCodeToIconKey(code, isNight){
-  // snow
   if ([71,73,75,77,85].includes(code)) return "snow";
   if (code === 86) return "heavy_snow";
-  // thunder
   if ([95,96,99].includes(code)) return "thunder";
-  // fog
   if ([45,48].includes(code)) return "fog";
-  // rain
   if ([51,53,55,56,57,61,63].includes(code)) return "rain";
   if ([65,66,67,80,81,82].includes(code)) return "heavy_rain";
-  // clouds / clear
+
   if (code === 0) return isNight ? "night_clear" : "clear";
   if (code === 1) return isNight ? "night_partly_cloudy" : "partly_cloudy";
   if (code === 2) return isNight ? "night_partly_cloudy" : "partly_cloudy";
@@ -3997,66 +4003,54 @@ function weatherCodeToIconKey(code, isNight){
   return "unknown";
 }
 
-/* ============================
-   Background phase
-============================ */
+/* ---------------- Background phase + snow intensity ---------------- */
 function setBgClass(page, cls){
   page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
   page.classList.add(cls);
 }
-function getDayPhase(nowMs, sunriseMs, sunsetMs, twilightMin = 45){
+function getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, twilightMin = 45){
   const t = twilightMin * 60 * 1000;
-  const sunriseStart = sunriseMs - t;
-  const sunriseEnd   = sunriseMs + t;
-  const sunsetStart  = sunsetMs - t;
-  const sunsetEnd    = sunsetMs + t;
+  const sunriseStart = sunriseLocalMs - t;
+  const sunriseEnd   = sunriseLocalMs + t;
+  const sunsetStart  = sunsetLocalMs - t;
+  const sunsetEnd    = sunsetLocalMs + t;
 
-  if (nowMs >= sunriseStart && nowMs < sunriseEnd) return "sunrise";
-  if (nowMs >= sunriseEnd && nowMs < sunsetStart) return "day";
-  if (nowMs >= sunsetStart && nowMs < sunsetEnd) return "sunset";
+  if (nowLocalMs >= sunriseStart && nowLocalMs < sunriseEnd) return "sunrise";
+  if (nowLocalMs >= sunriseEnd && nowLocalMs < sunsetStart) return "day";
+  if (nowLocalMs >= sunsetStart && nowLocalMs < sunsetEnd) return "sunset";
   return "night";
 }
 
-/* 雪強度：預設微雪，真的下雪→大雪 */
+/* 永遠都有雪：非雪=微雪；雪=大雪（CSS 請做 snow-light / snow-strong） */
 function applySnowIntensity(page, hasSnow){
-  if (!page) return;
   page.classList.remove("snow-light","snow-strong");
   page.classList.add(hasSnow ? "snow-strong" : "snow-light");
 }
 
-/* ============================
-   UI: dots + swipe
-============================ */
+/* ---------------- dots + swipe ---------------- */
 function renderDots(){
   const dots = $("wxDots");
   if (!dots) return;
-  dots.innerHTML = WX_CITIES.map((c, i) => {
-    const active = i === wxCityIndex ? "active" : "";
+  dots.innerHTML = WX_CITIES.map((c,i)=>{
+    const active = i===wxCityIndex ? "active":"";
     return `<div class="wx-dot ${active}" data-index="${i}" role="button" aria-label="${c.name}"></div>`;
   }).join("");
 }
 function setDotsActive(){
   const dots = $("wxDots");
   if (!dots) return;
-  dots.querySelectorAll(".wx-dot").forEach(d => {
-    d.classList.toggle("active", Number(d.dataset.index) === wxCityIndex);
+  dots.querySelectorAll(".wx-dot").forEach(d=>{
+    d.classList.toggle("active", Number(d.dataset.index)===wxCityIndex);
   });
 }
-
-/* 切城市後：回到初始狀態 */
 function resetWeatherPageScroll(){
   const page = $("weather-page");
   if (page) page.scrollTop = 0;
-
   const hourly = $("wxHourly");
   if (hourly) hourly.scrollLeft = 0;
-
-  // 如果你有外層容器在捲動（例如 #content 或 body）
-  // 這行保守處理：不會報錯
   try{ window.scrollTo(0,0); }catch(e){}
 }
 
-/* 整頁左右滑切城市，但「在 24hr 橫滑區內」不觸發 */
 function bindWeatherSwipe(){
   const page = $("weather-page");
   if (!page) return;
@@ -4065,30 +4059,27 @@ function bindWeatherSwipe(){
   const SWIPE_MAX_Y = 70;
   let sx=0, sy=0, tracking=false;
 
-  page.addEventListener("touchstart", (e) => {
-    // ✅ 24hr 區塊內不做切城市
+  page.addEventListener("touchstart",(e)=>{
+    // ✅ 在 24hr 橫滑區內，不要切城市
     if (e.target.closest("#wxHourly")) return;
     const t = e.touches[0];
-    sx = t.clientX;
-    sy = t.clientY;
-    tracking = true;
-  }, { passive:true });
+    sx=t.clientX; sy=t.clientY;
+    tracking=true;
+  },{passive:true});
 
-  page.addEventListener("touchend", (e) => {
-    if (!tracking) return;
-    tracking = false;
-
-    const t = e.changedTouches[0];
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
+  page.addEventListener("touchend",(e)=>{
+    if(!tracking) return;
+    tracking=false;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-sx;
+    const dy=t.clientY-sy;
     if (Math.abs(dy) > SWIPE_MAX_Y) return;
 
     if (dx <= -SWIPE_MIN_X) switchCity(Math.min(WX_CITIES.length-1, wxCityIndex+1));
     else if (dx >= SWIPE_MIN_X) switchCity(Math.max(0, wxCityIndex-1));
-  }, { passive:true });
+  },{passive:true});
 }
 
-/* 初始化一次 */
 function initWeatherPageOnce(){
   if (wxInited) return;
   wxInited = true;
@@ -4097,7 +4088,7 @@ function initWeatherPageOnce(){
 
   const dots = $("wxDots");
   if (dots){
-    dots.addEventListener("click", (e) => {
+    dots.addEventListener("click",(e)=>{
       const dot = e.target.closest(".wx-dot");
       if (!dot) return;
       const idx = Number(dot.dataset.index);
@@ -4105,22 +4096,18 @@ function initWeatherPageOnce(){
       switchCity(idx);
     });
   }
-
   bindWeatherSwipe();
 }
 
-/* 切城市 */
 async function switchCity(index){
   if (index === wxCityIndex) return;
   wxCityIndex = index;
   setDotsActive();
   resetWeatherPageScroll();
-  await loadAndRenderWeather(); // 重新抓取 / 重畫
+  await loadAndRenderWeather();
 }
 
-/* ============================
-   API
-============================ */
+/* ---------------- API (timezone=UTC to avoid browser timezone bug) ---------------- */
 function buildWeatherApiUrl(city){
   const base = "https://api.open-meteo.com/v1/forecast";
   const params = new URLSearchParams({
@@ -4129,114 +4116,152 @@ function buildWeatherApiUrl(city){
     current_weather: "true",
     hourly: "temperature_2m,weathercode,windspeed_10m",
     daily: "temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset",
-    timezone: "auto"
+    forecast_days: "7",
+    timezone: "UTC"   // ✅ 關鍵：一律拿 UTC
   });
   return `${base}?${params.toString()}`;
 }
 
-/* ============================
-   Render
-============================ */
+/* ---------------- Rendering ---------------- */
 function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
   $("wxCity").textContent = cityName;
   $("wxTemp").textContent = Number.isFinite(tempNowInt) ? String(tempNowInt) : "--";
   $("wxDesc").textContent = weatherCodeToText(codeNow);
-  $("wxHiLo").textContent = `最高 ${Number.isFinite(hiInt) ? hiInt : "--"}° / 最低 ${Number.isFinite(loInt) ? loInt : "--"}°`;
+  $("wxHiLo").textContent = `最高 ${Number.isFinite(hiInt)?hiInt:"--"}° / 最低 ${Number.isFinite(loInt)?loInt:"--"}°`;
 }
 
-/* 24h label：現在 / nextHour / nextHour+1 ... */
-function build24hLabels(fakeNowMs=null){
-  const now = fakeNowMs != null ? fakeNowMs : Date.now();
-  const next = new Date(now);
-  next.setMinutes(0,0,0);
-  next.setHours(next.getHours()+1);
-  const labels = ["現在"];
+/* 24hr labels: 現在 / nextHour / nextHour+1 ... (用當地時間) */
+function build24hLabels(nowLocalMs){
+  const nextHourLocalMs = floorToHour(nowLocalMs) + 3600000;
+  const out = ["現在"];
   for (let i=1;i<24;i++){
-    const h = (next.getHours() + (i-1)) % 24;
-    labels.push(String(h).padStart(2,"0"));
+    const h = localHour(nextHourLocalMs + (i-1)*3600000);
+    out.push(pad2(h));
   }
-  return labels;
+  return out;
 }
 
-/* 24h：插入「日出/日落」icon 到最接近的那一格（若有） */
-function renderHourly24({ timesISO, temps, codes, sunriseMs, sunsetMs, fakeNowMs=null }){
+/* 找出「落在這 24hr window 內」的 sunrise / sunset，並插 icon */
+function findEventIndexInWindow(timesLocalMs, eventLocalMs){
+  if (!Number.isFinite(eventLocalMs)) return -1;
+  const start = timesLocalMs[0];
+  const end = timesLocalMs[timesLocalMs.length-1] + 3600000; // 給一點尾巴
+  if (!(eventLocalMs >= start && eventLocalMs <= end)) return -1;
+
+  let best=0, bestDiff=Infinity;
+  for (let i=0;i<timesLocalMs.length;i++){
+    const diff = Math.abs(timesLocalMs[i]-eventLocalMs);
+    if (diff<bestDiff){ bestDiff=diff; best=i; }
+  }
+  return best;
+}
+
+/* 用 daily 建一個「當地日期 -> sunrise/sunset」表 */
+function buildSunByDate(daily, offsetMs){
+  const sunByDate = new Map();
+  const srArr = daily?.sunrise || [];
+  const ssArr = daily?.sunset || [];
+  for (let i=0;i<Math.min(srArr.length, ssArr.length); i++){
+    const srLocal = parseUtcMs(srArr[i]) + offsetMs;
+    const ssLocal = parseUtcMs(ssArr[i]) + offsetMs;
+    const key = localDateKey(srLocal);
+    sunByDate.set(key, { sunriseLocalMs: srLocal, sunsetLocalMs: ssLocal });
+  }
+  return sunByDate;
+}
+
+function renderHourly24({ timesUtcISO, temps, codes, offsetMs, sunByDate, nowLocalMs }){
   const wrap = $("wxHourly");
   if (!wrap) return;
 
-  const labels = build24hLabels(fakeNowMs);
+  // 把 24hr 的時間轉成 localMs
+  const timesLocalMs = timesUtcISO.map(t => parseUtcMs(t) + offsetMs);
+  const labels = build24hLabels(nowLocalMs);
 
-  // 找 sunrise/sunset 最近的 index（在這 24 格內）
-  let sunriseIdx = -1, sunsetIdx = -1;
-  if (Number.isFinite(sunriseMs)){
-    sunriseIdx = nearestIndexByTime(timesISO, sunriseMs);
-  }
-  if (Number.isFinite(sunsetMs)){
-    sunsetIdx = nearestIndexByTime(timesISO, sunsetMs);
+  // window 內的「日出/日落事件」：用 daily 找出落在這個 window 的那一天
+  // 直接掃 sunByDate 的值挑出落在 window 的第一個 sunrise/sunset
+  let sunriseEvent = NaN;
+  let sunsetEvent = NaN;
+  const windowStart = timesLocalMs[0];
+  const windowEnd = timesLocalMs[timesLocalMs.length-1] + 3600000;
+
+  for (const { sunriseLocalMs, sunsetLocalMs } of sunByDate.values()){
+    if (!Number.isFinite(sunriseEvent) && sunriseLocalMs >= windowStart && sunriseLocalMs <= windowEnd) sunriseEvent = sunriseLocalMs;
+    if (!Number.isFinite(sunsetEvent)  && sunsetLocalMs  >= windowStart && sunsetLocalMs  <= windowEnd) sunsetEvent  = sunsetLocalMs;
   }
 
-  wrap.innerHTML = timesISO.map((tISO, i) => {
-    const hourMs = new Date(tISO).getTime();
+  const sunriseIdx = findEventIndexInWindow(timesLocalMs, sunriseEvent);
+  const sunsetIdx  = findEventIndexInWindow(timesLocalMs, sunsetEvent);
+
+  wrap.innerHTML = timesLocalMs.map((hourLocalMs, i)=>{
     const tempC = temps[i];
     const codeN = normalizeWeatherCode(codes[i], tempC);
 
-    // 依日出日落判斷白天/夜晚 icon
-    const night = isNightBySun(hourMs, sunriseMs, sunsetMs);
+    // 這個小時屬於哪一天？用那天的 sunrise/sunset 判斷白天/夜晚
+    const key = localDateKey(hourLocalMs);
+    const sun = sunByDate.get(key);
 
-    // 日出/日落 marker icon（可選）
-    let forcedIconKey = null;
-    let forcedAlt = null;
+    // 若沒有資料就先用「現在那天」的日出日落當 fallback
+    const fallbackKey = localDateKey(nowLocalMs);
+    const fb = sunByDate.get(fallbackKey) || { sunriseLocalMs: NaN, sunsetLocalMs: NaN };
 
-    if (i === sunriseIdx){
-      forcedIconKey = "sunrise";
-      forcedAlt = "sunrise";
-    } else if (i === sunsetIdx){
-      forcedIconKey = "sunset";
-      forcedAlt = "sunset";
-    }
+    const sunriseLocalMs = sun?.sunriseLocalMs ?? fb.sunriseLocalMs;
+    const sunsetLocalMs  = sun?.sunsetLocalMs  ?? fb.sunsetLocalMs;
 
-    const iconKey = forcedIconKey || weatherCodeToIconKey(codeN, night);
-    const iconSrc = wxIconSrc(iconKey);
+    const night = (Number.isFinite(sunriseLocalMs) && Number.isFinite(sunsetLocalMs))
+      ? isNightBySun(hourLocalMs, sunriseLocalMs, sunsetLocalMs)
+      : false;
+
+    // 插入 marker icon（只插在 window 內那一格）
+    let iconKey;
+    if (i === sunriseIdx) iconKey = "sunrise";
+    else if (i === sunsetIdx) iconKey = "sunset";
+    else iconKey = weatherCodeToIconKey(codeN, night);
 
     return `
       <div class="wx-hour">
         <div class="wx-hour-time">${labels[i] || "--"}</div>
-        <img class="wx-hour-icon" src="${iconSrc}" alt="${forcedAlt || iconKey}">
+        <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
         <div class="wx-hour-temp">${Math.round(tempC)}°</div>
       </div>
     `;
   }).join("");
 }
 
-function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes, sunriseMs, sunsetMs }){
+function renderWeek({ daily, offsetMs }){
   const wrap = $("wxWeek");
   if (!wrap) return;
 
-  const allMin = Math.min(...minArr.map(n=>Number(n)));
-  const allMax = Math.max(...maxArr.map(n=>Number(n)));
+  const times = daily?.time || [];
+  const minArr = daily?.temperature_2m_min || [];
+  const maxArr = daily?.temperature_2m_max || [];
+  const codes  = daily?.weathercode || [];
+
+  const dCount = Math.min(7, times.length, minArr.length, maxArr.length, codes.length);
+  if (!dCount) return;
+
+  const allMin = Math.min(...minArr.slice(0,dCount).map(Number));
+  const allMax = Math.max(...maxArr.slice(0,dCount).map(Number));
   const span = Math.max(1, allMax - allMin);
 
-  wrap.innerHTML = dailyTimesISO.map((tISO, i) => {
-    const d = new Date(tISO);
-    const label = (i === 0) ? "今日" : `週${["日","一","二","三","四","五","六"][d.getDay()]}`;
-
+  wrap.innerHTML = Array.from({length:dCount}).map((_, i)=>{
+    const label = (i===0) ? "今日" : `週${["日","一","二","三","四","五","六"][new Date(times[i]+"T00:00Z").getUTCDay()]}`;
     const minT = Math.round(minArr[i]);
     const maxT = Math.round(maxArr[i]);
 
-    // daily icon 用白天版（你也可改成依照那天中午去判斷）
-    const codeMid = normalizeWeatherCode(dailyCodes[i], (minArr[i] + maxArr[i]) / 2);
-    const iconKey = weatherCodeToIconKey(codeMid, false);
-    const iconSrc = wxIconSrc(iconKey);
+    const codeN = normalizeWeatherCode(codes[i], (minArr[i]+maxArr[i])/2);
+    const iconKey = weatherCodeToIconKey(codeN, false);
 
-    const leftPct = ((minT - allMin) / span) * 100;
-    const widthPct = ((maxT - minT) / span) * 100;
+    const leftPct = ((minT - allMin)/span)*100;
+    const widthPct = ((maxT - minT)/span)*100;
 
     return `
       <div class="wx-week-row">
         <div class="wx-week-day">${label}</div>
-        <img class="wx-week-icon" src="${iconSrc}" alt="${iconKey}">
+        <img class="wx-week-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
         <div class="wx-week-min">${minT}°</div>
         <div class="wx-week-bar">
-          <span style="left:${leftPct}%; width:${Math.max(6, widthPct)}%;"></span>
+          <span style="left:${leftPct}%; width:${Math.max(6,widthPct)}%;"></span>
         </div>
         <div class="wx-week-max">${maxT}°</div>
       </div>
@@ -4244,135 +4269,112 @@ function renderWeek({ dailyTimesISO, maxArr, minArr, dailyCodes, sunriseMs, suns
   }).join("");
 }
 
-/* ============================
-   Utilities
-============================ */
-function nearestIndexByTime(timesISO, targetMs){
-  let best = 0, bestDiff = Infinity;
-  for (let i=0;i<timesISO.length;i++){
-    const ms = new Date(timesISO[i]).getTime();
-    const diff = Math.abs(ms - targetMs);
-    if (diff < bestDiff){
-      bestDiff = diff;
-      best = i;
-    }
-  }
-  return best;
-}
-
-/* ============================
-   Main loader
-============================ */
-async function loadAndRenderWeather({ fakeNowMs=null } = {}){
+/* ---------------- Main loader ---------------- */
+async function loadAndRenderWeather({ fakeLocalHHMM=null } = {}){
   const page = $("weather-page");
   const city = WX_CITIES[wxCityIndex];
   if (!page || !city) return;
 
-  // ✅ 避免進頁白→變色閃：先套一個保底色（你可改成 night/day）
-  // 這裡先不改 phase，等拿到 sunrise/sunset 再定
-  // 但雪要先出現：預設微雪
+  // 先讓雪動畫出現：預設微雪（等拿到 codeNow 再決定強度）
   applySnowIntensity(page, false);
 
-  // loading 文案
   const noteEl = $("wxHourlyNote");
   if (noteEl) noteEl.textContent = "載入中…";
 
   try{
     const url = buildWeatherApiUrl(city);
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await fetch(url).then(r=>r.json());
 
-    // daily sunrise/sunset（timezone=auto → 直接是當地時間字串）
-    const srRaw = data?.daily?.sunrise?.[0];
-    const ssRaw = data?.daily?.sunset?.[0];
-    const sunriseMs = srRaw ? Date.parse(srRaw) : NaN;
-    const sunsetMs  = ssRaw ? Date.parse(ssRaw) : NaN;
+    const offsetSec = Number(data?.utc_offset_seconds ?? 0);
+    const offsetMs = offsetSec * 1000;
 
-    const nowMs = (fakeNowMs != null) ? fakeNowMs : Date.now();
-    const phase = (Number.isFinite(sunriseMs) && Number.isFinite(sunsetMs))
-      ? getDayPhase(nowMs, sunriseMs, sunsetMs, 45)
-      : "night";
+    // 現在當地時間（不受瀏覽器時區影響）
+    let nowLocalMs = Date.now() + offsetMs;
 
-    setBgClass(page, `bg-${phase}`);
-    wxLastSun = { sunriseMs, sunsetMs, nowMs, phase };
+    // F12 假時間（輸入當地 hh:mm）
+    if (fakeLocalHHMM && Number.isFinite(fakeLocalHHMM.hh) && Number.isFinite(fakeLocalHHMM.mm)){
+      const d = new Date(nowLocalMs);
+      d.setUTCHours(fakeLocalHHMM.hh, fakeLocalHHMM.mm, 0, 0);
+      nowLocalMs = d.getTime();
+    }
+
+    // 建日出日落表（當地日期 -> sunrise/sunset）
+    const sunByDate = buildSunByDate(data?.daily, offsetMs);
+
+    // 用「現在這天」的日出日落判斷背景 phase
+    const todayKey = localDateKey(nowLocalMs);
+    const sunToday = sunByDate.get(todayKey) || Array.from(sunByDate.values())[0];
+
+    if (sunToday?.sunriseLocalMs && sunToday?.sunsetLocalMs){
+      const phase = getDayPhase(nowLocalMs, sunToday.sunriseLocalMs, sunToday.sunsetLocalMs, 45);
+      setBgClass(page, `bg-${phase}`);
+      if (noteEl){
+        const s = (phase==="day"||phase==="sunrise"||phase==="sunset") ? "白天" : "黑夜";
+        noteEl.textContent = `目前是 ${s}。`;
+      }
+    }
 
     // current
     const tempNow = data?.current_weather?.temperature;
     const codeNow = data?.current_weather?.weathercode;
-    const tempNowInt = Number.isFinite(tempNow) ? Math.round(tempNow) : NaN;
-
-    // ✅ 雨雪修正（<=5°C）
     const codeNowN = normalizeWeatherCode(codeNow, tempNow);
-    const hasSnowNow = isSnowCode(codeNowN);
 
-    // header
-    const hi = data?.daily?.temperature_2m_max?.[0];
-    const lo = data?.daily?.temperature_2m_min?.[0];
-    const hiInt = Number.isFinite(hi) ? Math.round(hi) : NaN;
-    const loInt = Number.isFinite(lo) ? Math.round(lo) : NaN;
+    renderHeader({
+      cityName: city.name,
+      tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
+      codeNow: codeNowN,
+      hiInt: Number.isFinite(data?.daily?.temperature_2m_max?.[0]) ? Math.round(data.daily.temperature_2m_max[0]) : NaN,
+      loInt: Number.isFinite(data?.daily?.temperature_2m_min?.[0]) ? Math.round(data.daily.temperature_2m_min[0]) : NaN
+    });
 
-    renderHeader({ cityName: city.name, tempNowInt, codeNow: codeNowN, hiInt, loInt });
+    // ✅ 不管天氣如何都有雪：下雪就更明顯
+    applySnowIntensity(page, isSnowCode(codeNowN));
 
-    // ✅ 不管天氣如何都有雪：非雪=微雪 / 雪=大雪
-    applySnowIntensity(page, hasSnowNow);
-
-    // hourly slice 24
+    // hourly：用 UTC 時間 + offset 轉當地時間去選 24hr window
     const hTimes = data?.hourly?.time || [];
     const hTemps = data?.hourly?.temperature_2m || [];
     const hCodes = data?.hourly?.weathercode || [];
-    const hWinds = data?.hourly?.windspeed_10m || [];
 
     if (!hTimes.length){
       if (noteEl) noteEl.textContent = "沒有抓到每小時資料";
       return;
     }
 
-    // 用「現在」去找最近的 hour index（用 fakeNow 也能測）
-    const startIdx = nearestIndexByTime(hTimes, nowMs);
-    const sliceTimes = hTimes.slice(startIdx, startIdx+24);
+    // 取「當地現在這個小時」開始的資料（11:44 -> 11:00 那格會是第一格）
+    const nowFloorLocal = floorToHour(nowLocalMs);
+
+    // 找第一個 localMs >= nowFloorLocal
+    let startIdx = 0;
+    for (let i=0;i<hTimes.length;i++){
+      const localMs = parseUtcMs(hTimes[i]) + offsetMs;
+      if (localMs >= nowFloorLocal){
+        startIdx = i;
+        break;
+      }
+    }
+
+    const sliceTimesUtc = hTimes.slice(startIdx, startIdx+24);
     const sliceTemps = hTemps.slice(startIdx, startIdx+24);
     const sliceCodes = hCodes.slice(startIdx, startIdx+24);
-    const sliceWinds = hWinds.slice(startIdx, startIdx+24);
 
     renderHourly24({
-      timesISO: sliceTimes,
+      timesUtcISO: sliceTimesUtc,
       temps: sliceTemps,
       codes: sliceCodes,
-      sunriseMs, sunsetMs,
-      fakeNowMs: nowMs
+      offsetMs,
+      sunByDate,
+      nowLocalMs
     });
 
-    // 24hr note：告知目前白天/黑夜（你也可換回你原本那套更長文字）
-    if (noteEl){
-      const dayStr = (phase === "day" || phase === "sunrise" || phase === "sunset") ? "白天" : "黑夜";
-      noteEl.textContent = `目前是 ${dayStr}。`;
-    }
-
-    // week
-    const dTimes = data?.daily?.time || [];
-    const dMax = data?.daily?.temperature_2m_max || [];
-    const dMin = data?.daily?.temperature_2m_min || [];
-    const dCodes = data?.daily?.weathercode || [];
-
-    if (dTimes.length){
-      renderWeek({
-        dailyTimesISO: dTimes.slice(0,7),
-        maxArr: dMax.slice(0,7),
-        minArr: dMin.slice(0,7),
-        dailyCodes: dCodes.slice(0,7),
-        sunriseMs, sunsetMs
-      });
-    }
+    renderWeek({ daily: data?.daily, offsetMs });
 
   }catch(err){
     console.error(err);
-    if ($("wxHourlyNote")) $("wxHourlyNote").textContent = "天氣載入失敗（請看 console）";
+    if (noteEl) noteEl.textContent = "天氣載入失敗（請看 console）";
   }
 }
 
-/* ============================
-   Entry: call from showPage()
-============================ */
+/* ---------------- Entry ---------------- */
 function WX_EnterWeatherPage(){
   initWeatherPageOnce();
   renderDots();
@@ -4381,16 +4383,14 @@ function WX_EnterWeatherPage(){
   loadAndRenderWeather();
 }
 
-/* 兼容：如果你沒改 showPage，也可用底部按鈕觸發（保留不衝突） */
-document.addEventListener("click", (e) => {
+/* 若你不想改 showPage，也可保留這個 */
+document.addEventListener("click",(e)=>{
   const btn = e.target.closest('.bottom-nav button[data-page="weather-page"]');
   if (!btn) return;
   WX_EnterWeatherPage();
 });
 
-/* ============================
-   F12 Debug helpers
-============================ */
+/* ---------------- F12 Debug ---------------- */
 window.WX_DEBUG = {
   city(i){ switchCity(i); },
   phase(name){
@@ -4405,13 +4405,11 @@ window.WX_DEBUG = {
     applySnowIntensity(page, !!on);
   },
   fakeLocalTimeHHMM(hh, mm){
-    const d = new Date();
-    d.setHours(hh, mm, 0, 0);
-    loadAndRenderWeather({ fakeNowMs: d.getTime() });
-  },
-  info(){ return wxLastSun; }
+    loadAndRenderWeather({ fakeLocalHHMM:{hh,mm} });
+  }
 };
 </script>
+
 
 
 

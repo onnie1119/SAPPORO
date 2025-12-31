@@ -2172,6 +2172,29 @@ body.nav-back #menuBtn > div{
 .swipe-content .transport-info{
   border-radius: inherit;
 }
+/* 編輯 modal：過渡動畫 */
+#itEditModal{
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+#itEditModal.show{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 盒子縮放進場 */
+#itEditModal .modal-box{
+  transform: translateY(8px) scale(0.96);
+  opacity: 0;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+#itEditModal.show .modal-box{
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
 
 </style>
 </head>
@@ -3098,7 +3121,7 @@ body.nav-back #menuBtn > div{
 			</div>
 
 		<!-- === Itinerary Edit Modal === -->
-<div id="itEditModal" class="modal-overlay" style="display:none;">
+<div id="itEditModal" class="modal-overlay" >
   <div class="modal-box">
     <h2 style="margin:0 0 14px; font-size:20px;">編輯行程</h2>
 
@@ -5423,28 +5446,38 @@ function openItEditModal(swipeItem){
   document.getElementById("itEditTime").value  = time;
   document.getElementById("itEditNote").value  = note;
 
-  modal.style.display = "flex";
+  // ✅ 開啟動畫
+  modal.classList.add("show");
+
+  // ✅ 讓輸入框自動 focus
+  setTimeout(() => document.getElementById("itEditPlace")?.focus(), 50);
 }
 
-function closeItEditModal(){
+function closeItEditModal({ autoCloseCard = true } = {}){
   const modal = document.getElementById("itEditModal");
   if (!modal) return;
-  modal.style.display = "none";
-  editingSwipeItem = null;
+
+  // ✅ 關閉動畫
+  modal.classList.remove("show");
+
+  // ✅ 關閉後卡片自動滑回（你要的）
+  if (autoCloseCard && editingSwipeItem) {
+    editingSwipeItem.classList.remove("open");
+  }
+
+  // 等動畫結束再清空
+  setTimeout(() => {
+    editingSwipeItem = null;
+  }, 200);
 }
 
-// 點遮罩關閉（點到 box 不關）
-document.getElementById("itEditModal")?.addEventListener("click", (e)=>{
-  if (e.target.id === "itEditModal") closeItEditModal();
-});
 
-document.getElementById("itEditCancel")?.addEventListener("click", closeItEditModal);
-
+// ===== 點編輯按鈕：開 modal =====
 document.getElementById("itEditSave")?.addEventListener("click", ()=>{
   if (!editingSwipeItem) return;
 
   const newPlace = document.getElementById("itEditPlace").value.trim();
-  const newTime  = document.getElementById("itEditTime").value.trim(); // "09:45"
+  const newTime  = document.getElementById("itEditTime").value.trim();
   const newNote  = document.getElementById("itEditNote").value.trim();
 
   const placeEl = editingSwipeItem.querySelector('[data-field="place"]');
@@ -5455,42 +5488,15 @@ document.getElementById("itEditSave")?.addEventListener("click", ()=>{
   if (timeEl)  timeEl.innerHTML = `<span class="icon-watch"></span>&nbsp;&nbsp;${newTime || ""}`;
   if (noteEl)  noteEl.textContent = newNote || "";
 
-  // ✅ 同步更新 Google Maps link（若你的 a 有 class it-link）
+  // ✅ 同步更新 Google Maps link
   const link = editingSwipeItem.querySelector("a.it-link");
   if (link){
     const mode = editingSwipeItem.dataset.mode || "driving";
     link.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(newPlace)}&travelmode=${encodeURIComponent(mode)}`;
   }
 
-  // 收起滑出狀態
-  editingSwipeItem.classList.remove("open");
-  closeItEditModal();
+  closeItEditModal({ autoCloseCard: true });
 });
-
-// ===== 點編輯按鈕：開 modal =====
-document.addEventListener("click", (e)=>{
-  const btn = e.target.closest(".edit-btn");
-  if (!btn) return;
-
-  const swipeItem = btn.closest(".swipe-item");
-  if (!swipeItem) return;
-
-  openItEditModal(swipeItem);
-});
-// ✅ 強制攔截「編輯」按鈕點擊，避免舊的 prompt 監聽器先跑
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".edit-btn");
-  if (!btn) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-  const swipeItem = btn.closest(".swipe-item");
-  if (!swipeItem) return;
-
-  openItEditModal(swipeItem); // 只開自訂 modal
-}, true); // ⭐ capture=true 先搶事件
 
 </script>
 </body>

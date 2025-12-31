@@ -4259,26 +4259,31 @@ class SnowBackground {
   }
 
   /* ✅ 底部 30% 漸層淡出遮罩：70%~100% 漸變到透明 */
-  _applyBottomFadeMask(){
-    const ctx = this.ctx;
-    const h = this.h;
+ _applyBottomFadeMask(){
+  const ctx = this.ctx;
 
-    const fadeStart = h * 0.70;
-    const fadeEnd   = h * 1.00;
+  // ⚠️ 用實際 canvas 像素高度（不是 CSS 高度）
+  const h = this.canvas.height / this.dpr;
+  const w = this.canvas.width  / this.dpr;
 
-    ctx.save();
-    ctx.globalCompositeOperation = "destination-in";
+  // ✅ 從 60% 就開始淡（比較明顯）
+  const fadeStart = h * 0.60;
+  const fadeEnd   = h * 0.98;
 
-    const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0.00, "rgba(255,255,255,1)");
-    g.addColorStop(fadeStart / h, "rgba(255,255,255,1)");
-    g.addColorStop(fadeEnd / h, "rgba(255,255,255,0)");
+  ctx.save();
+  ctx.globalCompositeOperation = "destination-in";
 
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, this.w, h);
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0.00, "rgba(255,255,255,1)");
+  g.addColorStop(fadeStart / h, "rgba(255,255,255,1)");
+  g.addColorStop(fadeEnd   / h, "rgba(255,255,255,0)");
 
-    ctx.restore();
-  }
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.restore();
+}
+
 
   _loop(now){
     const dt = clamp((now - this.last)/16.666, 0.5, 2.2);

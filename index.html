@@ -5138,42 +5138,44 @@ showDay = function(dayNumber, dir = "right") {
   window.addEventListener("resize", syncBarsHeight);
 </script>
 <script>
-// ===== Wx broadcast (24h note) single-instance guard =====
-let wxBroadcastTimer = null;
-let wxBroadcastSession = 0;
+// ===== Wx broadcast (24h note) 2-step, no flicker =====
+let wxNoteSession = 0;
+let wxNoteTimer = null;
 
-function stopWxBroadcast() {
-  wxBroadcastSession++;
-  if (wxBroadcastTimer) {
-    clearTimeout(wxBroadcastTimer);
-    wxBroadcastTimer = null;
+function wxNoteStop() {
+  wxNoteSession++;
+  if (wxNoteTimer) {
+    clearTimeout(wxNoteTimer);
+    wxNoteTimer = null;
   }
 }
 
-function setWxBroadcastTextFinal(finalText) {
+function wxNoteLoading(text = "載入中…") {
   const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
   if (!el) return;
-  el.textContent = finalText || "";
+
+  wxNoteStop();                 // ✅ 先停掉舊的，避免疊加
+  el.style.transition = "";     // loading 不做動畫，避免抖動
+  el.style.opacity = "1";
+  el.textContent = text;
 }
-function updateWxBroadcastText(finalText) {
+
+function wxNoteFinal(finalText) {
   const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
   if (!el) return;
 
-  // 先停掉舊流程，避免疊加造成閃爍
-  stopWxBroadcast();
-  const mySession = wxBroadcastSession;
+  const mySession = wxNoteSession;
 
-  // ✅ 只做一次平滑更新：先隱藏 → 換字 → 再顯示（不會閃多句）
-  el.style.transition = "opacity 120ms ease";
+  // ✅ 只做一次淡出→換字→淡入（不會閃多句）
+  el.style.transition = "opacity 140ms ease";
   el.style.opacity = "0";
 
-  wxBroadcastTimer = setTimeout(() => {
-    if (mySession !== wxBroadcastSession) return; // 被新的更新取代了就作廢
-
+  wxNoteTimer = setTimeout(() => {
+    if (mySession !== wxNoteSession) return; // 代表已經有更新/離開頁面，作廢
     el.textContent = finalText || "";
     el.style.opacity = "1";
-    wxBroadcastTimer = null;
-  }, 120);
+    wxNoteTimer = null;
+  }, 140);
 }
 
 

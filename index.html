@@ -2871,7 +2871,7 @@
 			    <!-- 24hr -->
 			    <div class="wx-card">
 			      
-			      <div class="wx-hourly-note" id="wxHourlyNote"><span class="icon-information-outline"></span> 載入中…</div>
+			      <div class="wx-hourly-note" id="wxHourlyNote">載入中…</div>
 			      <div class="wx-hourly" id="wxHourly"></div>
 			    </div>
 			
@@ -4374,11 +4374,11 @@ function ensureSnowCanvas(){
 function setBroadcastText(text){
   const noteEl = $("wxHourlyNote"); // 你原本的即時播報位置
   if (noteEl){
-    noteEl.textContent = text || " ";
+    noteEl.textContent = text || "<span class="icon-information-outline"></span>  ";
     return;
   }
   const bc = $("wxNowBroadcast");
-  if (bc) bc.textContent = text || " ";
+  if (bc) bc.textContent = text || "<span class="icon-information-outline"></span>  ";
 }
 
 function getPeriodLabel(localMs){

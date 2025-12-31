@@ -2166,10 +2166,6 @@ body.nav-back #menuBtn > div{
   border-radius: 0 14px 14px 0;
 }
 
-/* ⚠️ 如果你的 activity-card 自己有圓角，建議讓它吃滿並繼承 */
-.swipe-content .activity-card{
-  border-radius: inherit;
-}
 
 /* 連接處如果你有 transport-info，確保它也在同一個 swipe-content 裡
    並且不要自己做不同圓角 */
@@ -3101,6 +3097,21 @@ body.nav-back #menuBtn > div{
 			  </div>
 			</div>
 
+		<!-- === Itinerary Edit Modal === -->
+<div id="itEditModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h2 style="margin:0 0 14px; font-size:20px;">編輯行程</h2>
+
+    <input id="itEditPlace" type="text" placeholder="地點" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+    <input id="itEditTime" type="time" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+    <input id="itEditNote" type="text" placeholder="備註" style="width:100%; padding:12px; margin-bottom:18px; border-radius:8px; border:1px solid #ddd;">
+
+    <div style="display:flex; gap:12px;">
+      <button id="itEditCancel" class="btn-cancel" style="flex:1; padding:12px; border-radius:10px; border:0; background:#e6e6e6;">取消</button>
+      <button id="itEditSave" class="btn-confirm" style="flex:1; padding:12px; border-radius:10px; border:0; background:#d6507a; color:#fff; font-weight:700;">確定</button>
+    </div>
+  </div>
+</div>
 
 		</div>
 		
@@ -5390,6 +5401,82 @@ renderHourly24({
     card.classList.remove("open");
   });
 })();
+// ===== Itinerary Edit Modal controller =====
+let editingSwipeItem = null;
+
+function openItEditModal(swipeItem){
+  const modal = document.getElementById("itEditModal");
+  if (!modal) return;
+
+  editingSwipeItem = swipeItem;
+
+  const placeEl = swipeItem.querySelector('[data-field="place"]');
+  const timeEl  = swipeItem.querySelector('[data-field="time"]');
+  const noteEl  = swipeItem.querySelector('[data-field="note"]');
+
+  const place = placeEl ? placeEl.textContent.trim() : "";
+  const timeRaw = timeEl ? timeEl.textContent.trim() : "";
+  const time = (timeRaw.match(/\d{2}:\d{2}/)?.[0]) || "";
+  const note  = noteEl ? noteEl.textContent.trim() : "";
+
+  document.getElementById("itEditPlace").value = place;
+  document.getElementById("itEditTime").value  = time;
+  document.getElementById("itEditNote").value  = note;
+
+  modal.style.display = "flex";
+}
+
+function closeItEditModal(){
+  const modal = document.getElementById("itEditModal");
+  if (!modal) return;
+  modal.style.display = "none";
+  editingSwipeItem = null;
+}
+
+// 點遮罩關閉（點到 box 不關）
+document.getElementById("itEditModal")?.addEventListener("click", (e)=>{
+  if (e.target.id === "itEditModal") closeItEditModal();
+});
+
+document.getElementById("itEditCancel")?.addEventListener("click", closeItEditModal);
+
+document.getElementById("itEditSave")?.addEventListener("click", ()=>{
+  if (!editingSwipeItem) return;
+
+  const newPlace = document.getElementById("itEditPlace").value.trim();
+  const newTime  = document.getElementById("itEditTime").value.trim(); // "09:45"
+  const newNote  = document.getElementById("itEditNote").value.trim();
+
+  const placeEl = editingSwipeItem.querySelector('[data-field="place"]');
+  const timeEl  = editingSwipeItem.querySelector('[data-field="time"]');
+  const noteEl  = editingSwipeItem.querySelector('[data-field="note"]');
+
+  if (placeEl) placeEl.textContent = newPlace || "";
+  if (timeEl)  timeEl.innerHTML = `<span class="icon-watch"></span>&nbsp;&nbsp;${newTime || ""}`;
+  if (noteEl)  noteEl.textContent = newNote || "";
+
+  // ✅ 同步更新 Google Maps link（若你的 a 有 class it-link）
+  const link = editingSwipeItem.querySelector("a.it-link");
+  if (link){
+    const mode = editingSwipeItem.dataset.mode || "driving";
+    link.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(newPlace)}&travelmode=${encodeURIComponent(mode)}`;
+  }
+
+  // 收起滑出狀態
+  editingSwipeItem.classList.remove("open");
+  closeItEditModal();
+});
+
+// ===== 點編輯按鈕：開 modal =====
+document.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".edit-btn");
+  if (!btn) return;
+
+  const swipeItem = btn.closest(".swipe-item");
+  if (!swipeItem) return;
+
+  openItEditModal(swipeItem);
+});
 
 </script>
 </body>

@@ -2018,6 +2018,32 @@
 /* 進入第二層：顯示返回、隱藏漢堡 */
 .nav-back #menuBtn { display: none; }
 .nav-back #backBtn { display: flex; }
+/* 預設：返回 icon 隱藏 */
+#menuBtn .icon-arrow-left{
+  display: none;
+}
+
+/* ✅ 進入 back 模式：隱藏三條線（before / div / after），顯示返回 icon */
+body.nav-back #menuBtn::before,
+body.nav-back #menuBtn::after,
+body.nav-back #menuBtn > div{
+  opacity: 0;
+  visibility: hidden;
+}
+
+body.nav-back #menuBtn .icon-arrow-left{
+  display: inline-flex;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 可選：讓 icon 垂直置中 */
+#menuBtn{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 </style>
 </head>
@@ -2025,8 +2051,9 @@
 	<div class="topbar" id="topbar">
   		<button class="menu-btn" id="menuBtn" aria-label="menu">
     		<div></div> <!-- 這是中間的線 -->
+			<span class="icon-arrow-left"></span>
   		</button>
-		<button id="backBtn" class="back-btn"><span class="icon-home"></span></button>
+		
 	</div>
 	<nav class="bottom-nav">
 		<button data-page="home-page" class="active">
@@ -3828,12 +3855,12 @@ function scrollCurrentPageToTop(behavior = "auto") {
 ========================= */
 function setNavBack() {
   navMode = "back";
-  document.body.classList.add("nav-back"); // CSS 會讓 #backBtn 顯示、#menuBtn 隱藏
+  document.body.classList.add("nav-back");
 }
 
 function resetNavMenu() {
   navMode = "menu";
-  document.body.classList.remove("nav-back"); // CSS 會讓 #menuBtn 顯示、#backBtn 隱藏
+  document.body.classList.remove("nav-back");
 }
 
 /* =========================
@@ -3929,7 +3956,19 @@ if (scrollBtn) {
 /* =========================
    Menu（iOS 全螢幕）
 ========================= */
-const menuBtn   = document.getElementById("menuBtn");
+const menuBtn = document.getElementById("menuBtn");
+
+menuBtn.addEventListener("click", (e) => {
+  if (navMode === "back") {
+    e.preventDefault();
+    backToTicketList();   // 你原本就有：回票據清單
+    resetNavMenu();       // 回漢堡
+  } else {
+    openMenu();           // 你原本就有：開選單
+  }
+});
+
+		
 const backBtn   = document.getElementById("backBtn");
 const menuClose = document.getElementById("menuClose");
 const iosMenu   = document.getElementById("iosFullMenu");

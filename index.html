@@ -4783,7 +4783,15 @@ showDay = function(dayNumber, dir = "right") {
   window.addEventListener("resize", syncBarsHeight);
 </script>
 <script>
-	
+	// ✅ 保底用：避免 showPage() 爆掉
+window.resetNavMenu = window.resetNavMenu || function(){
+  const menuBtn = document.getElementById("menuBtn");
+  if (!menuBtn) return;
+
+  menuBtn.classList.remove("back");
+  menuBtn.innerHTML = '<div></div>'; // 還原中間線
+};
+
 </script>
 </body>
 </html>

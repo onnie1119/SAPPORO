@@ -4638,7 +4638,16 @@ function nearestIndex(timesLocalMs, eventLocalMs){
   return best;
 }
 
-function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLocalMs }){
+function renderHourly24({
+  hourlyUnix,
+  temps,
+  codes,
+  offsetSec,
+  sunByDate,
+  nowLocalMs,
+  current
+}){
+
   const wrap = $("wxHourly");
   if (!wrap) return;
 
@@ -4658,19 +4667,17 @@ function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLoc
   const sunsetIdx  = Number.isFinite(sunsetEvent)  ? nearestIndex(timesLocalMs, sunsetEvent)  : -1;
 
   wrap.innerHTML = timesLocalMs.map((hourLocalMs, i)=>{
-   let tempC, codeN;
+  let tempC, codeN;
 
-if (i === 0) {
-  // ⭐「現在」強制使用 current_weather
-  tempC = Math.round(data.current_weather.temperature);
-  codeN = normalizeWeatherCode(
-    data.current_weather.weathercode,
-    tempC
-  );
+if (i === 0 && current) {
+  // ⭐「現在」：強制用 current_weather
+  tempC = current.temp;
+  codeN = current.code;
 } else {
   tempC = temps[i];
   codeN = normalizeWeatherCode(codes[i], tempC);
 }
+
 
     const key = localDateKey(hourLocalMs);
     const sun = sunByDate.get(key) || sunByDate.get(localDateKey(nowLocalMs));
@@ -4817,13 +4824,18 @@ async function loadAndRenderWeather(){
     }));
 
     renderHourly24({
-      hourlyUnix: sliceUnix,
-      temps: sliceTemps,
-      codes: sliceCodes,
-      offsetSec,
-      sunByDate,
-      nowLocalMs
-    });
+  hourlyUnix: sliceUnix,
+  temps: sliceTemps,
+  codes: sliceCodes,
+  offsetSec,
+  sunByDate,
+  nowLocalMs,
+  current: {
+    temp: Math.round(tempNow),
+    code: codeNowN
+  }
+});
+
 
     renderWeek({ daily: data?.daily });
 

@@ -2082,6 +2082,21 @@ body.nav-back #menuBtn > div{
   opacity: 0 !important;
   visibility: hidden !important;
 }
+		
+/* ✅ 非天氣頁：一律關掉雪（含偽元素動畫） */
+body:not(.weather-active)::before,
+body:not(.weather-active)::after,
+body:not(.weather-active) #app-root::before,
+body:not(.weather-active) #app-root::after,
+body:not(.weather-active) .container::before,
+body:not(.weather-active) .container::after {
+  content: none !important;
+  background: none !important;
+  background-image: none !important;
+  animation: none !important;
+  filter: none !important;
+  opacity: 0 !important;
+}
 
 </style>
 </head>

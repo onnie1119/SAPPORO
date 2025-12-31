@@ -2010,6 +2010,15 @@
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
 }
+
+/* 預設：顯示漢堡、隱藏返回 */
+#menuBtn { display: flex; }
+#backBtn { display: none; }
+
+/* 進入第二層：顯示返回、隱藏漢堡 */
+.nav-back #menuBtn { display: none; }
+.nav-back #backBtn { display: flex; }
+
 </style>
 </head>
 <body>
@@ -3784,296 +3793,286 @@
 	</script>
 	<script>
   /* =========================
-     Pages / Navigation
-  ========================= */
-  const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
-  let currentPageId = "home-page";
+   Pages / Navigation
+========================= */
+const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
+let currentPageId = "home-page";
 
-  function getCurrentPage() {
-    return document.getElementById(currentPageId);
+/* =========================
+   安全呼叫：外部函式不存在也不會把整段弄掛
+========================= */
+function safeCall(fn, ...args) {
+  try {
+    if (typeof fn === "function") return fn(...args);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/* =========================
+   Page helpers
+========================= */
+function getCurrentPage() {
+  return document.getElementById(currentPageId);
+}
+
+function scrollCurrentPageToTop(behavior = "auto") {
+  const page = getCurrentPage();
+  if (page) page.scrollTo({ top: 0, behavior });
+}
+
+/* =========================
+   Top-left icon mode (menu/back)
+   ✅ 你的結構：menuBtn(CSS漢堡) + backBtn(icon)
+   ✅ 用 body.nav-back 切換顯示
+========================= */
+let navMode = "menu"; // "menu" | "back"
+
+function setNavBack() {
+  navMode = "back";
+  document.body.classList.add("nav-back"); // CSS 會讓 #backBtn 顯示、#menuBtn 隱藏
+}
+
+function resetNavMenu() {
+  navMode = "menu";
+  document.body.classList.remove("nav-back"); // CSS 會讓 #menuBtn 顯示、#backBtn 隱藏
+}
+
+/* =========================
+   Show Page（核心切頁）
+========================= */
+function showPage(targetId) {
+  if (!PAGES.includes(targetId)) return;
+
+  // ✅ 離開 ticket-page → 回清單 + 漢堡
+  if (currentPageId === "ticket-page" && targetId !== "ticket-page") {
+    safeCall(window.resetTicketPage); // 若有定義：票據回到清單
+    resetNavMenu();
   }
 
-  function scrollCurrentPageToTop(behavior = "auto") {
-    const page = getCurrentPage();
-    if (page) page.scrollTo({ top: 0, behavior });
+  // ✅ 進入 ticket-page → 一律顯示清單 + 漢堡（你原本需求）
+  if (targetId === "ticket-page") {
+    safeCall(window.resetTicketPage);
+    resetNavMenu();
   }
 
-  /* =========================
-     Top-left icon mode (menu/back)
-     ✅ 解掉 resetNavMenu undefined
-  ========================= */
- 
-
-  function setNavBack() {
-    navMode = "back";
-    // 如果你有做 icon class 切換，在這裡加：
-    // menuBtn?.classList.add("is-back");
-    // menuBtn?.classList.remove("is-menu");
+  // weather page init
+  if (targetId === "weather-page") {
+    safeCall(window.initWeatherPageOnce);
+    safeCall(window.renderDots);
+    safeCall(window.loadAndRenderWeather);
+    safeCall(window.WX_EnterWeatherPage);
   }
 
-  function resetNavMenu() {
-    navMode = "menu";
-    // menuBtn?.classList.remove("is-back");
-    // menuBtn?.classList.add("is-menu");
-  }
-
-  // ✅ 安全呼叫：外部函式不存在也不會把整個 showPage 弄掛
-  function safeCall(fn, ...args) {
-    try {
-      if (typeof fn === "function") fn(...args);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  function showPage(targetId) {
-    if (!PAGES.includes(targetId)) return;
-
-    // ✅ 只要「離開 ticket-page」就重置票據 & 左上按鈕
-    if (currentPageId === "ticket-page" && targetId !== "ticket-page") {
-      safeCall(window.resetTicketPage); // 票據回到清單（若有定義）
-      resetNavMenu();                   // 左上角回漢堡
-    }
-
-    // ✅ 只要「進入 ticket-page」也確保是清單狀態 + 漢堡
-    if (targetId === "ticket-page") {
-      safeCall(window.resetTicketPage);
-      resetNavMenu();
-    }
-
-    // weather page init
-    if (targetId === "weather-page") {
-      safeCall(window.initWeatherPageOnce);
-      safeCall(window.renderDots);
-      safeCall(window.loadAndRenderWeather);
-      safeCall(window.WX_EnterWeatherPage);
-    }
-
-    // 先關掉全部 page
-    PAGES.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.remove("page-active");
-      el.style.display = "none";
-    });
-
-    // 再打開目標 page
-    const target = document.getElementById(targetId);
-    if (!target) return;
-
-    target.style.display = "block";
-    currentPageId = targetId;
-
-    // ✅ Bottom nav active 樣式（如果你希望切頁就同步高亮）
-    safeCall(window.setBottomNavActive, targetId);
-
-    requestAnimationFrame(() => {
-      target.classList.add("page-active");
-      target.scrollTop = 0;
-      bindScrollListener();
-    });
-  }
-
-  function setBottomNavActive(pageId) {
-    document.querySelectorAll(".bottom-nav button").forEach(b => {
-      b.classList.toggle("active", b.dataset.page === pageId);
-    });
-  }
-
-  // 如果你外部也會用到，掛到 window
-  window.showPage = showPage;
-  window.setBottomNavActive = setBottomNavActive;
-  window.setNavBack = setNavBack;
-  window.resetNavMenu = resetNavMenu;
-
-  /* =========================
-     TOP button（scroll to top）
-  ========================= */
-  const scrollBtn = document.getElementById("scrollToTop");
-
-  function bindScrollListener() {
-    const page = getCurrentPage();
-    if (!page || !scrollBtn) return;
-
-    // 只有 home-page 顯示
-    if (currentPageId !== "home-page") {
-      scrollBtn.classList.remove("show");
-      page.onscroll = null;
-      return;
-    }
-
-    page.onscroll = () => {
-      if (page.scrollTop > 300) scrollBtn.classList.add("show");
-      else scrollBtn.classList.remove("show");
-    };
-  }
-
-  if (scrollBtn) {
-    scrollBtn.addEventListener("click", () => {
-      scrollCurrentPageToTop("smooth");
-    });
-  }
-
-  /* =========================
-     Menu（iOS 全螢幕）
-     ✅ 合併成一個 click handler，避免 addEventListener + onclick 打架
-  ========================= */
-  const menuBtn   = document.getElementById("menuBtn");
-  const menuClose = document.getElementById("menuClose");
-  const iosMenu   = document.getElementById("iosFullMenu");
-  const topbar    = document.querySelector(".topbar");
-
-  function openMenu() {
-    if (!iosMenu) return;
-    iosMenu.style.display = "flex";
-    if (topbar) topbar.style.display = "none";
-  }
-
-  function closeMenu() {
-    if (!iosMenu) return;
-    iosMenu.style.display = "none";
-    if (topbar) topbar.style.display = "flex";
-  }
-
-  if (menuBtn) {
-    menuBtn.addEventListener("click", (e) => {
-      // back 模式：回票據清單
-      if (navMode === "back") {
-        e.preventDefault();
-        e.stopPropagation();
-        // 你原本的 backToTicketList()
-        safeCall(window.backToTicketList);
-        // 回清單後把 icon 回漢堡
-        resetNavMenu();
-        return;
-      }
-
-      // menu 模式：開選單
-      openMenu();
-    });
-  }
-
-  if (menuClose) {
-    menuClose.addEventListener("click", closeMenu);
-  }
-
-  // menu 項目
-  document.querySelectorAll(".menu-content li").forEach(li => {
-    li.addEventListener("click", () => {
-      const target = li.dataset.target;
-      closeMenu();
-      showPage(target);
-    });
+  // 關掉全部 page
+  PAGES.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove("page-active");
+    el.style.display = "none";
   });
 
-  /* =========================
-     Splash → App 啟動
-  ========================= */
-  document.addEventListener("DOMContentLoaded", () => {
-    const splash = document.getElementById("app-splash");
-    const app    = document.getElementById("app-root");
+  // 打開目標 page
+  const target = document.getElementById(targetId);
+  if (!target) return;
 
-    PAGES.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = "none";
-    });
+  target.style.display = "block";
+  currentPageId = targetId;
 
-    const images = [...document.images];
-    let loaded = 0;
+  // Bottom nav active 樣式（如果外部有用）
+  safeCall(window.setBottomNavActive, targetId);
 
-    function finish() {
+  requestAnimationFrame(() => {
+    target.classList.add("page-active");
+    target.scrollTop = 0;
+    bindScrollListener();
+  });
+}
+
+function setBottomNavActive(pageId) {
+  document.querySelectorAll(".bottom-nav button").forEach(b => {
+    b.classList.toggle("active", b.dataset.page === pageId);
+  });
+}
+
+/* 對外可呼叫 */
+window.showPage = showPage;
+window.setBottomNavActive = setBottomNavActive;
+window.setNavBack = setNavBack;
+window.resetNavMenu = resetNavMenu;
+
+/* =========================
+   TOP button（scroll to top）
+========================= */
+const scrollBtn = document.getElementById("scrollToTop");
+
+function bindScrollListener() {
+  const page = getCurrentPage();
+  if (!page || !scrollBtn) return;
+
+  if (currentPageId !== "home-page") {
+    scrollBtn.classList.remove("show");
+    page.onscroll = null;
+    return;
+  }
+
+  page.onscroll = () => {
+    if (page.scrollTop > 300) scrollBtn.classList.add("show");
+    else scrollBtn.classList.remove("show");
+  };
+}
+
+if (scrollBtn) {
+  scrollBtn.addEventListener("click", () => {
+    scrollCurrentPageToTop("smooth");
+  });
+}
+
+/* =========================
+   Menu（iOS 全螢幕）
+========================= */
+const menuBtn   = document.getElementById("menuBtn");
+const backBtn   = document.getElementById("backBtn");
+const menuClose = document.getElementById("menuClose");
+const iosMenu   = document.getElementById("iosFullMenu");
+const topbar    = document.querySelector(".topbar");
+
+function openMenu() {
+  if (!iosMenu) return;
+  iosMenu.style.display = "flex";
+  if (topbar) topbar.style.display = "none";
+}
+
+function closeMenu() {
+  if (!iosMenu) return;
+  iosMenu.style.display = "none";
+  if (topbar) topbar.style.display = "flex";
+}
+
+/* ✅ menuBtn：只負責「開選單」（因為 back 模式時 menuBtn 會被 CSS 隱藏） */
+if (menuBtn) {
+  menuBtn.addEventListener("click", () => {
+    openMenu();
+  });
+}
+
+/* ✅ backBtn：回票據清單 + 切回漢堡 */
+if (backBtn) {
+  backBtn.addEventListener("click", () => {
+    safeCall(window.backToTicketList);
+    resetNavMenu();
+  });
+}
+
+if (menuClose) {
+  menuClose.addEventListener("click", closeMenu);
+}
+
+// menu 項目
+document.querySelectorAll(".menu-content li").forEach(li => {
+  li.addEventListener("click", () => {
+    const target = li.dataset.target;
+    closeMenu();
+    showPage(target);
+  });
+});
+
+/* =========================
+   Splash → App 啟動
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const splash = document.getElementById("app-splash");
+  const app    = document.getElementById("app-root");
+
+  PAGES.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+
+  const images = [...document.images];
+  let loaded = 0;
+
+  function finish() {
+    setTimeout(() => {
+      if (splash) splash.classList.add("hide");
       setTimeout(() => {
-        if (splash) splash.classList.add("hide");
-        setTimeout(() => {
-          if (splash) splash.remove();
-          if (app) app.classList.add("show");
+        if (splash) splash.remove();
+        if (app) app.classList.add("show");
 
-          showPage("home-page");
+        showPage("home-page");
 
-          // 你原本有 isFirstHomeRender / applyInitialHomeOffset
-          if (window.isFirstHomeRender) {
-            safeCall(window.applyInitialHomeOffset);
-          } else {
-            // 保底讓 home 重新綁 TOP
-            bindScrollListener();
-          }
-        }, 400);
-      }, 1800);
-    }
+        if (window.isFirstHomeRender) {
+          safeCall(window.applyInitialHomeOffset);
+        } else {
+          bindScrollListener();
+        }
+      }, 400);
+    }, 1800);
+  }
 
-    if (images.length === 0) {
-      finish();
-      return;
-    }
+  if (images.length === 0) {
+    finish();
+    return;
+  }
 
-    images.forEach(img => {
-      if (img.complete) {
+  images.forEach(img => {
+    if (img.complete) {
+      loaded++;
+      if (loaded === images.length) finish();
+    } else {
+      img.onload = img.onerror = () => {
         loaded++;
         if (loaded === images.length) finish();
-      } else {
-        img.onload = img.onerror = () => {
-          loaded++;
-          if (loaded === images.length) finish();
-        };
-      }
-    });
+      };
+    }
+  });
+});
+
+/* =========================
+   對外可呼叫（給你用）
+========================= */
+window.showHome     = () => showPage("home-page");
+window.showPacking  = () => showPage("packing-page");
+window.showTicket   = () => showPage("ticket-page");
+window.showExchange = () => showPage("exchange-page");
+window.showWeather  = () => showPage("weather-page");
+
+// applyInitialHomeOffset（保留，但加安全）
+window.applyInitialHomeOffset = window.applyInitialHomeOffset || function () {
+  const home = document.getElementById("home-page");
+  const tb = document.querySelector(".topbar");
+  if (!home || !tb) return;
+
+  home.style.marginTop = "0px";
+  requestAnimationFrame(() => {
+    home.scrollTop = 0;
+    bindScrollListener();
   });
 
-  /* =========================
-     對外可呼叫（給你用）
-  ========================= */
-  window.showHome     = () => showPage("home-page");
-  window.showPacking  = () => showPage("packing-page");
-  window.showTicket   = () => showPage("ticket-page");
-  window.showExchange = () => showPage("exchange-page");
-  window.showWeather  = () => showPage("weather-page");
+  window.isFirstHomeRender = false;
+};
 
-  // 你原本的 applyInitialHomeOffset（保留，但加安全）
-  window.applyInitialHomeOffset = window.applyInitialHomeOffset || function () {
-    const home = document.getElementById("home-page");
-    const tb = document.querySelector(".topbar");
-    if (!home || !tb) return;
+/* =========================
+   Bottom nav click
+========================= */
+document.querySelectorAll(".bottom-nav button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const page = btn.dataset.page;
 
-    home.style.marginTop = "0px";
-    requestAnimationFrame(() => {
-      home.scrollTop = 0;
-      bindScrollListener();
-    });
+    showPage(page);
 
-    window.isFirstHomeRender = false;
-  };
-
-  /* =========================
-     Bottom nav click
-  ========================= */
-  document.querySelectorAll(".bottom-nav button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const page = btn.dataset.page;
-      showPage(page);
-
-      // active 樣式
-      document.querySelectorAll(".bottom-nav button")
-        .forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-    });
+    document.querySelectorAll(".bottom-nav button")
+      .forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
   });
+});
+
 </script>
 
 <script>
 /* =========================================================
    Weather Page – FULL JS (Fix ReferenceError + runnable)
-   ---------------------------------------------------------
-   ✅ Defines global: initWeatherPageOnce / WX_EnterWeatherPage / WX_DEBUG
-   ✅ open-meteo: timezone=auto + timeformat=unixtime
-   ✅ 24hr: 第0格=現在，其餘=上午/下午1~12時
-   ✅ sunrise/sunset: 插入 icon（不顯示文字）
-   ✅ icon: sunrise後白天、sunset後夜晚（night_ 開頭）
-   ✅ Snow Canvas: flurry/snow/heavySnow
-      - feathered soft edge (radial gradient)
-      - natural micro turbulence (no obvious left-right swinging)
-      - bottom fade mask (last 30% gradually disappears)
-      - continuous loop, no blank gap
-   ✅ Broadcast: one sentence only (changes first, else tip)
+
 ========================================================= */
 
 /* ---------------- Config ---------------- */

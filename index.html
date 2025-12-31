@@ -3945,6 +3945,11 @@ if (targetId === "weather-page") {
     safeCall(window.loadAndRenderWeather);
     safeCall(window.WX_EnterWeatherPage);
   }
+// ✅ 只要離開天氣頁，就立刻關雪（而且再補一刀）
+if (currentPageId === "weather-page" && targetId !== "weather-page") {
+  killSnowNow();
+  killSnowAfterFrame();
+}
 
   // 關掉全部 page
   PAGES.forEach(id => {
@@ -5133,7 +5138,28 @@ showDay = function(dayNumber, dir = "right") {
   window.addEventListener("resize", syncBarsHeight);
 </script>
 <script>
-	
+	function killSnowNow() {
+  // 1) 關掉所有可能觸發雪的 class（你有用到什麼就加什麼）
+  document.body.classList.remove("snowing", "snow", "weather-snow", "wx-snow", "nav-snow");
+  document.body.classList.remove("weather-active"); // 如果你採用這個頁面狀態
+
+  // 2) 清掉可能的雪層（你可再加你實際的 id/class）
+  document.querySelectorAll(
+    "#snowCanvas, #snowLayer, .snow-layer, .snowflakes, .snowflake"
+  ).forEach(el => el.remove());
+
+  // 3) 如果雪是偽元素或背景動畫：用 inline style 強制關（保底）
+  document.documentElement.style.setProperty("--snow-on", "0");
+}
+
+function killSnowAfterFrame() {
+  requestAnimationFrame(() => {
+    killSnowNow();
+    // 再延遲一點點抓 setTimeout/transition 後才出現的情況
+    setTimeout(killSnowNow, 50);
+  });
+}
+
 </script>
 </body>
 </html>

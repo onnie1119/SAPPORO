@@ -4567,10 +4567,13 @@ function bindWeatherSwipe(){
   },{passive:true});
 }
 function initWeatherPageOnce(){
-  if (wxInited) return;
-  wxInited = true;
+  if (window.__wxInited) return;
+  window.__wxInited = true;
 
   renderDots();
+  bindWeatherSwipe();
+}
+
 
   const dots = $("wxDots");
   if (dots){

@@ -2115,6 +2115,67 @@ body.nav-back #menuBtn > div{
 .swipe-item.open .swipe-content{
   transform: translateX(-92px);
 }
+/* ✅ 外框：左直角、右圓角（右邊沿用你卡片圓角） */
+.swipe-item{
+  position: relative;
+  overflow: hidden;
+
+  /* 左邊直角，右邊圓角 */
+  border-radius: 0 14px 14px 0; /* 14px 改成你 activity-card 的圓角 */
+}
+
+/* ✅ 讓 actions / content 高度完全一致 */
+.swipe-actions,
+.swipe-content{
+  height: 100%;
+}
+
+/* actions 要撐滿整張卡 */
+.swipe-actions{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;  /* 讓按鈕撐滿高度 */
+}
+
+/* ✅ 按鈕：左直角，右圓角 + 高度滿版 */
+.swipe-btn{
+  width: 92px;                 /* 你要的按鈕寬 */
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-weight: 800;
+  color: #fff;
+
+  /* 左邊直角，右邊圓角 */
+  border-radius: 0 14px 14px 0;
+}
+
+/* 讓按鈕內容置中 */
+.swipe-btn.edit-btn{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2f6df6;
+}
+
+/* ✅ 卡片本體也要同樣右圓角、左直角，才會銜接一致 */
+.swipe-content{
+  border-radius: 0 14px 14px 0;
+}
+
+/* ⚠️ 如果你的 activity-card 自己有圓角，建議讓它吃滿並繼承 */
+.swipe-content .activity-card{
+  border-radius: inherit;
+}
+
+/* 連接處如果你有 transport-info，確保它也在同一個 swipe-content 裡
+   並且不要自己做不同圓角 */
+.swipe-content .transport-info{
+  border-radius: inherit;
+}
 
 </style>
 </head>

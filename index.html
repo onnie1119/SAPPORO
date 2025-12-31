@@ -5138,39 +5138,27 @@ showDay = function(dayNumber, dir = "right") {
   window.addEventListener("resize", syncBarsHeight);
 </script>
 <script>
-let snowRAF = null;
-let snowTimer = null;
+	function killSnowNow() {
+  // 1) 關掉所有可能觸發雪的 class（你有用到什麼就加什麼）
+  document.body.classList.remove("snowing", "snow", "weather-snow", "wx-snow", "nav-snow");
+  document.body.classList.remove("weather-active"); // 如果你採用這個頁面狀態
 
-function startSnow() {
-  // 如果你原本有雪動畫啟動函式，把內容放這裡
-  // 例如：snowRAF = requestAnimationFrame(loop);
-  document.body.classList.add("snowing"); // 如果你是用 class 觸發雪
-}
-
-function stopSnow() {
-  // 1) 停掉 JS 動畫
-  if (snowRAF) cancelAnimationFrame(snowRAF);
-  snowRAF = null;
-
-  if (snowTimer) clearInterval(snowTimer);
-  snowTimer = null;
-
-  // 2) 關掉 CSS 觸發
-  document.body.classList.remove("snowing");
-
-  // 3) 清掉可能殘留的雪容器/雪花（按你的實作加減）
+  // 2) 清掉可能的雪層（你可再加你實際的 id/class）
   document.querySelectorAll(
     "#snowCanvas, #snowLayer, .snow-layer, .snowflakes, .snowflake"
   ).forEach(el => el.remove());
+
+  // 3) 如果雪是偽元素或背景動畫：用 inline style 強制關（保底）
+  document.documentElement.style.setProperty("--snow-on", "0");
 }
 
-// 雙保險：防止切頁後才又被延遲觸發
-function stopSnowHard() {
-  stopSnow();
-  requestAnimationFrame(() => stopSnow());
-  setTimeout(stopSnow, 50);
+function killSnowAfterFrame() {
+  requestAnimationFrame(() => {
+    killSnowNow();
+    // 再延遲一點點抓 setTimeout/transition 後才出現的情況
+    setTimeout(killSnowNow, 50);
+  });
 }
-
 
 </script>
 </body>

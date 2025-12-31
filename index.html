@@ -2044,6 +2044,38 @@ body.nav-back #menuBtn .icon-arrow-left{
   align-items: center;
   justify-content: center;
 }
+/* 1) back 模式時，讓 menuBtn 有足夠的尺寸與對齊 */
+body.nav-back #menuBtn{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;          /* 避免裁切 icon */
+}
+
+/* 2) 讓 arrow icon 有明確大小 */
+body.nav-back #menuBtn .icon-arrow-left{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;            /* 你要的大小可調 */
+  line-height: 1;
+  width: 24px;                /* 給它寬高，避免 0 尺寸 */
+  height: 24px;
+}
+
+/* 3) 防止被其他元素/線條蓋住 */
+body.nav-back #menuBtn .icon-arrow-left{
+  position: relative;
+  z-index: 10;
+}
+
+/* 4) back 模式把三條線徹底隱藏（包含你中間那條 div） */
+body.nav-back #menuBtn::before,
+body.nav-back #menuBtn::after,
+body.nav-back #menuBtn > div{
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
 
 </style>
 </head>

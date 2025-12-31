@@ -4821,7 +4821,7 @@ if (i === 0 && current) {
   }).join("");
 }
 
-function renderWeek({ daily }){
+function renderWeek({ daily, nowLocalMs, offsetSec }){
   const wrap = $("wxWeek");
   if (!wrap) return;
 
@@ -4837,8 +4837,46 @@ function renderWeek({ daily }){
   const allMax = Math.max(...maxArr.slice(0,n).map(Number));
   const span = Math.max(1, allMax - allMin);
 
-  wrap.innerHTML = Array.from({length:n}).map((_,i)=>{
-    const label = (i===0) ? "今日" : `週${["日","一","二","三","四","五","六"][new Date((times[i])*1000).getUTCDay()]}`;
+  // ✅ 用天氣所在地的「今日」去對齊 daily.time 的 index（避免停留在昨天）
+  const todayKey = (typeof nowLocalMs === "number")
+    ? localDateKey(nowLocalMs)
+    : null;
+
+  let startIdx = 0;
+  if (todayKey) {
+    const idx = times.findIndex(t => String(t) === todayKey);
+    if (idx >= 0) startIdx = idx;
+  }
+
+  const weekMap = ["日","一","二","三","四","五","六"];
+
+  function weekLabelFromDailyTime(t){
+    // Open-Meteo daily.time 常見是 "YYYY-MM-DD"
+    if (typeof t === "string" && /^\d{4}-\d{2}-\d{2}$/.test(t)) {
+      const [y,m,d] = t.split("-").map(Number);
+      const dt = new Date(y, m-1, d); // 用本地日期即可（不走 UTC 秒）
+      return `週${weekMap[dt.getDay()]}`;
+    }
+
+    // 若真的回 unix 秒數
+    const sec = Number(t);
+    if (Number.isFinite(sec)) {
+      // 轉成當地毫秒（用 offsetSec）
+      const ms = (sec + (Number(offsetSec)||0)) * 1000;
+      const dt = new Date(ms);
+      return `週${weekMap[dt.getDay()]}`;
+    }
+
+    return "";
+  }
+
+  const rows = [];
+  for (let k=0; k<n; k++){
+    const i = startIdx + k;
+    if (i >= times.length) break;
+
+    const label = (k===0) ? "今日" : weekLabelFromDailyTime(times[i]);
+
     const minT = Math.round(minArr[i]);
     const maxT = Math.round(maxArr[i]);
     const codeN = normalizeWeatherCode(codes[i], (minArr[i]+maxArr[i])/2);
@@ -4847,7 +4885,7 @@ function renderWeek({ daily }){
     const leftPct = ((minT - allMin)/span)*100;
     const widthPct = ((maxT - minT)/span)*100;
 
-    return `
+    rows.push(`
       <div class="wx-week-row">
         <div class="wx-week-day">${label}</div>
         <img class="wx-week-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
@@ -4857,9 +4895,12 @@ function renderWeek({ daily }){
         </div>
         <div class="wx-week-max">${maxT}°</div>
       </div>
-    `;
-  }).join("");
+    `);
+  }
+
+  wrap.innerHTML = rows.join("");
 }
+
 
 
 
@@ -5122,7 +5163,8 @@ renderHourly24({
   }
 });
 
-    renderWeek({ daily: data?.daily });
+   renderWeek({ daily: data?.daily, nowLocalMs, offsetSec });
+
 
   }catch(err){
     console.error(err);

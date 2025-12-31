@@ -4427,15 +4427,38 @@ function dominantKind(codes){
 
 function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
   const tips = [];
-  if (isSnowCode(codeNowN)) tips.push("路面可能結冰或濕滑，走路/開車放慢速度");
-  if (isRainCode(codeNowN)) tips.push("外出記得帶傘，注意鞋子防滑");
-  if (Number.isFinite(minT) && minT <= -5) tips.push("低溫注意保暖，手套/圍巾建議備著");
-  if (Number.isFinite(tempNow) && tempNow <= 0) tips.push("氣溫偏低，建議洋蔥式穿搭");
-  if (Number.isFinite(minT) && Number.isFinite(maxT) && (maxT - minT) >= 10) tips.push("日夜溫差大，外套建議隨身");
-  if (Number.isFinite(windNow) && windNow >= 25) tips.push("風較強，體感更冷，帽子/防風外套更舒適");
-  if ([45,48].includes(codeNowN)) tips.push("能見度可能較差，行車留意安全距離");
-  if (!tips.length) tips.push("天氣較穩定，出門前可再確認降水機率與體感溫度");
- return tips[Math.floor(Math.random() * tips.length)];
+
+  if (isSnowCode(codeNowN))
+    tips.push("路面可能結冰或濕滑，行走與行車請放慢速度");
+
+  if (isRainCode(codeNowN))
+    tips.push("外出可能遇雨，記得攜帶雨具並留意防滑");
+
+  if (Number.isFinite(minT) && minT <= -5)
+    tips.push("今日低溫明顯，外出請特別注意保暖");
+
+  if (Number.isFinite(tempNow) && tempNow <= 0)
+    tips.push("氣溫偏低，建議洋蔥式穿搭以調整體感");
+
+  if (
+    Number.isFinite(minT) &&
+    Number.isFinite(maxT) &&
+    (maxT - minT) >= 10
+  )
+    tips.push("日夜溫差較大，外套建議隨身攜帶");
+
+  if (Number.isFinite(windNow) && windNow >= 25)
+    tips.push("風勢偏強，體感溫度可能更低");
+
+  if ([45,48].includes(codeNowN))
+    tips.push("能見度可能下降，行車請留意安全距離");
+
+  if (!tips.length)
+    tips.push("天氣狀況穩定，外出前可再確認即時天氣");
+
+  // ✅ 即時播報：只顯示一句
+  return tips[Math.floor(Math.random() * tips.length)];
+
 
 
 }

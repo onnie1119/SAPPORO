@@ -3826,8 +3826,6 @@ function scrollCurrentPageToTop(behavior = "auto") {
    ✅ 你的結構：menuBtn(CSS漢堡) + backBtn(icon)
    ✅ 用 body.nav-back 切換顯示
 ========================= */
-let navMode = "menu"; // "menu" | "back"
-
 function setNavBack() {
   navMode = "back";
   document.body.classList.add("nav-back"); // CSS 會讓 #backBtn 顯示、#menuBtn 隱藏

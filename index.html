@@ -1977,6 +1977,32 @@
 .wx-hour-marker--empty{
   opacity: 0;
 }
+/* 即時播報排版 */
+#wxHourlyNote,
+#nowBroadcast,
+#wxNowBroadcast{
+  display: flex;
+  align-items: flex-start;
+}
+
+/* icon 本體 */
+.icon-information-outline{
+  font-size: 16px;
+  opacity: .9;
+  margin-top: 2px; /* 對齊第一行文字 */
+  flex-shrink: 0;
+}
+
+/* 一格空白（你指定要的） */
+.wx-broadcast-space{
+  width: 6px;
+  display: inline-block;
+}
+
+/* 文字本體 */
+.wx-broadcast-text{
+  line-height: 1.45;
+}
 
 </style>
 </head>
@@ -4430,11 +4456,16 @@ function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
 }
 
 function setBroadcastText(text){
-  // 你原本播報位置是 #wxHourlyNote（在卡片上方）
   const el = $("wxHourlyNote") || $("nowBroadcast") || $("wxNowBroadcast");
   if (!el) return;
-  el.textContent = text || " ";
+
+  el.innerHTML = `
+    <span class="icon-information-outline" aria-hidden="true"></span>
+    <span class="wx-broadcast-space"></span>
+    <span class="wx-broadcast-text">${text || ""}</span>
+  `;
 }
+
 
 function buildSmartBroadcast({
   tempNow, windNow, codeNowN, dayMin, dayMax,

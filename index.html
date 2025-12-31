@@ -5138,27 +5138,44 @@ showDay = function(dayNumber, dir = "right") {
   window.addEventListener("resize", syncBarsHeight);
 </script>
 <script>
-	function killSnowNow() {
-  // 1) 關掉所有可能觸發雪的 class（你有用到什麼就加什麼）
-  document.body.classList.remove("snowing", "snow", "weather-snow", "wx-snow", "nav-snow");
-  document.body.classList.remove("weather-active"); // 如果你採用這個頁面狀態
+// ===== Wx broadcast (24h note) single-instance guard =====
+let wxBroadcastTimer = null;
+let wxBroadcastSession = 0;
 
-  // 2) 清掉可能的雪層（你可再加你實際的 id/class）
-  document.querySelectorAll(
-    "#snowCanvas, #snowLayer, .snow-layer, .snowflakes, .snowflake"
-  ).forEach(el => el.remove());
-
-  // 3) 如果雪是偽元素或背景動畫：用 inline style 強制關（保底）
-  document.documentElement.style.setProperty("--snow-on", "0");
+function stopWxBroadcast() {
+  wxBroadcastSession++;
+  if (wxBroadcastTimer) {
+    clearTimeout(wxBroadcastTimer);
+    wxBroadcastTimer = null;
+  }
 }
 
-function killSnowAfterFrame() {
-  requestAnimationFrame(() => {
-    killSnowNow();
-    // 再延遲一點點抓 setTimeout/transition 後才出現的情況
-    setTimeout(killSnowNow, 50);
-  });
+function setWxBroadcastTextFinal(finalText) {
+  const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
+  if (!el) return;
+  el.textContent = finalText || "";
 }
+function updateWxBroadcastText(finalText) {
+  const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
+  if (!el) return;
+
+  // 先停掉舊流程，避免疊加造成閃爍
+  stopWxBroadcast();
+  const mySession = wxBroadcastSession;
+
+  // ✅ 只做一次平滑更新：先隱藏 → 換字 → 再顯示（不會閃多句）
+  el.style.transition = "opacity 120ms ease";
+  el.style.opacity = "0";
+
+  wxBroadcastTimer = setTimeout(() => {
+    if (mySession !== wxBroadcastSession) return; // 被新的更新取代了就作廢
+
+    el.textContent = finalText || "";
+    el.style.opacity = "1";
+    wxBroadcastTimer = null;
+  }, 120);
+}
+
 
 </script>
 </body>

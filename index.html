@@ -5059,32 +5059,67 @@ async function loadAndRenderWeather(){
     const sliceTemps = hTemps.slice(startIdx, startIdx+24);
     const sliceCodes = hCodes.slice(startIdx, startIdx+24);
 
-    // ✅ 這裡只更新一次 final（不再做其他中間句）
-    const finalText = buildSmartBroadcast({
-      tempNow,
-      windNow,
-      codeNowN,
-      dayMin,
-      dayMax,
-      sliceUnix,
-      sliceTemps,
-      sliceCodes,
-      offsetSec
-    });
-    setBroadcastText(finalText);
+   // ✅ 這裡只更新一次 final（不再做其他中間句）
+let finalText = buildSmartBroadcast({
+  tempNow,
+  windNow,
+  codeNowN,
+  dayMin,
+  dayMax,
+  sliceUnix,
+  sliceTemps,
+  sliceCodes,
+  offsetSec
+});
 
-    renderHourly24({
-      hourlyUnix: sliceUnix,
-      temps: sliceTemps,
-      codes: sliceCodes,
-      offsetSec,
-      sunByDate,
-      nowLocalMs,
-      current: {
-        temp: Math.round(tempNow),
-        code: codeNowN
-      }
-    });
+/* =========================
+   ✅ 夜間模式播報：晚上/深夜不要出現「早上/下午」
+   規則：
+   - 若現在是「晚上/深夜」→ 只保留含「今晚/晚上/深夜」的句子
+   - 若內容還是含「早上/下午」→ 直接改成夜間提示句（不提早上下午）
+========================= */
+const nowPeriod = getPeriodLabel(nowLocalMs); // 會回傳 早上/下午/晚上/深夜
+
+if (nowPeriod === "晚上" || nowPeriod === "深夜") {
+  // 1) 如果是「變化句」(含「今日早上/今日下午」) 就改寫成夜間版本
+  if (/今日早上|今日下午/.test(finalText)) {
+    finalText = finalText
+      .replace(/今日早上/g, "今晚")
+      .replace(/今日下午開始/g, "今晚開始")
+      .replace(/今日下午/g, "今晚");
+  }
+
+  // 2) 如果仍然提到早上/下午（例如 tips 或其他來源），就改成夜間專用提示
+  if (/早上|下午/.test(finalText)) {
+    // 你可以依需要再加更多夜間句
+    if (isSnowCode(codeNowN)) {
+      finalText = "今晚到明晨可能降雪，路面易結冰或濕滑，行走與行車請放慢速度並注意保暖。";
+    } else if (isRainCode(codeNowN)) {
+      finalText = "今晚到明晨可能降雨，外出請攜帶雨具並留意路面濕滑。";
+    } else if (Number.isFinite(dayMin) && dayMin <= -5) {
+      finalText = "今晚到明晨低溫明顯，外出請特別注意保暖。";
+    } else if (Number.isFinite(tempNow) && tempNow <= 0) {
+      finalText = "今晚氣溫偏低，建議加件外套並注意保暖。";
+    } else {
+      finalText = "今晚天氣變化不大，外出前可再確認即時天氣。";
+    }
+  }
+}
+
+setBroadcastText(finalText);
+
+renderHourly24({
+  hourlyUnix: sliceUnix,
+  temps: sliceTemps,
+  codes: sliceCodes,
+  offsetSec,
+  sunByDate,
+  nowLocalMs,
+  current: {
+    temp: Math.round(tempNow),
+    code: codeNowN
+  }
+});
 
     renderWeek({ daily: data?.daily });
 

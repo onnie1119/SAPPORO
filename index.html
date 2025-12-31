@@ -4086,12 +4086,15 @@ function floorToHourLocal(localMs){
   return d.getTime();
 }
 function formatHourAmPmFromLocalMs(localMs){
-  const h = localHour(localMs);
+  const h = localHour(localMs); // 0–23
   const ampm = h < 12 ? "上午" : "下午";
   let h12 = h % 12;
   if (h12 === 0) h12 = 12;
-  return `${ampm}${h12}時`;
+
+  // 注意：中間刻意加「半形空白」
+  return `${ampm} ${h12} 時`;
 }
+
 
 /* =========================================================
    [B] Weather code normalize / text / icon

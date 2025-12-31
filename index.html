@@ -1777,12 +1777,12 @@
 
 /* ✅ icon 樣式（你說我剛剛沒補） */
 .wx-hour-icon{
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  margin: 0 auto 6px;
-  display:block;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,.15));
+ 	width: 30px;
+    height: 30px;
+    object-fit: contain;
+    margin: 10px auto;
+    display: block;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .15));
 }
 
 .wx-hour-temp{
@@ -4138,27 +4138,29 @@ function isNightBySun(nowLocalMs, sunriseLocalMs, sunsetLocalMs){
 }
 
 function weatherCodeToIconKey(code, isNight){
-  // snow
+  // ❄️ 雪（含你指定的 85 → heavy）
   if ([71,73,75,77].includes(code)) return "snow";
-  if ([85,86].includes(code)) return "heavy_snow"; // ✅ 85 改成 heavy_snow
+  if ([85,86].includes(code)) return "heavy_snow";
 
-  // thunder / fog / rain
+  // ⛈️ 雷
   if ([95,96,99].includes(code)) return "thunder";
-  if ([45,48].includes(code)) return "fog";
+
+  // 🌫️ 霧（只吃 45,48）
+  if (code === 45 || code === 48) return "fog";
+
+  // 🌧️ 雨（理論上你這地區不會看到，但保留）
   if ([51,53,55,56,57,61,63].includes(code)) return "rain";
   if ([65,66,67,80,81,82].includes(code)) return "heavy_rain";
 
-  // clear/clouds
+  // ☀️ 晴 / 雲
   if (code === 0) return isNight ? "night_clear" : "clear";
   if (code === 1) return isNight ? "night_partly_cloudy" : "partly_cloudy";
-
-  // 你剛把 code=2 的文字改成「晴時多雲」
-  // ✅ 我也建議 icon 跟著用 partly_cloudy 才符合語意
-  if (code === 1) return isNight ? "night_partly_cloudy" : "partly_cloudy";
-
+  if (code === 2) return isNight ? "night_cloudy" : "cloudy";
   if (code === 3) return isNight ? "night_cloudy" : "cloudy";
+
   return "unknown";
 }
+
 
 
 /* =========================================================

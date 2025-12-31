@@ -3905,21 +3905,20 @@ function resetNavMenu() {
 function showPage(targetId) {
   if (!PAGES.includes(targetId)) return;
 
-  // ✅ 離開 ticket-page → 回清單 + 漢堡
   if (currentPageId === "ticket-page" && targetId !== "ticket-page") {
     safeCall(window.resetTicketPage);
     resetNavMenu();
   }
 
-  // ✅ 進入 ticket-page → 一律顯示清單 + 漢堡
   if (targetId === "ticket-page") {
     safeCall(window.resetTicketPage);
     resetNavMenu();
   }
 
- if (targetId === "weather-page") {
-  safeCall(window.WX_EnterWeatherPage);
-}
+  // ✅ 天氣頁：只進入一次入口
+  if (targetId === "weather-page") {
+    safeCall(window.WX_EnterWeatherPage);
+  }
 
 
   // 關掉全部 page
@@ -4861,108 +4860,7 @@ function renderWeek({ daily }){
   }).join("");
 }
 
-async function loadAndRenderWeather(){
-  const page = $("weather-page");
-  const city = WX_CITIES[wxCityIndex];
-  if (!page || !city) return;
 
-  setBroadcastText("載入中…");
-
-  try{
-    const data = await fetch(buildWeatherApiUrl(city)).then(r=>r.json());
-    const offsetSec = Number(data?.utc_offset_seconds ?? 0);
-
-    const nowLocalMs = Date.now() + offsetSec*1000;
-
-    const sunByDate = buildSunByDate(data?.daily, offsetSec);
-    const todayKey = localDateKey(nowLocalMs);
-    const sunToday = sunByDate.get(todayKey) || Array.from(sunByDate.values())[0];
-
-    if (sunToday){
-      const phase = getDayPhase(nowLocalMs, sunToday.sunriseLocalMs, sunToday.sunsetLocalMs, 45);
-      setBgClass(page, `bg-${phase}`);
-    }
-
-    const tempNow = data?.current_weather?.temperature;
-    const windNow = data?.current_weather?.windspeed;
-    const codeNow = data?.current_weather?.weathercode;
-    const codeNowN = normalizeWeatherCode(codeNow, tempNow);
-
-    const dayMax = Number.isFinite(data?.daily?.temperature_2m_max?.[0]) ? Math.round(data.daily.temperature_2m_max[0]) : NaN;
-    const dayMin = Number.isFinite(data?.daily?.temperature_2m_min?.[0]) ? Math.round(data.daily.temperature_2m_min[0]) : NaN;
-
-    renderHeader({
-      cityName: city.name,
-      tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
-      codeNow: codeNowN,
-      hiInt: dayMax,
-      loInt: dayMin
-    });
-
-    // snow canvas + mode
-    const mode = getSnowModeFromCode(codeNowN);
-    applySnowModeClass(page, mode);
-
-    const canvas = ensureSnowCanvas();
-    if (!wxSnowBg) wxSnowBg = new SnowBackground({ canvas, mode });
-    else wxSnowBg.setMode(mode);
-
-    // hourly slice from now-hour
-    const hUnix  = data?.hourly?.time || [];
-    const hTemps = data?.hourly?.temperature_2m || [];
-    const hCodes = data?.hourly?.weathercode || [];
-
-    if (!hUnix.length){
-      setBroadcastText("沒有抓到每小時資料");
-      return;
-    }
-
-    const nowFloorLocal = floorToHourLocal(nowLocalMs);
-
-    let startIdx = 0;
-    for (let i=0;i<hUnix.length;i++){
-      const ms = localMsFromUnix(hUnix[i], offsetSec);
-      if (ms >= nowFloorLocal){ startIdx = i; break; }
-    }
-
-    const sliceUnix  = hUnix.slice(startIdx, startIdx+24);
-    const sliceTemps = hTemps.slice(startIdx, startIdx+24);
-    const sliceCodes = hCodes.slice(startIdx, startIdx+24);
-
-    // broadcast: changes first, else tip
-    setBroadcastText(buildSmartBroadcast({
-      tempNow,
-      windNow,
-      codeNowN,
-      dayMin,
-      dayMax,
-      sliceUnix,
-      sliceTemps,
-      sliceCodes,
-      offsetSec
-    }));
-
-    renderHourly24({
-  hourlyUnix: sliceUnix,
-  temps: sliceTemps,
-  codes: sliceCodes,
-  offsetSec,
-  sunByDate,
-  nowLocalMs,
-  current: {
-    temp: Math.round(tempNow),
-    code: codeNowN
-  }
-});
-
-
-    renderWeek({ daily: data?.daily });
-
-  }catch(err){
-    console.error(err);
-    setBroadcastText("天氣載入失敗（請看 console）");
-  }
-}
 
 /* ---------------- Entry ---------------- */
 function WX_EnterWeatherPage(){
@@ -5086,6 +4984,118 @@ showDay = function(dayNumber, dir = "right") {
   // ⭐ 不用 DOMContentLoaded，因為 script 在 body 最後
   syncBarsHeight();
   window.addEventListener("resize", syncBarsHeight);
+
+	let wxWeatherInFlight = false;
+
+async function loadAndRenderWeather(){
+  if (wxWeatherInFlight) return;          // ✅ 防重複
+  wxWeatherInFlight = true;
+
+  const page = $("weather-page");
+  const city = WX_CITIES[wxCityIndex];
+  if (!page || !city) { wxWeatherInFlight = false; return; }
+
+  // ✅ 你要載入中 > final，不要閃，所以只先顯示一次載入中
+  setBroadcastText("載入中…");
+
+  try{
+    const data = await fetch(buildWeatherApiUrl(city)).then(r=>r.json());
+    const offsetSec = Number(data?.utc_offset_seconds ?? 0);
+    const nowLocalMs = Date.now() + offsetSec*1000;
+
+    const sunByDate = buildSunByDate(data?.daily, offsetSec);
+    const todayKey = localDateKey(nowLocalMs);
+    const sunToday = sunByDate.get(todayKey) || Array.from(sunByDate.values())[0];
+
+    if (sunToday){
+      const phase = getDayPhase(nowLocalMs, sunToday.sunriseLocalMs, sunToday.sunsetLocalMs, 45);
+      setBgClass(page, `bg-${phase}`);
+    }
+
+    const tempNow = data?.current_weather?.temperature;
+    const windNow = data?.current_weather?.windspeed;
+    const codeNow = data?.current_weather?.weathercode;
+    const codeNowN = normalizeWeatherCode(codeNow, tempNow);
+
+    const dayMax = Number.isFinite(data?.daily?.temperature_2m_max?.[0]) ? Math.round(data.daily.temperature_2m_max[0]) : NaN;
+    const dayMin = Number.isFinite(data?.daily?.temperature_2m_min?.[0]) ? Math.round(data.daily.temperature_2m_min[0]) : NaN;
+
+    renderHeader({
+      cityName: city.name,
+      tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
+      codeNow: codeNowN,
+      hiInt: dayMax,
+      loInt: dayMin
+    });
+
+    // snow canvas + mode
+    const mode = getSnowModeFromCode(codeNowN);
+    applySnowModeClass(page, mode);
+
+    const canvas = ensureSnowCanvas();
+    if (!wxSnowBg) wxSnowBg = new SnowBackground({ canvas, mode });
+    else wxSnowBg.setMode(mode);
+
+    // hourly slice from now-hour
+    const hUnix  = data?.hourly?.time || [];
+    const hTemps = data?.hourly?.temperature_2m || [];
+    const hCodes = data?.hourly?.weathercode || [];
+
+    if (!hUnix.length){
+      setBroadcastText("沒有抓到每小時資料");
+      wxWeatherInFlight = false;
+      return;
+    }
+
+    const nowFloorLocal = floorToHourLocal(nowLocalMs);
+
+    let startIdx = 0;
+    for (let i=0;i<hUnix.length;i++){
+      const ms = localMsFromUnix(hUnix[i], offsetSec);
+      if (ms >= nowFloorLocal){ startIdx = i; break; }
+    }
+
+    const sliceUnix  = hUnix.slice(startIdx, startIdx+24);
+    const sliceTemps = hTemps.slice(startIdx, startIdx+24);
+    const sliceCodes = hCodes.slice(startIdx, startIdx+24);
+
+    // ✅ 這裡只更新一次 final（不再做其他中間句）
+    const finalText = buildSmartBroadcast({
+      tempNow,
+      windNow,
+      codeNowN,
+      dayMin,
+      dayMax,
+      sliceUnix,
+      sliceTemps,
+      sliceCodes,
+      offsetSec
+    });
+    setBroadcastText(finalText);
+
+    renderHourly24({
+      hourlyUnix: sliceUnix,
+      temps: sliceTemps,
+      codes: sliceCodes,
+      offsetSec,
+      sunByDate,
+      nowLocalMs,
+      current: {
+        temp: Math.round(tempNow),
+        code: codeNowN
+      }
+    });
+
+    renderWeek({ daily: data?.daily });
+
+  }catch(err){
+    console.error(err);
+    setBroadcastText("天氣載入失敗（請看 console）");
+  }finally{
+    wxWeatherInFlight = false;
+  }
+}
+
 </script>
 
 </body>

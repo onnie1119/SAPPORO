@@ -4435,7 +4435,9 @@ function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
   if (Number.isFinite(windNow) && windNow >= 25) tips.push("風較強，體感更冷，帽子/防風外套更舒適");
   if ([45,48].includes(codeNowN)) tips.push("能見度可能較差，行車留意安全距離");
   if (!tips.length) tips.push("天氣較穩定，出門前可再確認降水機率與體感溫度");
-  return tips.slice(0, 3).join("；");
+ return tips[Math.floor(Math.random() * tips.length)];
+
+
 }
 
 // ✅ 最終播報：只顯示變化/注意事項（不顯示地區/溫度）

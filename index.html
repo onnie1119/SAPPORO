@@ -2083,6 +2083,38 @@ body.nav-back #menuBtn > div{
   opacity: 0 !important;
   visibility: hidden !important;
 }
+.swipe-item{
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.swipe-actions{
+  position: absolute;
+  inset: 0;
+  display:flex;
+  justify-content:flex-end;
+  align-items:stretch;
+}
+
+.swipe-btn{
+  width: 92px;
+  border: 0;
+  color: #fff;
+  font-weight: 800;
+}
+
+.edit-btn{ background: #2f6df6; }
+
+.swipe-content{
+  transform: translateX(0);
+  transition: transform 160ms ease;
+  touch-action: pan-y;
+}
+
+.swipe-item.open .swipe-content{
+  transform: translateX(-92px);
+}
 
 </style>
 </head>
@@ -2189,17 +2221,33 @@ body.nav-back #menuBtn > div{
                         </div>
                     </a>
                     <div class="transport-info"><span class="icon-airplane"></span> 1  小時  30  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/3.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:45</div>
-                              <div class="title">新千歲機場</div>
-                              <div class="note">預留1小時入境</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
+                   <div class="swipe-item itinerary-card" 
+     data-id="it_001"
+     data-dest="新千歲機場"
+     data-mode="driving">
+
+  <div class="swipe-actions">
+    <button class="swipe-btn edit-btn" type="button">編輯</button>
+  </div>
+
+  <div class="swipe-content">
+    <a class="it-link"
+       href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving"
+       target="_blank">
+      <div class="activity-card">
+        <img src="images/3.png">
+        <div class="info">
+          <div class="time" data-field="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:45</div>
+          <div class="title" data-field="place">新千歲機場</div>
+          <div class="note" data-field="note">預留1小時入境</div>
+        </div>
+      </div>
+    </a>
+
+    <div class="transport-info"><span class="icon-travel-walk"></span> 10 分</div>
+  </div>
+</div>
+
                     <a href="https://www.google.com/maps/dir/?api=1&destination=一幻拉麵 新千歲機場店, 日本〒066-0012 Hokkaido, Chitose, Bibi, ターミナルビル Domestic Terminal New Chitose Airport, 3F&travelmode=driving" target="_blank">
                         <div class="activity-card">
                             <img src="images/4.png">
@@ -5175,6 +5223,113 @@ renderHourly24({
 }
 
 </script>
+<script>
+	(function initItinerarySwipeEdit(){
+  const OPEN_PX = 92;
+  const TH = 28;
 
+  let startX=0, startY=0, active=null, moved=false, preventClick=false;
+
+  function closeAll(except=null){
+    document.querySelectorAll(".swipe-item.open").forEach(it=>{
+      if (it!==except) it.classList.remove("open");
+    });
+  }
+
+  function onStart(e){
+    const it = e.target.closest(".swipe-item");
+    if (!it) return;
+    active = it;
+    closeAll(active);
+
+    const p = e.touches ? e.touches[0] : e;
+    startX = p.clientX; startY = p.clientY;
+    moved = false;
+    preventClick = false;
+  }
+
+  function onMove(e){
+    if (!active) return;
+    const p = e.touches ? e.touches[0] : e;
+    const dx = p.clientX - startX;
+    const dy = p.clientY - startY;
+
+    // 主要上下滑就不管
+    if (!moved && Math.abs(dy) > Math.abs(dx)) return;
+
+    if (Math.abs(dx) > 6) moved = true;
+
+    if (dx < -TH){
+      active.classList.add("open");
+      preventClick = true;
+      if (e.cancelable) e.preventDefault();
+    } else if (dx > TH){
+      active.classList.remove("open");
+      preventClick = true;
+      if (e.cancelable) e.preventDefault();
+    }
+  }
+
+  function onEnd(){
+    active = null;
+    // preventClick 會在 click handler 用完後自動清掉
+  }
+
+  document.addEventListener("touchstart", onStart, {passive:true});
+  document.addEventListener("touchmove", onMove, {passive:false});
+  document.addEventListener("touchend", onEnd);
+
+  // ⭐ 左滑過的那一下，阻止 <a> 打開
+  document.addEventListener("click", (e)=>{
+    const link = e.target.closest("a.it-link");
+    if (!link) return;
+    if (preventClick){
+      e.preventDefault();
+      e.stopPropagation();
+      preventClick = false;
+    }
+  }, true);
+
+  // ===== 編輯：先用 prompt（最快上線），你之後要做 modal 我再幫你換 =====
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".edit-btn");
+    if (!btn) return;
+
+    const card = btn.closest(".swipe-item");
+    if (!card) return;
+
+    const placeEl = card.querySelector('[data-field="place"]');
+    const timeEl  = card.querySelector('[data-field="time"]');
+    const noteEl  = card.querySelector('[data-field="note"]');
+
+    const oldPlace = placeEl ? placeEl.textContent.trim() : "";
+    const oldTime  = timeEl ? timeEl.textContent.replace(/\s+/g," ").trim().slice(-5) : "";
+    const oldNote  = noteEl ? noteEl.textContent.trim() : "";
+
+    const newPlace = prompt("修改地點", oldPlace);
+    if (newPlace === null) return;
+
+    const newTime  = prompt("修改時間（例如 09:45）", oldTime);
+    if (newTime === null) return;
+
+    const newNote  = prompt("修改備註", oldNote);
+    if (newNote === null) return;
+
+    if (placeEl) placeEl.textContent = newPlace.trim();
+    if (timeEl)  timeEl.innerHTML = `<span class="icon-watch"></span>&nbsp;&nbsp;${newTime.trim()}`;
+    if (noteEl)  noteEl.textContent = newNote.trim();
+
+    // ✅ 同步更新 Google Maps 連結
+    const link = card.querySelector("a.it-link");
+    if (link){
+      const mode = card.dataset.mode || "driving";
+      link.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(newPlace.trim())}&travelmode=${encodeURIComponent(mode)}`;
+    }
+
+    card.classList.remove("open");
+  });
+})();
+
+</script>
 </body>
 </html>

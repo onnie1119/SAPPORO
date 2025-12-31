@@ -4584,6 +4584,7 @@ async function loadAndRenderWeather(){
     const windNow = Number(data?.current_weather?.windspeed);
     const codeNow = Number(data?.current_weather?.weathercode);
     const codeNowN = normalizeWeatherCode(codeNow, tempNow);
+	applySnowIntensity(page, isSnowCode(codeNowN));
 
     const dayMax = Number.isFinite(data?.daily?.temperature_2m_max?.[0]) ? Math.round(data.daily.temperature_2m_max[0]) : NaN;
     const dayMin = Number.isFinite(data?.daily?.temperature_2m_min?.[0]) ? Math.round(data.daily.temperature_2m_min[0]) : NaN;
@@ -4654,6 +4655,12 @@ async function loadAndRenderWeather(){
     console.error(err);
     setBroadcastText("天氣載入失敗（請看 console）");
   }
+}
+	
+function applySnowIntensity(page, hasSnow){
+  if (!page) return;
+  page.classList.remove("snow-light", "snow-strong");
+  page.classList.add(hasSnow ? "snow-strong" : "snow-light");
 }
 
 /* =========================================================

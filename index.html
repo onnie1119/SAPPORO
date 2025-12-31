@@ -4374,11 +4374,11 @@ function ensureSnowCanvas(){
 function setBroadcastText(text){
   const noteEl = $("wxHourlyNote"); // 你原本的即時播報位置
   if (noteEl){
-    noteEl.textContent = text || "<span class="icon-information-outline"></span>  ";
+    noteEl.textContent = text || "<span class=" ";
     return;
   }
   const bc = $("wxNowBroadcast");
-  if (bc) bc.textContent = text || "<span class="icon-information-outline"></span>  ";
+  if (bc) bc.textContent = text || " ";
 }
 
 function getPeriodLabel(localMs){

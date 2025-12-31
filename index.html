@@ -5139,12 +5139,15 @@ showDay = function(dayNumber, dir = "right") {
   window.addEventListener("resize", syncBarsHeight);
 </script>
 <script>
-// ===== Wx broadcast (24h note) 2-step, no flicker =====
+// ===== Wx broadcast (24h note) 2-step, one-final-only =====
 let wxNoteSession = 0;
 let wxNoteTimer = null;
+let wxNoteFinalDone = false;
+let wxNoteLastFinal = "";
 
 function wxNoteStop() {
   wxNoteSession++;
+  wxNoteFinalDone = false;
   if (wxNoteTimer) {
     clearTimeout(wxNoteTimer);
     wxNoteTimer = null;
@@ -5155,8 +5158,10 @@ function wxNoteLoading(text = "載入中…") {
   const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
   if (!el) return;
 
-  wxNoteStop();                 // ✅ 先停掉舊的，避免疊加
-  el.style.transition = "";     // loading 不做動畫，避免抖動
+  // 進入新一輪：允許 final 再寫一次
+  wxNoteStop();
+
+  el.style.transition = "";
   el.style.opacity = "1";
   el.textContent = text;
 }
@@ -5165,19 +5170,33 @@ function wxNoteFinal(finalText) {
   const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
   if (!el) return;
 
+  // ✅ 同一輪只允許 final 設定一次
+  if (wxNoteFinalDone) return;
+
+  // ✅ 如果 finalText 跟上次一模一樣，也不要再做淡出淡入（避免像跳一下）
+  if ((finalText || "") === wxNoteLastFinal) {
+    wxNoteFinalDone = true;
+    el.textContent = finalText || "";
+    el.style.opacity = "1";
+    return;
+  }
+
+  wxNoteFinalDone = true;
+  wxNoteLastFinal = finalText || "";
+
   const mySession = wxNoteSession;
 
-  // ✅ 只做一次淡出→換字→淡入（不會閃多句）
   el.style.transition = "opacity 140ms ease";
   el.style.opacity = "0";
 
   wxNoteTimer = setTimeout(() => {
-    if (mySession !== wxNoteSession) return; // 代表已經有更新/離開頁面，作廢
+    if (mySession !== wxNoteSession) return; // 被新一輪作廢
     el.textContent = finalText || "";
     el.style.opacity = "1";
     wxNoteTimer = null;
   }, 140);
 }
+
 
 
 </script>

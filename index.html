@@ -2082,21 +2082,6 @@ body.nav-back #menuBtn > div{
   opacity: 0 !important;
   visibility: hidden !important;
 }
-		
-/* ✅ 非天氣頁：一律關掉雪（含偽元素動畫） */
-body:not(.weather-active)::before,
-body:not(.weather-active)::after,
-body:not(.weather-active) #app-root::before,
-body:not(.weather-active) #app-root::after,
-body:not(.weather-active) .container::before,
-body:not(.weather-active) .container::after {
-  content: none !important;
-  background: none !important;
-  background-image: none !important;
-  animation: none !important;
-  filter: none !important;
-  opacity: 0 !important;
-}
 
 </style>
 </head>
@@ -3925,12 +3910,6 @@ function showPage(targetId) {
     safeCall(window.resetTicketPage);
     resetNavMenu();
   }
-// ✅ 雪動畫只能在天氣頁
-if (targetId === "weather-page") {
-  startSnowWeatherOnly();
-} else {
-  stopSnowEverywhere();
-}
 
   // ✅ 進入 ticket-page → 一律顯示清單 + 漢堡
   if (targetId === "ticket-page") {
@@ -3945,11 +3924,6 @@ if (targetId === "weather-page") {
     safeCall(window.loadAndRenderWeather);
     safeCall(window.WX_EnterWeatherPage);
   }
-// ✅ 只要離開天氣頁，就立刻關雪（而且再補一刀）
-if (currentPageId === "weather-page" && targetId !== "weather-page") {
-  killSnowNow();
-  killSnowAfterFrame();
-}
 
   // 關掉全部 page
   PAGES.forEach(id => {
@@ -4731,31 +4705,6 @@ function initWeatherPageOnce(){
 
   bindWeatherSwipe();
 }
-// ===== Snow animation guard =====
-let snowRAF = null;
-let snowTimer = null;
-
-function startSnowWeatherOnly() {
-  // 如果你原本就有 startSnow，直接呼叫它
-  if (typeof window.startSnow === "function") window.startSnow();
-}
-
-function stopSnowEverywhere() {
-  // 1) 停掉你可能用到的 raf / interval
-  if (snowRAF) cancelAnimationFrame(snowRAF);
-  snowRAF = null;
-
-  if (snowTimer) clearInterval(snowTimer);
-  snowTimer = null;
-
-  // 2) 保底清掉常見雪動畫元素（依你的 class/id 調整）
-  document.querySelectorAll(
-    "#snowCanvas, .snowflake, .snow-layer, #snowLayer"
-  ).forEach(el => el.remove());
-
-  // 3) 如果你的雪是把 style/ class 掛在 body，也一併移除
-  document.body.classList.remove("snowing");
-}
 
 /* expose to global so showPage() can find it */
 window.initWeatherPageOnce = initWeatherPageOnce;
@@ -5021,7 +4970,6 @@ function WX_EnterWeatherPage(){
   setDotsActive();
   resetWeatherPageScroll();
   loadAndRenderWeather();
-  wxNoteLoading("載入中…");
 }
 window.WX_EnterWeatherPage = WX_EnterWeatherPage;
 
@@ -5138,67 +5086,6 @@ showDay = function(dayNumber, dir = "right") {
   syncBarsHeight();
   window.addEventListener("resize", syncBarsHeight);
 </script>
-<script>
-// ===== Wx broadcast (24h note) 2-step, one-final-only =====
-let wxNoteSession = 0;
-let wxNoteTimer = null;
-let wxNoteFinalDone = false;
-let wxNoteLastFinal = "";
 
-function wxNoteStop() {
-  wxNoteSession++;
-  wxNoteFinalDone = false;
-  if (wxNoteTimer) {
-    clearTimeout(wxNoteTimer);
-    wxNoteTimer = null;
-  }
-}
-
-function wxNoteLoading(text = "載入中…") {
-  const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
-  if (!el) return;
-
-  // 進入新一輪：允許 final 再寫一次
-  wxNoteStop();
-
-  el.style.transition = "";
-  el.style.opacity = "1";
-  el.textContent = text;
-}
-
-function wxNoteFinal(finalText) {
-  const el = document.querySelector("#wxHourlyNote .wx-broadcast-text");
-  if (!el) return;
-
-  // ✅ 同一輪只允許 final 設定一次
-  if (wxNoteFinalDone) return;
-
-  // ✅ 如果 finalText 跟上次一模一樣，也不要再做淡出淡入（避免像跳一下）
-  if ((finalText || "") === wxNoteLastFinal) {
-    wxNoteFinalDone = true;
-    el.textContent = finalText || "";
-    el.style.opacity = "1";
-    return;
-  }
-
-  wxNoteFinalDone = true;
-  wxNoteLastFinal = finalText || "";
-
-  const mySession = wxNoteSession;
-
-  el.style.transition = "opacity 140ms ease";
-  el.style.opacity = "0";
-
-  wxNoteTimer = setTimeout(() => {
-    if (mySession !== wxNoteSession) return; // 被新一輪作廢
-    el.textContent = finalText || "";
-    el.style.opacity = "1";
-    wxNoteTimer = null;
-  }, 140);
-}
-
-
-
-</script>
 </body>
 </html>

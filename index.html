@@ -3917,13 +3917,10 @@ function showPage(targetId) {
     resetNavMenu();
   }
 
-  // weather page init
-  if (targetId === "weather-page") {
-    safeCall(window.initWeatherPageOnce);
-    safeCall(window.renderDots);
-    safeCall(window.loadAndRenderWeather);
-    safeCall(window.WX_EnterWeatherPage);
-  }
+ if (targetId === "weather-page") {
+  safeCall(window.WX_EnterWeatherPage);
+}
+
 
   // 關掉全部 page
   PAGES.forEach(id => {

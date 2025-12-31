@@ -2055,12 +2055,14 @@ body.nav-back #menuBtn{
 /* 2) 讓 arrow icon 有明確大小 */
 body.nav-back #menuBtn .icon-arrow-left{
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;            /* 你要的大小可調 */
-  line-height: 1;
-  width: 24px;                /* 給它寬高，避免 0 尺寸 */
-  height: 24px;
+        align-items: center;
+        justify-content: center;
+        font-size: 54px;
+        color: white;
+        margin-left: -1rem;
+        line-height: 1;
+        width: 24px;
+        height: 24px;
 }
 
 /* 3) 防止被其他元素/線條蓋住 */
@@ -3734,6 +3736,7 @@ body.nav-back #menuBtn > div{
 				return;
 			}
 			backToMain();
+			resetNavMenu()
 		}
 		
 		
@@ -3986,22 +3989,9 @@ if (scrollBtn) {
 }
 
 /* =========================
-   Menu（iOS 全螢幕）
+   Menu（iOS 全螢幕）- 修正版（只綁一次，不打架）
 ========================= */
-const menuBtn = document.getElementById("menuBtn");
-
-menuBtn.addEventListener("click", (e) => {
-  if (navMode === "back") {
-    e.preventDefault();
-    backToTicketList();   // 你原本就有：回票據清單
-    resetNavMenu();       // 回漢堡
-  } else {
-    openMenu();           // 你原本就有：開選單
-  }
-});
-
-		
-const backBtn   = document.getElementById("backBtn");
+const menuBtn   = document.getElementById("menuBtn");
 const menuClose = document.getElementById("menuClose");
 const iosMenu   = document.getElementById("iosFullMenu");
 const topbar    = document.querySelector(".topbar");
@@ -4018,18 +4008,35 @@ function closeMenu() {
   if (topbar) topbar.style.display = "flex";
 }
 
-/* ✅ menuBtn：只負責「開選單」（因為 back 模式時 menuBtn 會被 CSS 隱藏） */
+/* ✅ menuBtn：menu 模式開選單；back 模式返回上一層 */
 if (menuBtn) {
-  menuBtn.addEventListener("click", () => {
-    openMenu();
-  });
-}
+  menuBtn.addEventListener("click", (e) => {
+    if (navMode === "back") {
+      e.preventDefault();
+      e.stopPropagation();
 
-/* ✅ backBtn：回票據清單 + 切回漢堡 */
-if (backBtn) {
-  backBtn.addEventListener("click", () => {
-    safeCall(window.backToTicketList);
-    resetNavMenu();
+      // 保證 topbar 回來（避免卡在 hidden）
+      closeMenu();
+
+      // 你真正有的返回流程是 goBack()
+      if (typeof goBack === "function") {
+        goBack();
+      } else if (typeof backToTicketList === "function") {
+        // 若你之後真的有 backToTicketList 也能用
+        backToTicketList();
+      }
+
+      // goBack() 回到清單時你應該會 resetNavMenu()
+      // 這邊再保底一次，避免狀態不同步
+      if (typeof ticketLevel === "undefined" || ticketLevel === "list") {
+        resetNavMenu();
+      }
+
+      return;
+    }
+
+    // menu 模式：開選單
+    openMenu();
   });
 }
 
@@ -4045,6 +4052,7 @@ document.querySelectorAll(".menu-content li").forEach(li => {
     showPage(target);
   });
 });
+
 
 /* =========================
    Splash → App 啟動

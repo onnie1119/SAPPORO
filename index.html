@@ -3910,6 +3910,12 @@ function showPage(targetId) {
     safeCall(window.resetTicketPage);
     resetNavMenu();
   }
+// ✅ 雪動畫只能在天氣頁
+if (targetId === "weather-page") {
+  startSnowWeatherOnly();
+} else {
+  stopSnowEverywhere();
+}
 
   // ✅ 進入 ticket-page → 一律顯示清單 + 漢堡
   if (targetId === "ticket-page") {
@@ -4704,6 +4710,31 @@ function initWeatherPageOnce(){
   }
 
   bindWeatherSwipe();
+}
+// ===== Snow animation guard =====
+let snowRAF = null;
+let snowTimer = null;
+
+function startSnowWeatherOnly() {
+  // 如果你原本就有 startSnow，直接呼叫它
+  if (typeof window.startSnow === "function") window.startSnow();
+}
+
+function stopSnowEverywhere() {
+  // 1) 停掉你可能用到的 raf / interval
+  if (snowRAF) cancelAnimationFrame(snowRAF);
+  snowRAF = null;
+
+  if (snowTimer) clearInterval(snowTimer);
+  snowTimer = null;
+
+  // 2) 保底清掉常見雪動畫元素（依你的 class/id 調整）
+  document.querySelectorAll(
+    "#snowCanvas, .snowflake, .snow-layer, #snowLayer"
+  ).forEach(el => el.remove());
+
+  // 3) 如果你的雪是把 style/ class 掛在 body，也一併移除
+  document.body.classList.remove("snowing");
 }
 
 /* expose to global so showPage() can find it */

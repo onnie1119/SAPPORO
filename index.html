@@ -4583,12 +4583,16 @@ function setBroadcastText(text){
   const el = $("wxHourlyNote") || $("nowBroadcast") || $("wxNowBroadcast");
   if (!el) return;
 
+  console.log("[Broadcast] setBroadcastText:", text);
+  console.log(new Error().stack.split("\n").slice(0,6).join("\n"));
+
   el.innerHTML = `
     <span class="icon-information-outline" aria-hidden="true"></span>
     <span class="wx-broadcast-space"></span>
     <span class="wx-broadcast-text">${text || ""}</span>
   `;
 }
+
 
 
 function buildSmartBroadcast({

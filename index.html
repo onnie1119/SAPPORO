@@ -5319,62 +5319,87 @@ renderHourly24({
 
 </script>
 <script>
-	(function initItinerarySwipeEdit(){
-  const OPEN_PX = 92;
-  const TH = 28;
+/* =========================================================
+   Itinerary: Swipe-to-edit + Custom Modal (with animation)
+   ✅ 左滑卡片露出編輯
+   ✅ 避免觸發你原本「切換到其他天」的左右滑
+   ✅ 點編輯不會跳系統 prompt（強制攔截）
+   ✅ Modal 置中（你用 #itEditModal + .modal-box）
+   ✅ 關閉 / 儲存後卡片自動滑回
+========================================================= */
+(function(){
+  const TH = 28;                 // 左右滑門檻
+  const CARD_SEL = ".swipe-item";
+  const OPEN_CLASS = "open";
 
-  let startX=0, startY=0, active=null, moved=false, preventClick=false;
+  let startX = 0, startY = 0;
+  let active = null;
+  let lockedHorizontal = false;  // 是否鎖定水平滑（鎖定後就攔截外層切換天數）
+  let preventClick = false;      // 滑動後阻止 a 連結誤觸
 
   function closeAll(except=null){
-    document.querySelectorAll(".swipe-item.open").forEach(it=>{
-      if (it!==except) it.classList.remove("open");
+    document.querySelectorAll(`${CARD_SEL}.${OPEN_CLASS}`).forEach(it=>{
+      if (it !== except) it.classList.remove(OPEN_CLASS);
     });
   }
 
   function onStart(e){
-    const it = e.target.closest(".swipe-item");
+    const it = e.target.closest(CARD_SEL);
     if (!it) return;
+
     active = it;
     closeAll(active);
 
     const p = e.touches ? e.touches[0] : e;
     startX = p.clientX; startY = p.clientY;
-    moved = false;
+
+    lockedHorizontal = false;
     preventClick = false;
   }
 
   function onMove(e){
     if (!active) return;
+
     const p = e.touches ? e.touches[0] : e;
     const dx = p.clientX - startX;
     const dy = p.clientY - startY;
 
-    // 主要上下滑就不管
-    if (!moved && Math.abs(dy) > Math.abs(dx)) return;
+    // 還沒鎖定方向：先判斷主要方向
+    if (!lockedHorizontal){
+      // 垂直滑為主：放行（讓頁面上下滑正常）
+      if (Math.abs(dy) > Math.abs(dx)) return;
 
-    if (Math.abs(dx) > 6) moved = true;
+      // 只要偵測到有明顯水平滑，鎖定並開始攔截外層手勢
+      if (Math.abs(dx) >= 6) lockedHorizontal = true;
+      else return;
+    }
 
+    // ⭐ 鎖定水平滑後：攔截（避免外層「切換到其他天」收到事件）
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    // 左滑開 / 右滑關
     if (dx < -TH){
-      active.classList.add("open");
+      active.classList.add(OPEN_CLASS);
       preventClick = true;
-      if (e.cancelable) e.preventDefault();
     } else if (dx > TH){
-      active.classList.remove("open");
+      active.classList.remove(OPEN_CLASS);
       preventClick = true;
-      if (e.cancelable) e.preventDefault();
     }
   }
 
   function onEnd(){
     active = null;
-    // preventClick 會在 click handler 用完後自動清掉
+    lockedHorizontal = false;
   }
 
-  document.addEventListener("touchstart", onStart, {passive:true});
-  document.addEventListener("touchmove", onMove, {passive:false});
-  document.addEventListener("touchend", onEnd);
+  // ✅ 用 capture phase 先搶事件，壓過你原本整頁左右切換
+  document.addEventListener("touchstart", onStart, { passive:true,  capture:true });
+  document.addEventListener("touchmove",  onMove,  { passive:false, capture:true });
+  document.addEventListener("touchend",   onEnd,   { passive:true,  capture:true });
 
-  // ⭐ 左滑過的那一下，阻止 <a> 打開
+  // ⭐ 左滑過的那一下，阻止 <a> 打開（避免滑動被當點擊）
   document.addEventListener("click", (e)=>{
     const link = e.target.closest("a.it-link");
     if (!link) return;
@@ -5385,119 +5410,111 @@ renderHourly24({
     }
   }, true);
 
-  // ===== 編輯：先用 prompt（最快上線），你之後要做 modal 我再幫你換 =====
+  /* =========================
+     Custom Edit Modal
+  ========================= */
+  let editingSwipeItem = null;
+
+  function openItEditModal(swipeItem){
+    const modal = document.getElementById("itEditModal");
+    if (!modal) return;
+
+    editingSwipeItem = swipeItem;
+
+    const placeEl = swipeItem.querySelector('[data-field="place"]');
+    const timeEl  = swipeItem.querySelector('[data-field="time"]');
+    const noteEl  = swipeItem.querySelector('[data-field="note"]');
+
+    const place = placeEl ? placeEl.textContent.trim() : "";
+    const timeRaw = timeEl ? timeEl.textContent.trim() : "";
+    const time = (timeRaw.match(/\d{2}:\d{2}/)?.[0]) || "";
+    const note = noteEl ? noteEl.textContent.trim() : "";
+
+    const ipPlace = document.getElementById("itEditPlace");
+    const ipTime  = document.getElementById("itEditTime");
+    const ipNote  = document.getElementById("itEditNote");
+    if (ipPlace) ipPlace.value = place;
+    if (ipTime)  ipTime.value  = time;
+    if (ipNote)  ipNote.value  = note;
+
+    // ✅ 開啟動畫（需要你 CSS: #itEditModal.show）
+    modal.classList.add("show");
+    setTimeout(() => ipPlace?.focus?.(), 60);
+  }
+
+  function closeItEditModal({ autoCloseCard = true } = {}){
+    const modal = document.getElementById("itEditModal");
+    if (!modal) return;
+
+    modal.classList.remove("show");
+
+    // ✅ 關閉後卡片自動滑回
+    if (autoCloseCard && editingSwipeItem) {
+      editingSwipeItem.classList.remove(OPEN_CLASS);
+    }
+
+    setTimeout(() => { editingSwipeItem = null; }, 220);
+  }
+
+  // 點遮罩關閉（點到 overlay 本身才關）
+  document.getElementById("itEditModal")?.addEventListener("click", (e)=>{
+    if (e.target && e.target.id === "itEditModal") {
+      closeItEditModal({ autoCloseCard:true });
+    }
+  });
+
+  // 取消
+  document.getElementById("itEditCancel")?.addEventListener("click", ()=>{
+    closeItEditModal({ autoCloseCard:true });
+  });
+
+  // 儲存
+  document.getElementById("itEditSave")?.addEventListener("click", ()=>{
+    if (!editingSwipeItem) return;
+
+    const newPlace = (document.getElementById("itEditPlace")?.value || "").trim();
+    const newTime  = (document.getElementById("itEditTime")?.value || "").trim();
+    const newNote  = (document.getElementById("itEditNote")?.value || "").trim();
+
+    const placeEl = editingSwipeItem.querySelector('[data-field="place"]');
+    const timeEl  = editingSwipeItem.querySelector('[data-field="time"]');
+    const noteEl  = editingSwipeItem.querySelector('[data-field="note"]');
+
+    if (placeEl) placeEl.textContent = newPlace || "";
+    if (timeEl)  timeEl.innerHTML = `<span class="icon-watch"></span>&nbsp;&nbsp;${newTime || ""}`;
+    if (noteEl)  noteEl.textContent = newNote || "";
+
+    // ✅ 同步更新 Google Maps link
+    const link = editingSwipeItem.querySelector("a.it-link");
+    if (link){
+      const mode = editingSwipeItem.dataset.mode || "driving";
+      link.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(newPlace)}&travelmode=${encodeURIComponent(mode)}`;
+    }
+
+    closeItEditModal({ autoCloseCard:true });
+  });
+
+  // ✅ 強制攔截 edit-btn 點擊（避免任何舊 prompt 監聽器先跑）
   document.addEventListener("click", (e)=>{
     const btn = e.target.closest(".edit-btn");
     if (!btn) return;
 
-    const card = btn.closest(".swipe-item");
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    const card = btn.closest(CARD_SEL);
     if (!card) return;
 
-    const placeEl = card.querySelector('[data-field="place"]');
-    const timeEl  = card.querySelector('[data-field="time"]');
-    const noteEl  = card.querySelector('[data-field="note"]');
+    openItEditModal(card);
+  }, true);
 
-    const oldPlace = placeEl ? placeEl.textContent.trim() : "";
-    const oldTime  = timeEl ? timeEl.textContent.replace(/\s+/g," ").trim().slice(-5) : "";
-    const oldNote  = noteEl ? noteEl.textContent.trim() : "";
+  // 需要時給外部呼叫
+  window.openItEditModal = openItEditModal;
+  window.closeItEditModal = closeItEditModal;
 
-    const newPlace = prompt("修改地點", oldPlace);
-    if (newPlace === null) return;
-
-    const newTime  = prompt("修改時間（例如 09:45）", oldTime);
-    if (newTime === null) return;
-
-    const newNote  = prompt("修改備註", oldNote);
-    if (newNote === null) return;
-
-    if (placeEl) placeEl.textContent = newPlace.trim();
-    if (timeEl)  timeEl.innerHTML = `<span class="icon-watch"></span>&nbsp;&nbsp;${newTime.trim()}`;
-    if (noteEl)  noteEl.textContent = newNote.trim();
-
-    // ✅ 同步更新 Google Maps 連結
-    const link = card.querySelector("a.it-link");
-    if (link){
-      const mode = card.dataset.mode || "driving";
-      link.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(newPlace.trim())}&travelmode=${encodeURIComponent(mode)}`;
-    }
-
-    card.classList.remove("open");
-  });
 })();
-// ===== Itinerary Edit Modal controller =====
-let editingSwipeItem = null;
-
-function openItEditModal(swipeItem){
-  const modal = document.getElementById("itEditModal");
-  if (!modal) return;
-
-  editingSwipeItem = swipeItem;
-
-  const placeEl = swipeItem.querySelector('[data-field="place"]');
-  const timeEl  = swipeItem.querySelector('[data-field="time"]');
-  const noteEl  = swipeItem.querySelector('[data-field="note"]');
-
-  const place = placeEl ? placeEl.textContent.trim() : "";
-  const timeRaw = timeEl ? timeEl.textContent.trim() : "";
-  const time = (timeRaw.match(/\d{2}:\d{2}/)?.[0]) || "";
-  const note  = noteEl ? noteEl.textContent.trim() : "";
-
-  document.getElementById("itEditPlace").value = place;
-  document.getElementById("itEditTime").value  = time;
-  document.getElementById("itEditNote").value  = note;
-
-  // ✅ 開啟動畫
-  modal.classList.add("show");
-
-  // ✅ 讓輸入框自動 focus
-  setTimeout(() => document.getElementById("itEditPlace")?.focus(), 50);
-}
-
-function closeItEditModal({ autoCloseCard = true } = {}){
-  const modal = document.getElementById("itEditModal");
-  if (!modal) return;
-
-  // ✅ 關閉動畫
-  modal.classList.remove("show");
-
-  // ✅ 關閉後卡片自動滑回（你要的）
-  if (autoCloseCard && editingSwipeItem) {
-    editingSwipeItem.classList.remove("open");
-  }
-
-  // 等動畫結束再清空
-  setTimeout(() => {
-    editingSwipeItem = null;
-  }, 200);
-}
-
-
-// ===== 點編輯按鈕：開 modal =====
-document.getElementById("itEditSave")?.addEventListener("click", ()=>{
-  if (!editingSwipeItem) return;
-
-  const newPlace = document.getElementById("itEditPlace").value.trim();
-  const newTime  = document.getElementById("itEditTime").value.trim();
-  const newNote  = document.getElementById("itEditNote").value.trim();
-
-  const placeEl = editingSwipeItem.querySelector('[data-field="place"]');
-  const timeEl  = editingSwipeItem.querySelector('[data-field="time"]');
-  const noteEl  = editingSwipeItem.querySelector('[data-field="note"]');
-
-  if (placeEl) placeEl.textContent = newPlace || "";
-  if (timeEl)  timeEl.innerHTML = `<span class="icon-watch"></span>&nbsp;&nbsp;${newTime || ""}`;
-  if (noteEl)  noteEl.textContent = newNote || "";
-
-  // ✅ 同步更新 Google Maps link
-  const link = editingSwipeItem.querySelector("a.it-link");
-  if (link){
-    const mode = editingSwipeItem.dataset.mode || "driving";
-    link.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(newPlace)}&travelmode=${encodeURIComponent(mode)}`;
-  }
-
-  closeItEditModal({ autoCloseCard: true });
-});
-
 </script>
+
 </body>
 </html>

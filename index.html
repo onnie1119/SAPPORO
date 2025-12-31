@@ -4011,34 +4011,26 @@ function closeMenu() {
 /* ✅ menuBtn：menu 模式開選單；back 模式返回上一層 */
 if (menuBtn) {
   menuBtn.addEventListener("click", (e) => {
-    if (navMode === "back") {
+    const isBackMode = document.body.classList.contains("nav-back");
+
+    if (isBackMode) {
       e.preventDefault();
       e.stopPropagation();
 
-      // 保證 topbar 回來（避免卡在 hidden）
-      closeMenu();
+      closeMenu(); // 保證 topbar 回來
 
-      // 你真正有的返回流程是 goBack()
-      if (typeof goBack === "function") {
-        goBack();
-      } else if (typeof backToTicketList === "function") {
-        // 若你之後真的有 backToTicketList 也能用
-        backToTicketList();
-      }
+      // 回上一層（你有 goBack 就用 goBack）
+      if (typeof goBack === "function") goBack();
 
-      // goBack() 回到清單時你應該會 resetNavMenu()
-      // 這邊再保底一次，避免狀態不同步
-      if (typeof ticketLevel === "undefined" || ticketLevel === "list") {
-        resetNavMenu();
-      }
-
+      // 回到清單/第一層後切回漢堡
+      resetNavMenu();
       return;
     }
 
-    // menu 模式：開選單
     openMenu();
   });
 }
+
 
 if (menuClose) {
   menuClose.addEventListener("click", closeMenu);

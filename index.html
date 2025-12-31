@@ -2195,6 +2195,18 @@ body.nav-back #menuBtn > div{
   transform: translateY(0) scale(1);
   opacity: 1;
 }
+/* 編輯按鈕區預設不給點（避免沒滑開就誤觸） */
+.swipe-actions{ pointer-events: none; }
+
+/* 滑開後才允許點擊編輯按鈕 */
+.swipe-item.open .swipe-actions{ pointer-events: auto; }
+
+/* 確保按鈕本身能點 */
+.swipe-btn, .edit-btn{ pointer-events: auto; }
+
+/* 層級：讓按鈕區在下面，內容滑開後不會被蓋住 */
+.swipe-actions{ z-index: 1; }
+.swipe-content{ position: relative; z-index: 2; }
 
 </style>
 </head>

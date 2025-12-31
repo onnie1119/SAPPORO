@@ -4658,8 +4658,19 @@ function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLoc
   const sunsetIdx  = Number.isFinite(sunsetEvent)  ? nearestIndex(timesLocalMs, sunsetEvent)  : -1;
 
   wrap.innerHTML = timesLocalMs.map((hourLocalMs, i)=>{
-    const tempC = temps[i];
-    const codeN = normalizeWeatherCode(codes[i], tempC);
+   let tempC, codeN;
+
+if (i === 0) {
+  // ⭐「現在」強制使用 current_weather
+  tempC = Math.round(data.current_weather.temperature);
+  codeN = normalizeWeatherCode(
+    data.current_weather.weathercode,
+    tempC
+  );
+} else {
+  tempC = temps[i];
+  codeN = normalizeWeatherCode(codes[i], tempC);
+}
 
     const key = localDateKey(hourLocalMs);
     const sun = sunByDate.get(key) || sunByDate.get(localDateKey(nowLocalMs));

@@ -3853,8 +3853,8 @@ body.nav-back #menuBtn > div{
 
 		});
 	</script>
-	<script>
-  /* =========================
+<script>
+/* =========================
    Pages / Navigation
 ========================= */
 const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
@@ -3885,16 +3885,13 @@ function scrollCurrentPageToTop(behavior = "auto") {
 
 /* =========================
    Top-left icon mode (menu/back)
-   ✅ 你的結構：menuBtn(CSS漢堡) + backBtn(icon)
-   ✅ 用 body.nav-back 切換顯示
+   ✅ 只用 body.nav-back 判斷狀態（避免 navMode 重複宣告的坑）
 ========================= */
 function setNavBack() {
-  navMode = "back";
   document.body.classList.add("nav-back");
 }
 
 function resetNavMenu() {
-  navMode = "menu";
   document.body.classList.remove("nav-back");
 }
 
@@ -3906,11 +3903,11 @@ function showPage(targetId) {
 
   // ✅ 離開 ticket-page → 回清單 + 漢堡
   if (currentPageId === "ticket-page" && targetId !== "ticket-page") {
-    safeCall(window.resetTicketPage); // 若有定義：票據回到清單
+    safeCall(window.resetTicketPage);
     resetNavMenu();
   }
 
-  // ✅ 進入 ticket-page → 一律顯示清單 + 漢堡（你原本需求）
+  // ✅ 進入 ticket-page → 一律顯示清單 + 漢堡
   if (targetId === "ticket-page") {
     safeCall(window.resetTicketPage);
     resetNavMenu();
@@ -3989,7 +3986,8 @@ if (scrollBtn) {
 }
 
 /* =========================
-   Menu（iOS 全螢幕）- 修正版（只綁一次，不打架）
+   Menu（iOS 全螢幕）
+   ✅ 最終版：capture 攔截 back 狀態，徹底阻止其他 click listener 開 menu
 ========================= */
 const menuBtn   = document.getElementById("menuBtn");
 const menuClose = document.getElementById("menuClose");
@@ -4008,29 +4006,30 @@ function closeMenu() {
   if (topbar) topbar.style.display = "flex";
 }
 
-/* ✅ menuBtn：menu 模式開選單；back 模式返回上一層 */
 if (menuBtn) {
+  // ⭐ 1) 最優先攔截（capture）：只要是 back 狀態，永遠不會開 menu
   menuBtn.addEventListener("click", (e) => {
     const isBackMode = document.body.classList.contains("nav-back");
+    if (!isBackMode) return;
 
-    if (isBackMode) {
-      e.preventDefault();
-      e.stopPropagation();
+    e.preventDefault();
+    e.stopImmediatePropagation(); // ⭐ 關鍵：殺掉其他 click listener
+    e.stopPropagation();
 
-      closeMenu(); // 保證 topbar 回來
+    closeMenu(); // 保證 topbar 回來
 
-      // 回上一層（你有 goBack 就用 goBack）
-      if (typeof goBack === "function") goBack();
+    // 回上一層：你有 goBack 就用 goBack
+    if (typeof goBack === "function") goBack();
 
-      // 回到清單/第一層後切回漢堡
-      resetNavMenu();
-      return;
-    }
+    // 保底：回到清單/第一層後切回漢堡（如果你的 goBack 內已經有 resetNavMenu 也沒關係）
+    resetNavMenu();
+  }, true);
 
+  // 2) 一般狀態（bubble）：開 menu
+  menuBtn.addEventListener("click", () => {
     openMenu();
   });
 }
-
 
 if (menuClose) {
   menuClose.addEventListener("click", closeMenu);
@@ -4044,7 +4043,6 @@ document.querySelectorAll(".menu-content li").forEach(li => {
     showPage(target);
   });
 });
-
 
 /* =========================
    Splash → App 啟動
@@ -4135,8 +4133,8 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     btn.classList.add("active");
   });
 });
-
 </script>
+
 
 <script>
 /* =========================================================

@@ -5477,6 +5477,20 @@ document.addEventListener("click", (e)=>{
 
   openItEditModal(swipeItem);
 });
+// ✅ 強制攔截「編輯」按鈕點擊，避免舊的 prompt 監聽器先跑
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".edit-btn");
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+  const swipeItem = btn.closest(".swipe-item");
+  if (!swipeItem) return;
+
+  openItEditModal(swipeItem); // 只開自訂 modal
+}, true); // ⭐ capture=true 先搶事件
 
 </script>
 </body>

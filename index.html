@@ -1765,6 +1765,7 @@
   width: 65px;
   padding: 10px 8px;
   text-align:center;
+  scroll-snap-align: start;
 }
 .wx-hour-time{
   font-size: 14px;
@@ -2003,7 +2004,11 @@
 .wx-broadcast-text{
   line-height: 1.45;
 }
-
+		
+#wxHourly{
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
 </style>
 </head>
 <body>

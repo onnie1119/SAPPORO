@@ -4716,7 +4716,7 @@ if (i === 0 && current) {
   }).join("");
 }
 
-function renderWeek({ daily }){
+function renderWeek({ daily, offsetSec }){
   const wrap = $("wxWeek");
   if (!wrap) return;
 
@@ -4728,33 +4728,39 @@ function renderWeek({ daily }){
   const n = Math.min(7, times.length, minArr.length, maxArr.length, codes.length);
   if (!n) return;
 
-  const allMin = Math.min(...minArr.slice(0,n).map(Number));
-  const allMax = Math.max(...maxArr.slice(0,n).map(Number));
-  const span = Math.max(1, allMax - allMin);
+  // ⭐ 取得「當地今天」的 dateKey
+  const todayLocalMs = Date.now() + offsetSec * 1000;
+  const todayKey = new Date(todayLocalMs).toISOString().slice(0,10);
 
-  wrap.innerHTML = Array.from({length:n}).map((_,i)=>{
-    const label = (i===0) ? "今日" : `週${["日","一","二","三","四","五","六"][new Date((times[i])*1000).getUTCDay()]}`;
+  wrap.innerHTML = Array.from({length:n}).map((_, i)=>{
+    const dayLocalMs = (times[i] + offsetSec) * 1000;
+    const dayKey = new Date(dayLocalMs).toISOString().slice(0,10);
+
+    const isToday = dayKey === todayKey;
+
+    const dayLabel = isToday
+      ? "今日"
+      : `週${["日","一","二","三","四","五","六"][new Date(dayLocalMs).getUTCDay()]}`;
+
     const minT = Math.round(minArr[i]);
     const maxT = Math.round(maxArr[i]);
-    const codeN = normalizeWeatherCode(codes[i], (minArr[i]+maxArr[i])/2);
+    const codeN = normalizeWeatherCode(codes[i], (minArr[i] + maxArr[i]) / 2);
     const iconKey = weatherCodeToIconKey(codeN, false);
-
-    const leftPct = ((minT - allMin)/span)*100;
-    const widthPct = ((maxT - minT)/span)*100;
 
     return `
       <div class="wx-week-row">
-        <div class="wx-week-day">${label}</div>
+        <div class="wx-week-day">${dayLabel}</div>
         <img class="wx-week-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
         <div class="wx-week-min">${minT}°</div>
         <div class="wx-week-bar">
-          <span style="left:${leftPct}%; width:${Math.max(6,widthPct)}%;"></span>
+          <span></span>
         </div>
         <div class="wx-week-max">${maxT}°</div>
       </div>
     `;
   }).join("");
 }
+
 
 async function loadAndRenderWeather(){
   const page = $("weather-page");

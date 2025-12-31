@@ -4215,10 +4215,10 @@ class SnowBackground{
   _pickParams(mode){
     // 你要：慢、少、若隱若現但雪粒稍大
     if (mode === "heavySnow"){
-      return { count: 45, rMin: 1.8, rMax: 3.8, vyMin: 0.20, vyMax: 0.60, wind: 0.12 };
+      return { count: 70, rMin: 1.8, rMax: 4, vyMin: 0.25, vyMax: 0.60, wind: 0.15 };
     }
     if (mode === "snow"){
-      return { count: 28, rMin: 1.6, rMax: 3.2, vyMin: 0.16, vyMax: 0.52, wind: 0.08 };
+      return { count: 56, rMin: 1.6, rMax: 3.8, vyMin: 0.2, vyMax: 0.52, wind: 0.1 };
     }
     return { count: 14, rMin: 1.4, rMax: 2.8, vyMin: 0.14, vyMax: 0.45, wind: 0.06 }; // flurry
   }

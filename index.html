@@ -4893,13 +4893,14 @@ function weatherCodeToTextWithDayNight(code, isNight){
   /* =========================================================
      Render helpers
   ========================================================= */
- function renderHeader({ cityName, tempNowInt, descText, hiInt, loInt }){
+function renderHeader({ cityName, tempNowInt, descText, hiInt, loInt }){
   const cityEl = $("wxCity"), tempEl = $("wxTemp"), descEl = $("wxDesc"), hiloEl = $("wxHiLo");
   if (cityEl) cityEl.textContent = cityName;
   if (tempEl) tempEl.textContent = Number.isFinite(tempNowInt) ? String(tempNowInt) : "--";
-  if (descEl) descEl.textContent = descText || "";
+  if (descEl) descEl.textContent = descText || "";   // ✅ 這行會顯示天氣狀態
   if (hiloEl) hiloEl.textContent = `最高 ${Number.isFinite(hiInt)?hiInt:"--"}° / 最低 ${Number.isFinite(loInt)?loInt:"--"}°`;
 }
+
 
 
  function buildSunByDate(daily, offsetSec){
@@ -5131,10 +5132,14 @@ function weatherCodeToTextWithDayNight(code, isNight){
 
       const dayMax = Number.isFinite(data?.daily?.temperature_2m_max?.[0]) ? Math.round(data.daily.temperature_2m_max[0]) : NaN;
       const dayMin = Number.isFinite(data?.daily?.temperature_2m_min?.[0]) ? Math.round(data.daily.temperature_2m_min[0]) : NaN;
+const isNightNow = (sunToday && Number.isFinite(sunToday.sunriseLocalMs) && Number.isFinite(sunToday.sunsetLocalMs))
+  ? isNightBySun(nowLocalMs, sunToday.sunriseLocalMs, sunToday.sunsetLocalMs)
+  : false;
 
+const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       renderHeader({
         cityName: city.name,
-        tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
+        tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,descText, 
         codeNow: codeNowN,
         hiInt: dayMax,
         loInt: dayMin

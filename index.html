@@ -2293,6 +2293,81 @@ body.nav-back #menuBtn > div{
   pointer-events: none;
 }
 
+:root{
+  --swipe-w: 82px;  /* 右側編輯寬度（像你圖那樣） */
+  --r: 12px;        /* 右邊圓角（跟卡片一樣） */
+}
+
+/* 外框：讓內容被裁切，右側圓角 */
+.swipe-item{
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 var(--r) var(--r) 0; /* 左直角、右圓角 */
+}
+
+/* 卡片內容層（會滑動） */
+.swipe-content{
+  position: relative;
+  z-index: 2;
+  transform: translateX(0);
+  transition: transform 180ms ease;
+  touch-action: pan-y;
+}
+
+/* open：卡片左移露出按鈕 */
+.swipe-item.open .swipe-content{
+  transform: translateX(calc(-1 * var(--swipe-w)));
+}
+
+/* 右側 actions：固定在右側，跟卡同高 */
+.swipe-actions{
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--swipe-w);
+
+  z-index: 3;
+  display: flex;
+  align-items: stretch;
+
+  /* 預設不顯示不吃點 */
+  opacity: 0;
+  transform: translateX(12px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+/* open 才顯示可點 */
+.swipe-item.open .swipe-actions{
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* 編輯按鈕：整高，左直角右圓角 */
+.swipe-btn.edit-btn{
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+
+  background: #2f6df6; /* 藍色 */
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+
+  border-radius: 0 var(--r) var(--r) 0; /* 左直角右圓角 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ 關鍵：滑開時關掉 a 的點擊，避免蓋住按鈕 */
+.swipe-item.open a.it-link{
+  pointer-events: none;
+}
 		
 </style>
 </head>

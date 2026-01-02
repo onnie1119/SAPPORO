@@ -4782,7 +4782,8 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
       + `&current_weather=true`
       + `&hourly=temperature_2m,weathercode`
-      + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`  /* ✅ no time */
+     + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
+
       + `&timezone=auto`
       + `&timeformat=unixtime`;
   }

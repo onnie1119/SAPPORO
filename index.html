@@ -4662,30 +4662,134 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     }
     return best;
   }
-  function buildNaturalChangeText(period, kind){
-    const k = kindName(kind);
-    if (period==="早上") return `今日早上${k}`;
-    if (period==="下午") return `今日下午開始${k}`;
-    if (period==="晚上") return `今晚開始有${k}`;
-    if (period==="深夜") return `深夜將轉為${k}`;
-    return `${period}${k}`;
+ function buildNaturalChangeText(period, kind){
+  const k = kindName(kind);
+  if (period==="早上") return `今日早上${k}`;
+  if (period==="下午") return `今日下午開始${k}`;
+  if (period==="晚上") return `今晚開始${k}`;
+  if (period==="深夜") return `深夜將轉為${k}`;
+  return `${period}${k}`;
+}
+
+ function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
+  const tips = [];
+
+  /* ===== 降雪情境 ===== */
+  if (isSnowCode(codeNowN)) {
+    tips.push(
+      "路面可能結冰或濕滑，行走與行車請放慢速度",
+      "降雪期間視線容易受影響，外出請注意前方路況",
+      "積雪可能影響交通時間，行程建議預留緩衝",
+      "鞋底防滑效果會影響行走安全，請留意步伐",
+      "降雪後地面濕滑，拍照時注意站穩"
+    );
   }
-  function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
-    const tips = [];
-    if (isSnowCode(codeNowN)) tips.push("路面可能結冰或濕滑，行走與行車請放慢速度");
-    if (isRainCode(codeNowN)) tips.push("外出可能遇雨，記得攜帶雨具並留意防滑");
-    if (Number.isFinite(minT) && minT <= -5) tips.push("今日低溫明顯，外出請特別注意保暖");
-    if (Number.isFinite(tempNow) && tempNow <= 0) tips.push("氣溫偏低，建議洋蔥式穿搭以調整體感");
-    if (Number.isFinite(minT) && Number.isFinite(maxT) && (maxT - minT) >= 10) tips.push("日夜溫差較大，外套建議隨身攜帶");
-    if (Number.isFinite(windNow) && windNow >= 25) tips.push("風勢偏強，體感溫度可能更低");
-    if ([45,48].includes(codeNowN)) tips.push("能見度可能下降，行車請留意安全距離");
-    tips.push("體感溫度偏低，外出時注意保暖");
-    tips.push("氣溫持續偏低，室外活動記得加件外套");
-    tips.push("清晨與夜間路面易結冰，行走請放慢腳步");
-    tips.push("降雪後視線可能受影響，行車請留意路況");
-    tips.push("風勢偶爾偏強，體感溫度可能更低");
-    return tips[Math.floor(Math.random() * tips.length)];
+
+ // ===== 降雪（包含低溫雨轉雪）=====
+if (isSnowCode(codeNowN)) {
+  tips.push(
+    "路面可能結冰或濕滑，行走與行車請放慢速度",
+    "積雪可能影響交通時間，行程建議預留緩衝",
+    "降雪時拍照很漂亮，但記得注意腳下安全",
+    "雪地行走容易疲勞，行程間可安排室內休息",
+    "降雪後公車與電車可能延誤，出發前留意資訊",
+
+    "雪勢較明顯，戶外景點可視情況縮短停留時間",
+    "背包與相機容易沾雪，記得簡單防水保護",
+    "雪天體感比預期冷，帽子與手套會很有感",
+    "拍照時站位要穩，避免踩在看不見的積雪上",
+    "若要移動到郊區景點，交通時間可能拉長"
+  );
+}
+
+// ===== 降雨（只在「溫度高於 5°C」才會出現）=====
+if (
+  isRainCode(codeNowN) &&
+  Number.isFinite(tempNow) &&
+  tempNow > 5
+) {
+  tips.push(
+    "外出可能遇雨，記得攜帶雨具並留意防滑",
+    "雨天體感溫度略低，建議多加一層衣物",
+    "地面濕滑，行走時留意階梯與轉角",
+
+    "雨天拍照可選擇室內景點或有遮蔽的街區",
+    "鞋子容易進水，長時間行走舒適度會受影響",
+    "雨勢不穩時，行程安排可保持彈性",
+    "搭乘大眾交通工具時，留意雨傘收納空間",
+    "雨天夜晚視線較差，過馬路時請多留意"
+  );
+}
+
+  /* ===== 濃霧 ===== */
+  if ([45,48].includes(codeNowN)) {
+    tips.push(
+      "能見度可能下降，行車請留意安全距離",
+      "濃霧時方向感較差，戶外活動請結伴同行"
+    );
   }
+
+  /* ===== 低溫 ===== */
+  if (Number.isFinite(tempNow) && tempNow <= 0) {
+    tips.push(
+      "氣溫偏低，建議洋蔥式穿搭以調整體感",
+      "長時間戶外活動容易感到寒冷，適時進入室內取暖",
+      "手套與圍巾可有效減少寒風影響"
+    );
+  }
+
+  if (Number.isFinite(minT) && minT <= -5) {
+    tips.push(
+      "今日低溫明顯，外出請特別注意保暖",
+      "清晨與夜間氣溫偏低，建議減少久站戶外",
+      "手機電量在低溫下消耗較快，記得備用電源"
+    );
+  }
+
+  /* ===== 日夜溫差 ===== */
+  if (
+    Number.isFinite(minT) &&
+    Number.isFinite(maxT) &&
+    (maxT - minT) >= 10
+  ) {
+    tips.push(
+      "日夜溫差較大，外套建議隨身攜帶",
+      "早晚體感差異明顯，行程安排可彈性調整"
+    );
+  }
+
+  /* ===== 強風 ===== */
+  if (Number.isFinite(windNow) && windNow >= 25) {
+    tips.push(
+      "風勢偏強，體感溫度可能更低",
+      "強風時帽子與圍巾請固定，以免被吹落",
+      "戶外拍照時注意防風，避免長時間停留"
+    );
+  }
+
+  /* ===== 夜間情境（泛用） ===== */
+  const h = new Date().getHours();
+  if (h >= 18 || h < 6) {
+    tips.push(
+      "夜間氣溫偏低，外出建議加件保暖衣物",
+      "夜晚行走請留意結冰路面與照明不足處",
+      "夜間活動結束後，留意末班交通時間"
+    );
+  }
+
+  /* ===== 晴朗穩定（fallback） ===== */
+  if (!tips.length) {
+    tips.push(
+      "天氣狀況穩定，適合外出活動與拍照",
+      "目前天氣良好，行程可照原計畫進行",
+      "戶外活動舒適，記得補充水分"
+    );
+  }
+
+  // ✅ 只回傳一句（隨機）
+  return tips[Math.floor(Math.random() * tips.length)];
+}
+
   function buildSmartBroadcast({ tempNow, windNow, codeNowN, dayMin, dayMax, sliceUnix, sliceTemps, sliceCodes, offsetSec }){
     const timesLocalMs = sliceUnix.map(sec => localMsFromUnix(sec, offsetSec));
     const buckets = new Map();
@@ -4696,21 +4800,29 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
       buckets.get(p).codes.push(normalizeWeatherCode(sliceCodes[i], sliceTemps[i]));
     }
 
-    const periods = ["早上","下午","晚上","深夜"].filter(p => buckets.has(p));
-    const kinds = periods.map(p => ({ period:p, kind: dominantKind(buckets.get(p).codes) }));
+   const ORDER = ["早上","下午","晚上","深夜"];
 
-    const changes = [];
-    for (let i=1;i<kinds.length;i++){
-      if (kinds[i].kind !== kinds[i-1].kind){
-        changes.push({ at: kinds[i].period, to: kinds[i].kind });
-      }
-    }
+const nowPeriod = getPeriodLabel(Date.now() + offsetSec*1000); 
+// ⚠️ 如果你現在已經改成 nowLocalMs，就用 getPeriodLabel(nowLocalMs)
 
-    if (changes.length){
-      return changes.slice(0,2).map(c => buildNaturalChangeText(c.at, c.to)).join("，");
-    }
-    return buildTips({ tempNow, minT: dayMin, maxT: dayMax, windNow, codeNowN });
-  }
+let periods = ORDER.filter(p => buckets.has(p));
+
+// ✅ 只保留「現在」以及「之後」的時段（避免晚上還提下午）
+const nowIdx = ORDER.indexOf(nowPeriod);
+if (nowIdx >= 0) {
+  periods = periods.filter(p => ORDER.indexOf(p) >= nowIdx);
+}
+
+// 如果過濾完沒了（例如資料不足），退回原本全部
+if (!periods.length) {
+  periods = ORDER.filter(p => buckets.has(p));
+}
+
+const kinds = periods.map(p => ({
+  period: p,
+  kind: dominantKind(buckets.get(p).codes)
+}));
+
 
   /* =========================================================
      UI: Dots + Swipe + init once

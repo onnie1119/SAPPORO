@@ -4723,9 +4723,11 @@ function buildWeatherApiUrl(city){
   return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
     + `&current_weather=true`
     + `&hourly=temperature_2m,weathercode`
-    + `&daily=time,weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
+    // ✅ daily 不要寫 time（會 400）
+    + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
     + `&timezone=auto`;
 }
+
 
 function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
   const cityEl = $("wxCity"), tempEl = $("wxTemp"), descEl = $("wxDesc"), hiloEl = $("wxHiLo");

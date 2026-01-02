@@ -5176,6 +5176,28 @@ async function loadAndRenderWeather(){
       wxCityIndex = 1; // fallback：札幌
     }
   }
+  const isDay = data?.current_weather?.is_day; // 0 / 1
+
+// ✅ 先決定「日 or 夜」（最重要、最穩）
+if (isDay === 0) {
+  setBgClass(page, "bg-night");
+} else {
+  setBgClass(page, "bg-day");
+}
+
+// ✅ 只有在日出 / 日落時間附近，才用 phase 覆蓋
+if (
+  isDay === 1 &&                      // 白天才需要日出/日落過渡
+  Number.isFinite(sunriseMs) &&
+  Number.isFinite(sunsetMs)
+) {
+  const phase = getDayPhase(nowMs, sunriseMs, sunsetMs, 45);
+
+  if (phase === "sunrise" || phase === "sunset") {
+    setBgClass(page, `bg-${phase}`);
+  }
+}
+
   const page = $("weather-page");
   const city = WX_CITIES[wxCityIndex];
   if (!page || !city) { wxWeatherInFlight = false; return; }

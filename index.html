@@ -4191,6 +4191,7 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
 
 
 <script>
+let WX_LAST_IS_DAY = null; // 0 | 1 | null
 /* =========================================================
    Weather Page – FINAL (Stable)
    - Geo default + fallback
@@ -4690,21 +4691,28 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
     });
   }
 
- function showWeatherLoading(){
+function showWeatherLoading(){
   const page = document.getElementById("weather-page");
   if (!page) return;
 
-  // ✅ 先把舊畫面全部清掉
-  resetWeatherPageUI();
+  // 先清掉舊背景
+  page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
 
-  // ✅ 再給暫時背景（避免白畫面）
-  const h = new Date().getHours();
-  const guess = (h >= 18 || h < 6) ? "bg-night" : "bg-day";
-  page.classList.add(guess);
+  // ✅ 優先用「該地區上一次的日夜狀態」
+  if (WX_LAST_IS_DAY === 0) {
+    page.classList.add("bg-night");
+  } else if (WX_LAST_IS_DAY === 1) {
+    page.classList.add("bg-day");
+  } else {
+    // 🔁 第一次進入還沒資料，才用本機時間猜
+    const h = new Date().getHours();
+    page.classList.add((h >= 18 || h < 6) ? "bg-night" : "bg-day");
+  }
 
-  // ✅ 最後顯示 loading
+  // 顯示 loading（把內容藏起來）
   page.classList.add("is-loading");
 }
+
 
 
 function hideWeatherLoading(){
@@ -5317,6 +5325,9 @@ async function loadAndRenderWeather(){
     }
   }
   const isDay = data?.current_weather?.is_day; // 0 / 1
+if (isDay === 0 || isDay === 1) {
+  WX_LAST_IS_DAY = isDay;
+}
 
 // ✅ 先決定「日 or 夜」（最重要、最穩）
 if (isDay === 0) {

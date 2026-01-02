@@ -2083,7 +2083,49 @@ body.nav-back #menuBtn > div{
   opacity: 0 !important;
   visibility: hidden !important;
 }
+.wx-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
 
+/* 背景色會跟著 bg-day / bg-night */
+#weather-page.bg-day .wx-loading {
+  background: linear-gradient(180deg, #9fd4ff, #eaf6ff);
+}
+#weather-page.bg-night .wx-loading {
+  background: linear-gradient(180deg, #0b1a2a, #142a45);
+}
+
+.wx-loading-box {
+  text-align: center;
+  color: #fff;
+}
+
+.wx-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 載入中時，隱藏所有天氣內容 */
+#weather-page.is-loading .wx-content {
+  visibility: hidden;
+}
+#weather-page.is-loading .wx-loading {
+  display: flex;
+}
 </style>
 </head>
 <body>
@@ -2957,6 +2999,12 @@ body.nav-back #menuBtn > div{
 	      
 			<!-- Weather Page -->
 			<div id="weather-page" class="weather-page" style="display:none;">
+			  <div id="wxLoading" class="wx-loading">
+				  <div class="wx-loading-box">
+				    <div class="wx-loading-spinner"></div>
+				    <div class="wx-loading-text">天氣載入中…</div>
+				  </div>
+			  </div>
 			  <div class="wx-wrap">
 			
 			    <!-- 上方圓點：左右滑切換城市 -->
@@ -4636,6 +4684,19 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
       d.classList.toggle("active", Number(d.dataset.index)===wxCityIndex);
     });
   }
+
+  function showWeatherLoading(){
+  const page = document.getElementById("weather-page");
+  if (!page) return;
+  page.classList.add("is-loading");
+}
+
+function hideWeatherLoading(){
+  const page = document.getElementById("weather-page");
+  if (!page) return;
+  page.classList.remove("is-loading");
+}
+
   function resetWeatherPageScroll(){
     const page = $("weather-page");
     if (page) page.scrollTop = 0;
@@ -5018,13 +5079,23 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
   /* =========================================================
      Enter / Leave
   ========================================================= */
-  function WX_EnterWeatherPage(){
-    initWeatherPageOnce();
-    renderDots();
-    setDotsActive();
-    resetWeatherPageScroll();
-    loadAndRenderWeather();
-  }
+ function WX_EnterWeatherPage(){
+  initWeatherPageOnce();
+
+  // ✅ 進頁面立刻顯示背景 + 載入中
+  showWeatherLoading();
+
+  renderDots();
+  setDotsActive();
+  resetWeatherPageScroll();
+
+  loadAndRenderWeather()
+    .finally(() => {
+      // ✅ 所有資料、背景、動畫都 ready 後再顯示內容
+      hideWeatherLoading();
+    });
+}
+
   window.WX_EnterWeatherPage = WX_EnterWeatherPage;
 
   /* =========================================================

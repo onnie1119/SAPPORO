@@ -4996,12 +4996,7 @@ const sliceCodes = hCodes.slice(startIdx, startIdx+24);
       return;
     }
 
-    const nowFloorLocal = floorToHourLocal(nowLocalMs);
-    let startIdx = 0;
-    for (let i=0;i<hUnix.length;i++){
-      const ms = localMsFromUnix(hUnix[i], offsetSec);
-      if (ms >= nowFloorLocal){ startIdx = i; break; }
-    }
+   
 
     const sliceUnix  = hUnix.slice(startIdx, startIdx+24);
     const sliceTemps = hTemps.slice(startIdx, startIdx+24);

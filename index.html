@@ -4318,6 +4318,9 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
   /* =========================================================
      Snow only on weather page
   ========================================================= */
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+function rand(min,max){ return Math.random()*(max-min)+min; }
+
   function getSnowModeFromCode(codeNowN){
     if (isHeavySnowCode(codeNowN)) return "heavySnow";
     if (isSnowCode(codeNowN)) return "snow";

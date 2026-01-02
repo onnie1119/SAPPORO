@@ -2127,6 +2127,21 @@ body.nav-back #menuBtn > div{
 #weather-page.is-loading .wx-loading {
   display: flex;
 }
+
+/* 載入中時：整個天氣內容直接消失 */
+#weather-page.is-loading .wx-content {
+  display: none !important;
+}
+
+#weather-page.is-loading .wx-loading {
+  display: flex;
+}
+
+/* 非載入中時 */
+#weather-page .wx-loading {
+  display: none;
+}
+
 </style>
 </head>
 <body>
@@ -3000,52 +3015,41 @@ body.nav-back #menuBtn > div{
 	      
 			<!-- Weather Page -->
 			<div id="weather-page" class="weather-page" style="display:none;">
-			  <div id="wxLoading" class="wx-loading">
-				  <div class="wx-loading-box">
-				    <div class="wx-loading-spinner"></div>
-				    <div class="wx-loading-text">天氣載入中…</div>
-				  </div>
-			  </div>
-			  <div class="wx-wrap">
-			
-			    <!-- 上方圓點：左右滑切換城市 -->
-			    <div class="wx-dots" id="wxDots" aria-label="切換地區"></div>
-			
-			    <!-- Header -->
-			    <div class="wx-hero">
-			      <div class="wx-city" id="wxCity">札幌市</div>
-			
-			      <!-- 溫度置中：不把 ° 算進去，° 是用 CSS pseudo 做 -->
-			      <div class="wx-temp-center">
-			        <span id="wxTemp">--</span>
-			      </div>
-			
-			      <div class="wx-desc" id="wxDesc">--</div>
-			      <div class="wx-hilo" id="wxHiLo">最高 --° / 最低 --°</div>
-			    </div>
-			
-			    <!-- 24hr -->
-			    <div class="wx-card">
-			      
-			      <div class="wx-hourly-note" id="wxHourlyNote">載入中…</div>
-			      <div class="wx-hourly" id="wxHourly"></div>
-			    </div>
-			
-			    <!-- 7 days -->
-			    <div class="wx-card">
-			      <div class="wx-card-title"><span class="icon-calendar1"></span> 本週天氣預報</div>
-			      <div class="wx-week" id="wxWeek"></div>
-			    </div>
-			
-			    <div style="height:18px;"></div>
-			  </div>
+				<div id="wxLoading" class="wx-loading">
+					<div class="wx-loading-box">
+						<div class="wx-loading-spinner"></div>
+						<div class="wx-loading-text">天氣載入中…</div>
+					</div>
+				</div>
+				<div class="wx-content">
+				  	<div class="wx-wrap">
+						<div class="wx-dots" id="wxDots" aria-label="切換地區"></div>
+						<div class="wx-hero">
+					    	<div class="wx-city" id="wxCity">札幌市</div>
+							<div class="wx-temp-center">
+					        	<span id="wxTemp">--</span>
+							</div>
+							<div class="wx-desc" id="wxDesc">--</div>
+							<div class="wx-hilo" id="wxHiLo">最高 --° / 最低 --°</div>
+						</div>
+						<div class="wx-card">
+							<div class="wx-hourly-note" id="wxHourlyNote">載入中…</div>
+							<div class="wx-hourly" id="wxHourly"></div>
+						</div>
+						<div class="wx-card">
+							<div class="wx-card-title"><span class="icon-calendar1"></span> 本週天氣預報</div>
+							<div class="wx-week" id="wxWeek"></div>
+						</div>
+						<div style="height:18px;"></div>
+					</div>
+				</div>
 			</div>
 
-
+			
 		</div>
 		
         
-	</div>	
+</div>	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 	<script>
 		let isFirstHomeRender = true;
@@ -4686,11 +4690,22 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
     });
   }
 
-  function showWeatherLoading(){
+ function showWeatherLoading(){
   const page = document.getElementById("weather-page");
   if (!page) return;
+
+  // ✅ 先把舊畫面全部清掉
+  resetWeatherPageUI();
+
+  // ✅ 再給暫時背景（避免白畫面）
+  const h = new Date().getHours();
+  const guess = (h >= 18 || h < 6) ? "bg-night" : "bg-day";
+  page.classList.add(guess);
+
+  // ✅ 最後顯示 loading
   page.classList.add("is-loading");
 }
+
 
 function hideWeatherLoading(){
   const page = document.getElementById("weather-page");
@@ -4943,6 +4958,34 @@ function hideWeatherLoading(){
       );
     });
   }
+function resetWeatherPageUI(){
+  const page = document.getElementById("weather-page");
+  if (!page) return;
+
+  // 1️⃣ 清掉背景（避免札幌黑夜殘留）
+  page.classList.remove(
+    "bg-sunrise",
+    "bg-day",
+    "bg-sunset",
+    "bg-night"
+  );
+
+  // 2️⃣ 清掉舊天氣文字（保險）
+  const clearIds = [
+    "wxCity","wxTemp","wxDesc","wxHiLo",
+    "wxHourly","wxWeek",
+    "wxHourlyNote","nowBroadcast","wxNowBroadcast"
+  ];
+  clearIds.forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
+
+  // 3️⃣ 停止雪動畫（如果有）
+  if (window.wxSnowBg) {
+    window.wxSnowBg.stop?.();
+  }
+}
 
   /* =========================================================
      Main loader
@@ -5080,10 +5123,10 @@ function hideWeatherLoading(){
   /* =========================================================
      Enter / Leave
   ========================================================= */
- function WX_EnterWeatherPage(){
+function WX_EnterWeatherPage(){
   initWeatherPageOnce();
 
-  // ✅ 進頁面立刻顯示背景 + 載入中
+  // ✅ 進頁第一件事：清空 + loading
   showWeatherLoading();
 
   renderDots();
@@ -5092,10 +5135,11 @@ function hideWeatherLoading(){
 
   loadAndRenderWeather()
     .finally(() => {
-      // ✅ 所有資料、背景、動畫都 ready 後再顯示內容
-      hideWeatherLoading();
+      const page = document.getElementById("weather-page");
+      page?.classList.remove("is-loading");
     });
 }
+
 
   window.WX_EnterWeatherPage = WX_EnterWeatherPage;
 

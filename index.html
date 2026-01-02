@@ -4189,15 +4189,15 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
 });
 </script>
 
-
 <script>
 /* =========================================================
-   Weather Page – FINAL (Stable)
-   - Geo default + fallback
-   - No NaN time
-   - Correct day/night background with timezone=auto
-   - Snow only on weather page (leave page stops)
-   - Broadcast: loading -> final (no flicker)
+   Weather Page – FULL JS (Timezone-correct, no redeclare)
+   ✅ 支援「目前位置」+ 固定城市
+   ✅ 用 utc_offset_seconds 正確換算當地時間（不再全變下午4時）
+   ✅ 背景 day/sunrise/sunset/night 正確（用日出日落 + offset）
+   ✅ 進入頁面：只顯示載入中（避免殘留札幌畫面）
+   ✅ 播報：載入中 -> final（不閃多句）
+   ✅ 雪動畫只在天氣頁（離開自動停止/隱藏）
 ========================================================= */
 (function(){
   "use strict";
@@ -4205,6 +4205,7 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
   /* ---------------- Config ---------------- */
   const WX_ICON_BASE = "images/";
   const WX_ICON_MAP = {
+    // day
     clear: "clear.png",
     partly_cloudy: "partly_cloudy.png",
     cloudy: "cloudy.png",
@@ -4215,9 +4216,11 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     heavy_snow: "heavy_snow.png",
     thunder: "thunder.png",
     wind: "wind.png",
+    // night
     night_clear: "night_clear.png",
     night_partly_cloudy: "night_partly_cloudy.png",
     night_cloudy: "night_cloudy.png",
+    // markers
     sunrise: "sunrise.png",
     sunset: "sunset.png",
     unknown: "unknown.png"
@@ -4232,8 +4235,8 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     { name: "登別市",   kind: "fixed", lat: 42.4522, lon: 141.1791 },
   ];
 
-  // ✅ Prevent redeclare
-  window.wxCityIndex ??= 0;
+  // ✅ Prevent redeclare across multiple <script> runs
+  window.wxCityIndex ??= 0; // default geo
   let wxCityIndex = window.wxCityIndex;
 
   /* ---------------- DOM ---------------- */
@@ -4241,46 +4244,67 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
 
   /* ---------------- State ---------------- */
   let wxInited = false;
+
+  // snow
   let wxSnowBg = null;
-  let wxSnowEnabled = false; // only enable when on weather page
+  let wxSnowEnabled = false;
+
+  // last known bg phase cache (for loading bg, per city)
+  const WX_BG_CACHE_KEY = "wx_bg_cache_v2";
 
   /* =========================================================
-     Time parsing helpers (timezone=auto => strings)
+     Safe helpers
   ========================================================= */
-  function msFromOpenMeteoTime(t){
-    if (typeof t === "string") {
-      const ms = Date.parse(t); // "YYYY-MM-DDTHH:MM" treated as local time by browser
-      return Number.isFinite(ms) ? ms : NaN;
-    }
-    const n = Number(t);
-    if (!Number.isFinite(n)) return NaN;
-    if (n > 1e12) return n;
-    if (n > 1e9) return n * 1000;
-    return NaN;
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+
+  function wxIconSrc(key){
+    return WX_ICON_BASE + (WX_ICON_MAP[key] || WX_ICON_MAP.unknown);
   }
 
-  function dateKeyLocal(ms){
-    if (!Number.isFinite(ms)) return "";
-    const d = new Date(ms);
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const day = String(d.getDate()).padStart(2,"0");
-    return `${y}-${m}-${day}`;
+  function cityKey(city){
+    if (!city) return "unknown";
+    if (city.kind === "geo") return "geo";
+    return `fixed:${city.lat},${city.lon}`;
+  }
+  function saveBgCache(key, payload){
+    try{
+      const all = JSON.parse(localStorage.getItem(WX_BG_CACHE_KEY) || "{}");
+      all[key] = { ...payload, ts: Date.now() };
+      localStorage.setItem(WX_BG_CACHE_KEY, JSON.stringify(all));
+    }catch(e){}
+  }
+  function loadBgCache(key){
+    try{
+      const all = JSON.parse(localStorage.getItem(WX_BG_CACHE_KEY) || "{}");
+      return all[key] || null;
+    }catch(e){ return null; }
   }
 
-  function floorToHour(ms){
-    if (!Number.isFinite(ms)) return NaN;
-    const d = new Date(ms);
-    d.setMinutes(0,0,0);
+  /* =========================================================
+     Time utils (IMPORTANT: use UTC + utc_offset_seconds)
+     Open-Meteo with timezone=UTC:
+       hourly.time & daily.time are unix seconds (numbers)
+       sunrise/sunset are unix seconds too
+========================================================= */
+  function localMsFromUnix(unixSec, offsetSec){
+    return (Number(unixSec) + Number(offsetSec)) * 1000;
+  }
+  function localHour(localMs){
+    // localMs already includes offset => read via UTC getters
+    return new Date(localMs).getUTCHours();
+  }
+  function localDateKey(localMs){
+    // localMs already includes offset => UTC date parts correspond to local date
+    return new Date(localMs).toISOString().slice(0,10);
+  }
+  function floorToHourLocal(localMs){
+    const d = new Date(localMs);
+    d.setUTCMinutes(0,0,0);
     return d.getTime();
   }
-
-  function hourLocal(ms){
-    return new Date(ms).getHours();
-  }
-
-  function formatHourAmPm(ms){
-    const h = hourLocal(ms);
+  function formatHourAmPmFromLocalMs(localMs){
+    const h = localHour(localMs);
     const ampm = h < 12 ? "上午" : "下午";
     let h12 = h % 12;
     if (h12 === 0) h12 = 12;
@@ -4288,7 +4312,7 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
   }
 
   /* =========================================================
-     Weather code
+     Weather code normalize / text / icon
   ========================================================= */
   function isSnowCode(code){ return [71,73,75,77,85,86].includes(code); }
   function isHeavySnowCode(code){ return code === 86; }
@@ -4336,30 +4360,26 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     return "unknown";
   }
 
-  function wxIconSrc(key){
-    return WX_ICON_BASE + (WX_ICON_MAP[key] || WX_ICON_MAP.unknown);
-  }
-
   /* =========================================================
-     Sun / Background
-     timezone=auto returns sunrise/sunset as local time string.
+     Sun / Background phase
   ========================================================= */
-  function isNightBySun(ms, sunriseMs, sunsetMs){
-    if (!Number.isFinite(sunriseMs) || !Number.isFinite(sunsetMs)) return false;
-    return !(ms >= sunriseMs && ms < sunsetMs);
+  function isNightBySun(nowLocalMs, sunriseLocalMs, sunsetLocalMs){
+    if (!Number.isFinite(sunriseLocalMs) || !Number.isFinite(sunsetLocalMs)) return false;
+    return !(nowLocalMs >= sunriseLocalMs && nowLocalMs < sunsetLocalMs);
   }
 
-  function getDayPhase(nowMs, sunriseMs, sunsetMs, twilightMin=45){
-    if (!Number.isFinite(sunriseMs) || !Number.isFinite(sunsetMs)) return "day";
+  function getDayPhase(nowLocalMs, sunriseLocalMs, sunsetLocalMs, twilightMin=45){
+    if (!Number.isFinite(sunriseLocalMs) || !Number.isFinite(sunsetLocalMs)) return "day";
     const t = twilightMin * 60 * 1000;
-    const sunriseStart = sunriseMs - t;
-    const sunriseEnd   = sunriseMs + t;
-    const sunsetStart  = sunsetMs - t;
-    const sunsetEnd    = sunsetMs + t;
 
-    if (nowMs >= sunriseStart && nowMs < sunriseEnd) return "sunrise";
-    if (nowMs >= sunriseEnd && nowMs < sunsetStart) return "day";
-    if (nowMs >= sunsetStart && nowMs < sunsetEnd) return "sunset";
+    const sunriseStart = sunriseLocalMs - t;
+    const sunriseEnd   = sunriseLocalMs + t;
+    const sunsetStart  = sunsetLocalMs - t;
+    const sunsetEnd    = sunsetLocalMs + t;
+
+    if (nowLocalMs >= sunriseStart && nowLocalMs < sunriseEnd) return "sunrise";
+    if (nowLocalMs >= sunriseEnd   && nowLocalMs < sunsetStart) return "day";
+    if (nowLocalMs >= sunsetStart  && nowLocalMs < sunsetEnd) return "sunset";
     return "night";
   }
 
@@ -4371,9 +4391,6 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
   /* =========================================================
      Snow only on weather page
   ========================================================= */
-  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
-function rand(min,max){ return Math.random()*(max-min)+min; }
-
   function getSnowModeFromCode(codeNowN){
     if (isHeavySnowCode(codeNowN)) return "heavySnow";
     if (isSnowCode(codeNowN)) return "snow";
@@ -4392,31 +4409,44 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
       this.canvas = canvas;
       this.ctx = canvas.getContext("2d");
       this.mode = mode;
+
       this.dpr = window.devicePixelRatio || 1;
-      this.w = 0; this.h = 0;
+      this.w = 0;
+      this.h = 0;
+
       this.particles = [];
-      this.windBase = 0; this.windTarget = 0; this.windT = 0;
+      this.windBase = 0;
+      this.windTarget = 0;
+      this.windT = 0;
+
       this.last = performance.now();
       this.rafId = null;
 
       this._onResize = this._onResize.bind(this);
       this._loop = this._loop.bind(this);
+
       this._init();
     }
 
     _pickParams(mode){
-      if (mode === "heavySnow") return { count: 50, rMin: 1.8, rMax: 4,   vyMin: 0.25, vyMax: 0.60, wind: 0.15 };
-      if (mode === "snow")      return { count: 36, rMin: 1.6, rMax: 3.8, vyMin: 0.20, vyMax: 0.52, wind: 0.10 };
+      if (mode === "heavySnow"){
+        return { count: 50, rMin: 1.8, rMax: 4,   vyMin: 0.25, vyMax: 0.60, wind: 0.15 };
+      }
+      if (mode === "snow"){
+        return { count: 36, rMin: 1.6, rMax: 3.8, vyMin: 0.20, vyMax: 0.52, wind: 0.10 };
+      }
       return { count: 14, rMin: 1.4, rMax: 2.8, vyMin: 0.14, vyMax: 0.45, wind: 0.06 };
     }
 
     _onResize(){
       this.w = Math.floor(window.innerWidth);
       this.h = Math.floor(window.innerHeight);
+
       this.canvas.width  = Math.floor(this.w * this.dpr);
       this.canvas.height = Math.floor(this.h * this.dpr);
       this.canvas.style.width  = this.w + "px";
       this.canvas.style.height = this.h + "px";
+
       this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     }
 
@@ -4430,9 +4460,11 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
     _resetParticles(){
       const p = this._pickParams(this.mode);
       this.params = p;
+
       this.windBase = rand(-p.wind, p.wind);
       this.windTarget = rand(-p.wind, p.wind);
       this.windT = 0;
+
       this.particles = Array.from({length:p.count}).map(()=>({
         x: rand(0, this.w),
         y: rand(0, this.h),
@@ -4478,6 +4510,7 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
       const ctx = this.ctx;
       const h = this.canvas.height / this.dpr;
       const w = this.canvas.width / this.dpr;
+
       const fadeStart = h * 0.70;
       const fadeEnd   = h * 0.99;
 
@@ -4486,7 +4519,7 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
       const g = ctx.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0.00, "rgba(255,255,255,1)");
       g.addColorStop(fadeStart / h, "rgba(255,255,255,1)");
-      g.addColorStop(fadeEnd / h,   "rgba(255,255,255,0)");
+      g.addColorStop(fadeEnd   / h, "rgba(255,255,255,0)");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
@@ -4498,6 +4531,7 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
 
       const ctx = this.ctx;
       const wind = this._stepWind();
+
       ctx.clearRect(0,0,this.w,this.h);
 
       for (const s of this.particles){
@@ -4526,6 +4560,7 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
         grad.addColorStop(0.0,  `rgba(255,255,255,${0.75 * s.opacity})`);
         grad.addColorStop(0.55, `rgba(255,255,255,${0.28 * s.opacity})`);
         grad.addColorStop(1.0,  `rgba(255,255,255,0)`);
+
         ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.arc(s.x, s.y, r, 0, Math.PI*2);
@@ -4563,7 +4598,7 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
     if (c) c.style.display = "none";
     if (wxSnowBg) wxSnowBg.stop();
   }
-  window.WX_LeaveWeatherPage = disableSnow; // 給 showPage 離開時呼叫
+  window.WX_LeaveWeatherPage = disableSnow; // showPage 離開時可呼叫
 
   /* =========================================================
      Broadcast (no flicker)
@@ -4582,8 +4617,11 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
     `;
   }
 
-  function getPeriodLabel(ms){
-    const h = hourLocal(ms);
+  /* =========================================================
+     Broadcast logic (one sentence)
+  ========================================================= */
+  function getPeriodLabel(localMs){
+    const h = localHour(localMs);
     if (h >= 5 && h < 11) return "早上";
     if (h >= 11 && h < 17) return "下午";
     if (h >= 17 && h < 22) return "晚上";
@@ -4638,19 +4676,19 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
     if (Number.isFinite(minT) && Number.isFinite(maxT) && (maxT - minT) >= 10) tips.push("日夜溫差較大，外套建議隨身攜帶");
     if (Number.isFinite(windNow) && windNow >= 25) tips.push("風勢偏強，體感溫度可能更低");
     if ([45,48].includes(codeNowN)) tips.push("能見度可能下降，行車請留意安全距離");
-
     tips.push("體感溫度偏低，外出時注意保暖");
     tips.push("氣溫持續偏低，室外活動記得加件外套");
     tips.push("清晨與夜間路面易結冰，行走請放慢腳步");
     tips.push("降雪後視線可能受影響，行車請留意路況");
     tips.push("風勢偶爾偏強，體感溫度可能更低");
-
     return tips[Math.floor(Math.random() * tips.length)];
   }
-  function buildSmartBroadcast({ tempNow, windNow, codeNowN, dayMin, dayMax, sliceTimes, sliceTemps, sliceCodes }){
+  function buildSmartBroadcast({ tempNow, windNow, codeNowN, dayMin, dayMax, sliceUnix, sliceTemps, sliceCodes, offsetSec }){
+    const timesLocalMs = sliceUnix.map(sec => localMsFromUnix(sec, offsetSec));
     const buckets = new Map();
-    for (let i=0;i<sliceTimes.length;i++){
-      const p = getPeriodLabel(sliceTimes[i]);
+
+    for (let i=0;i<timesLocalMs.length;i++){
+      const p = getPeriodLabel(timesLocalMs[i]);
       if (!buckets.has(p)) buckets.set(p, { codes: [] });
       buckets.get(p).codes.push(normalizeWeatherCode(sliceCodes[i], sliceTemps[i]));
     }
@@ -4672,7 +4710,7 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
   }
 
   /* =========================================================
-     UI: dots + swipe
+     UI: Dots + Swipe + init once
   ========================================================= */
   function renderDots(){
     const dots = $("wxDots");
@@ -4689,36 +4727,13 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
       d.classList.toggle("active", Number(d.dataset.index)===wxCityIndex);
     });
   }
-
- function showWeatherLoading(){
-  const page = document.getElementById("weather-page");
-  if (!page) return;
-
-  // ✅ 先把舊畫面全部清掉
-  resetWeatherPageUI();
-
-  // ✅ 再給暫時背景（避免白畫面）
-  const h = new Date().getHours();
-  const guess = (h >= 18 || h < 6) ? "bg-night" : "bg-day";
-  page.classList.add(guess);
-
-  // ✅ 最後顯示 loading
-  page.classList.add("is-loading");
-}
-
-
-function hideWeatherLoading(){
-  const page = document.getElementById("weather-page");
-  if (!page) return;
-  page.classList.remove("is-loading");
-}
-
   function resetWeatherPageScroll(){
     const page = $("weather-page");
     if (page) page.scrollTop = 0;
     const hourly = $("wxHourly");
     if (hourly) hourly.scrollLeft = 0;
   }
+
   function bindWeatherSwipe(){
     const page = $("weather-page");
     if (!page) return;
@@ -4778,7 +4793,70 @@ function hideWeatherLoading(){
   window.initWeatherPageOnce = initWeatherPageOnce;
 
   /* =========================================================
-     API build (Fix 400: daily does NOT include time)
+     Loading UI control (only show "loading")
+     - Requires your CSS to hide content when #weather-page.is-loading
+     - If you don't have it, still ok; we clear main fields here.
+  ========================================================= */
+  function clearWeatherContent(){
+    const idsText = ["wxCity","wxTemp","wxDesc","wxHiLo"];
+    idsText.forEach(id => { const el=$(id); if(el) el.textContent=""; });
+
+    const idsHtml = ["wxHourly","wxWeek"];
+    idsHtml.forEach(id => { const el=$(id); if(el) el.innerHTML=""; });
+
+    // broadcast
+    const b = $("wxHourlyNote") || $("nowBroadcast") || $("wxNowBroadcast");
+    if (b) {
+      const t = b.querySelector(".wx-broadcast-text");
+      if (t) t.textContent = "";
+      else b.innerHTML = "";
+    }
+  }
+
+  function showWeatherLoading(){
+    const page = $("weather-page");
+    if (!page) return;
+
+    // remove old bg
+    page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
+
+    // use cached phase for this city if any
+    const city = WX_CITIES[wxCityIndex];
+    const cache = loadBgCache(cityKey(city));
+    if (cache?.phase) setBgClass(page, `bg-${cache.phase}`);
+    else setBgClass(page, "bg-day"); // safe fallback (avoid white)
+
+    clearWeatherContent();
+    page.classList.add("is-loading");
+
+    // show loading text in broadcast
+    setBroadcastText("載入中…");
+  }
+
+  function hideWeatherLoading(){
+    const page = $("weather-page");
+    if (!page) return;
+    page.classList.remove("is-loading");
+  }
+
+  /* =========================================================
+     Geo location
+  ========================================================= */
+  function WX_getCurrentPositionOnce(timeoutMs = 8000){
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error("Geolocation not supported"));
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve(pos),
+        (err) => reject(err),
+        { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 5*60*1000 }
+      );
+    });
+  }
+
+  /* =========================================================
+     API build (IMPORTANT)
+     - Use timezone=UTC to get unix seconds arrays consistently
+     - Then use utc_offset_seconds for local conversion
   ========================================================= */
   function buildWeatherApiUrl(city){
     const lat = Number(city?.lat);
@@ -4789,9 +4867,12 @@ function hideWeatherLoading(){
       + `&current_weather=true`
       + `&hourly=temperature_2m,weathercode`
       + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
-      + `&timezone=auto`;
+      + `&timezone=UTC`;
   }
 
+  /* =========================================================
+     Render helpers
+  ========================================================= */
   function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
     const cityEl = $("wxCity"), tempEl = $("wxTemp"), descEl = $("wxDesc"), hiloEl = $("wxHiLo");
     if (cityEl) cityEl.textContent = cityName;
@@ -4800,55 +4881,52 @@ function hideWeatherLoading(){
     if (hiloEl) hiloEl.textContent = `最高 ${Number.isFinite(hiInt)?hiInt:"--"}° / 最低 ${Number.isFinite(loInt)?loInt:"--"}°`;
   }
 
-  function buildSunByDate(daily){
+  function buildSunByDate(daily, offsetSec){
     const m = new Map();
-    const times = daily?.time || [];
     const sr = daily?.sunrise || [];
     const ss = daily?.sunset  || [];
-    const n = Math.min(times.length, sr.length, ss.length);
-
-    for (let i=0;i<n;i++){
-      const key = String(times[i]); // daily.time is "YYYY-MM-DD" in timezone=auto
-      const sunriseMs = msFromOpenMeteoTime(sr[i]);
-      const sunsetMs  = msFromOpenMeteoTime(ss[i]);
-      m.set(key, { sunriseMs, sunsetMs });
+    for (let i=0; i<Math.min(sr.length, ss.length); i++){
+      const sunriseLocalMs = localMsFromUnix(sr[i], offsetSec);
+      const sunsetLocalMs  = localMsFromUnix(ss[i], offsetSec);
+      m.set(localDateKey(sunriseLocalMs), { sunriseLocalMs, sunsetLocalMs });
     }
     return m;
   }
 
-  function nearestIndex(timesMs, eventMs){
+  function nearestIndex(timesLocalMs, eventLocalMs){
     let best=-1, bestDiff=Infinity;
-    for (let i=0;i<timesMs.length;i++){
-      const diff = Math.abs(timesMs[i]-eventMs);
+    for (let i=0;i<timesLocalMs.length;i++){
+      const diff = Math.abs(timesLocalMs[i]-eventLocalMs);
       if (diff < bestDiff){ bestDiff=diff; best=i; }
     }
     return best;
   }
 
-  function renderHourly24({ hourlyTimes, temps, codes, sunByDate, nowMs, current, todaySun }){
+  function renderHourly24({
+    hourlyUnix, temps, codes, offsetSec,
+    sunByDate, nowLocalMs, current
+  }){
     const wrap = $("wxHourly");
     if (!wrap) return;
 
-    const timesMs = hourlyTimes.map(msFromOpenMeteoTime);
+    const timesLocalMs = hourlyUnix.map(sec => localMsFromUnix(sec, offsetSec));
 
-    // sunrise/sunset marker within 24h range (optional)
-    const start = timesMs[0];
-    const end   = timesMs[timesMs.length-1] + 3600000;
+    const start = timesLocalMs[0];
+    const end   = timesLocalMs[timesLocalMs.length-1] + 3600000;
 
     let sunriseEvent = NaN;
     let sunsetEvent  = NaN;
-
-    // search from sunByDate values
     for (const v of sunByDate.values()){
-      if (!Number.isFinite(sunriseEvent) && Number.isFinite(v.sunriseMs) && v.sunriseMs >= start && v.sunriseMs <= end) sunriseEvent = v.sunriseMs;
-      if (!Number.isFinite(sunsetEvent)  && Number.isFinite(v.sunsetMs)  && v.sunsetMs  >= start && v.sunsetMs  <= end) sunsetEvent  = v.sunsetMs;
+      if (!Number.isFinite(sunriseEvent) && v.sunriseLocalMs >= start && v.sunriseLocalMs <= end) sunriseEvent = v.sunriseLocalMs;
+      if (!Number.isFinite(sunsetEvent)  && v.sunsetLocalMs  >= start && v.sunsetLocalMs  <= end) sunsetEvent  = v.sunsetLocalMs;
     }
 
-    const sunriseIdx = Number.isFinite(sunriseEvent) ? nearestIndex(timesMs, sunriseEvent) : -1;
-    const sunsetIdx  = Number.isFinite(sunsetEvent)  ? nearestIndex(timesMs, sunsetEvent)  : -1;
+    const sunriseIdx = Number.isFinite(sunriseEvent) ? nearestIndex(timesLocalMs, sunriseEvent) : -1;
+    const sunsetIdx  = Number.isFinite(sunsetEvent)  ? nearestIndex(timesLocalMs, sunsetEvent)  : -1;
 
-    wrap.innerHTML = timesMs.map((ms, i)=>{
+    wrap.innerHTML = timesLocalMs.map((hourLocalMs, i)=>{
       let tempC, codeN;
+
       if (i === 0 && current){
         tempC = current.temp;
         codeN = current.code;
@@ -4857,11 +4935,10 @@ function hideWeatherLoading(){
         codeN = normalizeWeatherCode(codes[i], tempC);
       }
 
-      // use sun for that day; fallback to todaySun
-      const dayKey = dateKeyLocal(ms);
-      const sun = sunByDate.get(dayKey) || todaySun;
-      const night = (sun && Number.isFinite(sun.sunriseMs) && Number.isFinite(sun.sunsetMs))
-        ? isNightBySun(ms, sun.sunriseMs, sun.sunsetMs)
+      const key = localDateKey(hourLocalMs);
+      const sun = sunByDate.get(key) || sunByDate.get(localDateKey(nowLocalMs));
+      const night = (sun && Number.isFinite(sun.sunriseLocalMs) && Number.isFinite(sun.sunsetLocalMs))
+        ? isNightBySun(hourLocalMs, sun.sunriseLocalMs, sun.sunsetLocalMs)
         : false;
 
       let iconKey;
@@ -4869,8 +4946,7 @@ function hideWeatherLoading(){
       else if (i === sunsetIdx) iconKey = "sunset";
       else iconKey = weatherCodeToIconKey(codeN, night);
 
-      const timeLabel = (i === 0) ? "現在" : formatHourAmPm(ms);
-
+      const timeLabel = (i === 0) ? "現在" : formatHourAmPmFromLocalMs(hourLocalMs);
       const tempText = Number.isFinite(tempC) ? `${Math.round(tempC)}°` : "--";
 
       return `
@@ -4883,7 +4959,7 @@ function hideWeatherLoading(){
     }).join("");
   }
 
-  function renderWeek({ daily, nowMs }){
+  function renderWeek({ daily, nowLocalMs, offsetSec }){
     const wrap = $("wxWeek");
     if (!wrap) return;
 
@@ -4892,35 +4968,38 @@ function hideWeatherLoading(){
     const maxArr = daily?.temperature_2m_max || [];
     const codes  = daily?.weathercode || [];
 
-    const n0 = Math.min(7, times.length, minArr.length, maxArr.length, codes.length);
-    if (!n0) return;
-
-    // align startIdx to today
-    const todayKey = dateKeyLocal(nowMs);
-    let startIdx = 0;
-    if (todayKey){
-      const idx = times.findIndex(t => String(t) === todayKey);
-      if (idx >= 0) startIdx = idx;
-    }
-
-    const n = Math.min(7, times.length - startIdx, minArr.length - startIdx, maxArr.length - startIdx, codes.length - startIdx);
+    const n = Math.min(7, times.length, minArr.length, maxArr.length, codes.length);
     if (!n) return;
 
-    const allMin = Math.min(...minArr.slice(startIdx, startIdx+n).map(Number));
-    const allMax = Math.max(...maxArr.slice(startIdx, startIdx+n).map(Number));
+    // align to local today key
+    const todayKey = localDateKey(nowLocalMs);
+    let startIdx = 0;
+    const idx = times.findIndex(t => localDateKey(localMsFromUnix(t, offsetSec)) === todayKey);
+    if (idx >= 0) startIdx = idx;
+
+    const n2 = Math.min(7, times.length - startIdx);
+    if (!n2) return;
+
+    const sliceMin = minArr.slice(startIdx, startIdx+n2).map(Number);
+    const sliceMax = maxArr.slice(startIdx, startIdx+n2).map(Number);
+
+    const allMin = Math.min(...sliceMin);
+    const allMax = Math.max(...sliceMax);
     const span = Math.max(1, allMax - allMin);
 
     const weekMap = ["日","一","二","三","四","五","六"];
-    function weekLabel(ymd){
-      const [y,m,d] = String(ymd).split("-").map(Number);
-      const dt = new Date(y, m-1, d);
-      return `週${weekMap[dt.getDay()]}`;
+    function weekLabelFromLocalDay(localMs){
+      const d = new Date(localMs);
+      // localMs already shifted; use UTC day to represent local
+      const w = d.getUTCDay();
+      return `週${weekMap[w]}`;
     }
 
     const rows = [];
-    for (let k=0;k<n;k++){
+    for (let k=0;k<n2;k++){
       const i = startIdx + k;
-      const label = (k===0) ? "今日" : weekLabel(times[i]);
+      const dayLocalMs = localMsFromUnix(times[i], offsetSec);
+      const label = (k===0) ? "今日" : weekLabelFromLocalDay(dayLocalMs);
 
       const minT = Math.round(minArr[i]);
       const maxT = Math.round(maxArr[i]);
@@ -4946,59 +5025,16 @@ function hideWeatherLoading(){
   }
 
   /* =========================================================
-     Geo
-  ========================================================= */
-  function WX_getCurrentPositionOnce(timeoutMs = 8000){
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error("Geolocation not supported"));
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolve(pos),
-        (err) => reject(err),
-        { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 5*60*1000 }
-      );
-    });
-  }
-function resetWeatherPageUI(){
-  const page = document.getElementById("weather-page");
-  if (!page) return;
-
-  // 1️⃣ 清掉背景（避免札幌黑夜殘留）
-  page.classList.remove(
-    "bg-sunrise",
-    "bg-day",
-    "bg-sunset",
-    "bg-night"
-  );
-
-  // 2️⃣ 清掉舊天氣文字（保險）
-  const clearIds = [
-    "wxCity","wxTemp","wxDesc","wxHiLo",
-    "wxHourly","wxWeek",
-    "wxHourlyNote","nowBroadcast","wxNowBroadcast"
-  ];
-  clearIds.forEach(id=>{
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = "";
-  });
-
-  // 3️⃣ 停止雪動畫（如果有）
-  if (window.wxSnowBg) {
-    window.wxSnowBg.stop?.();
-  }
-}
-
-  /* =========================================================
      Main loader
   ========================================================= */
   async function loadAndRenderWeather(){
     const page = $("weather-page");
     if (!page) return;
 
-    // enable snow canvas only here
     enableSnow();
 
-    // geo: try position
-    if (WX_CITIES[wxCityIndex]?.kind === "geo") {
+    // geo -> get position once per entry
+    if (WX_CITIES[wxCityIndex]?.kind === "geo"){
       try{
         setBroadcastText("正在取得目前位置…");
         const pos = await WX_getCurrentPositionOnce(8000);
@@ -5024,21 +5060,25 @@ function resetWeatherPageUI(){
     try{
       const data = await fetch(url).then(r=>r.json());
 
-      const nowMs = Date.now(); // ✅ don't add offset when timezone=auto
+      // ✅ offsetSec is the truth for local conversion
+      const offsetSec = Number(data?.utc_offset_seconds ?? 0);
+      const nowLocalMs = Date.now() + offsetSec*1000;
 
-      const sunByDate = buildSunByDate(data?.daily);
+      // sun
+      const sunByDate = buildSunByDate(data?.daily, offsetSec);
+      const todayKey = localDateKey(nowLocalMs);
+      const sunToday = sunByDate.get(todayKey) || Array.from(sunByDate.values())[0] || null;
 
-      // today sun: find by today's key, else first
-      const todayKey = dateKeyLocal(nowMs);
-      const todaySun = sunByDate.get(todayKey) || Array.from(sunByDate.values())[0] || null;
-
-      // background
-      if (todaySun && Number.isFinite(todaySun.sunriseMs) && Number.isFinite(todaySun.sunsetMs)){
-        const phase = getDayPhase(nowMs, todaySun.sunriseMs, todaySun.sunsetMs, 45);
+      // background phase
+      if (sunToday && Number.isFinite(sunToday.sunriseLocalMs) && Number.isFinite(sunToday.sunsetLocalMs)){
+        const phase = getDayPhase(nowLocalMs, sunToday.sunriseLocalMs, sunToday.sunsetLocalMs, 45);
         setBgClass(page, `bg-${phase}`);
+
+        // cache for loading bg next time
+        saveBgCache(cityKey(city), { phase });
       } else {
-        // fallback: day (avoid white/incorrect)
         setBgClass(page, "bg-day");
+        saveBgCache(cityKey(city), { phase: "day" });
       }
 
       // current
@@ -5067,88 +5107,106 @@ function resetWeatherPageUI(){
       else wxSnowBg.setMode(mode);
 
       // hourly
-      const hTimes = data?.hourly?.time || [];
+      const hUnix  = data?.hourly?.time || [];
       const hTemps = data?.hourly?.temperature_2m || [];
       const hCodes = data?.hourly?.weathercode || [];
-      if (!hTimes.length){
+
+      if (!hUnix.length){
         setBroadcastText("沒有抓到每小時資料");
         return;
       }
 
-      const nowFloor = floorToHour(nowMs);
+      const nowFloorLocal = floorToHourLocal(nowLocalMs);
 
       let startIdx = 0;
-      for (let i=0;i<hTimes.length;i++){
-        const ms = msFromOpenMeteoTime(hTimes[i]);
-        if (Number.isFinite(ms) && ms >= nowFloor){ startIdx = i; break; }
+      for (let i=0;i<hUnix.length;i++){
+        const ms = localMsFromUnix(hUnix[i], offsetSec);
+        if (ms >= nowFloorLocal){ startIdx = i; break; }
       }
 
-      const sliceTimes = hTimes.slice(startIdx, startIdx+24);
+      const sliceUnix  = hUnix.slice(startIdx, startIdx+24);
       const sliceTemps = hTemps.slice(startIdx, startIdx+24);
       const sliceCodes = hCodes.slice(startIdx, startIdx+24);
 
-      // broadcast (final only)
+      // broadcast final (no flicker)
       const finalText = buildSmartBroadcast({
         tempNow, windNow, codeNowN, dayMin, dayMax,
-        sliceTimes: sliceTimes.map(msFromOpenMeteoTime),
-        sliceTemps, sliceCodes
+        sliceUnix, sliceTemps, sliceCodes, offsetSec
       });
       setBroadcastText(finalText);
 
       renderHourly24({
-        hourlyTimes: sliceTimes,
+        hourlyUnix: sliceUnix,
         temps: sliceTemps,
         codes: sliceCodes,
+        offsetSec,
         sunByDate,
-        nowMs,
-        todaySun,
+        nowLocalMs,
         current: {
           temp: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
           code: codeNowN
         }
       });
 
-      renderWeek({ daily: data?.daily, nowMs });
+      renderWeek({ daily: data?.daily, nowLocalMs, offsetSec });
 
     }catch(err){
       console.error(err);
       setBroadcastText("天氣載入失敗（請看 console）");
-      // keep bg sane
       setBgClass(page, "bg-day");
+      saveBgCache(cityKey(WX_CITIES[wxCityIndex]), { phase: "day" });
     }
   }
-
   window.loadAndRenderWeather = loadAndRenderWeather;
 
   /* =========================================================
      Enter / Leave
   ========================================================= */
-function WX_EnterWeatherPage(){
-  initWeatherPageOnce();
+  function showWeatherLoading(){
+    const page = $("weather-page");
+    if (!page) return;
 
-  // ✅ 進頁第一件事：清空 + loading
-  showWeatherLoading();
+    // clean old bg
+    page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
 
-  renderDots();
-  setDotsActive();
-  resetWeatherPageScroll();
+    // use cached phase for this city if available
+    const city = WX_CITIES[wxCityIndex];
+    const cache = loadBgCache(cityKey(city));
+    const phase = cache?.phase || "day";
+    setBgClass(page, `bg-${phase}`);
 
-  loadAndRenderWeather()
-    .finally(() => {
-      const page = document.getElementById("weather-page");
-      page?.classList.remove("is-loading");
+    // hide content via CSS if you have:
+    // #weather-page.is-loading #wxBody {display:none} etc.
+    page.classList.add("is-loading");
+
+    // only show loading text (broadcast area)
+    setBroadcastText("載入中…");
+    const hourly = $("wxHourly"); if (hourly) hourly.innerHTML = "";
+    const week   = $("wxWeek");   if (week) week.innerHTML = "";
+    const cityEl = $("wxCity");   if (cityEl) cityEl.textContent = "";
+    const tempEl = $("wxTemp");   if (tempEl) tempEl.textContent = "";
+    const descEl = $("wxDesc");   if (descEl) descEl.textContent = "";
+    const hiloEl = $("wxHiLo");   if (hiloEl) hiloEl.textContent = "";
+  }
+
+  function WX_EnterWeatherPage(){
+    initWeatherPageOnce();
+
+    // ✅ Enter: show loading immediately (no stale UI)
+    showWeatherLoading();
+
+    renderDots();
+    setDotsActive();
+    resetWeatherPageScroll();
+
+    loadAndRenderWeather().finally(()=>{
+      const page = $("weather-page");
+      if (page) page.classList.remove("is-loading");
     });
-}
-
-
+  }
   window.WX_EnterWeatherPage = WX_EnterWeatherPage;
 
-  /* =========================================================
-     IMPORTANT: Fix snow leaking to other pages
-     - If your showPage can call WX_LeaveWeatherPage() when leaving, best.
-     - Otherwise we auto-detect by listening to page visibility changes.
-  ========================================================= */
-  // auto disable snow if weather-page hidden
+  // auto disable snow if weather-page hidden (works even if showPage doesn't call leave)
   const _observer = new MutationObserver(()=>{
     const page = $("weather-page");
     if (!page) return;
@@ -5162,8 +5220,9 @@ function WX_EnterWeatherPage(){
   _observer.observe(document.body, { attributes:true, subtree:true, attributeFilter:["class","style"] });
 
   /* =========================================================
-     Optional: bottom nav trigger
+     Init triggers
   ========================================================= */
+  // Optional: bottom nav trigger
   document.addEventListener("click",(e)=>{
     const btn = e.target.closest('.bottom-nav button[data-page="weather-page"]');
     if (!btn) return;
@@ -5171,36 +5230,18 @@ function WX_EnterWeatherPage(){
   });
 
   /* Debug */
-  window.WX_DEBUG = {
-    city(i){ switchCity(i); },
+  window.WX_DEBUG = window.WX_DEBUG || {};
+  window.WX_DEBUG.city = (i)=>switchCity(i);
+  window.WX_DEBUG.forceBg = function(name){
+    const page = $("weather-page");
+    if (!page) return;
+    setBgClass(page, `bg-${name}`);
+    saveBgCache(cityKey(WX_CITIES[wxCityIndex]), { phase: name });
   };
 
 })();
-/* =========================================================
-   Weather DEBUG helpers
-========================================================= */
-window.WX_DEBUG = window.WX_DEBUG || {};
-
-// 強制切換背景（不影響實際資料）
-window.WX_DEBUG.forceBg = function(name){
-  const page = document.getElementById("weather-page");
-  if (!page) {
-    console.warn("weather-page not found");
-    return;
-  }
-
-  page.classList.remove(
-    "bg-sunrise",
-    "bg-day",
-    "bg-sunset",
-    "bg-night"
-  );
-
-  page.classList.add(`bg-${name}`);
-  console.log("[WX_DEBUG] forceBg →", `bg-${name}`);
-};
-
 </script>
+
 
 
 

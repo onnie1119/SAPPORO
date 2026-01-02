@@ -4307,7 +4307,8 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     return d.getTime();
   }
   function formatHourAmPmFromLocalMs(localMs){
-    const h = localHour(localMs);
+    const h = new Date(localMs).getHours();
+
     const ampm = h < 12 ? "上午" : "下午";
     let h12 = h % 12;
     if (h12 === 0) h12 = 12;
@@ -4674,33 +4675,22 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
  function buildTips({ tempNow, minT, maxT, windNow, codeNowN }){
   const tips = [];
 
-  /* ===== 降雪情境 ===== */
-  if (isSnowCode(codeNowN)) {
-    tips.push(
-      "路面可能結冰或濕滑，行走與行車請放慢速度",
-      "降雪期間視線容易受影響，外出請注意前方路況",
-      "積雪可能影響交通時間，行程建議預留緩衝",
-      "鞋底防滑效果會影響行走安全，請留意步伐",
-      "降雪後地面濕滑，拍照時注意站穩"
-    );
-  }
-
- // ===== 降雪（包含低溫雨轉雪）=====
-if (isSnowCode(codeNowN)) {
+ if (isSnowCode(codeNowN)) {
   tips.push(
     "路面可能結冰或濕滑，行走與行車請放慢速度",
+    "降雪期間視線容易受影響，外出請注意前方路況",
     "積雪可能影響交通時間，行程建議預留緩衝",
+    "鞋底防滑效果會影響行走安全，請留意步伐",
+    "降雪後地面濕滑，拍照時注意站穩",
+
     "降雪時拍照很漂亮，但記得注意腳下安全",
     "雪地行走容易疲勞，行程間可安排室內休息",
     "降雪後公車與電車可能延誤，出發前留意資訊",
-
-    "雪勢較明顯，戶外景點可視情況縮短停留時間",
     "背包與相機容易沾雪，記得簡單防水保護",
-    "雪天體感比預期冷，帽子與手套會很有感",
-    "拍照時站位要穩，避免踩在看不見的積雪上",
     "若要移動到郊區景點，交通時間可能拉長"
   );
 }
+
 
 // ===== 降雨（只在「溫度高於 5°C」才會出現）=====
 if (

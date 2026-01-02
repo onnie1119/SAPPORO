@@ -5060,6 +5060,30 @@ function rand(min,max){ return Math.random()*(max-min)+min; }
   };
 
 })();
+/* =========================================================
+   Weather DEBUG helpers
+========================================================= */
+window.WX_DEBUG = window.WX_DEBUG || {};
+
+// 強制切換背景（不影響實際資料）
+window.WX_DEBUG.forceBg = function(name){
+  const page = document.getElementById("weather-page");
+  if (!page) {
+    console.warn("weather-page not found");
+    return;
+  }
+
+  page.classList.remove(
+    "bg-sunrise",
+    "bg-day",
+    "bg-sunset",
+    "bg-night"
+  );
+
+  page.classList.add(`bg-${name}`);
+  console.log("[WX_DEBUG] forceBg →", `bg-${name}`);
+};
+
 </script>
 
 

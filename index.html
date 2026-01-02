@@ -4861,7 +4861,7 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
      - Use timezone=UTC to get unix seconds arrays consistently
      - Then use utc_offset_seconds for local conversion
   ========================================================= */
-  function buildWeatherApiUrl(city){
+ function buildWeatherApiUrl(city){
   const lat = Number(city?.lat);
   const lon = Number(city?.lon);
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return "";
@@ -4870,9 +4870,10 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     + `&current_weather=true`
     + `&hourly=temperature_2m,weathercode`
     + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
-    + `&timezone=UTC`
-    + `&timeformat=unixtime`;   // ✅ 這行是關鍵
+    + `&timezone=auto`          // ✅ 讓 Open-Meteo 用「地點」時區算 sunrise/sunset
+    + `&timeformat=unixtime`;   // ✅ 所有 time 都是 epoch 秒數，最好處理
 }
+
 
   /* =========================================================
      Render helpers
@@ -4912,62 +4913,77 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     return best;
   }
 
-  function renderHourly24({
-    hourlyUnix, temps, codes, offsetSec,
-    sunByDate, nowLocalMs, current
-  }){
-    const wrap = $("wxHourly");
-    if (!wrap) return;
+ function renderHourly24({
+  hourlyUnix, temps, codes,
+  offsetSec,
+  sunByDate,      // Map(key => { sunriseLocalMs, sunsetLocalMs })
+  nowLocalMs,
+  current
+}){
+  const wrap = document.getElementById("wxHourly");
+  if (!wrap) return;
 
-    const timesLocalMs = hourlyUnix.map(sec => localMsFromUnix(sec, offsetSec));
+  const timesLocalMs = hourlyUnix.map(sec => localMsFromUnix(sec, offsetSec));
 
-    const start = timesLocalMs[0];
-    const end   = timesLocalMs[timesLocalMs.length-1] + 3600000;
+  // 找 24h 範圍內最近的日出/日落，用來插 marker
+  const start = timesLocalMs[0];
+  const end   = timesLocalMs[timesLocalMs.length - 1] + 3600000;
 
-    let sunriseEvent = NaN;
-    let sunsetEvent  = NaN;
-    for (const v of sunByDate.values()){
-      if (!Number.isFinite(sunriseEvent) && v.sunriseLocalMs >= start && v.sunriseLocalMs <= end) sunriseEvent = v.sunriseLocalMs;
-      if (!Number.isFinite(sunsetEvent)  && v.sunsetLocalMs  >= start && v.sunsetLocalMs  <= end) sunsetEvent  = v.sunsetLocalMs;
+  let sunriseEvent = NaN;
+  let sunsetEvent  = NaN;
+  for (const v of sunByDate.values()){
+    if (!Number.isFinite(sunriseEvent) && v.sunriseLocalMs >= start && v.sunriseLocalMs <= end) sunriseEvent = v.sunriseLocalMs;
+    if (!Number.isFinite(sunsetEvent)  && v.sunsetLocalMs  >= start && v.sunsetLocalMs  <= end) sunsetEvent  = v.sunsetLocalMs;
+  }
+
+  function nearestIndex(arr, target){
+    let best=-1, bestDiff=Infinity;
+    for (let i=0;i<arr.length;i++){
+      const diff = Math.abs(arr[i]-target);
+      if (diff < bestDiff){ bestDiff=diff; best=i; }
+    }
+    return best;
+  }
+
+  const sunriseIdx = Number.isFinite(sunriseEvent) ? nearestIndex(timesLocalMs, sunriseEvent) : -1;
+  const sunsetIdx  = Number.isFinite(sunsetEvent)  ? nearestIndex(timesLocalMs, sunsetEvent)  : -1;
+
+  wrap.innerHTML = timesLocalMs.map((ms, i)=>{
+    // 現在：用 current_weather 強制覆蓋第一格，避免和 hourly 第一筆不同步
+    let tempC, codeN;
+    if (i === 0 && current){
+      tempC = current.temp;
+      codeN = current.code;
+    } else {
+      tempC = temps[i];
+      codeN = normalizeWeatherCode(codes[i], tempC);
     }
 
-    const sunriseIdx = Number.isFinite(sunriseEvent) ? nearestIndex(timesLocalMs, sunriseEvent) : -1;
-    const sunsetIdx  = Number.isFinite(sunsetEvent)  ? nearestIndex(timesLocalMs, sunsetEvent)  : -1;
+    // 取得當日 sunrise/sunset 判斷日夜（用地點當地 key）
+    const key = localDateKey(ms); // 你原本的 localDateKey（要用 getUT...版本）
+    const sun = sunByDate.get(key) || sunByDate.get(localDateKey(nowLocalMs));
+    const night = (sun && Number.isFinite(sun.sunriseLocalMs) && Number.isFinite(sun.sunsetLocalMs))
+      ? isNightBySun(ms, sun.sunriseLocalMs, sun.sunsetLocalMs)
+      : false;
 
-    wrap.innerHTML = timesLocalMs.map((hourLocalMs, i)=>{
-      let tempC, codeN;
+    let iconKey;
+    if (i === sunriseIdx) iconKey = "sunrise";
+    else if (i === sunsetIdx) iconKey = "sunset";
+    else iconKey = weatherCodeToIconKey(codeN, night);
 
-      if (i === 0 && current){
-        tempC = current.temp;
-        codeN = current.code;
-      } else {
-        tempC = temps[i];
-        codeN = normalizeWeatherCode(codes[i], tempC);
-      }
+    const timeLabel = (i === 0) ? "現在" : formatHourAmPmFromLocalMs(ms);
+    const tempText  = Number.isFinite(tempC) ? `${Math.round(tempC)}°` : "--";
 
-      const key = localDateKey(hourLocalMs);
-      const sun = sunByDate.get(key) || sunByDate.get(localDateKey(nowLocalMs));
-      const night = (sun && Number.isFinite(sun.sunriseLocalMs) && Number.isFinite(sun.sunsetLocalMs))
-        ? isNightBySun(hourLocalMs, sun.sunriseLocalMs, sun.sunsetLocalMs)
-        : false;
+    return `
+      <div class="wx-hour">
+        <div class="wx-hour-time">${timeLabel}</div>
+        <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
+        <div class="wx-hour-temp">${tempText}</div>
+      </div>
+    `;
+  }).join("");
+}
 
-      let iconKey;
-      if (i === sunriseIdx) iconKey = "sunrise";
-      else if (i === sunsetIdx) iconKey = "sunset";
-      else iconKey = weatherCodeToIconKey(codeN, night);
-
-      const timeLabel = (i === 0) ? "現在" : formatHourAmPmFromLocalMs(hourLocalMs);
-      const tempText = Number.isFinite(tempC) ? `${Math.round(tempC)}°` : "--";
-
-      return `
-        <div class="wx-hour">
-          <div class="wx-hour-time">${timeLabel}</div>
-          <img class="wx-hour-icon" src="${wxIconSrc(iconKey)}" alt="${iconKey}">
-          <div class="wx-hour-temp">${tempText}</div>
-        </div>
-      `;
-    }).join("");
-  }
 
   function renderWeek({ daily, nowLocalMs, offsetSec }){
     const wrap = $("wxWeek");

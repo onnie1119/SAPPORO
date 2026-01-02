@@ -4351,8 +4351,8 @@ function weatherCodeToTextWithDayNight(code, isNight){
   if (!isNight) return base;
 
   if (code === 0) return "夜晚晴朗";
-  if (code === 1) return "夜晚晴時多雲";
-  if (code === 2) return "夜晚局部多雲";
+  if (code === 1) return "夜晚多雲";
+  if (code === 2) return "局部多雲";
   if (code === 3) return "夜晚多雲";
 
   // 其他（雨、雪、霧、雷雨）夜晚照原本描述就合理

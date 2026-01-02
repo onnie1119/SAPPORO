@@ -4145,11 +4145,13 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
 
 /* ---------------- Config ---------------- */
 const WX_CITIES = [
-  { key:"sapporo",     name:"札幌市", latitude:43.0667, longitude:141.3500 },
-  { key:"otaru",       name:"小樽市", latitude:43.1900, longitude:140.9940 },
-  { key:"biei",        name:"美瑛町", latitude:43.5333, longitude:142.4000 },
-  { key:"noboribetsu", name:"登別市", latitude:42.3800, longitude:141.0000 }
+  { name: "目前位置", kind: "geo", lat: null, lon: null },
+  { name: "札幌市",   kind: "fixed", lat: 43.0618, lon: 141.3545 },
+  { name: "美瑛町",   kind: "fixed", lat: 43.5883, lon: 142.4636 },
+  { name: "小樽市",   kind: "fixed", lat: 43.1907, lon: 140.9947 },
+  { name: "登別市",   kind: "fixed", lat: 42.4522, lon: 141.1791 },
 ];
+let wxCityIndex = 0; // ✅ 預設選「目前位置」
 
 const WX_ICON_BASE = "images/";
 const WX_ICON_MAP = {
@@ -4173,6 +4175,21 @@ const WX_ICON_MAP = {
   sunset: "sunset.png",
   unknown: "unknown.png"
 };
+function WX_getCurrentPositionOnce(timeoutMs = 8000){
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new Error("Geolocation not supported"));
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve(pos),
+      (err) => reject(err),
+      {
+        enableHighAccuracy: true,
+        timeout: timeoutMs,
+        maximumAge: 5 * 60 * 1000, // 5 分鐘內可用快取
+      }
+    );
+  });
+}
 
 function wxIconSrc(key){
   return WX_ICON_BASE + (WX_ICON_MAP[key] || WX_ICON_MAP.unknown);
@@ -4714,19 +4731,19 @@ window.initWeatherPageOnce = initWeatherPageOnce;
    [H] API + Render
 ========================================================= */
 function buildWeatherApiUrl(city){
-  const base = "https://api.open-meteo.com/v1/forecast";
-  const params = new URLSearchParams({
-    latitude: city.latitude,
-    longitude: city.longitude,
-    current_weather: "true",
-    hourly: "temperature_2m,weathercode,windspeed_10m",
-    daily: "temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset",
-    forecast_days: "7",
-    timezone: "auto",
-    timeformat: "unixtime"
-  });
-  return `${base}?${params.toString()}`;
+  // city 可能是 fixed 或 geo
+  const lat = Number(city?.lat);
+  const lon = Number(city?.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return "";
+
+  // 這裡用你原本的參數即可（以下示意）
+  return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current_weather=true`
+    + `&hourly=temperature_2m,weathercode`
+    + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
+    + `&timezone=auto`;
 }
+
 
 function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
   const cityEl = $("wxCity"), tempEl = $("wxTemp"), descEl = $("wxDesc"), hiloEl = $("wxHiLo");
@@ -5032,7 +5049,26 @@ showDay = function(dayNumber, dir = "right") {
 async function loadAndRenderWeather(){
   if (wxWeatherInFlight) return;          // ✅ 防重複
   wxWeatherInFlight = true;
+   // ✅ 如果目前選的是「目前位置」，先嘗試抓定位
+  if (WX_CITIES[wxCityIndex]?.kind === "geo") {
+    try {
+      setBroadcastText("正在取得目前位置…");
+      const pos = await WX_getCurrentPositionOnce();
 
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      WX_CITIES[0].lat = lat;
+      WX_CITIES[0].lon = lon;
+
+      // （可選）想顯示比較像人類看的地名：之後可加反查地名
+      // WX_CITIES[0].name = "目前位置";
+
+    } catch (e) {
+      console.warn("定位失敗/被拒絕，改用札幌", e);
+      wxCityIndex = 1; // fallback：札幌
+    }
+  }
   const page = $("weather-page");
   const city = WX_CITIES[wxCityIndex];
   if (!page || !city) { wxWeatherInFlight = false; return; }

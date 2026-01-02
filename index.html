@@ -5297,8 +5297,7 @@ if (
   const city = WX_CITIES[wxCityIndex];
   if (!page || !city) { wxWeatherInFlight = false; return; }
 
-  // ✅ 你要載入中 > final，不要閃，所以只先顯示一次載入中
-  setBroadcastText("載入中…");
+
 
   try{
     const data = await fetch(buildWeatherApiUrl(city)).then(r=>r.json());

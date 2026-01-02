@@ -4343,6 +4343,21 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     if ([95,96,99].includes(code)) return "雷雨";
     return "天氣變化";
   }
+function weatherCodeToTextWithDayNight(code, isNight){
+  // 先拿原本的描述
+  const base = weatherCodeToText(code);
+
+  // 只有「晴天/晴時多雲/局部多雲/多雲」這幾種需要改成夜間說法
+  if (!isNight) return base;
+
+  if (code === 0) return "夜晚晴朗";
+  if (code === 1) return "夜晚晴時多雲";
+  if (code === 2) return "夜晚局部多雲";
+  if (code === 3) return "夜晚多雲";
+
+  // 其他（雨、雪、霧、雷雨）夜晚照原本描述就合理
+  return base;
+}
 
   function weatherCodeToIconKey(code, isNight){
     // snow
@@ -4878,13 +4893,14 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
   /* =========================================================
      Render helpers
   ========================================================= */
-  function renderHeader({ cityName, tempNowInt, codeNow, hiInt, loInt }){
-    const cityEl = $("wxCity"), tempEl = $("wxTemp"), descEl = $("wxDesc"), hiloEl = $("wxHiLo");
-    if (cityEl) cityEl.textContent = cityName;
-    if (tempEl) tempEl.textContent = Number.isFinite(tempNowInt) ? String(tempNowInt) : "--";
-    if (descEl) descEl.textContent = weatherCodeToText(codeNow);
-    if (hiloEl) hiloEl.textContent = `最高 ${Number.isFinite(hiInt)?hiInt:"--"}° / 最低 ${Number.isFinite(loInt)?loInt:"--"}°`;
-  }
+ function renderHeader({ cityName, tempNowInt, descText, hiInt, loInt }){
+  const cityEl = $("wxCity"), tempEl = $("wxTemp"), descEl = $("wxDesc"), hiloEl = $("wxHiLo");
+  if (cityEl) cityEl.textContent = cityName;
+  if (tempEl) tempEl.textContent = Number.isFinite(tempNowInt) ? String(tempNowInt) : "--";
+  if (descEl) descEl.textContent = descText || "";
+  if (hiloEl) hiloEl.textContent = `最高 ${Number.isFinite(hiInt)?hiInt:"--"}° / 最低 ${Number.isFinite(loInt)?loInt:"--"}°`;
+}
+
 
  function buildSunByDate(daily, offsetSec){
   const m = new Map();
@@ -5436,6 +5452,7 @@ if (
     renderHeader({
       cityName: city.name,
       tempNowInt: Number.isFinite(tempNow) ? Math.round(tempNow) : NaN,
+  descText,
       codeNow: codeNowN,
       hiInt: dayMax,
       loInt: dayMin

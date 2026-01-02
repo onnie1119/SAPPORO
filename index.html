@@ -4695,23 +4695,24 @@ function showWeatherLoading(){
   const page = document.getElementById("weather-page");
   if (!page) return;
 
-  // 先清掉舊背景
+  // ✅ 先把舊背景拿掉
   page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
 
-  // ✅ 優先用「該地區上一次的日夜狀態」
-  if (WX_LAST_IS_DAY === 0) {
-    page.classList.add("bg-night");
-  } else if (WX_LAST_IS_DAY === 1) {
-    page.classList.add("bg-day");
+  // ✅ 優先用快取（上一筆同城市的 phase）
+  const city = WX_CITIES[wxCityIndex];
+  const cache = WX_loadBgCache(WX_cityKey(city));
+  if (cache?.phase) {
+    WX_applyBg(page, cache.phase);
   } else {
-    // 🔁 第一次進入還沒資料，才用本機時間猜
+    // 沒快取才用本機時間猜（保底）
     const h = new Date().getHours();
-    page.classList.add((h >= 18 || h < 6) ? "bg-night" : "bg-day");
+    WX_applyBg(page, (h >= 18 || h < 6) ? "night" : "day");
   }
 
-  // 顯示 loading（把內容藏起來）
+  // ✅ 只顯示載入中（你前面已做 is-loading 隱藏內容）
   page.classList.add("is-loading");
 }
+
 
 
 
@@ -5128,6 +5129,37 @@ function resetWeatherPageUI(){
 
   window.loadAndRenderWeather = loadAndRenderWeather;
 
+const WX_BG_CACHE_KEY = "wx_bg_cache_v1";
+
+function WX_saveBgCache(cityKey, payload){
+  try{
+    const all = JSON.parse(localStorage.getItem(WX_BG_CACHE_KEY) || "{}");
+    all[cityKey] = { ...payload, ts: Date.now() };
+    localStorage.setItem(WX_BG_CACHE_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+
+function WX_loadBgCache(cityKey){
+  try{
+    const all = JSON.parse(localStorage.getItem(WX_BG_CACHE_KEY) || "{}");
+    return all[cityKey] || null;
+  }catch(e){ return null; }
+}
+
+function WX_cityKey(city){
+  // 固定點用 lat,lon 當 key；目前位置用 geo
+  if (!city) return "unknown";
+  if (city.kind === "geo") return "geo";
+  return `fixed:${city.lat},${city.lon}`;
+}
+
+function WX_applyBg(page, phase){
+  if (!page) return;
+  page.classList.remove("bg-sunrise","bg-day","bg-sunset","bg-night");
+  page.classList.add(`bg-${phase}`);
+}
+
+
   /* =========================================================
      Enter / Leave
   ========================================================= */
@@ -5348,7 +5380,11 @@ if (
     setBgClass(page, `bg-${phase}`);
   }
 }
-
+WX_saveBgCache(WX_cityKey(city), {
+  phase,                 // "day"|"night"|"sunrise"|"sunset"
+  is_day: data?.current_weather?.is_day ?? null,
+  date: (daily?.time?.[0] || null)
+});
   const page = $("weather-page");
   const city = WX_CITIES[wxCityIndex];
   if (!page || !city) { wxWeatherInFlight = false; return; }

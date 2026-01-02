@@ -4295,9 +4295,12 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     return new Date(localMs).getUTCHours();
   }
   function localDateKey(localMs){
-    // localMs already includes offset => UTC date parts correspond to local date
-    return new Date(localMs).toISOString().slice(0,10);
-  }
+  if (!Number.isFinite(localMs)) return "";     // ✅ 避免 RangeError
+  const d = new Date(localMs);
+  if (Number.isNaN(d.getTime())) return "";     // ✅ 再保險一次
+  return d.toISOString().slice(0,10);
+}
+
   function floorToHourLocal(localMs){
     const d = new Date(localMs);
     d.setUTCMinutes(0,0,0);
@@ -4859,16 +4862,17 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
      - Then use utc_offset_seconds for local conversion
   ========================================================= */
   function buildWeatherApiUrl(city){
-    const lat = Number(city?.lat);
-    const lon = Number(city?.lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return "";
+  const lat = Number(city?.lat);
+  const lon = Number(city?.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return "";
 
-    return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
-      + `&current_weather=true`
-      + `&hourly=temperature_2m,weathercode`
-      + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
-      + `&timezone=UTC`;
-  }
+  return `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current_weather=true`
+    + `&hourly=temperature_2m,weathercode`
+    + `&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
+    + `&timezone=UTC`
+    + `&timeformat=unixtime`;   // ✅ 這行是關鍵
+}
 
   /* =========================================================
      Render helpers
@@ -4881,17 +4885,23 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     if (hiloEl) hiloEl.textContent = `最高 ${Number.isFinite(hiInt)?hiInt:"--"}° / 最低 ${Number.isFinite(loInt)?loInt:"--"}°`;
   }
 
-  function buildSunByDate(daily, offsetSec){
-    const m = new Map();
-    const sr = daily?.sunrise || [];
-    const ss = daily?.sunset  || [];
-    for (let i=0; i<Math.min(sr.length, ss.length); i++){
-      const sunriseLocalMs = localMsFromUnix(sr[i], offsetSec);
-      const sunsetLocalMs  = localMsFromUnix(ss[i], offsetSec);
-      m.set(localDateKey(sunriseLocalMs), { sunriseLocalMs, sunsetLocalMs });
-    }
-    return m;
+ function buildSunByDate(daily, offsetSec){
+  const m = new Map();
+  const sr = daily?.sunrise || [];
+  const ss = daily?.sunset  || [];
+
+  for (let i=0; i<Math.min(sr.length, ss.length); i++){
+    const sunriseLocalMs = localMsFromUnix(sr[i], offsetSec);
+    const sunsetLocalMs  = localMsFromUnix(ss[i], offsetSec);
+
+    const key = localDateKey(sunriseLocalMs);
+    if (!key) continue; // ✅ sunrise/sunset 不是合法時間就略過
+
+    m.set(key, { sunriseLocalMs, sunsetLocalMs });
   }
+  return m;
+}
+
 
   function nearestIndex(timesLocalMs, eventLocalMs){
     let best=-1, bestDiff=Infinity;

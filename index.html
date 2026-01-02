@@ -2293,78 +2293,77 @@ body.nav-back #menuBtn > div{
   pointer-events: none;
 }
 
+/* ===== 參數 ===== */
 :root{
-  --swipe-w: 82px;  /* 右側編輯寬度（像你圖那樣） */
-  --r: 12px;        /* 右邊圓角（跟卡片一樣） */
+  --edit-w: 84px;   /* 編輯區寬度（像你圖那樣） */
+  --radius: 12px;   /* 跟 activity-card 一樣的圓角 */
 }
 
-/* 外框：讓內容被裁切，右側圓角 */
+/* 外層 */
 .swipe-item{
   position: relative;
   overflow: hidden;
-  border-radius: 0 var(--r) var(--r) 0; /* 左直角、右圓角 */
 }
 
-/* 卡片內容層（會滑動） */
+/* 卡片內容（會左移） */
 .swipe-content{
   position: relative;
   z-index: 2;
   transform: translateX(0);
-  transition: transform 180ms ease;
-  touch-action: pan-y;
+  transition: transform .18s ease;
 }
 
-/* open：卡片左移露出按鈕 */
+/* 左滑後卡片左移 */
 .swipe-item.open .swipe-content{
-  transform: translateX(calc(-1 * var(--swipe-w)));
+  transform: translateX(calc(-1 * var(--edit-w)));
 }
 
-/* 右側 actions：固定在右側，跟卡同高 */
+/* 右側編輯區（跟卡片同高） */
 .swipe-actions{
   position: absolute;
   top: 0;
   right: 0;
-  bottom: 0;
-  width: var(--swipe-w);
+  bottom: 0;              /* ⭐ 高度 = 卡片高度 */
+  width: var(--edit-w);
 
   z-index: 3;
   display: flex;
   align-items: stretch;
 
-  /* 預設不顯示不吃點 */
   opacity: 0;
   transform: translateX(12px);
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity .18s ease, transform .18s ease;
   pointer-events: none;
 }
 
-/* open 才顯示可點 */
+/* open 才顯示 */
 .swipe-item.open .swipe-actions{
   opacity: 1;
   transform: translateX(0);
   pointer-events: auto;
 }
 
-/* 編輯按鈕：整高，左直角右圓角 */
+/* 編輯按鈕本體 */
 .swipe-btn.edit-btn{
   width: 100%;
-  height: 100%;
+  height: 100%;            /* ⭐ 跟卡片同高 */
   border: 0;
-  margin: 0;
   padding: 0;
 
-  background: #2f6df6; /* 藍色 */
+  background: #2f6df6;
   color: #fff;
-  font-weight: 800;
   font-size: 16px;
+  font-weight: 700;
 
-  border-radius: 0 var(--r) var(--r) 0; /* 左直角右圓角 */
   display: flex;
   align-items: center;
   justify-content: center;
+
+  /* 左直角、右圓角 */
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 
-/* ✅ 關鍵：滑開時關掉 a 的點擊，避免蓋住按鈕 */
+/* ⭐ 滑開時，避免 a 吃掉編輯的點擊 */
 .swipe-item.open a.it-link{
   pointer-events: none;
 }
@@ -2478,27 +2477,24 @@ body.nav-back #menuBtn > div{
      data-id="it_001"
      data-dest="新千歲機場"
      data-mode="driving">
+<div class="swipe-item">
+	<div class="swipe-actions">
+    	<button class="swipe-btn edit-btn" type="button">編輯</button>
+	</div>
 
-  <div class="swipe-actions">
-    <button class="swipe-btn edit-btn" type="button">編輯</button>
-  </div>
-
-  <div class="swipe-content">
-    <a class="it-link"
-       href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving"
-       target="_blank">
-      <div class="activity-card">
-        <img src="images/3.png">
-        <div class="info">
-          <div class="time" data-field="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:45</div>
-          <div class="title" data-field="place">新千歲機場</div>
-          <div class="note" data-field="note">預留1小時入境</div>
-        </div>
-      </div>
-    </a>
-
-    <div class="transport-info"><span class="icon-travel-walk"></span> 10 分</div>
-  </div>
+	<div class="swipe-content">
+    	<a class="it-link" href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving" target="_blank">
+    		<div class="activity-card">
+        		<img src="images/3.png">
+        		<div class="info">
+          			<div class="time" data-field="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:45</div>
+          			<div class="title" data-field="place">新千歲機場</div>
+          			<div class="note" data-field="note">預留1小時入境</div>
+        		</div>
+			</div>
+   		</a>
+		<div class="transport-info"><span class="icon-travel-walk"></span> 10 分</div>
+	</div>
 </div>
 
                     <a href="https://www.google.com/maps/dir/?api=1&destination=一幻拉麵 新千歲機場店, 日本〒066-0012 Hokkaido, Chitose, Bibi, ターミナルビル Domestic Terminal New Chitose Airport, 3F&travelmode=driving" target="_blank">

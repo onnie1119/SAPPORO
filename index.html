@@ -4214,18 +4214,19 @@ function localMsFromUnix(unixSec, offsetSec){
   return (Number(unixSec) + Number(offsetSec||0)) * 1000;
 }
 function localHour(localMs){
-  return new Date(localMs).getUTCHours();
+  return new Date(localMs).getHours(); // ✅ 用本地小時
 }
 
 // ✅ FIX: 不用 toISOString（避免 Invalid time value / 時區干擾）
 function localDateKey(localMs){
   if (!Number.isFinite(localMs)) return "";
   const d = new Date(localMs);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth()+1).padStart(2,"0");
-  const day = String(d.getUTCDate()).padStart(2,"0");
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
   return `${y}-${m}-${day}`;
 }
+
 
 function floorToHourLocal(localMs){
   const d = new Date(localMs);
@@ -4312,6 +4313,23 @@ function weatherCodeToIconKey(code, isNight){
   if ([2,3].includes(code)) return isNight ? "night_cloudy" : "cloudy";
   if (code === 1) return isNight ? "night_partly_cloudy" : "partly_cloudy";
   return "unknown";
+}
+
+// ✅ Open-Meteo hourly.time 可能是 "2026-02-09T13:00"（timezone=auto 常見）
+//    也可能是 unix 秒（少數情況）
+//    統一轉成「毫秒 ms」
+function msFromOpenMeteoTime(t){
+  if (typeof t === "string") {
+    // "YYYY-MM-DDTHH:MM" → 當地時間字串，直接 Date.parse
+    const ms = Date.parse(t);
+    return Number.isFinite(ms) ? ms : NaN;
+  }
+  const n = Number(t);
+  if (!Number.isFinite(n)) return NaN;
+  // unix 秒
+  if (n > 1e12) return n;
+  if (n > 1e9) return n * 1000;
+  return NaN;
 }
 
 /* =========================================================
@@ -4770,7 +4788,8 @@ function renderHourly24({ hourlyUnix, temps, codes, offsetSec, sunByDate, nowLoc
   const wrap = $("wxHourly");
   if (!wrap) return;
 
-  const timesLocalMs = hourlyUnix.map(sec => localMsFromUnix(sec, offsetSec));
+ const timesLocalMs = hourlyUnix.map(t => msFromOpenMeteoTime(t));
+
   const start = timesLocalMs[0];
   const end   = timesLocalMs[timesLocalMs.length-1] + 3600000;
 
@@ -4920,7 +4939,21 @@ async function loadAndRenderWeather(){
     const data = await fetch(url).then(r=>r.json());
     const offsetSec = Number(data?.utc_offset_seconds ?? 0);
 
-    const nowLocalMs = Date.now() + offsetSec*1000;
+   // ✅ 用「當地現在時間」：timezone=auto 已經對了，不要再加 offset
+const nowLocalMs = Date.now();
+
+// ✅ hourly.time 可能是字串，統一解析
+const nowFloorLocal = floorToHourLocal(nowLocalMs);
+
+let startIdx = 0;
+for (let i=0;i<hUnix.length;i++){
+  const ms = msFromOpenMeteoTime(hUnix[i]);
+  if (ms >= nowFloorLocal){ startIdx = i; break; }
+}
+
+const sliceUnix  = hUnix.slice(startIdx, startIdx+24);
+const sliceTemps = hTemps.slice(startIdx, startIdx+24);
+const sliceCodes = hCodes.slice(startIdx, startIdx+24);
 
     const sunByDate = buildSunByDate(data?.daily, offsetSec);
     const todayKey = localDateKey(nowLocalMs);

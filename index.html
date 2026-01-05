@@ -3003,12 +3003,21 @@ body.nav-back #menuBtn > div{
 						</div>
 						<div class="more">⋮</div>
 					</div>
-				</div>
-				<!-- 內容頁 -->
-				<div id="ticketContent" class="ticket-content hidden">
-					<h3 id="ticketContentTitle"></h3>
-					<div id="ticketContentBody"></div>
-				</div>
+					<div class="ticket-category bg-blue" data-target="restaurant">
+						<div class="icon">
+							<img src="images/57.png" alt="folder">
+						</div>
+						<div class="text">
+							<span class="title">餐廳預訂</span>
+						</div>
+						<div class="more">⋮</div>
+					</div>
+					</div>
+					<!-- 內容頁 -->
+					<div id="ticketContent" class="ticket-content hidden">
+						<h3 id="ticketContentTitle"></h3>
+						<div id="ticketContentBody"></div>
+					</div>
             </div>
 			
 	      
@@ -3696,6 +3705,16 @@ body.nav-back #menuBtn > div{
 		  		card.classList.add("ticket-opening");
 				setTimeout(() => {
 					window.open("pdf/klook.pdf", "_blank");
+					card.classList.remove("ticket-opening");
+		  		}, 250);
+				return;
+			}
+
+			// ⭐ 餐廳：直接開 PDF
+		 	if (key === "restaurant") {
+		  		card.classList.add("ticket-opening");
+				setTimeout(() => {
+					window.open("pdf/restaurant.pdf", "_blank");
 					card.classList.remove("ticket-opening");
 		  		}, 250);
 				return;

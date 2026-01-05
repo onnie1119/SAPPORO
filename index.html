@@ -1284,13 +1284,13 @@
 	  -webkit-overflow-scrolling: touch;
 	  
 	  box-sizing: border-box;
-
-	  /* padding-bottom: calc(
+	/* ⭐ 關鍵：真的留一段底部可捲動空間 */
+	  padding-bottom: calc(
 	    var(--bottom-nav-h)
 	    + env(safe-area-inset-bottom)
 	    + 16px
 	  );
-	}*/
+	}
 	
 	
 
@@ -2769,7 +2769,7 @@ body.nav-back #menuBtn > div{
                     <div class="transport-info"><span class="icon-travel-bus"></span> 60  分</div>
                     <a href="https://www.google.com/maps/dir/?api=1&destination=Jozankei Daiichi Hotel Suizantei, 定山渓第一寶亭留翠山亭 内1階 3 Chome-105 Jozankeionsennishi, Minami Ward, Sapporo, Hokkaido 061-2303日本&travelmode=driving" target="_blank">
                         <div class="activity-card">
-                            <img src="images/68.png">
+                            <img src="images/62.png">
                             <div class="info">
                               <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;10:38</div>
                               <div class="title">薄野站</div>
@@ -2882,7 +2882,7 @@ body.nav-back #menuBtn > div{
 				
             </div>
 	
-                       <!-- ================================
+            <!-- ================================
                    匯率換算頁面（整理後）
             ================================ -->
             <div id="exchange-page" class="exchange-page">
@@ -2951,6 +2951,7 @@ body.nav-back #menuBtn > div{
   					</div>
 				</div>
             </div>
+
 
 			<!-- === 電子憑證（請務必放在 body 最底部） === -->
             <div id="ticket-page" class="ticket-page">
@@ -5569,4 +5570,3 @@ renderHourly24({
 
 </body>
 </html>
-

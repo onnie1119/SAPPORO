@@ -2142,7 +2142,6 @@ body.nav-back #menuBtn > div{
   display: none;
 }
 
-
 </style>
 </head>
 <body>
@@ -2155,11 +2154,11 @@ body.nav-back #menuBtn > div{
 	</div>
 	<nav class="bottom-nav">
 		<button data-page="home-page" class="active">
-		   <span class="icon-clipboard"></span>
+		    <span class="icon-clipboard"></span>
 		    <span class="label">行程</span>
 		</button>
 		<button data-page="packing-page">
-		   <span class="icon-briefcase1"></span>
+		    <span class="icon-briefcase1"></span>
 		    <span class="label">行李</span>
 		</button>
 		<button data-page="ticket-page">
@@ -2171,7 +2170,7 @@ body.nav-back #menuBtn > div{
 		    <span class="label">匯率</span>
 		</button>
 		<button data-page="weather-page">
-		  	<span class="icon-leaf"></span>
+		    <span class="icon-leaf"></span>
 		    <span class="label">天氣</span>
 		</button>
 	</nav>
@@ -2182,7 +2181,6 @@ body.nav-back #menuBtn > div{
 			<ul>
               <li data-target="home-page">旅遊行程</li>
               <li data-target="packing-page">行李清單</li>
-			  <li data-target="shopping-page">購物清單</li>
               <li data-target="ticket-page">電子票據</li>
               <li data-target="exchange-page">外幣換算</li>
 			  <li data-target="weather-page">天氣預報</li>
@@ -2955,11 +2953,7 @@ body.nav-back #menuBtn > div{
 				</div>
             </div>
 
-			<!-- ✅ 購物清單頁面（沿用 packing-page 的樣式） -->
-			<div id="shopping-page" class="packing-page" style="display:none;">
-				
-			</div>
-			
+
 			<!-- === 電子憑證（請務必放在 body 最底部） === -->
             <div id="ticket-page" class="ticket-page">
 				<div class="ticket-category-list">
@@ -3503,127 +3497,7 @@ body.nav-back #menuBtn > div{
 		
 		/* 初始化 */
 		renderPackingPage();
-		/* =========================
-   Shopping Page（購物清單）
-   - simple list + localStorage
-========================= */
-(function(){
-  const KEY = "shoppingData_v1";
-
-  function load(){
-    try{
-      const raw = localStorage.getItem(KEY);
-      if (raw) return JSON.parse(raw);
-    }catch(e){}
-    return {
-      items: [
-        { text: "牛奶", done: false },
-        { text: "麵包", done: false }
-      ]
-    };
-  }
-
-  function save(data){
-    localStorage.setItem(KEY, JSON.stringify(data));
-  }
-
-  let data = load();
-
-  function render(){
-    const page = document.getElementById("shopping-page");
-    if (!page) return;
-
-    page.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;">
-        <div style="font-weight:700;font-size:18px;">購物清單</div>
-        <button id="shopAddBtn" style="padding:8px 12px;border-radius:10px;border:0;background:#3a7afe;color:#fff;cursor:pointer;">
-          ＋ 新增
-        </button>
-      </div>
-
-      <ul id="shopList" style="list-style:none;padding:0;margin:0;"></ul>
-    `;
-
-    const ul = page.querySelector("#shopList");
-    ul.innerHTML = "";
-
-    data.items.forEach((it, idx) => {
-      const li = document.createElement("li");
-      li.style.cssText = "animation: fadeIn 0.4s ease;
-    background: #fff;
-    border-radius: 8px;
-    margin: 20px 0;
-    margin-top: 8px;
-    margin-bottom: 3px;
-    padding: 15px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    position: relative;
-    box-shadow: 0 0px 3px rgb(0 0 0 / 10%);";
-
-      li.innerHTML = `
-        <div class="shop-check" data-idx="${idx}"
-             style="width:22px;height:22px;border-radius:7px;border:2px solid #cfd8ff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">
-          ${it.done ? "✓" : ""}
-        </div>
-        <div style="flex:1;${it.done ? "text-decoration:line-through;opacity:.55;" : ""}">
-          ${escapeHtml(it.text)}
-        </div>
-        <button class="shop-del" data-idx="${idx}"
-                style="border:0;background:transparent;font-size:20px;line-height:1;cursor:pointer;opacity:.6;">
-          ×
-        </button>
-      `;
-      ul.appendChild(li);
-    });
-
-    // bind add
-    page.querySelector("#shopAddBtn").onclick = () => {
-      const name = prompt("新增購物項目：");
-      if (!name) return;
-      data.items.push({ text: name.trim(), done: false });
-      save(data);
-      render();
-    };
-
-    // bind check/del
-    page.querySelectorAll(".shop-check").forEach(btn => {
-      btn.onclick = () => {
-        const idx = Number(btn.dataset.idx);
-        data.items[idx].done = !data.items[idx].done;
-        save(data);
-        render();
-      };
-    });
-
-    page.querySelectorAll(".shop-del").forEach(btn => {
-      btn.onclick = () => {
-        const idx = Number(btn.dataset.idx);
-        data.items.splice(idx, 1);
-        save(data);
-        render();
-      };
-    });
-  }
-
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  // 進頁面時 render（保險：第一次載入就先建好）
-  document.addEventListener("DOMContentLoaded", render);
-
-  // 給外部可呼叫（可選）
-  window.renderShoppingPage = render;
-})();
-
+		
 		// =============== 電子憑證分類內容 ===============
 		let ticketLevel = "list"; 
 		const ticketData = {
@@ -3665,11 +3539,11 @@ body.nav-back #menuBtn > div{
 								</div>
 						  	</a>
 							<span class="ticket-divider"></span>
-		         			<a href="pdf/hotel-receipt2.pdf" target="_blank" class="pdf-item">
+		         			<a href="pdf/hotel-reservation2.pdf" target="_blank" class="pdf-item">
 		            			<img src="images/57.png" class="pdf-icon">
 		            			<div class="pdf-info">
 		              				<div class="pdf-title">Payment Receipt</div>
-		              				<div class="pdf-sub">付款收據</div>
+		              				<div class="pdf-sub">付款收據(尚未付款)</div>
 		            			</div>
 		          			</a>
 		        		</div>
@@ -4013,7 +3887,7 @@ body.nav-back #menuBtn > div{
 		  	const closeBtn = document.getElementById("menuClose");
 		  	const iosFullMenu = document.getElementById("iosFullMenu");
 		  	const menuItems = document.querySelectorAll(".menu-content ul li");
-		  	const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page, .weather-page, .shopping-page");
+		  	const contentPages = document.querySelectorAll(".container, .packing-page, .ticket-page, .exchange-page, .weather-page");
 		 	const topbar = document.getElementById("topbar");
 
 			function openMenu() {
@@ -4060,8 +3934,7 @@ body.nav-back #menuBtn > div{
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page","packing-page","ticket-page","exchange-page","weather-page","shopping-page","flight-page"];
-
+const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
 let currentPageId = "home-page";
 
 /* =========================

@@ -2142,6 +2142,21 @@ body.nav-back #menuBtn > div{
   display: none;
 }
 
+#shopAddBtn{
+	animation: fadeIn 0.4s ease;
+    background: #fff;
+    border-radius: 8px;
+    margin: 20px 0;
+    margin-top: 8px;
+    margin-bottom: 3px;
+    padding: 15px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+}
 </style>
 </head>
 <body>
@@ -3535,7 +3550,7 @@ body.nav-back #menuBtn > div{
     page.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;">
         <div style="font-weight:700;font-size:18px;">購物清單</div>
-        <button id="shopAddBtn" style="padding:8px 12px;border-radius:10px;border:0;background:#3a7afe;color:#fff;cursor:pointer;">
+        <button id="shopAddBtn" >
           ＋ 新增
         </button>
       </div>

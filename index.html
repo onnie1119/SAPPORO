@@ -1310,7 +1310,7 @@
 		border-top: 1px solid rgba(0,0,0,0.06);
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 		z-index: 999;                 /* 要比內容高 */
-		padding:10px 20px 20px 20px;
+		padding:5px 10px 20px 10px;
 	}
 
 	/* 每一個按鈕 */
@@ -1330,7 +1330,7 @@
 	
 	/* icon（跟你 transport-info 同系統） */
 	.bottom-nav span[class^="icon-"] {
-	  	font-size: 35px;
+	  	font-size: 30px;
 	  	line-height: 1;
 	  	font-weight: normal;          /* ⭐ 解決粗細不一 */
 	  	display: block;
@@ -1339,7 +1339,7 @@
 	
 	/* 文字 */
 	.bottom-nav .label {
-	  	font-size: 15px;
+	  	font-size: 14px;
 	  	margin-top: 5px;
 	}
 	
@@ -2157,6 +2157,10 @@ body.nav-back #menuBtn > div{
 		    <span class="icon-clipboard"></span>
 		    <span class="label">行程</span>
 		</button>
+		<button data-page="packing-page">
+		    <span class="icon-briefcase1"></span>
+		    <span class="label">行李</span>
+		</button>
 		<button data-page="ticket-page">
 		    <span class="icon-ticket"></span>
 		    <span class="label">票據</span>
@@ -2179,7 +2183,7 @@ body.nav-back #menuBtn > div{
               <li data-target="packing-page">行李清單</li>
               <li data-target="ticket-page">電子票據</li>
               <li data-target="exchange-page">外幣換算</li>
-			  <li data-target="weather-page">即時天氣</li>
+			  <li data-target="weather-page">天氣預報</li>
 	    	</ul>
 	  	</div>
 		<button class="menu-close" id="menuClose">✕</button>

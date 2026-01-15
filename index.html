@@ -2143,38 +2143,98 @@ body.nav-back #menuBtn > div{
 }
 
 /* =========================================================
-   Shopping List – FINAL CSS (Fixed Bottom Bar)
+   Shopping List – FINAL CSS (Top Upload + Fixed Total)
 ========================================================= */
 
-/* 你底部 bottom-nav 高度：可依實際調整 */
+/* 底部 bottom-nav 高度（依你實際高度微調） */
 :root{
   --bottom-nav-h: 72px;
-  --shop-bar-h: 96px; /* 底部列(按鈕+合計)大約高度 */
+  --total-bar-gap: 10px;
 }
 
-/* 購物頁背景與留 topbar 空間 */
+/* -------------------------
+   Page wrap
+-------------------------- */
 .shopping-page-wrap{
   padding: 20px;
-  padding-top: 95px;     /* 你的 topbar fixed */
+  padding-top: 95px;     /* topbar fixed */
+  padding-bottom: 120px; /* 避開 bottom-nav（頁面內容本身） */
   background: #F6F9FC;
   min-height: 100dvh;
+  position: relative;
 }
 
-/* 清單：最後要預留空間給「固定底部 bar」+ bottom-nav */
+/* -------------------------
+   Top bar (Upload button fixed in normal flow)
+-------------------------- */
+.shop-topbar{
+  margin-bottom: 16px;
+}
+
+.shop-upload-btn{
+  width: 100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding: 14px 12px;
+  border-radius: 10px;
+  border: 1px dashed #3A7AFE;
+  background: #ffffff;
+  color: #3A7AFE;
+
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* -------------------------
+   List
+-------------------------- */
 .shop-list{
   display:flex;
   flex-direction: column;
   gap: 12px;
-  padding-bottom: calc(var(--bottom-nav-h) + var(--shop-bar-h) + 24px);
+
+  /* 預留固定合計 bar 的空間，避免最後一筆被蓋住 */
+  padding-bottom: calc(var(--bottom-nav-h) + 110px);
 }
 
-/* 卡片 */
+/* -------------------------
+   Card + Swipe shell
+-------------------------- */
 .shop-swipe{
   position: relative;
   overflow: hidden;
   border-radius: 12px;
 }
 
+/* 背後層（如果你要放提示文字/圖示可用） */
+.shop-swipe-bg{
+  position: absolute;
+  inset: 0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  padding-right: 16px;
+  user-select: none;
+}
+
+/* 前景：可滑動卡片 */
+.shop-swipe-fg{
+  will-change: transform;
+  transition: transform 180ms ease;
+}
+
+/* 手機滑動穩定 */
+.shop-swipe,
+.shop-swipe-fg{
+  touch-action: pan-y;
+  user-select: none;
+}
+
+/* -------------------------
+   Card style
+-------------------------- */
 .shop-card{
   background:#fff;
   border-radius: 8px;
@@ -2200,11 +2260,15 @@ body.nav-back #menuBtn > div{
   flex:1;
   display:flex;
   flex-direction: column;
+
+  /* 你原本的視覺距離 */
   margin: 2rem auto;
   gap: 8px;
 }
 
-/* 欄位：icon 在左 */
+/* -------------------------
+   Fields (icon left)
+-------------------------- */
 .shop-field{
   display:flex;
   align-items:center;
@@ -2240,73 +2304,57 @@ body.nav-back #menuBtn > div{
   gap:12px;
 }
 
-.shop-field-location{ flex: 3 !important; }
-.shop-field-price{    flex: 2 !important; }
+.shop-field-location{ flex: 3 !important; }  /* 地點寬 */
+.shop-field-price{    flex: 2 !important; }  /* 價格窄 */
+
+/* 價格欄位文字對齊（你現在希望 left 就 left） */
 .shop-field-price .shop-input{ text-align: left; }
 
-/* Swipe */
-.shop-swipe-bg{
-  position: absolute;
-  inset: 0;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  padding-right: 16px;
-  user-select: none;
-}
-
-.shop-swipe-fg{
-  will-change: transform;
-  transition: transform 180ms ease;
-}
-
-.shop-swipe,
-.shop-swipe-fg{
-  touch-action: pan-y;
-  user-select: none;
-	padding: 0 1.2rem;
-}
-
-/* 已買到 */
+/* -------------------------
+   Bought state (完成採買)
+-------------------------- */
 .shop-card.is-bought{
   border: 1px solid #d95380ab;
- 
+  background: #ffffff; /* 保持白底；你想要淡色也可以加 */
 }
-.shop-card.is-bought .shop-thumb{ opacity: 0.9; }
 
-/* =========================================================
-   Bottom bar：固定貼在視窗底部（避開 bottom-nav）
-========================================================= */
+.shop-card.is-bought .shop-thumb{
+  opacity: 0.9;
+}
+
+/* -------------------------
+   Fixed Total Bar (bottom) – ONLY total
+-------------------------- */
 .shop-bottom-bar{
-         position: fixed;
-        left: 20px;
-        right: 20px;
-        bottom: calc(var(--bottom-nav-h) + 10px);
-        z-index: 999;
-        display: flex;
-        flex-direction: column;
-        backdrop-filter: blur(6px);
-}
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: calc(var(--bottom-nav-h) + var(--total-bar-gap));
+  z-index: 999;
 
-/* 上傳按鈕 */
-.shop-upload-btn{
   display:flex;
-  justify-content:center;
-  align-items:center;
-  padding: 14px 12px;
-  border-radius: 10px;
-  border: 1px dashed #3A7AFE;
-  background: #ffffff;
-  color: #3A7AFE;
-  font-size: 16px;
-  cursor: pointer;
+  justify-content:flex-end;
+
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
 }
 
-/* 合計 */
-.shop-total{
+.shop-bottom-bar .shop-total{
   font-size: 16px;
   color:#444;
   text-align:right;
+}
+
+/* -------------------------
+   Empty hint (optional)
+-------------------------- */
+.shop-empty{
+  padding: 18px 6px;
+  color: #777;
+  text-align: center;
 }
 
 </style>
@@ -5494,22 +5542,37 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   Shopping List – STABLE FINAL VERSION
+   Shopping List – FINAL UX
+   - Empty state: button on TOP, no fields, total = 0
+   - Has items: show list
+   - Swipe:
+       Unbought:
+         Left => confirm delete
+         Right => confirm bought (then apply style)
+       Bought:
+         Left => confirm revert to unbought
+         Right => no-op
+   - No re-render on typing (avoid focus loss)
 ========================================================= */
 (function () {
   "use strict";
 
-  /* -------------------- 設定 -------------------- */
   const SHOP_LS_KEY = "shopping_items_v1";
   const SHOP_CURRENCY = "¥";
-  const DELETE_THRESHOLD = 0.65;   // 左滑刪除
-  const BOUGHT_THRESHOLD = 0.35;   // 右滑完成
 
-  let rootEl;
+  // Swipe thresholds (distance ratio of card width)
+  const LEFT_ACTION_THRESHOLD = 0.55;   // 左滑觸發門檻
+  const RIGHT_ACTION_THRESHOLD = 0.35;  // 右滑觸發門檻
+
+  let rootEl = null;
   let inited = false;
+
+  // swipe state
   let swipe = null;
 
-  /* -------------------- 入口 -------------------- */
+  /* ---------------------------
+     Entry
+  ---------------------------- */
   window.Shop_EnterShoppingPage = function () {
     rootEl = document.getElementById("shoppingRoot");
     if (!rootEl) return;
@@ -5517,30 +5580,38 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (!inited) {
       inited = true;
       mountUI();
-      bindEvents();
+      bindEventsOnce();
     }
 
     render(loadItems());
   };
 
-  /* -------------------- UI -------------------- */
+  /* ---------------------------
+     UI
+  ---------------------------- */
   function mountUI() {
     rootEl.innerHTML = `
-      <div class="shop-layout">
-        <div id="shopList" class="shop-list"></div>
+      <div class="shopping-page-wrap">
 
-        <div class="shop-bottom-bar">
+        <!-- TOP BAR (for empty state and also can be shown always if you want) -->
+        <div id="shopTopBar" class="shop-topbar">
           <label class="shop-upload-btn">
             ＋ 從相簿加入圖片
             <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
           </label>
           <div id="shopTotal" class="shop-total"></div>
         </div>
+
+        <!-- LIST -->
+        <div id="shopList" class="shop-list"></div>
+
       </div>
     `;
   }
 
-  /* -------------------- Storage -------------------- */
+  /* ---------------------------
+     Storage
+  ---------------------------- */
   function loadItems() {
     try { return JSON.parse(localStorage.getItem(SHOP_LS_KEY) || "[]"); }
     catch { return []; }
@@ -5549,45 +5620,71 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     localStorage.setItem(SHOP_LS_KEY, JSON.stringify(items));
   }
   function uid() {
-    return crypto.randomUUID ? crypto.randomUUID() : Date.now() + Math.random();
+    return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
   }
 
-  /* -------------------- Money -------------------- */
+  /* ---------------------------
+     Money
+  ---------------------------- */
   function toNumber(v) {
     const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
     return Number.isFinite(n) ? n : 0;
   }
-  function fmt(v) {
+  function fmtMoney(v) {
     const n = toNumber(v);
     return n ? `${SHOP_CURRENCY} ${n.toLocaleString()}` : "";
   }
 
-  /* -------------------- Render -------------------- */
+  /* ---------------------------
+     Render
+  ---------------------------- */
   function render(items) {
-    const list = document.getElementById("shopList");
-    list.innerHTML = items.map(it => `
+    const listEl = document.getElementById("shopList");
+    const topBarEl = document.getElementById("shopTopBar");
+
+    const arr = Array.isArray(items) ? items : [];
+
+    // Total always updates (empty -> 0)
+    updateTotal(arr);
+
+    // Empty state: show NO fields, button stays on TOP
+    if (arr.length === 0) {
+      listEl.innerHTML = `
+        <div class="shop-empty">
+          目前沒有項目，請從上方「從相簿加入圖片」開始新增
+        </div>
+      `;
+      // 額外確保 topbar 在上方可見
+      topBarEl.style.position = "static";
+      return;
+    }
+
+    // Has items: render list
+    listEl.innerHTML = arr.map(it => `
       <div class="shop-swipe" data-id="${it.id}">
+        <div class="shop-swipe-bg"></div>
+
         <div class="shop-card shop-swipe-fg ${it.bought ? "is-bought" : ""}">
-          <img class="shop-thumb" src="${it.image}">
+          <img class="shop-thumb" src="${it.image}" alt="">
           <div class="shop-fields">
 
             <div class="shop-field">
               <span class="shop-icon icon-location-shopping"></span>
               <input class="shop-input" data-k="name" placeholder="商品名稱"
-                     value="${esc(it.name)}">
+                     value="${escAttr(it.name)}">
             </div>
 
             <div class="shop-row">
               <div class="shop-field shop-field-location">
                 <span class="shop-icon icon-location"></span>
                 <input class="shop-input" data-k="location" placeholder="地點"
-                       value="${esc(it.location)}">
+                       value="${escAttr(it.location)}">
               </div>
 
               <div class="shop-field shop-field-price">
                 <input class="shop-input shop-price" data-k="price"
-                       placeholder="價格" inputmode="decimal"
-                       value="${fmt(it.price)}">
+                       inputmode="decimal" placeholder="價格"
+                       value="${fmtMoney(it.price)}">
               </div>
             </div>
 
@@ -5595,50 +5692,51 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
         </div>
       </div>
     `).join("");
-
-    updateTotal(items);
   }
 
   function updateTotal(items) {
-    const t = items.reduce((s, it) => s + toNumber(it.price), 0);
-    document.getElementById("shopTotal").textContent =
-      `合計：${SHOP_CURRENCY} ${t.toLocaleString()}`;
+    const totalEl = document.getElementById("shopTotal");
+    if (!totalEl) return;
+
+    const total = (items || []).reduce((s, it) => s + toNumber(it?.price), 0);
+    totalEl.textContent = `合計：${SHOP_CURRENCY} ${total.toLocaleString()}`;
   }
 
-  function esc(s) {
+  function escAttr(s) {
     return String(s ?? "")
       .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
       .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;");
+      .replaceAll(">", "&gt;");
   }
 
-  /* -------------------- Events -------------------- */
-  function bindEvents() {
+  /* ---------------------------
+     Events
+  ---------------------------- */
+  function bindEventsOnce() {
 
-    /* 上傳圖片 */
-    rootEl.addEventListener("change", async e => {
-      if (e.target.id !== "shopFileInput") return;
+    // Upload
+    rootEl.addEventListener("change", async (e) => {
+      const input = e.target;
+      if (!input || input.id !== "shopFileInput") return;
+
+      const files = Array.from(input.files || []);
+      if (!files.length) return;
+
       const items = loadItems();
-      for (const f of e.target.files) {
-        items.unshift({
-          id: uid(),
-          image: await toDataURL(f),
-          name: "",
-          location: "",
-          price: 0,
-          bought: false
-        });
+      for (const f of files) {
+        const img = await fileToDataURL(f);
+        items.unshift({ id: uid(), image: img, name: "", location: "", price: 0, bought: false });
       }
       saveItems(items);
       render(items);
-      e.target.value = "";
+      input.value = "";
     });
 
-    /* 輸入（不 re-render） */
-    rootEl.addEventListener("input", e => {
+    // Save on input (NO re-render)
+    rootEl.addEventListener("input", (e) => {
       const el = e.target;
-      if (!el.classList.contains("shop-input")) return;
+      if (!el.classList?.contains("shop-input")) return;
 
       const wrap = el.closest(".shop-swipe");
       const id = wrap?.dataset.id;
@@ -5659,39 +5757,47 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       }
     });
 
-    /* 價格 focus / blur */
-    rootEl.addEventListener("focusin", e => {
-      if (!e.target.classList.contains("shop-price")) return;
-      const n = toNumber(e.target.value);
-      e.target.value = n ? String(n) : "";
+    // Price focus/blur formatting
+    rootEl.addEventListener("focusin", (e) => {
+      const el = e.target;
+      if (!el.classList?.contains("shop-price")) return;
+      const n = toNumber(el.value);
+      el.value = n ? String(n) : "";
     });
 
-    rootEl.addEventListener("focusout", e => {
-      if (!e.target.classList.contains("shop-price")) return;
-      const wrap = e.target.closest(".shop-swipe");
+    rootEl.addEventListener("focusout", (e) => {
+      const el = e.target;
+      if (!el.classList?.contains("shop-price")) return;
+
+      const wrap = el.closest(".shop-swipe");
       const id = wrap?.dataset.id;
+
       const items = loadItems();
       const it = items.find(x => x.id === id);
       if (!it) return;
-      it.price = toNumber(e.target.value);
+
+      it.price = toNumber(el.value);
       saveItems(items);
-      e.target.value = fmt(it.price);
+      el.value = fmtMoney(it.price);
       updateTotal(items);
     });
 
-    /* Swipe events */
-    rootEl.addEventListener("pointerdown", swipeDown, { passive: true });
-    rootEl.addEventListener("pointermove", swipeMove, { passive: false });
-    rootEl.addEventListener("pointerup", swipeUp);
-    rootEl.addEventListener("pointercancel", swipeUp);
+    // Swipe
+    rootEl.addEventListener("pointerdown", onDown, { passive: true });
+    rootEl.addEventListener("pointermove", onMove, { passive: false });
+    rootEl.addEventListener("pointerup", onUp, { passive: true });
+    rootEl.addEventListener("pointercancel", onUp, { passive: true });
   }
 
-  /* -------------------- Swipe Logic -------------------- */
-  function swipeDown(e) {
+  /* ---------------------------
+     Swipe logic with dialogs
+  ---------------------------- */
+  function onDown(e) {
     const fg = e.target.closest(".shop-swipe-fg");
     const wrap = e.target.closest(".shop-swipe");
     if (!fg || !wrap) return;
 
+    // 避免在 input 上滑動時誤判（仍可滑，但更穩）
     swipe = {
       fg, wrap,
       id: wrap.dataset.id,
@@ -5701,10 +5807,11 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       decided: false,
       horizontal: false
     };
+
     fg.style.transition = "none";
   }
 
-  function swipeMove(e) {
+  function onMove(e) {
     if (!swipe) return;
 
     const dx = e.clientX - swipe.sx;
@@ -5716,55 +5823,96 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       swipe.horizontal = Math.abs(dx) >= Math.abs(dy) * 0.9;
       if (!swipe.horizontal) return;
     }
-
     if (!swipe.horizontal) return;
 
     const w = swipe.wrap.clientWidth;
-    swipe.dx = Math.max(-w, Math.min(w, dx));
+    swipe.dx = clamp(dx, -w, w);
     swipe.fg.style.transform = `translateX(${swipe.dx}px)`;
     e.preventDefault();
   }
 
-  function swipeUp() {
+  function onUp() {
     if (!swipe) return;
+
+    const items = loadItems();
+    const it = items.find(x => x.id === swipe.id);
+    if (!it) {
+      resetSwipe();
+      return;
+    }
 
     const w = swipe.wrap.clientWidth;
     const dx = swipe.dx;
+
+    const leftTriggered = dx <= -w * LEFT_ACTION_THRESHOLD;
+    const rightTriggered = dx >= w * RIGHT_ACTION_THRESHOLD;
+
     swipe.fg.style.transition = "transform 180ms ease";
 
-    if (dx <= -w * DELETE_THRESHOLD) {
-      swipe.fg.style.transform = `translateX(${-w}px)`;
-      const id = swipe.id;
-      swipe.fg.addEventListener("transitionend", () => {
-        const items = loadItems().filter(x => x.id !== id);
-        saveItems(items);
-        render(items);
-      }, { once: true });
-    } else if (dx >= w * BOUGHT_THRESHOLD) {
-      swipe.fg.style.transform = "translateX(0)";
-      const items = loadItems();
-      const it = items.find(x => x.id === swipe.id);
-      if (it) {
-        it.bought = !it.bought;
-        saveItems(items);
-        swipe.fg.classList.toggle("is-bought", it.bought);
+    // ---- 已買狀態：左滑=恢復；右滑=不做事 ----
+    if (it.bought) {
+      if (leftTriggered) {
+        resetSwipe();
+        const ok = window.confirm("要將此項目恢復為「未採買」狀態嗎？");
+        if (ok) {
+          it.bought = false;
+          saveItems(items);
+          swipe.fg.classList.remove("is-bought");
+        }
+      } else {
+        resetSwipe();
       }
-    } else {
-      swipe.fg.style.transform = "translateX(0)";
+      swipe = null;
+      return;
     }
 
+    // ---- 未買狀態：左滑=刪除確認；右滑=完成確認 ----
+    if (leftTriggered) {
+      resetSwipe();
+      const ok = window.confirm("確定要移除此項目嗎？");
+      if (ok) {
+        const newItems = items.filter(x => x.id !== it.id);
+        saveItems(newItems);
+        render(newItems);
+      }
+      swipe = null;
+      return;
+    }
+
+    if (rightTriggered) {
+      resetSwipe();
+      const ok = window.confirm("採買完成。要將此項目標記為已買到嗎？");
+      if (ok) {
+        it.bought = true;
+        saveItems(items);
+        swipe.fg.classList.add("is-bought");
+      }
+      swipe = null;
+      return;
+    }
+
+    // 未達門檻：彈回
+    resetSwipe();
     swipe = null;
+
+    function resetSwipe() {
+      if (!swipe) return;
+      swipe.fg.style.transform = "translateX(0)";
+    }
   }
 
-  /* -------------------- Utils -------------------- */
-  function toDataURL(file) {
-    return new Promise(res => {
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function fileToDataURL(file) {
+    return new Promise((res, rej) => {
       const r = new FileReader();
-      r.onload = () => res(r.result);
+      r.onload = () => res(String(r.result));
+      r.onerror = rej;
       r.readAsDataURL(file);
     });
   }
-
 })();
 
 

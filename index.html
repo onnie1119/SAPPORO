@@ -2414,6 +2414,52 @@ body.nav-back #menuBtn > div{
   touch-action: pan-y;
   user-select: none;
 }
+		/* 購物頁：上面清單可捲動、下面固定底部 bar */
+#shopping-page, #shoppingRoot{
+  height: 100%;
+  min-height: 0;
+}
+
+.shopping-page-wrap{
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 清單區自己捲動（避免出現一大段空白要滑到底找按鈕） */
+.shop-list{
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* 底部工具列（不是 fixed，不會跟你原本 layout 打架） */
+.shop-bottom-bar{
+  flex: 0 0 auto;
+  padding: 12px 16px 16px;
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+/* 底部上傳按鈕外觀（你可用原本的 shop-upload-btn 樣式） */
+.shop-upload-btn{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* 讓 swipe 在可捲動容器也能滑 */
+.shop-swipe, .shop-swipe-fg{
+  touch-action: pan-y;
+  user-select: none;
+}
+
+/* 地點寬、價格窄（保證生效） */
+.shop-field-location{ flex: 4 !important; }
+.shop-field-price{    flex: 2 !important; }
+.shop-field-price .shop-input{ text-align: right; }
+
 </style>
 </head>
 <body>

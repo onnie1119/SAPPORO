@@ -2156,8 +2156,8 @@ body.nav-back #menuBtn > div{
    Page wrap
 -------------------------- */
 .shopping-page-wrap{
-  padding: 20px;
-  padding-top: 95px;     /* topbar fixed */
+  padding: 15px;
+  
   padding-bottom: 120px; /* 避開 bottom-nav（頁面內容本身） */
   background: #F6F9FC;
   min-height: 100dvh;
@@ -2172,7 +2172,7 @@ body.nav-back #menuBtn > div{
 }
 
 .shop-upload-btn{
-  width: 100%;
+
   display:flex;
   justify-content:center;
   align-items:center;
@@ -2355,6 +2355,47 @@ body.nav-back #menuBtn > div{
   padding: 18px 6px;
   color: #777;
   text-align: center;
+}
+
+.shoptotal{margin: 1rem 0.3rem;}
+/* Swipe 外層：負責外觀（圓角 + 陰影），同時裁切滑動內容 */
+.shop-swipe{
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+
+  /* ✅ 把陰影放到最外層，陰影就不會被內部裁切 */
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+  background: transparent;
+}
+
+/* 卡片本體：只負責白底與內容，不要陰影 */
+.shop-card{
+  background:#fff;
+  border-radius: 12px;  /* 讓內容角落一致 */
+  box-shadow: none;     /* ✅ 移除原本陰影，避免被裁切干擾 */
+  padding: 0 12px;
+
+  display:flex;
+  gap: 15px;
+  align-items:flex-start;
+}
+
+/* 前景滑動層 */
+.shop-swipe-fg{
+  will-change: transform;
+  transition: transform 180ms ease;
+}
+
+/* 已買外框：加在 swipe 外層，才會跟圓角一致 */
+.shop-swipe.is-bought{
+  border: 1px solid #d95380ab;
+  border-radius: 12px;
+}
+
+/* 已買狀態：內層不要再畫邊線（避免雙框） */
+.shop-card.is-bought{
+  border: none;
 }
 
 </style>
@@ -3239,7 +3280,7 @@ body.nav-back #menuBtn > div{
 			
 			<!-- Shopping Page -->
 	      	<div id="shopping-page" class="content-page shopping-page">
-				<div id="shoppingRoot" style="    margin-top: 6rem;"></div>
+				<div id="shoppingRoot" style="    margin-top: 5rem;"></div>
 			</div>
 			
 			<!-- Weather Page -->

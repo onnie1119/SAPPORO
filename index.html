@@ -2308,14 +2308,13 @@ body.nav-back #menuBtn > div{
 .shop-row > .shop-field{
   flex: 1;
 }
-/* 同一列：地點寬、價格窄 */
-.shop-row > .shop-field:first-child{
-  flex: 3;     /* 地點 */
+.shop-row{
+  display:flex;
+  gap:12px;
 }
 
-.shop-row > .shop-field:last-child{
-  flex: 2;     /* 價格 */
-}
+.shop-field-location{ flex: 4 !important; }  /* 地點寬 */
+.shop-field-price{    flex: 2 !important; }  /* 價格窄 */
 
 </style>
 </head>
@@ -5677,23 +5676,22 @@ showDay = function(dayNumber, dir = "right") {
                      value="${escAttr(it.name)}">
             </div>
 
-            <!-- 地點 + 價格：同列兩格，各自 icon 在左側 -->
             <div class="shop-row">
-              <div class="shop-field">
-                <span class="shop-icon icon-location"></span>
-                <input class="shop-input" data-k="location"
-                       placeholder="地點"
-                       value="${escAttr(it.location)}">
-              </div>
+			  <div class="shop-field shop-field-location">
+			    <span class="shop-icon icon-location"></span>
+			    <input class="shop-input" data-k="location"
+			           placeholder="地點"
+			           value="${escAttr(it.location)}">
+			  </div>
+			
+			  <div class="shop-field shop-field-price">
+			    <input class="shop-input shop-price" data-k="price"
+			           inputmode="decimal"
+			           placeholder="價格"
+			           value="${formatMoney(it.price)}">
+			  </div>
+			</div>
 
-              <div class="shop-field">
-                <!-- 價格 icon 不用再加，維持你要的「欄位內顯示幣別」 -->
-                <input class="shop-input shop-price" data-k="price"
-                       inputmode="decimal"
-                       placeholder="價格"
-                       value="${formatMoney(it.price)}">
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -2373,6 +2373,44 @@ body.nav-back #menuBtn > div{
   font-size: 15px;
   color: #555;
 }
+/* 讓購物頁變成「上清單可捲、下方固定」的版面 */
+.shop-layout{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;         /* 關鍵：避免 flex 子元素撐爆造成空白可滑 */
+}
+
+/* 清單自己捲動 */
+.shop-list-scroll{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;         /* 關鍵：不然也會撐出多餘空間 */
+  padding-bottom: 12px;  /* 和底部 bar 留一點視覺距離 */
+}
+
+/* 底部工具列：不是 fixed，但永遠在容器底部 */
+.shop-bottom-bar{
+  flex: 0 0 auto;
+  padding: 12px 16px 16px;
+  background: #ffffff;
+  border-top: 1px solid #eaeaea;
+}
+
+/* 底部按鈕樣式 */
+.shop-upload-btn-bottom{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+/* 合計右對齊 */
+.shop-bottom-bar .shop-total{
+  margin-top: 8px;
+  text-align: right;
+}
 
 </style>
 </head>
@@ -5671,14 +5709,11 @@ showDay = function(dayNumber, dir = "right") {
   /* ---------------------------
      UI
   ---------------------------- */
-  function mountUI() {
+ function mountUI() {
   rootEl.innerHTML = `
-    <div class="shopping-page-wrap">
+    <div class="shopping-page-wrap shop-layout">
+      <div id="shopList" class="shop-list shop-list-scroll"></div>
 
-      <!-- 清單區（可捲動） -->
-      <div id="shopList" class="shop-list"></div>
-
-      <!-- 底部固定工具列 -->
       <div class="shop-bottom-bar">
         <label class="shop-upload-btn shop-upload-btn-bottom">
           ＋ 從相簿加入圖片
@@ -5687,10 +5722,10 @@ showDay = function(dayNumber, dir = "right") {
 
         <div id="shopTotal" class="shop-total"></div>
       </div>
-
     </div>
   `;
 }
+
 
 
   /* ---------------------------

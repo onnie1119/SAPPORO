@@ -2280,6 +2280,33 @@ body.nav-back #menuBtn > div{
 .shop-swipe.is-armed .shop-swipe-fg{
   transition: transform 80ms ease;
 }
+.shop-field{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width: 0;
+}
+
+.shop-icon{
+  width: 18px;
+  text-align:center;
+  flex: 0 0 18px;
+  color:#666;
+}
+
+.shop-field .shop-input{
+  flex:1 1 auto;
+  min-width: 0;
+}
+
+.shop-row{
+  display:flex;
+  gap:12px;
+}
+
+.shop-row > .shop-field{
+  flex: 1;
+}
 
 </style>
 </head>
@@ -5533,21 +5560,31 @@ showDay = function(dayNumber, dir = "right") {
 </script>
 <script>
 /* =========================================================
-   Shopping List – FINAL Integrated JS
+   Shopping List – FINAL (Icon Left + ¥ in Input + Smooth Typing)
+   - Upload photo from album
+   - Edit: name / location / price
+   - Price input shows: ¥ 1,210 (thousands + currency)
+   - Total shows: 合計：¥ 12,345
+   - localStorage persist
+   - Swipe left to END delete (must pass 95% width; half swipe won't delete)
+   - IMPORTANT: No re-render on typing (fixes "type one char then lose focus")
 ========================================================= */
 (function () {
   "use strict";
 
-  /* ---------- 設定 ---------- */
   const SHOP_LS_KEY = "shopping_items_v1";
   const SHOP_CURRENCY = "¥";
   const DELETE_THRESHOLD_RATIO = 0.95; // 幾乎滑到底才刪
 
   let inited = false;
   let rootEl = null;
-  let swipe = null;
 
-  /* ---------- 對外入口（給 showPage 用） ---------- */
+  // swipe state
+  let swipe = null; // { wrap, fg, id, startX, startY, dx, isHorizontal }
+
+  /* ---------------------------
+     Entry: call this when entering shopping page
+  ---------------------------- */
   window.Shop_EnterShoppingPage = function () {
     rootEl = document.getElementById("shoppingRoot");
     if (!rootEl) return;
@@ -5558,10 +5595,13 @@ showDay = function(dayNumber, dir = "right") {
       bindEventsOnce();
     }
 
+    // 進頁渲染一次（之後輸入不會一直重渲染）
     render(loadItems());
   };
 
-  /* ---------- UI ---------- */
+  /* ---------------------------
+     UI Mount
+  ---------------------------- */
   function mountUI() {
     rootEl.innerHTML = `
       <div class="shopping-page-wrap">
@@ -5576,7 +5616,9 @@ showDay = function(dayNumber, dir = "right") {
     `;
   }
 
-  /* ---------- Storage ---------- */
+  /* ---------------------------
+     Storage
+  ---------------------------- */
   function loadItems() {
     try {
       return JSON.parse(localStorage.getItem(SHOP_LS_KEY) || "[]");
@@ -5584,116 +5626,120 @@ showDay = function(dayNumber, dir = "right") {
       return [];
     }
   }
-
   function saveItems(items) {
     localStorage.setItem(SHOP_LS_KEY, JSON.stringify(items));
   }
-
   function uid() {
-    return crypto.randomUUID ? crypto.randomUUID() : Date.now() + Math.random();
+    return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
   }
 
-  /* ---------- 金額處理 ---------- */
+  /* ---------------------------
+     Money helpers
+  ---------------------------- */
   function toNumber(val) {
-    return Number(String(val || "").replace(/[^\d.-]/g, "")) || 0;
+    const n = Number(String(val ?? "").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(n) ? n : 0;
   }
-
   function formatMoney(val) {
-    return `${SHOP_CURRENCY} ${toNumber(val).toLocaleString()}`;
+    const n = toNumber(val);
+    return n ? `${SHOP_CURRENCY} ${n.toLocaleString()}` : "";
   }
 
-  /* ---------- Render ---------- */
- function render(items) {
-  const listEl = document.getElementById("shopList");
-  const totalEl = document.getElementById("shopTotal");
+  /* ---------------------------
+     Render (only when needed)
+  ---------------------------- */
+  function render(items) {
+    const listEl = document.getElementById("shopList");
+    if (!listEl) return;
 
-  listEl.innerHTML = items.map(it => `
-    <div class="shop-swipe" data-id="${it.id}">
-      <div class="shop-swipe-bg"></div>
+    listEl.innerHTML = items.map((it) => `
+      <div class="shop-swipe" data-id="${it.id}">
+        <div class="shop-swipe-bg"></div>
 
-      <div class="shop-card shop-swipe-fg">
-        <img class="shop-thumb" src="${it.image}">
+        <div class="shop-card shop-swipe-fg">
+          <img class="shop-thumb" src="${it.image}" alt="">
 
-        <div class="shop-fields">
-
-          <!-- 商品名稱 -->
-          <div class="shop-field">
-            <span class="shop-icon icon-location-shopping"></span>
-            <input class="shop-input"
-                   data-k="name"
-                   placeholder="商品名稱"
-                   value="${escape(it.name)}">
-          </div>
-
-          <!-- 地點 + 價格 -->
-          <div class="shop-row">
+          <div class="shop-fields">
+            <!-- 商品名稱：icon 在左側 -->
             <div class="shop-field">
-              <span class="shop-icon icon-location"></span>
-              <input class="shop-input"
-                     data-k="location"
-                     placeholder="地點"
-                     value="${escape(it.location)}">
+              <span class="shop-icon icon-location-shopping"></span>
+              <input class="shop-input" data-k="name"
+                     placeholder="商品名稱"
+                     value="${escAttr(it.name)}">
             </div>
 
-            <div class="shop-field">
-              <input class="shop-input shop-price"
-                     data-k="price"
-                     inputmode="decimal"
-                     placeholder="價格"
-                     value="${it.price ? toNumber(it.price).toLocaleString() : ""}">
+            <!-- 地點 + 價格：同列兩格，各自 icon 在左側 -->
+            <div class="shop-row">
+              <div class="shop-field">
+                <span class="shop-icon icon-location"></span>
+                <input class="shop-input" data-k="location"
+                       placeholder="地點"
+                       value="${escAttr(it.location)}">
+              </div>
+
+              <div class="shop-field">
+                <!-- 價格 icon 不用再加，維持你要的「欄位內顯示幣別」 -->
+                <input class="shop-input shop-price" data-k="price"
+                       inputmode="decimal"
+                       placeholder="價格"
+                       value="${formatMoney(it.price)}">
+              </div>
             </div>
           </div>
-
         </div>
       </div>
-    </div>
-  `).join("");
+    `).join("");
 
-  // 合計（只有這裡顯示幣別）
-  const total = items.reduce((s, it) => s + toNumber(it.price), 0);
-  totalEl.textContent = `合計：¥ ${total.toLocaleString()}`;
-}
-
-
-  function escape(s) {
-    return String(s || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;");
+    updateTotalOnly(items);
   }
 
-  /* ---------- Events ---------- */
-  function bindEventsOnce() {
+  function updateTotalOnly(items) {
+    const totalEl = document.getElementById("shopTotal");
+    if (!totalEl) return;
 
-    /* 圖片上傳 */
+    const total = items.reduce((s, it) => s + toNumber(it.price), 0);
+    totalEl.textContent = `合計：${SHOP_CURRENCY} ${total.toLocaleString()}`;
+  }
+
+  function escAttr(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+
+  /* ---------------------------
+     Events (bind once, no re-render on typing)
+  ---------------------------- */
+  function bindEventsOnce() {
+    // Upload
     rootEl.addEventListener("change", async (e) => {
-      if (e.target.id !== "shopFileInput") return;
+      const input = e.target;
+      if (!input || input.id !== "shopFileInput") return;
+
+      const files = Array.from(input.files || []);
+      if (!files.length) return;
 
       const items = loadItems();
-      for (const file of e.target.files) {
-        const img = await fileToDataURL(file);
-        items.unshift({
-          id: uid(),
-          image: img,
-          name: "",
-          location: "",
-          price: 0
-        });
+      for (const f of files) {
+        const dataUrl = await fileToDataURL(f);
+        items.unshift({ id: uid(), image: dataUrl, name: "", location: "", price: 0 });
       }
+
       saveItems(items);
       render(items);
-      e.target.value = "";
+      input.value = "";
     });
 
-    /* 輸入自動儲存 */
+    // Auto-save on input (IMPORTANT: do NOT re-render here)
     rootEl.addEventListener("input", (e) => {
-      const input = e.target;
-      if (!input.classList.contains("shop-input")) return;
+      const el = e.target;
+      if (!el.classList?.contains("shop-input")) return;
 
-      const wrap = input.closest(".shop-swipe");
+      const wrap = el.closest(".shop-swipe");
       const id = wrap?.dataset.id;
-      const key = input.dataset.k;
+      const key = el.dataset.k;
       if (!id || !key) return;
 
       const items = loadItems();
@@ -5701,99 +5747,141 @@ showDay = function(dayNumber, dir = "right") {
       if (!it) return;
 
       if (key === "price") {
-        it.price = toNumber(input.value);
+        // 輸入中存純數字，避免游標被格式化打斷
+        it.price = toNumber(el.value);
+        saveItems(items);
+        updateTotalOnly(items);
       } else {
-        it[key] = input.value;
+        it[key] = el.value;
+        saveItems(items);
       }
-
-      saveItems(items);
-      render(items);
     });
 
-   // focus：顯示純數字
-rootEl.addEventListener("focusin", (e) => {
-  if (!e.target.classList.contains("shop-price")) return;
-  e.target.value = toNumber(e.target.value) || "";
-});
+    // Price focus/blur: focus shows raw number; blur shows ¥ with thousands
+    rootEl.addEventListener("focusin", (e) => {
+      const el = e.target;
+      if (!el.classList?.contains("shop-price")) return;
+      // 進入編輯：只顯示純數字（好連續輸入）
+      const n = toNumber(el.value);
+      el.value = n ? String(n) : "";
+    });
 
-// blur：顯示千分位（不加符號）
-rootEl.addEventListener("focusout", (e) => {
-  if (!e.target.classList.contains("shop-price")) return;
-  const n = toNumber(e.target.value);
-  e.target.value = n ? n.toLocaleString() : "";
-});
+    rootEl.addEventListener("focusout", (e) => {
+      const el = e.target;
+      if (!el.classList?.contains("shop-price")) return;
 
-    /* 左滑刪除 */
-    rootEl.addEventListener("pointerdown", onDown, { passive: true });
-    rootEl.addEventListener("pointermove", onMove, { passive: false });
-    rootEl.addEventListener("pointerup", onUp);
-    rootEl.addEventListener("pointercancel", onUp);
+      const wrap = el.closest(".shop-swipe");
+      const id = wrap?.dataset.id;
+      if (!id) {
+        el.value = formatMoney(el.value);
+        return;
+      }
+
+      const items = loadItems();
+      const it = items.find(x => x.id === id);
+      if (!it) {
+        el.value = formatMoney(el.value);
+        return;
+      }
+
+      // 離開：格式化顯示（含 ¥ + 千分位）
+      it.price = toNumber(el.value);
+      saveItems(items);
+      el.value = formatMoney(it.price);
+      updateTotalOnly(items);
+    });
+
+    // Swipe to delete
+    rootEl.addEventListener("pointerdown", onPointerDown, { passive: true });
+    rootEl.addEventListener("pointermove", onPointerMove, { passive: false });
+    rootEl.addEventListener("pointerup", onPointerUp, { passive: true });
+    rootEl.addEventListener("pointercancel", onPointerUp, { passive: true });
   }
 
-  function onDown(e) {
+  /* ---------------------------
+     Swipe handlers (must swipe almost to end)
+  ---------------------------- */
+  function onPointerDown(e) {
     const fg = e.target.closest(".shop-swipe-fg");
     const wrap = e.target.closest(".shop-swipe");
-    if (!fg || !wrap) return;
+    if (!wrap || !fg) return;
 
     swipe = {
-      fg,
       wrap,
+      fg,
       id: wrap.dataset.id,
       startX: e.clientX,
       startY: e.clientY,
       dx: 0,
-      horizontal: false
+      isHorizontal: false
     };
 
     fg.style.transition = "none";
+    try { fg.setPointerCapture(e.pointerId); } catch (_) {}
   }
 
-  function onMove(e) {
+  function onPointerMove(e) {
     if (!swipe) return;
 
     const dx = e.clientX - swipe.startX;
     const dy = e.clientY - swipe.startY;
 
-    if (!swipe.horizontal) {
-      if (Math.abs(dx) > Math.abs(dy) * 1.2) swipe.horizontal = true;
-      else return;
+    if (!swipe.isHorizontal) {
+      if (Math.abs(dx) < 10) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.2) swipe.isHorizontal = true;
+      else { swipe = null; return; }
     }
 
+    // only left swipe
     if (dx > 0) return;
 
     const w = swipe.wrap.clientWidth;
-    swipe.dx = Math.max(dx, -w);
-    swipe.fg.style.transform = `translateX(${swipe.dx}px)`;
+    const left = clamp(dx, -w, 0);
+    swipe.dx = left;
+
+    swipe.fg.style.transform = `translateX(${left}px)`;
     e.preventDefault();
   }
 
-  function onUp() {
+  function onPointerUp() {
     if (!swipe) return;
 
     const w = swipe.wrap.clientWidth;
-    const shouldDelete = Math.abs(swipe.dx) > w * DELETE_THRESHOLD_RATIO;
+    const shouldDelete = Math.abs(swipe.dx) >= w * DELETE_THRESHOLD_RATIO;
 
     swipe.fg.style.transition = "transform 180ms ease";
 
     if (shouldDelete) {
       swipe.fg.style.transform = `translateX(${-w}px)`;
-      swipe.fg.addEventListener("transitionend", () => {
-        const items = loadItems().filter(x => x.id !== swipe.id);
+      const idToDelete = swipe.id;
+      const fg = swipe.fg;
+
+      const done = () => {
+        fg.removeEventListener("transitionend", done);
+        const items = loadItems().filter(x => x.id !== idToDelete);
         saveItems(items);
         render(items);
-      }, { once: true });
+      };
+      fg.addEventListener("transitionend", done);
     } else {
-      swipe.fg.style.transform = "translateX(0)";
+      swipe.fg.style.transform = "translateX(0px)";
     }
 
     swipe = null;
   }
 
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  /* ---------------------------
+     File -> DataURL
+  ---------------------------- */
   function fileToDataURL(file) {
-    return new Promise((res, rej) => {
+    return new Promise((resolve, reject) => {
       const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.onerror = rej;
+      r.onload = () => resolve(String(r.result));
+      r.onerror = reject;
       r.readAsDataURL(file);
     });
   }

@@ -2142,24 +2142,52 @@ body.nav-back #menuBtn > div{
   display: none;
 }
 
-/* 購物清單頁（沿用你整體風格：白卡 + 陰影） */
+/* =========================================================
+   Shopping List – Clean CSS (white cards + shadow)
+   - Topbar fixed: padding-top reserved
+   - Bottom nav: padding-bottom reserved
+   - Bottom bar: sticky (always visible, no huge blank scroll)
+========================================================= */
+
+/* 頁面外層 */
 .shopping-page-wrap{
   padding: 20px;
-  padding-top: 95px;     /* 你的 topbar 是 fixed，所以保留上方空間 */
-  padding-bottom: 120px; /* 避開 bottom-nav */
+  padding-top: 95px;      /* 你的 topbar 是 fixed */
+  padding-bottom: 120px;  /* 避開 bottom-nav */
   background: #F6F9FC;
   min-height: 100dvh;
+  position: relative;
 }
 
-.shop-toolbar{
+/* 清單容器 */
+.shop-list{
   display:flex;
-  gap: 10px;
-  align-items:center;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 120px;  /* 避免底部 bar 蓋住最後一筆 */
 }
 
+/* -------------------------
+   Bottom bar（置底常駐）
+-------------------------- */
+.shop-bottom-bar{
+  position: sticky;       /* ✅ 不用 fixed，避免高度/捲動模型打架 */
+  bottom: 70px;           /* ✅ 讓它浮在 bottom-nav 上方（可依你的 nav 高度調整） */
+  z-index: 10;
+
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 12px 16px 16px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+}
+
+/* 上傳按鈕（沿用你的樣式） */
 .shop-upload-btn{
-  flex: 1;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -2172,32 +2200,42 @@ body.nav-back #menuBtn > div{
   cursor: pointer;
 }
 
-.shop-list{
-  display:flex;
-  flex-direction: column;
-  gap: 12px;
+/* 合計 */
+.shop-total{
+  font-size: 16px;
+  color:#444;
+  text-align:right;
+}
+
+/* -------------------------
+   卡片（白卡＋陰影）
+-------------------------- */
+.shop-swipe{
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 .shop-card{
   background:#fff;
   border-radius: 8px;
-  box-shadow:0 0px 3px rgb(0 0 0 / 10%);
-  margin: 0rem 0 1rem 0;
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+  margin: 0;
   padding: 0 12px;
+
   display:flex;
   gap: 15px;
   align-items:flex-start;
 }
 
 .shop-thumb{
-          width: 100px;
-        display: flex;
-        height: 120px;
-        border-radius: 10px;
-        object-fit: cover;
-        margin: auto;
-        background: #eee;
-        flex-shrink: 0;
+  width: 100px;
+  height: 120px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin: auto;
+  background: #eee;
+  flex-shrink: 0;
 }
 
 .shop-fields{
@@ -2205,13 +2243,25 @@ body.nav-back #menuBtn > div{
   display:flex;
   flex-direction: column;
   margin: 2rem auto;
-  
   gap: 8px;
 }
 
-.shop-row{
+/* -------------------------
+   欄位：icon 在左側
+-------------------------- */
+.shop-field{
   display:flex;
-  gap: 8px;
+  align-items:center;
+  gap:10px;
+  min-width: 0;
+}
+
+.shop-icon{
+  width: 18px;
+  flex: 0 0 18px;
+  text-align:center;
+  color:#d95380;
+  font-size:20px;
 }
 
 .shop-input{
@@ -2223,43 +2273,24 @@ body.nav-back #menuBtn > div{
   box-sizing: border-box;
 }
 
-.shop-actions{
+.shop-field .shop-input{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* 地點 + 價格 同列 */
+.shop-row{
   display:flex;
-  gap: 10px;
-  justify-content:flex-end;
-  margin-top: 6px;
+  gap:12px;
 }
 
-.shop-btn{
-  border: none;
-  border-radius: 10px;
-  padding: 10px 12px;
-  cursor:pointer;
-  font-size: 14px;
-}
+.shop-field-location{ flex: 3 !important; } /* 地點寬 */
+.shop-field-price{    flex: 2 !important; } /* 價格窄 */
+.shop-field-price .shop-input{ text-align: right; }
 
-.shop-btn-danger{
-  background:#ffecec;
-  color:#d44;
-}
-.shop-btn-primary{
-  background:#eaf1ff;
-  color:#2a67e8;
-}
-.shop-total{
-  margin-top: 12px;
-  font-size: 16px;
-  color:#444;
-  text-align:right;
-}
-/* 左滑刪除容器 */
-.shop-swipe{
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-/* 底層刪除背景（紅色） */
+/* -------------------------
+   Swipe（左刪 / 右完成）
+-------------------------- */
 .shop-swipe-bg{
   position: absolute;
   inset: 0;
@@ -2267,198 +2298,32 @@ body.nav-back #menuBtn > div{
   align-items:center;
   justify-content:flex-end;
   padding-right: 16px;
-	
-  letter-spacing: 1px;
   user-select: none;
 }
 
-/* 前景：可滑動的卡片 */
 .shop-swipe-fg{
   will-change: transform;
   transition: transform 180ms ease;
 }
 
-/* 滑到底「鎖定」的視覺狀態（可選） */
-.shop-swipe.is-armed .shop-swipe-fg{
-  transition: transform 80ms ease;
-}
-.shop-field{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width: 0;
-}
-
-.shop-icon{
-  width: 18px;
-  text-align:center;
-  flex: 0 0 18px;
-  color:#d95380;
-  font-size:20px;
-}
-
-.shop-field .shop-input{
-  flex:1 1 auto;
-  min-width: 0;
-}
-
-.shop-row{
-  display:flex;
-  gap:12px;
-}
-
-.shop-row > .shop-field{
-  flex: 1;
-}
-.shop-row{
-  display:flex;
-  gap:12px;
-}
-
-.shop-field-location{ flex: 3 !important; }  /* 地點寬 */
-.shop-field-price{    flex: 2 !important; }  /* 價格窄 */
-/* 已買到狀態：外框 + 背景色 */
-.shop-card.is-bought{
-  border: 1px solid rgba(70, 160, 90, 0.55);
-  background: rgba(70, 160, 90, 0.08);
-}
-
-/* 也可以讓圖片略淡一點（可選） */
-.shop-card.is-bought .shop-thumb{
-  opacity: 0.9;
-}
-/* 整個購物頁容器 */
-.shopping-page-wrap{
-  position: relative;
-  min-height: 100vh;
-  padding-bottom: 110px; /* 預留底部工具列高度 */
-}
-
-/* 底部工具列 */
-.shop-bottom-bar{
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  padding: 12px 16px 16px;
- 
-
-  z-index: 20;
-}
-
-/* 底部的上傳按鈕 */
-.shop-upload-btn-bottom{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  padding: 14px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 500;
-
-  background: #f5f7fb;
-  color: #333;
-}
-
-/* 合計顯示（放在按鈕下面） */
-.shop-bottom-bar .shop-total{
-  text-align: right;
-  font-size: 15px;
-  color: #555;
-}
-/* 讓購物頁變成「上清單可捲、下方固定」的版面 */
-.shop-layout{
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;         /* 關鍵：避免 flex 子元素撐爆造成空白可滑 */
-}
-
-/* 清單自己捲動 */
-.shop-list-scroll{
-  flex: 1 1 auto;
-  overflow-y: auto;
-  min-height: 0;         /* 關鍵：不然也會撐出多餘空間 */
-  padding-bottom: 12px;  /* 和底部 bar 留一點視覺距離 */
-}
-
-/* 底部工具列：不是 fixed，但永遠在容器底部 */
-.shop-bottom-bar{
-  flex: 0 0 auto;
-  padding: 12px 16px 16px;
-  
-}
-
-/* 底部按鈕樣式 */
-.shop-upload-btn-bottom{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding: 14px;
-  border-radius: 8px;
-}
-
-/* 合計右對齊 */
-.shop-bottom-bar .shop-total{
-  margin-top: 8px;
-  text-align: right;
-}
+/* 讓 swipe 在手機 scroll 環境也能滑 */
 .shop-swipe,
 .shop-swipe-fg{
   touch-action: pan-y;
   user-select: none;
 }
-		/* 購物頁：上面清單可捲動、下面固定底部 bar */
-#shopping-page, #shoppingRoot{
-  height: 100%;
-  min-height: 0;
+
+/* -------------------------
+   已買到狀態（外框＋背景）
+-------------------------- */
+.shop-card.is-bought{
+  border: 1px solid rgba(70, 160, 90, 0.55);
+  background: rgba(70, 160, 90, 0.08);
 }
 
-.shopping-page-wrap{
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+.shop-card.is-bought .shop-thumb{
+  opacity: 0.9;
 }
-
-/* 清單區自己捲動（避免出現一大段空白要滑到底找按鈕） */
-.shop-list{
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-/* 底部工具列（不是 fixed，不會跟你原本 layout 打架） */
-.shop-bottom-bar{
-  flex: 0 0 auto;
-  padding: 12px 16px 16px;
-  background: #fff;
-  border-top: 1px solid rgba(0,0,0,0.08);
-}
-
-/* 底部上傳按鈕外觀（你可用原本的 shop-upload-btn 樣式） */
-.shop-upload-btn{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-/* 讓 swipe 在可捲動容器也能滑 */
-.shop-swipe, .shop-swipe-fg{
-  touch-action: pan-y;
-  user-select: none;
-}
-
-/* 地點寬、價格窄（保證生效） */
-.shop-field-location{ flex: 4 !important; }
-.shop-field-price{    flex: 2 !important; }
-.shop-field-price .shop-input{ text-align: right; }
 
 </style>
 </head>

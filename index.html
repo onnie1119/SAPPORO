@@ -5634,6 +5634,143 @@ function renderShoppingPage(){
 function escapeAttr(s){
   return String(s ?? "").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 }
+(function(){
+  let inited = false;
+  const LS_KEY = "shopping_items_v1";
+
+  window.Shop_EnterShoppingPage = function(){
+    const root = document.getElementById("shoppingRoot");
+    if (!root) return;
+
+    // 第一次進來：做一次 UI 骨架 + 綁事件
+    if (!inited){
+      inited = true;
+
+      root.innerHTML = `
+        <div class="shopping-page-wrap">
+          <label class="shop-upload-btn">
+            ＋ 從相簿新增圖片
+            <input id="shopFileInput" type="file" accept="image/*" multiple style="display:none;">
+          </label>
+
+          <div class="shop-list" id="shopList"></div>
+          <div class="shop-total" id="shopTotal"></div>
+        </div>
+      `;
+
+      const fileInput = document.getElementById("shopFileInput");
+
+      fileInput.addEventListener("change", async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const items = load();
+        for (const f of files){
+          const img = await fileToDataURL(f);
+          items.unshift({ id: uid(), image: img, name:"", location:"", price:"" });
+        }
+        save(items);
+        render(items);
+        fileInput.value = "";
+      });
+
+      // 卡片內按鈕（刪除/輸入）用事件代理，避免每次 render 綁一堆
+      root.addEventListener("input", (e) => {
+        const el = e.target;
+        const card = el.closest("[data-id]");
+        if (!card) return;
+        const id = card.dataset.id;
+        const key = el.dataset.k;
+        if (!key) return;
+
+        const items = load();
+        const it = items.find(x => x.id === id);
+        if (!it) return;
+        it[key] = el.value;
+        save(items);
+        render(items, { keepScroll:true });
+      });
+
+      root.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-act]");
+        if (!btn) return;
+
+        const act = btn.dataset.act;
+        const id = btn.closest("[data-id]")?.dataset.id;
+        if (!id) return;
+
+        if (act === "delete"){
+          const items = load().filter(x => x.id !== id);
+          save(items);
+          render(items);
+        }
+      });
+    }
+
+    // 每次進頁：render 一次（確保最新）
+    render(load());
+  };
+
+  function load(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }
+    catch{ return []; }
+  }
+  function save(items){
+    localStorage.setItem(LS_KEY, JSON.stringify(items));
+  }
+
+  function render(items, opts={}){
+    const listEl = document.getElementById("shopList");
+    const totalEl = document.getElementById("shopTotal");
+    if (!listEl || !totalEl) return;
+
+    const prevScroll = listEl.scrollTop;
+
+    listEl.innerHTML = items.map(it => `
+      <div class="shop-card" data-id="${it.id}">
+        <img class="shop-thumb" src="${it.image}" alt="">
+        <div class="shop-fields">
+          <input class="shop-input" data-k="name" placeholder="內容物名稱" value="${esc(it.name)}">
+          <div class="shop-row">
+            <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+            <input class="shop-input" data-k="price" inputmode="decimal" placeholder="價錢" value="${esc(it.price)}">
+          </div>
+          <div class="shop-actions">
+            <button class="shop-btn shop-btn-danger" data-act="delete" type="button">刪除</button>
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    const total = items.reduce((s, it) => {
+      const n = Number(String(it.price).replace(/[, ]/g,""));
+      return s + (Number.isFinite(n) ? n : 0);
+    }, 0);
+    totalEl.textContent = `合計：${total.toLocaleString()}`;
+
+    if (opts.keepScroll) listEl.scrollTop = prevScroll;
+  }
+
+  function fileToDataURL(file){
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  function uid(){
+    return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+  }
+  function esc(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+})();
 
 </script>
 	<script>

@@ -2327,6 +2327,52 @@ body.nav-back #menuBtn > div{
 .shop-card.is-bought .shop-thumb{
   opacity: 0.9;
 }
+/* 整個購物頁容器 */
+.shopping-page-wrap{
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 110px; /* 預留底部工具列高度 */
+}
+
+/* 底部工具列 */
+.shop-bottom-bar{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 12px 16px 16px;
+  background: #ffffff;
+  border-top: 1px solid #eaeaea;
+
+  z-index: 20;
+}
+
+/* 底部的上傳按鈕 */
+.shop-upload-btn-bottom{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+
+  background: #f5f7fb;
+  color: #333;
+}
+
+/* 合計顯示（放在按鈕下面） */
+.shop-bottom-bar .shop-total{
+  text-align: right;
+  font-size: 15px;
+  color: #555;
+}
 
 </style>
 </head>
@@ -5626,18 +5672,26 @@ showDay = function(dayNumber, dir = "right") {
      UI
   ---------------------------- */
   function mountUI() {
-    rootEl.innerHTML = `
-      <div class="shopping-page-wrap">
-        <label class="shop-upload-btn">
-          ＋ 從相簿新增圖片
+  rootEl.innerHTML = `
+    <div class="shopping-page-wrap">
+
+      <!-- 清單區（可捲動） -->
+      <div id="shopList" class="shop-list"></div>
+
+      <!-- 底部固定工具列 -->
+      <div class="shop-bottom-bar">
+        <label class="shop-upload-btn shop-upload-btn-bottom">
+          ＋ 從相簿加入圖片
           <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
         </label>
 
-        <div id="shopList" class="shop-list"></div>
         <div id="shopTotal" class="shop-total"></div>
       </div>
-    `;
-  }
+
+    </div>
+  `;
+}
+
 
   /* ---------------------------
      Storage

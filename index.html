@@ -2142,6 +2142,112 @@ body.nav-back #menuBtn > div{
   display: none;
 }
 
+/* 購物清單頁（沿用你整體風格：白卡 + 陰影） */
+.shopping-page-wrap{
+  padding: 20px;
+  padding-top: 95px;     /* 你的 topbar 是 fixed，所以保留上方空間 */
+  padding-bottom: 120px; /* 避開 bottom-nav */
+  background: #F6F9FC;
+  min-height: 100dvh;
+}
+
+.shop-toolbar{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  margin-bottom: 12px;
+}
+
+.shop-upload-btn{
+  flex: 1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 14px 12px;
+  border-radius: 10px;
+  border: 1px dashed #3A7AFE;
+  background: #ffffff;
+  color: #3A7AFE;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.shop-list{
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shop-card{
+  background:#fff;
+  border-radius: 12px;
+  box-shadow:0 0px 3px rgb(0 0 0 / 10%);
+  padding: 12px;
+  display:flex;
+  gap: 12px;
+  align-items:flex-start;
+}
+
+.shop-thumb{
+  width: 88px;
+  height: 88px;
+  border-radius: 10px;
+  object-fit: cover;
+  background:#eee;
+  flex-shrink:0;
+}
+
+.shop-fields{
+  flex:1;
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shop-row{
+  display:flex;
+  gap: 8px;
+}
+
+.shop-input{
+  width: 100%;
+  padding: 10px 10px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.shop-actions{
+  display:flex;
+  gap: 10px;
+  justify-content:flex-end;
+  margin-top: 6px;
+}
+
+.shop-btn{
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor:pointer;
+  font-size: 14px;
+}
+
+.shop-btn-danger{
+  background:#ffecec;
+  color:#d44;
+}
+.shop-btn-primary{
+  background:#eaf1ff;
+  color:#2a67e8;
+}
+.shop-total{
+  margin-top: 12px;
+  font-size: 16px;
+  color:#444;
+  text-align:right;
+}
+
 </style>
 </head>
 <body>
@@ -2181,6 +2287,7 @@ body.nav-back #menuBtn > div{
 			<ul>
               <li data-target="home-page">旅遊行程</li>
               <li data-target="packing-page">行李清單</li>
+			  <li data-target="shopping-page">購物清單</li>
               <li data-target="ticket-page">電子票據</li>
               <li data-target="exchange-page">外幣換算</li>
 			  <li data-target="weather-page">天氣預報</li>
@@ -3021,7 +3128,11 @@ body.nav-back #menuBtn > div{
 				</div>
             </div>
 			
-	      
+			<!-- Shopping Page -->
+	      	<div id="shopping-page" class="content-page shopping-page">
+				<div id="shoppingRoot"></div>
+			</div>
+			
 			<!-- Weather Page -->
 			<div id="weather-page" class="weather-page" style="display:none;">
 				<div id="wxLoading" class="wx-loading">
@@ -3934,7 +4045,8 @@ body.nav-back #menuBtn > div{
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page", "packing-page", "ticket-page", "exchange-page", "weather-page"];
+const PAGES = ["home-page","packing-page","ticket-page","exchange-page","weather-page","shopping-page"];
+
 let currentPageId = "home-page";
 
 /* =========================
@@ -3988,6 +4100,10 @@ function showPage(targetId) {
     resetNavMenu();
   }
 
+// ✅ 購物清單：進入時渲染/初始化
+if (targetId === "shopping-page") {
+  safeCall(window.Shop_EnterShoppingPage);
+}
   // ✅ 天氣頁：只進入一次入口
   if (targetId === "weather-page") {
     safeCall(window.WX_EnterWeatherPage);
@@ -4017,6 +4133,7 @@ function showPage(targetId) {
     target.scrollTop = 0;
     bindScrollListener();
   });
+	
 }
 
 function setBottomNavActive(pageId) {
@@ -5381,7 +5498,144 @@ showDay = function(dayNumber, dir = "right") {
 })();
 
 </script>
+<script>
+	/* ===========================
+   Shopping List (image + name/location/price)
+=========================== */
 
+const SHOP_KEY = "shopping_items_v1";
+
+let shoppingItems = loadShopItems();
+
+// 讀取 localStorage
+function loadShopItems(){
+  try{
+    const raw = localStorage.getItem(SHOP_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){
+    return [];
+  }
+}
+
+// 存回 localStorage
+function saveShopItems(){
+  localStorage.setItem(SHOP_KEY, JSON.stringify(shoppingItems));
+}
+
+// 將圖片轉成 base64（離線保存用）
+function fileToDataURL(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// 渲染購物清單頁
+function renderShoppingPage(){
+  const root = document.getElementById("shoppingRoot");
+  if(!root) return;
+
+  root.innerHTML = `
+    <div class="shopping-page-wrap">
+      <div class="shop-toolbar">
+        <label class="shop-upload-btn">
+          ＋ 從相簿新增圖片
+          <input id="shopFileInput" type="file" accept="image/*" multiple style="display:none;">
+        </label>
+      </div>
+
+      <div class="shop-list" id="shopList"></div>
+      <div class="shop-total" id="shopTotal"></div>
+    </div>
+  `;
+
+  const fileInput = document.getElementById("shopFileInput");
+  const listEl = document.getElementById("shopList");
+
+  // 上傳（相簿選圖）
+  fileInput.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files || []);
+    if(files.length === 0) return;
+
+    // 逐張加入
+    for(const f of files){
+      const dataUrl = await fileToDataURL(f);
+      shoppingItems.unshift({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        image: dataUrl,
+        name: "",
+        location: "",
+        price: ""   // 用字串存，輸入時比較方便
+      });
+    }
+    saveShopItems();
+    renderShoppingPage(); // 重新渲染
+  });
+
+  // 卡片列表
+  shoppingItems.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "shop-card";
+
+    card.innerHTML = `
+      <img class="shop-thumb" src="${item.image}" alt="">
+      <div class="shop-fields">
+        <input class="shop-input" data-k="name" placeholder="內容物名稱（例如：白色戀人）" value="${escapeAttr(item.name)}">
+        <div class="shop-row">
+          <input class="shop-input" data-k="location" placeholder="地點（例如：札幌站、狸小路）" value="${escapeAttr(item.location)}">
+          <input class="shop-input" data-k="price" inputmode="decimal" placeholder="價錢（例如：1280）" value="${escapeAttr(item.price)}">
+        </div>
+        <div class="shop-actions">
+          <button class="shop-btn shop-btn-primary" data-act="save">儲存</button>
+          <button class="shop-btn shop-btn-danger" data-act="delete">刪除</button>
+        </div>
+      </div>
+    `;
+
+    // 寫回資料
+    const inputs = card.querySelectorAll(".shop-input");
+    inputs.forEach(inp => {
+      inp.addEventListener("input", () => {
+        const k = inp.dataset.k;
+        item[k] = inp.value;
+      });
+    });
+
+    // 儲存/刪除
+    card.querySelector('[data-act="save"]').addEventListener("click", () => {
+      saveShopItems();
+      // 可選：給一個輕提示（你也可換成 toast）
+      // alert("已儲存");
+      renderShoppingPage();
+    });
+
+    card.querySelector('[data-act="delete"]').addEventListener("click", () => {
+      shoppingItems = shoppingItems.filter(x => x.id !== item.id);
+      saveShopItems();
+      renderShoppingPage();
+    });
+
+    listEl.appendChild(card);
+  });
+
+  // 總計
+  const total = shoppingItems.reduce((sum, it) => {
+    const n = Number(String(it.price).replace(/[, ]/g,""));
+    return sum + (Number.isFinite(n) ? n : 0);
+  }, 0);
+
+  document.getElementById("shopTotal").textContent =
+    `合計：${total.toLocaleString()}（以你輸入的數字加總）`;
+}
+
+// 避免 value="" 被引號弄壞
+function escapeAttr(s){
+  return String(s ?? "").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+}
+
+</script>
 	<script>
   function syncBarsHeight(){
     const topbar = document.getElementById("topbar");

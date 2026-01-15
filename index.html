@@ -2182,6 +2182,7 @@ body.nav-back #menuBtn > div{
   background:#fff;
   border-radius: 12px;
   box-shadow:0 0px 3px rgb(0 0 0 / 10%);
+  margin-top: 1rem;
   padding: 12px;
   display:flex;
   gap: 12px;
@@ -2189,8 +2190,8 @@ body.nav-back #menuBtn > div{
 }
 
 .shop-thumb{
-  width: 88px;
-  height: 88px;
+  width: 200px;
+  height: 200px;
   border-radius: 10px;
   object-fit: cover;
   background:#eee;
@@ -2214,7 +2215,7 @@ body.nav-back #menuBtn > div{
   padding: 10px 10px;
   border: 1px solid #e6e6e6;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 18px;
   box-sizing: border-box;
 }
 
@@ -2246,6 +2247,38 @@ body.nav-back #menuBtn > div{
   font-size: 16px;
   color:#444;
   text-align:right;
+}
+/* 左滑刪除容器 */
+.shop-swipe{
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* 底層刪除背景（紅色） */
+.shop-swipe-bg{
+  position: absolute;
+  inset: 0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  padding-right: 16px;
+  background: #ff3b30;
+  color:#fff;
+  font-weight: 600;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+/* 前景：可滑動的卡片 */
+.shop-swipe-fg{
+  will-change: transform;
+  transition: transform 180ms ease;
+}
+
+/* 滑到底「鎖定」的視覺狀態（可選） */
+.shop-swipe.is-armed .shop-swipe-fg{
+  transition: transform 80ms ease;
 }
 
 </style>
@@ -5499,276 +5532,303 @@ showDay = function(dayNumber, dir = "right") {
 
 </script>
 <script>
-	/* ===========================
-   Shopping List (image + name/location/price)
-=========================== */
+/* =========================================================
+   Shopping List – Integrated Module
+   - Photo upload (mobile album)
+   - Edit: name / location / price
+   - localStorage persistence
+   - Swipe left-to-delete (must pass threshold; half swipe won't delete)
+========================================================= */
+(function () {
+  "use strict";
 
-const SHOP_KEY = "shopping_items_v1";
+  const SHOP_LS_KEY = "shopping_items_v1";
 
-let shoppingItems = loadShopItems();
+  // 左滑刪除門檻：必須滑過卡片寬度的 60% 才刪
+  const DELETE_THRESHOLD_RATIO = 0.60;
 
-// 讀取 localStorage
-function loadShopItems(){
-  try{
-    const raw = localStorage.getItem(SHOP_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }catch(e){
-    return [];
-  }
-}
-
-// 存回 localStorage
-function saveShopItems(){
-  localStorage.setItem(SHOP_KEY, JSON.stringify(shoppingItems));
-}
-
-// 將圖片轉成 base64（離線保存用）
-function fileToDataURL(file){
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// 渲染購物清單頁
-function renderShoppingPage(){
-  const root = document.getElementById("shoppingRoot");
-  if(!root) return;
-
-  root.innerHTML = `
-    <div class="shopping-page-wrap">
-      <div class="shop-toolbar">
-        <label class="shop-upload-btn">
-          ＋ 從相簿新增圖片
-          <input id="shopFileInput" type="file" accept="image/*" multiple style="display:none;">
-        </label>
-      </div>
-
-      <div class="shop-list" id="shopList"></div>
-      <div class="shop-total" id="shopTotal"></div>
-    </div>
-  `;
-
-  const fileInput = document.getElementById("shopFileInput");
-  const listEl = document.getElementById("shopList");
-
-  // 上傳（相簿選圖）
-  fileInput.addEventListener("change", async (e) => {
-    const files = Array.from(e.target.files || []);
-    if(files.length === 0) return;
-
-    // 逐張加入
-    for(const f of files){
-      const dataUrl = await fileToDataURL(f);
-      shoppingItems.unshift({
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
-        image: dataUrl,
-        name: "",
-        location: "",
-        price: ""   // 用字串存，輸入時比較方便
-      });
-    }
-    saveShopItems();
-    renderShoppingPage(); // 重新渲染
-  });
-
-  // 卡片列表
-  shoppingItems.forEach((item) => {
-    const card = document.createElement("div");
-    card.className = "shop-card";
-
-    card.innerHTML = `
-      <img class="shop-thumb" src="${item.image}" alt="">
-      <div class="shop-fields">
-        <input class="shop-input" data-k="name" placeholder="內容物名稱（例如：白色戀人）" value="${escapeAttr(item.name)}">
-        <div class="shop-row">
-          <input class="shop-input" data-k="location" placeholder="地點（例如：札幌站、狸小路）" value="${escapeAttr(item.location)}">
-          <input class="shop-input" data-k="price" inputmode="decimal" placeholder="價錢（例如：1280）" value="${escapeAttr(item.price)}">
-        </div>
-        <div class="shop-actions">
-          <button class="shop-btn shop-btn-primary" data-act="save">儲存</button>
-          <button class="shop-btn shop-btn-danger" data-act="delete">刪除</button>
-        </div>
-      </div>
-    `;
-
-    // 寫回資料
-    const inputs = card.querySelectorAll(".shop-input");
-    inputs.forEach(inp => {
-      inp.addEventListener("input", () => {
-        const k = inp.dataset.k;
-        item[k] = inp.value;
-      });
-    });
-
-    // 儲存/刪除
-    card.querySelector('[data-act="save"]').addEventListener("click", () => {
-      saveShopItems();
-      // 可選：給一個輕提示（你也可換成 toast）
-      // alert("已儲存");
-      renderShoppingPage();
-    });
-
-    card.querySelector('[data-act="delete"]').addEventListener("click", () => {
-      shoppingItems = shoppingItems.filter(x => x.id !== item.id);
-      saveShopItems();
-      renderShoppingPage();
-    });
-
-    listEl.appendChild(card);
-  });
-
-  // 總計
-  const total = shoppingItems.reduce((sum, it) => {
-    const n = Number(String(it.price).replace(/[, ]/g,""));
-    return sum + (Number.isFinite(n) ? n : 0);
-  }, 0);
-
-  document.getElementById("shopTotal").textContent =
-    `合計：${total.toLocaleString()}（以你輸入的數字加總）`;
-}
-
-// 避免 value="" 被引號弄壞
-function escapeAttr(s){
-  return String(s ?? "").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-}
-(function(){
   let inited = false;
-  const LS_KEY = "shopping_items_v1";
+  let rootEl = null;
+  let swipe = null; // active swipe state
 
-  window.Shop_EnterShoppingPage = function(){
-    const root = document.getElementById("shoppingRoot");
-    if (!root) return;
+  /* ---------------------------
+     Public entry (called by showPage)
+  ---------------------------- */
+  window.Shop_EnterShoppingPage = function () {
+    rootEl = document.getElementById("shoppingRoot");
+    if (!rootEl) return;
 
-    // 第一次進來：做一次 UI 骨架 + 綁事件
-    if (!inited){
+    if (!inited) {
       inited = true;
+      mountUI();
+      bindEventsOnce();
+    }
 
-      root.innerHTML = `
-        <div class="shopping-page-wrap">
+    // 每次進頁都 render，確保最新
+    render(loadItems());
+  };
+
+  /* ---------------------------
+     UI Mount
+  ---------------------------- */
+  function mountUI() {
+    rootEl.innerHTML = `
+      <div class="shopping-page-wrap">
+        <div class="shop-toolbar">
           <label class="shop-upload-btn">
             ＋ 從相簿新增圖片
             <input id="shopFileInput" type="file" accept="image/*" multiple style="display:none;">
           </label>
-
-          <div class="shop-list" id="shopList"></div>
-          <div class="shop-total" id="shopTotal"></div>
         </div>
-      `;
 
-      const fileInput = document.getElementById("shopFileInput");
+        <div class="shop-list" id="shopList"></div>
+        <div class="shop-total" id="shopTotal"></div>
+      </div>
+    `;
+  }
 
-      fileInput.addEventListener("change", async (e) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length === 0) return;
-
-        const items = load();
-        for (const f of files){
-          const img = await fileToDataURL(f);
-          items.unshift({ id: uid(), image: img, name:"", location:"", price:"" });
-        }
-        save(items);
-        render(items);
-        fileInput.value = "";
-      });
-
-      // 卡片內按鈕（刪除/輸入）用事件代理，避免每次 render 綁一堆
-      root.addEventListener("input", (e) => {
-        const el = e.target;
-        const card = el.closest("[data-id]");
-        if (!card) return;
-        const id = card.dataset.id;
-        const key = el.dataset.k;
-        if (!key) return;
-
-        const items = load();
-        const it = items.find(x => x.id === id);
-        if (!it) return;
-        it[key] = el.value;
-        save(items);
-        render(items, { keepScroll:true });
-      });
-
-      root.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-act]");
-        if (!btn) return;
-
-        const act = btn.dataset.act;
-        const id = btn.closest("[data-id]")?.dataset.id;
-        if (!id) return;
-
-        if (act === "delete"){
-          const items = load().filter(x => x.id !== id);
-          save(items);
-          render(items);
-        }
-      });
+  /* ---------------------------
+     Data
+  ---------------------------- */
+  function loadItems() {
+    try {
+      return JSON.parse(localStorage.getItem(SHOP_LS_KEY) || "[]");
+    } catch (e) {
+      return [];
     }
-
-    // 每次進頁：render 一次（確保最新）
-    render(load());
-  };
-
-  function load(){
-    try{ return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }
-    catch{ return []; }
-  }
-  function save(items){
-    localStorage.setItem(LS_KEY, JSON.stringify(items));
   }
 
-  function render(items, opts={}){
+  function saveItems(items) {
+    localStorage.setItem(SHOP_LS_KEY, JSON.stringify(items));
+  }
+
+  function uid() {
+    return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+  }
+
+  /* ---------------------------
+     Render
+  ---------------------------- */
+  function render(items, opts = {}) {
     const listEl = document.getElementById("shopList");
     const totalEl = document.getElementById("shopTotal");
     if (!listEl || !totalEl) return;
 
-    const prevScroll = listEl.scrollTop;
+    // 可選：維持滾動位置
+    const keepScroll = !!opts.keepScroll;
+    const prevScroll = keepScroll ? listEl.scrollTop : 0;
 
-    listEl.innerHTML = items.map(it => `
-      <div class="shop-card" data-id="${it.id}">
-        <img class="shop-thumb" src="${it.image}" alt="">
-        <div class="shop-fields">
-          <input class="shop-input" data-k="name" placeholder="內容物名稱" value="${esc(it.name)}">
-          <div class="shop-row">
-            <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
-            <input class="shop-input" data-k="price" inputmode="decimal" placeholder="價錢" value="${esc(it.price)}">
-          </div>
-          <div class="shop-actions">
-            <button class="shop-btn shop-btn-danger" data-act="delete" type="button">刪除</button>
-          </div>
-        </div>
-      </div>
-    `).join("");
+    listEl.innerHTML = items
+      .map((it) => {
+        return `
+          <div class="shop-swipe" data-id="${it.id}">
+            <div class="shop-swipe-bg">刪除</div>
 
-    const total = items.reduce((s, it) => {
-      const n = Number(String(it.price).replace(/[, ]/g,""));
-      return s + (Number.isFinite(n) ? n : 0);
+            <div class="shop-card shop-swipe-fg">
+              <img class="shop-thumb" src="${it.image}" alt="">
+              <div class="shop-fields">
+                <input class="shop-input" data-k="name" placeholder="內容物名稱" value="${escAttr(it.name)}">
+                <div class="shop-row">
+                  <input class="shop-input" data-k="location" placeholder="地點" value="${escAttr(it.location)}">
+                  <input class="shop-input" data-k="price" inputmode="decimal" placeholder="價錢" value="${escAttr(it.price)}">
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+
+    const total = items.reduce((sum, it) => {
+      const n = Number(String(it.price ?? "").replace(/[, ]/g, ""));
+      return sum + (Number.isFinite(n) ? n : 0);
     }, 0);
+
     totalEl.textContent = `合計：${total.toLocaleString()}`;
 
-    if (opts.keepScroll) listEl.scrollTop = prevScroll;
+    if (keepScroll) listEl.scrollTop = prevScroll;
   }
 
-  function fileToDataURL(file){
+  function escAttr(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+
+  /* ---------------------------
+     Events (bind once via delegation)
+  ---------------------------- */
+  function bindEventsOnce() {
+    // 1) Photo upload
+    rootEl.addEventListener("change", async (e) => {
+      const input = e.target;
+      if (!input || input.id !== "shopFileInput") return;
+
+      const files = Array.from(input.files || []);
+      if (files.length === 0) return;
+
+      const items = loadItems();
+      for (const f of files) {
+        const dataUrl = await fileToDataURL(f);
+        items.unshift({
+          id: uid(),
+          image: dataUrl,
+          name: "",
+          location: "",
+          price: ""
+        });
+      }
+
+      saveItems(items);
+      render(items);
+      input.value = "";
+    });
+
+    // 2) Inputs (auto-save on input)
+    rootEl.addEventListener("input", (e) => {
+      const el = e.target;
+      if (!el.classList || !el.classList.contains("shop-input")) return;
+
+      const swipeWrap = el.closest(".shop-swipe");
+      if (!swipeWrap) return;
+
+      const id = swipeWrap.dataset.id;
+      const key = el.dataset.k;
+      if (!id || !key) return;
+
+      const items = loadItems();
+      const it = items.find((x) => x.id === id);
+      if (!it) return;
+
+      it[key] = el.value;
+      saveItems(items);
+
+      // 不強制每次都 render，避免輸入時游標跳動
+      // 但如果你要即時刷新合計金額，可改成：
+      // render(items, { keepScroll: true });
+      updateTotalOnly(items);
+    });
+
+    // 3) Swipe-to-delete (pointer events)
+    rootEl.addEventListener("pointerdown", onPointerDown, { passive: true });
+    rootEl.addEventListener("pointermove", onPointerMove, { passive: false });
+    rootEl.addEventListener("pointerup", onPointerUp, { passive: true });
+    rootEl.addEventListener("pointercancel", onPointerUp, { passive: true });
+  }
+
+  function updateTotalOnly(items) {
+    const totalEl = document.getElementById("shopTotal");
+    if (!totalEl) return;
+    const total = items.reduce((sum, it) => {
+      const n = Number(String(it.price ?? "").replace(/[, ]/g, ""));
+      return sum + (Number.isFinite(n) ? n : 0);
+    }, 0);
+    totalEl.textContent = `合計：${total.toLocaleString()}`;
+  }
+
+  /* ---------------------------
+     Swipe handlers (防呆：滑過門檻才刪；滑一半彈回)
+  ---------------------------- */
+  function onPointerDown(e) {
+    const fg = e.target.closest(".shop-swipe-fg");
+    const wrap = e.target.closest(".shop-swipe");
+    if (!wrap || !fg) return;
+
+    swipe = {
+      wrap,
+      fg,
+      id: wrap.dataset.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      dx: 0,
+      isHorizontal: false
+    };
+
+    fg.style.transition = "none";
+    wrap.classList.remove("is-armed");
+
+    // capture so move/up still works even if pointer leaves element
+    try { fg.setPointerCapture(e.pointerId); } catch (_) {}
+  }
+
+  function onPointerMove(e) {
+    if (!swipe) return;
+
+    const dx = e.clientX - swipe.startX;
+    const dy = e.clientY - swipe.startY;
+
+    // 判斷是否為水平滑動（避免上下捲動被誤觸）
+    if (!swipe.isHorizontal) {
+      if (Math.abs(dx) < 8) return; // 太小先不判斷
+      if (Math.abs(dx) > Math.abs(dy) * 1.2) {
+        swipe.isHorizontal = true;
+      } else {
+        swipe = null;
+        return;
+      }
+    }
+
+    // 只允許左滑（dx < 0）
+    const wrapW = swipe.wrap.clientWidth;
+    const left = clamp(dx, -wrapW, 0);
+    swipe.dx = left;
+
+    swipe.fg.style.transform = `translateX(${left}px)`;
+
+    const armed = Math.abs(left) >= wrapW * DELETE_THRESHOLD_RATIO;
+    swipe.wrap.classList.toggle("is-armed", armed);
+
+    // 水平滑動時阻止頁面跟著滾動
+    e.preventDefault();
+  }
+
+  function onPointerUp() {
+    if (!swipe) return;
+
+    const wrapW = swipe.wrap.clientWidth;
+    const shouldDelete = Math.abs(swipe.dx) >= wrapW * DELETE_THRESHOLD_RATIO;
+
+    swipe.fg.style.transition = "transform 180ms ease";
+
+    if (shouldDelete) {
+      // 滑走動畫 → 刪除
+      swipe.fg.style.transform = `translateX(${-wrapW}px)`;
+
+      const idToDelete = swipe.id;
+      const fg = swipe.fg;
+
+      const done = () => {
+        fg.removeEventListener("transitionend", done);
+
+        const items = loadItems().filter((x) => x.id !== idToDelete);
+        saveItems(items);
+        render(items);
+      };
+      fg.addEventListener("transitionend", done);
+    } else {
+      // 沒過門檻 → 彈回（防呆）
+      swipe.fg.style.transform = "translateX(0px)";
+    }
+
+    swipe = null;
+  }
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  /* ---------------------------
+     File -> DataURL (offline persist)
+  ---------------------------- */
+  function fileToDataURL(file) {
     return new Promise((resolve, reject) => {
       const r = new FileReader();
       r.onload = () => resolve(String(r.result));
       r.onerror = reject;
       r.readAsDataURL(file);
     });
-  }
-
-  function uid(){
-    return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
-  }
-  function esc(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
   }
 })();
 

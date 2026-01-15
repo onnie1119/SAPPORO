@@ -5603,50 +5603,57 @@ showDay = function(dayNumber, dir = "right") {
   }
 
   /* ---------- Render ---------- */
-  function render(items) {
-    const listEl = document.getElementById("shopList");
-    const totalEl = document.getElementById("shopTotal");
+ function render(items) {
+  const listEl = document.getElementById("shopList");
+  const totalEl = document.getElementById("shopTotal");
 
-    listEl.innerHTML = items.map(it => `
-      <div class="shop-swipe" data-id="${it.id}">
-        <div class="shop-swipe-bg"></div>
+  listEl.innerHTML = items.map(it => `
+    <div class="shop-swipe" data-id="${it.id}">
+      <div class="shop-swipe-bg"></div>
 
-        <div class="shop-card shop-swipe-fg">
-          <img class="shop-thumb" src="${it.image}">
-          <div class="shop-fields">
+      <div class="shop-card shop-swipe-fg">
+        <img class="shop-thumb" src="${it.image}">
+
+        <div class="shop-fields">
+
+          <!-- 商品名稱 -->
+          <div class="shop-field">
+            <span class="shop-icon icon-location-shopping"></span>
+            <input class="shop-input"
+                   data-k="name"
+                   placeholder="商品名稱"
+                   value="${escape(it.name)}">
+          </div>
+
+          <!-- 地點 + 價格 -->
+          <div class="shop-row">
+            <div class="shop-field">
+              <span class="shop-icon icon-location"></span>
+              <input class="shop-input"
+                     data-k="location"
+                     placeholder="地點"
+                     value="${escape(it.location)}">
+            </div>
 
             <div class="shop-field">
-              <span class="shop-icon icon-location-shopping"></span>
-              <input class="shop-input" data-k="name"
-                     placeholder="商品名稱"
-                     value="${escape(it.name)}">
+              <input class="shop-input shop-price"
+                     data-k="price"
+                     inputmode="decimal"
+                     placeholder="價格"
+                     value="${it.price ? toNumber(it.price).toLocaleString() : ""}">
             </div>
-
-            <div class="shop-row">
-              <div class="shop-field">
-                <span class="shop-icon icon-location"></span>
-                <input class="shop-input" data-k="location"
-                       placeholder="地點"
-                       value="${escape(it.location)}">
-              </div>
-
-              <div class="shop-field">
-                <span class="shop-icon">${SHOP_CURRENCY}</span>
-                <input class="shop-input shop-price" data-k="price"
-                       inputmode="decimal"
-                       placeholder="價格"
-                       value="${it.price ? formatMoney(it.price) : ""}">
-              </div>
-            </div>
-
           </div>
+
         </div>
       </div>
-    `).join("");
+    </div>
+  `).join("");
 
-    const total = items.reduce((s, it) => s + toNumber(it.price), 0);
-    totalEl.textContent = `合計：${formatMoney(total)}`;
-  }
+  // 合計（只有這裡顯示幣別）
+  const total = items.reduce((s, it) => s + toNumber(it.price), 0);
+  totalEl.textContent = `合計：¥ ${total.toLocaleString()}`;
+}
+
 
   function escape(s) {
     return String(s || "")
@@ -5703,16 +5710,18 @@ showDay = function(dayNumber, dir = "right") {
       render(items);
     });
 
-    /* 價格 focus / blur */
-    rootEl.addEventListener("focusin", (e) => {
-      if (!e.target.classList.contains("shop-price")) return;
-      e.target.value = toNumber(e.target.value) || "";
-    });
+   // focus：顯示純數字
+rootEl.addEventListener("focusin", (e) => {
+  if (!e.target.classList.contains("shop-price")) return;
+  e.target.value = toNumber(e.target.value) || "";
+});
 
-    rootEl.addEventListener("focusout", (e) => {
-      if (!e.target.classList.contains("shop-price")) return;
-      e.target.value = e.target.value ? formatMoney(e.target.value) : "";
-    });
+// blur：顯示千分位（不加符號）
+rootEl.addEventListener("focusout", (e) => {
+  if (!e.target.classList.contains("shop-price")) return;
+  const n = toNumber(e.target.value);
+  e.target.value = n ? n.toLocaleString() : "";
+});
 
     /* 左滑刪除 */
     rootEl.addEventListener("pointerdown", onDown, { passive: true });

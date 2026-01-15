@@ -2317,6 +2317,16 @@ body.nav-back #menuBtn > div{
 
 .shop-field-location{ flex: 3 !important; }  /* 地點寬 */
 .shop-field-price{    flex: 2 !important; }  /* 價格窄 */
+/* 已買到狀態：外框 + 背景色 */
+.shop-card.is-bought{
+  border: 1px solid rgba(70, 160, 90, 0.55);
+  background: rgba(70, 160, 90, 0.08);
+}
+
+/* 也可以讓圖片略淡一點（可選） */
+.shop-card.is-bought .shop-thumb{
+  opacity: 0.9;
+}
 
 </style>
 </head>
@@ -5570,21 +5580,25 @@ showDay = function(dayNumber, dir = "right") {
 </script>
 <script>
 /* =========================================================
-   Shopping List – FINAL (Icon Left + ¥ in Input + Smooth Typing)
-   - Upload photo from album
+   Shopping List – FINAL
+   - Upload photo
    - Edit: name / location / price
    - Price input shows: ¥ 1,210 (thousands + currency)
    - Total shows: 合計：¥ 12,345
    - localStorage persist
-   - Swipe left to END delete (must pass 95% width; half swipe won't delete)
-   - IMPORTANT: No re-render on typing (fixes "type one char then lose focus")
+   - Swipe:
+       Left swipe (95% width) => DELETE (防呆)
+       Right swipe (40% width) => TOGGLE bought (加外框+背景)
+   - No re-render on typing (fix typing interruption)
 ========================================================= */
 (function () {
   "use strict";
 
   const SHOP_LS_KEY = "shopping_items_v1";
   const SHOP_CURRENCY = "¥";
-  const DELETE_THRESHOLD_RATIO = 0.95; // 幾乎滑到底才刪
+
+  const DELETE_THRESHOLD_RATIO = 0.95; // 左滑幾乎到底才刪
+  const BOUGHT_THRESHOLD_RATIO = 0.40; // 右滑超過 40% 才算已買到（可調）
 
   let inited = false;
   let rootEl = null;
@@ -5593,7 +5607,7 @@ showDay = function(dayNumber, dir = "right") {
   let swipe = null; // { wrap, fg, id, startX, startY, dx, isHorizontal }
 
   /* ---------------------------
-     Entry: call this when entering shopping page
+     Entry
   ---------------------------- */
   window.Shop_EnterShoppingPage = function () {
     rootEl = document.getElementById("shoppingRoot");
@@ -5605,12 +5619,11 @@ showDay = function(dayNumber, dir = "right") {
       bindEventsOnce();
     }
 
-    // 進頁渲染一次（之後輸入不會一直重渲染）
     render(loadItems());
   };
 
   /* ---------------------------
-     UI Mount
+     UI
   ---------------------------- */
   function mountUI() {
     rootEl.innerHTML = `
@@ -5644,7 +5657,7 @@ showDay = function(dayNumber, dir = "right") {
   }
 
   /* ---------------------------
-     Money helpers
+     Money
   ---------------------------- */
   function toNumber(val) {
     const n = Number(String(val ?? "").replace(/[^\d.-]/g, ""));
@@ -5656,7 +5669,7 @@ showDay = function(dayNumber, dir = "right") {
   }
 
   /* ---------------------------
-     Render (only when needed)
+     Render
   ---------------------------- */
   function render(items) {
     const listEl = document.getElementById("shopList");
@@ -5666,11 +5679,10 @@ showDay = function(dayNumber, dir = "right") {
       <div class="shop-swipe" data-id="${it.id}">
         <div class="shop-swipe-bg"></div>
 
-        <div class="shop-card shop-swipe-fg">
+        <div class="shop-card shop-swipe-fg ${it.bought ? "is-bought" : ""}">
           <img class="shop-thumb" src="${it.image}" alt="">
 
           <div class="shop-fields">
-            <!-- 商品名稱：icon 在左側 -->
             <div class="shop-field">
               <span class="shop-icon icon-location-shopping"></span>
               <input class="shop-input" data-k="name"
@@ -5679,21 +5691,20 @@ showDay = function(dayNumber, dir = "right") {
             </div>
 
             <div class="shop-row">
-			  <div class="shop-field shop-field-location">
-			    <span class="shop-icon icon-location"></span>
-			    <input class="shop-input" data-k="location"
-			           placeholder="地點"
-			           value="${escAttr(it.location)}">
-			  </div>
-			
-			  <div class="shop-field shop-field-price">
-			    <input class="shop-input shop-price" data-k="price"
-			           inputmode="decimal"
-			           placeholder="價格"
-			           value="${formatMoney(it.price)}">
-			  </div>
-			</div>
+              <div class="shop-field shop-field-location">
+                <span class="shop-icon icon-location"></span>
+                <input class="shop-input" data-k="location"
+                       placeholder="地點"
+                       value="${escAttr(it.location)}">
+              </div>
 
+              <div class="shop-field shop-field-price">
+                <input class="shop-input shop-price" data-k="price"
+                       inputmode="decimal"
+                       placeholder="價格"
+                       value="${formatMoney(it.price)}">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -5705,7 +5716,6 @@ showDay = function(dayNumber, dir = "right") {
   function updateTotalOnly(items) {
     const totalEl = document.getElementById("shopTotal");
     if (!totalEl) return;
-
     const total = items.reduce((s, it) => s + toNumber(it.price), 0);
     totalEl.textContent = `合計：${SHOP_CURRENCY} ${total.toLocaleString()}`;
   }
@@ -5719,7 +5729,7 @@ showDay = function(dayNumber, dir = "right") {
   }
 
   /* ---------------------------
-     Events (bind once, no re-render on typing)
+     Events (no re-render on typing)
   ---------------------------- */
   function bindEventsOnce() {
     // Upload
@@ -5733,15 +5743,14 @@ showDay = function(dayNumber, dir = "right") {
       const items = loadItems();
       for (const f of files) {
         const dataUrl = await fileToDataURL(f);
-        items.unshift({ id: uid(), image: dataUrl, name: "", location: "", price: 0 });
+        items.unshift({ id: uid(), image: dataUrl, name: "", location: "", price: 0, bought: false });
       }
-
       saveItems(items);
       render(items);
       input.value = "";
     });
 
-    // Auto-save on input (IMPORTANT: do NOT re-render here)
+    // Auto-save on input (IMPORTANT: do NOT render here)
     rootEl.addEventListener("input", (e) => {
       const el = e.target;
       if (!el.classList?.contains("shop-input")) return;
@@ -5756,7 +5765,6 @@ showDay = function(dayNumber, dir = "right") {
       if (!it) return;
 
       if (key === "price") {
-        // 輸入中存純數字，避免游標被格式化打斷
         it.price = toNumber(el.value);
         saveItems(items);
         updateTotalOnly(items);
@@ -5766,11 +5774,10 @@ showDay = function(dayNumber, dir = "right") {
       }
     });
 
-    // Price focus/blur: focus shows raw number; blur shows ¥ with thousands
+    // Price focus/blur
     rootEl.addEventListener("focusin", (e) => {
       const el = e.target;
       if (!el.classList?.contains("shop-price")) return;
-      // 進入編輯：只顯示純數字（好連續輸入）
       const n = toNumber(el.value);
       el.value = n ? String(n) : "";
     });
@@ -5781,10 +5788,6 @@ showDay = function(dayNumber, dir = "right") {
 
       const wrap = el.closest(".shop-swipe");
       const id = wrap?.dataset.id;
-      if (!id) {
-        el.value = formatMoney(el.value);
-        return;
-      }
 
       const items = loadItems();
       const it = items.find(x => x.id === id);
@@ -5793,14 +5796,13 @@ showDay = function(dayNumber, dir = "right") {
         return;
       }
 
-      // 離開：格式化顯示（含 ¥ + 千分位）
       it.price = toNumber(el.value);
       saveItems(items);
       el.value = formatMoney(it.price);
       updateTotalOnly(items);
     });
 
-    // Swipe to delete
+    // Swipe gestures
     rootEl.addEventListener("pointerdown", onPointerDown, { passive: true });
     rootEl.addEventListener("pointermove", onPointerMove, { passive: false });
     rootEl.addEventListener("pointerup", onPointerUp, { passive: true });
@@ -5808,7 +5810,7 @@ showDay = function(dayNumber, dir = "right") {
   }
 
   /* ---------------------------
-     Swipe handlers (must swipe almost to end)
+     Swipe: left delete, right toggle bought
   ---------------------------- */
   function onPointerDown(e) {
     const fg = e.target.closest(".shop-swipe-fg");
@@ -5841,11 +5843,9 @@ showDay = function(dayNumber, dir = "right") {
       else { swipe = null; return; }
     }
 
-    // only left swipe
-    if (dx > 0) return;
-
     const w = swipe.wrap.clientWidth;
-    const left = clamp(dx, -w, 0);
+    // 允許左右滑，但限制最大位移
+    const left = clamp(dx, -w, w);
     swipe.dx = left;
 
     swipe.fg.style.transform = `translateX(${left}px)`;
@@ -5856,11 +5856,15 @@ showDay = function(dayNumber, dir = "right") {
     if (!swipe) return;
 
     const w = swipe.wrap.clientWidth;
-    const shouldDelete = Math.abs(swipe.dx) >= w * DELETE_THRESHOLD_RATIO;
+    const dx = swipe.dx;
+
+    const shouldDelete = dx <= -w * DELETE_THRESHOLD_RATIO; // 左滑到底
+    const shouldToggleBought = dx >= w * BOUGHT_THRESHOLD_RATIO; // 右滑到門檻
 
     swipe.fg.style.transition = "transform 180ms ease";
 
     if (shouldDelete) {
+      // 左滑刪除
       swipe.fg.style.transform = `translateX(${-w}px)`;
       const idToDelete = swipe.id;
       const fg = swipe.fg;
@@ -5872,7 +5876,20 @@ showDay = function(dayNumber, dir = "right") {
         render(items);
       };
       fg.addEventListener("transitionend", done);
+    } else if (shouldToggleBought) {
+      // 右滑：切換已買到（不需要重渲染整頁也可，但這裡為了確保 class 同步，輕量更新）
+      swipe.fg.style.transform = "translateX(0px)";
+
+      const items = loadItems();
+      const it = items.find(x => x.id === swipe.id);
+      if (it) {
+        it.bought = !it.bought;
+        saveItems(items);
+        // 只更新這張卡的 class（不打斷輸入）
+        swipe.fg.classList.toggle("is-bought", !!it.bought);
+      }
     } else {
+      // 不達門檻：彈回（防呆）
       swipe.fg.style.transform = "translateX(0px)";
     }
 

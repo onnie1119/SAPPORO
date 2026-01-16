@@ -5640,44 +5640,49 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   shopping.js – FINAL (Fix: no disappear + swipe on inputs)
+   shopping.js – FINAL (Google Sheets Sync via Apps Script)
+   - No Firestore
+   - Smooth swipe (works on inputs)
+   - Silent background sync (polling)
 ========================================================= */
 (function () {
   "use strict";
 
-  /* ===== Firebase config (fill yours) ===== */
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID",
-  };
+  /* ====== 你的 Apps Script Web App URL ====== */
+  const SYNC_API_URL =
+    "https://script.google.com/macros/s/AKfycbzDuRFhkB4biAjMNiSho_zzdL6WDN0fEn8MWINPCwCh7hpsvL1u8KG7geHMIr-KYew/exec";
 
+  /* ====== Basic config ====== */
   const SHOP_ROOT_ID = "shoppingRoot";
   const CURRENCY = "¥";
-  const SAVE_DEBOUNCE = 250;
 
-  // ✅ 建議更靈敏
-  const SWIPE_COMMIT = 110;   // 原 150 太硬，改 110 手感好很多
-  const SWIPE_LIMIT  = 220;
+  const SAVE_DEBOUNCE = 300;
+
+  // Swipe
+  const SWIPE_COMMIT = 110;   // 觸發門檻（越小越靈敏）
+  const SWIPE_LIMIT  = 220;   // 最大滑動距離
+
+  // Long press preview
   const LONGPRESS_MS = 450;
 
-  const RECONNECT_MS = 3000;
+  // Cloud polling
+  const POLL_MS = 3500;
 
+  // LocalStorage keys
   const LS_ITEMS  = "shop_items_local_v1";
   const LS_CODE   = "shop_sync_code_v1";
   const LS_CLIENT = "shop_client_id_v1";
 
-  let rootEl = null;
-  let db = null;
-  let unsub = null;
-  let lastCloudUpdatedAt = 0;
-  let persistTimer = null;
-  let reconnectTimer = null;
+  // 若你不想一進頁面就把代碼顯示在輸入框，把這個改 false
+  const SHOW_CODE_IN_INPUT = true;
 
+  let rootEl = null;
+  let pollTimer = null;
+  let persistTimer = null;
   let pendingReplaceId = null;
+
+  let lastCloudUpdatedAt = 0;
+  let currentCode = "";
 
   const clientId =
     localStorage.getItem(LS_CLIENT) ||
@@ -5692,36 +5697,21 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (!rootEl) return;
 
     mountUI();
-
-    if (!initFirebase()) {
-      flashStatusOnce("Firebase 未載入（請先引入 SDK）", 1800, true);
-      render(loadLocal());
-      bindEventsOnce();
-      return;
-    }
-
-    render(loadLocal());
     bindEventsOnce();
 
-   const code = getCode();
-if (code) {
-  // 不把 code 填回輸入框
-  applyCode(code, true);
-}
+    // 先顯示本機資料
+    render(loadLocal());
 
-  };
-
-  function initFirebase() {
-    try {
-      if (!window.firebase || !firebase.initializeApp) return false;
-      if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
+    // 若有既存代碼：靜默啟用同步（不跳提示）
+    const code = getCode();
+    if (code) {
+      if (SHOW_CODE_IN_INPUT) {
+        const el = document.getElementById("shopSyncCode");
+        if (el) el.value = code;
+      }
+      applyCode(code, true);
     }
-  }
+  };
 
   /* =========================
      UI
@@ -5742,7 +5732,7 @@ if (code) {
           </button>
         </div>
 
-        <div id="shopStatus" style="margin-top:6px;font-size:12px; min-height: 16px;"></div>
+        <div id="shopStatus" style="margin-top:6px;font-size:12px; min-height: 16px; opacity:0;"></div>
 
         <div id="shopTotalTop" class="shop-total" style="margin-top:10px;"></div>
         <div id="shopList" class="shop-list" style="margin-top:12px;"></div>
@@ -5765,168 +5755,224 @@ if (code) {
     `;
   }
 
-  function flashStatusOnce(msg, ms = 1500, isErr = false) {
+  function flashStatusOnce(msg, ms = 1400, isErr = false) {
     const el = document.getElementById("shopStatus");
     if (!el) return;
     el.textContent = msg;
     el.style.color = isErr ? "#d44" : "#2f7a3e";
     el.style.opacity = "1";
-    setTimeout(() => { el.textContent = ""; el.style.opacity = "0"; }, ms);
+    clearTimeout(el.__t);
+    el.__t = setTimeout(() => {
+      el.textContent = "";
+      el.style.opacity = "0";
+    }, ms);
   }
 
   /* =========================
-     Sync code + Cloud (silent)
+     Sync core (Apps Script)
   ========================= */
-  function getCode() { return (localStorage.getItem(LS_CODE) || "").trim(); }
-  function setCode(code){ localStorage.setItem(LS_CODE, (code||"").trim()); }
-  function refFor(code){ return db.collection("shops").doc(code); }
+  function getCode() {
+    return (localStorage.getItem(LS_CODE) || "").trim();
+  }
+  function setCode(code) {
+    localStorage.setItem(LS_CODE, (code || "").trim());
+  }
 
   async function applyCode(code, silentApply = false) {
     code = (code || "").trim();
     setCode(code);
+    currentCode = code;
 
-    stopCloud();
+    stopPolling();
 
-    if (!db) { if (!silentApply) flashStatusOnce("Firebase 未就緒", 1500, true); return; }
-    if (!code) { render(loadLocal()); return; }
+    // 沒輸入代碼：只用本機
+    if (!code) {
+      render(loadLocal());
+      return;
+    }
 
-    // ✅ 先顯示本機（避免等待雲端）
+    // 先顯示本機（避免等待雲端）
     render(loadLocal());
 
-    const cloudItems = await cloudLoad(code);
-    // ✅ 離線/不存在 => cloudItems = null，絕不覆蓋本機
-    if (cloudItems !== null) {
-      saveLocal(cloudItems);
-      render(cloudItems);
+    // 拉雲端
+    const cloud = await cloudLoad(code);
+    if (cloud && Array.isArray(cloud.items)) {
+      // ✅ 只在雲端真的有資料時才覆蓋本機
+      saveLocal(cloud.items);
+      lastCloudUpdatedAt = cloud.updatedAt || lastCloudUpdatedAt;
+      render(cloud.items);
     } else {
-      // ✅ 若雲端不可用但本機有資料，就先 seed 一次（成功才會真的寫上去）
+      // 雲端空/取不到：如果本機有資料，seed 上去（不打擾使用者）
       const local = loadLocal();
-      if (local.length) cloudSave(code, local);
-    }
-
-    buildSnapshotListener(code);
-
-    if (!silentApply) flashStatusOnce("已完成備份");
-  }
-
-  function buildSnapshotListener(code) {
-    if (unsub) { try { unsub(); } catch {} unsub = null; }
-
-    unsub = refFor(code).onSnapshot(
-      (snap) => {
-        // ✅ 文件不存在：不要清空畫面，改成 seed 本機到雲端
-        if (!snap.exists) {
-          const local = loadLocal();
-          if (local.length) cloudSave(code, local);
-          return;
-        }
-
-        const data = snap.data() || {};
-        const updatedAt = Number(data.updatedAt || 0) || 0;
-        const updatedBy = String(data.updatedBy || "");
-
-        if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
-        if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
-
-        onCloudItems(Array.isArray(data.items) ? data.items : []);
-      },
-      (_err) => {
-        // 靜默：只排程重連
-        scheduleReconnect(code, false);
+      if (local.length) {
+        await cloudSave(code, local);
       }
-    );
-  }
+    }
 
-  function stopCloud(){
-    if (unsub) { try { unsub(); } catch {} unsub = null; }
-    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
-  }
+    // 啟動背景輪詢
+    startPolling(code);
 
-  // ✅ 重要：不存在/離線都回 null（不要覆蓋本機）
-  async function cloudLoad(code){
-    try{
-      const snap = await refFor(code).get();
-      if (!snap.exists) return null; // 不存在 => 不覆蓋本機
-      const data = snap.data() || {};
-      lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
-      return Array.isArray(data.items) ? data.items : [];
-    } catch(_e){
-      return null; // 離線/被擋 => 不覆蓋本機
+    // 按「儲存」才顯示已備份（silentApply 不顯示）
+    if (!silentApply) {
+      flashStatusOnce("⏳ 備份中…", 800, false);
+      const ok = await cloudSave(code, loadLocal());
+      if (ok) flashStatusOnce("✅ 已完成備份", 1400, false);
+      else flashStatusOnce("❌ 備份失敗（雲端未寫入）", 2000, true);
     }
   }
 
-  async function cloudSave(code, items){
-    try{
-      const now = Date.now();
-      lastCloudUpdatedAt = now;
-      await refFor(code).set({ items, updatedAt: now, updatedBy: clientId }, { merge:true });
-      return true;
-    } catch(_e){
-      scheduleReconnect(code,false);
+  async function cloudLoad(code) {
+    try {
+      const url = `${SYNC_API_URL}?code=${encodeURIComponent(code)}`;
+      const r = await fetch(url, { method: "GET", cache: "no-store", mode: "cors" });
+      const j = await r.json();
+      if (!j || !j.ok) return null;
+      if (j.empty) return null;
+
+      const payload = String(j.payload || "");
+      const updatedAt = Number(j.updatedAt || 0) || 0;
+
+      let items = [];
+      try { items = JSON.parse(payload || "[]"); } catch { items = []; }
+      if (!Array.isArray(items)) items = [];
+
+      return { items, updatedAt };
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  async function cloudSave(code, items) {
+    try {
+      const payload = JSON.stringify(items || []);
+      const body = JSON.stringify({
+        code,
+        payload,
+        updatedAt: Date.now(),
+        updatedBy: clientId
+      });
+
+      const r = await fetch(SYNC_API_URL, {
+        method: "POST",
+        mode: "cors",
+        // Apps Script 最穩的做法：text/plain
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body
+      });
+
+      const j = await r.json().catch(() => null);
+      return !!(j && j.ok);
+    } catch (_e) {
       return false;
     }
   }
 
-  function onCloudItems(items){
-    saveLocal(items);
-    updateTotal(items);
-
-    const ae = document.activeElement;
-    const typing = ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae);
-    if (!typing) render(items);
-  }
-
-  function scheduleReconnect(code, immediate){
-    if (reconnectTimer) clearTimeout(reconnectTimer);
-    reconnectTimer = setTimeout(async () => {
-      reconnectTimer = null;
-
+  function startPolling(code) {
+    stopPolling();
+    pollTimer = setInterval(async () => {
+      // 沒有代碼就不輪詢
       const activeCode = getCode();
       if (!activeCode || activeCode !== code) return;
-      if (!db) return;
 
-      const cloudItems = await cloudLoad(code);
-      // ✅ 只有拿到有效資料才覆蓋本機
-      if (cloudItems !== null) {
-        saveLocal(cloudItems);
-        render(cloudItems);
+      // 若正在輸入，不要覆蓋畫面
+      if (isTypingInside()) return;
+
+      const cloud = await cloudLoad(code);
+      if (!cloud) return;
+
+      // 如果雲端更新比較新才套用
+      if ((cloud.updatedAt || 0) > (lastCloudUpdatedAt || 0)) {
+        lastCloudUpdatedAt = cloud.updatedAt || lastCloudUpdatedAt;
+        saveLocal(cloud.items);
+        render(cloud.items);
       }
+    }, POLL_MS);
 
-      buildSnapshotListener(code);
-    }, immediate ? 0 : RECONNECT_MS);
+    // 回到前景就補拉一次
+    document.addEventListener("visibilitychange", onVis, { passive: true });
+    function onVis() {
+      if (!document.hidden) {
+        // 立刻跑一次輪詢
+        (async () => {
+          const activeCode = getCode();
+          if (!activeCode || activeCode !== code) return;
+          if (isTypingInside()) return;
+          const cloud = await cloudLoad(code);
+          if (!cloud) return;
+          if ((cloud.updatedAt || 0) > (lastCloudUpdatedAt || 0)) {
+            lastCloudUpdatedAt = cloud.updatedAt || lastCloudUpdatedAt;
+            saveLocal(cloud.items);
+            render(cloud.items);
+          }
+        })();
+      }
+    }
+    rootEl.__shopVisHandler = onVis;
+  }
+
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    if (rootEl && rootEl.__shopVisHandler) {
+      document.removeEventListener("visibilitychange", rootEl.__shopVisHandler);
+      rootEl.__shopVisHandler = null;
+    }
+  }
+
+  function isTypingInside() {
+    const ae = document.activeElement;
+    return !!(ae && ae.classList && ae.classList.contains("shop-input") && rootEl && rootEl.contains(ae));
   }
 
   /* =========================
-     Local + helpers
+     Local helpers
   ========================= */
-  function loadLocal(){ try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); } catch { return []; } }
-  function saveLocal(items){ localStorage.setItem(LS_ITEMS, JSON.stringify(items || [])); }
+  function loadLocal() {
+    try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); }
+    catch { return []; }
+  }
+  function saveLocal(items) {
+    localStorage.setItem(LS_ITEMS, JSON.stringify(items || []));
+  }
 
-  function persist(items){
+  function persist(items) {
     saveLocal(items);
     updateTotal(items);
+
     const code = getCode();
     if (!code) return;
 
     if (persistTimer) clearTimeout(persistTimer);
-    persistTimer = setTimeout(() => { persistTimer=null; cloudSave(code, items); }, SAVE_DEBOUNCE);
+    persistTimer = setTimeout(async () => {
+      persistTimer = null;
+      // 背景靜默同步（不提示）
+      const ok = await cloudSave(code, items);
+      if (ok) {
+        // 成功時更新 lastCloudUpdatedAt（避免下一次輪詢把同一份再覆蓋）
+        lastCloudUpdatedAt = Date.now();
+      }
+    }, SAVE_DEBOUNCE);
   }
 
-  function uid(){ return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()+Math.random()); }
-  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
-  function toNumber(v){
+  function uid() {
+    return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now() + Math.random());
+  }
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function toNumber(v) {
     const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
     return Number.isFinite(n) ? n : 0;
   }
-  function fmtMoney(v){
+  function fmtMoney(v) {
     const n = toNumber(v);
     return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
   }
-  function esc(s){
+  function esc(s) {
     return String(s ?? "")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
   }
-  function fileToDataURL(file){
+  function fileToDataURL(file) {
     return new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(String(r.result));
@@ -5938,7 +5984,7 @@ if (code) {
   /* =========================
      Render
   ========================= */
-  function render(items){
+  function render(items) {
     const list = document.getElementById("shopList");
     items = Array.isArray(items) ? items : [];
     updateTotal(items);
@@ -5977,16 +6023,16 @@ if (code) {
     }).join("");
   }
 
-  function updateTotal(items){
-    const total = (items || []).reduce((s,it)=> s + toNumber(it.price), 0);
+  function updateTotal(items) {
+    const total = (items || []).reduce((s, it) => s + toNumber(it.price), 0);
     const t = document.getElementById("shopTotalTop");
     if (t) t.textContent = `合計：${CURRENCY} ${total.toLocaleString()}`;
   }
 
   /* =========================
-     Events – bind ONCE (delegate)
+     Events (delegate)
   ========================= */
-  function bindEventsOnce(){
+  function bindEventsOnce() {
     if (rootEl.__shopBound) return;
     rootEl.__shopBound = true;
 
@@ -5995,7 +6041,7 @@ if (code) {
     const preview    = () => document.getElementById("shopPreview");
     const previewImg = () => document.getElementById("shopPreviewImg");
 
-    // Apply
+    // Apply / Save
     rootEl.addEventListener("click", (e) => {
       if (e.target && e.target.id === "shopSyncApply") {
         applyCode(codeInput().value, false);
@@ -6018,8 +6064,8 @@ if (code) {
       const items = loadLocal();
       for (const f of files) {
         const img = await fileToDataURL(f);
-        // ✅ 新增順序：由上往下（push）
-        items.push({ id: uid(), image: img, name:"", location:"", price:0, bought:false });
+        // ✅ 新增順序由上往下：push
+        items.push({ id: uid(), image: img, name: "", location: "", price: 0, bought: false });
       }
       persist(items);
       render(items);
@@ -6163,9 +6209,9 @@ if (code) {
   }
 
   /* =========================
-     Swipe Delegate (input 上也能滑)
+     Swipe Delegate (works on inputs)
   ========================= */
-  function setupSwipeDelegate(){
+  function setupSwipeDelegate() {
     if (rootEl.__swipeDelegate) return;
     rootEl.__swipeDelegate = true;
 
@@ -6177,7 +6223,7 @@ if (code) {
     let currentX = 0;
     let lockedAxis = null; // 'x' or 'y'
 
-    function resetActive(animate=true){
+    function resetActive(animate = true) {
       if (!activeFg) return;
       activeFg.style.transition = animate ? "transform 180ms ease" : "none";
       activeFg.style.transform = "translateX(0px)";
@@ -6188,19 +6234,17 @@ if (code) {
       currentX = 0;
     }
 
-    function findSwipeWrap(target){
+    function findSwipeWrap(target) {
       const wrap = target.closest(".shop-swipe");
       if (!wrap) return null;
-
       const fg = wrap.querySelector(".shop-swipe-fg");
       const card = wrap.querySelector(".shop-card");
       if (!fg || !card) return null;
-
       return { wrap, fg, card };
     }
 
-    function onStart(x,y, target){
-      // 如果上一張還殘留狀態，先收回
+    function onStart(x, y, target) {
+      // 若上一張殘留，先收回
       resetActive(true);
 
       const found = findSwipeWrap(target);
@@ -6217,16 +6261,15 @@ if (code) {
       activeFg.style.transition = "none";
     }
 
-    function onMove(x,y, ev){
+    function onMove(x, y, ev) {
       if (!dragging || !activeFg) return;
 
       const dx = x - startX;
       const dy = y - startY;
 
-      // ✅ 更靈敏的方向鎖定（允許從 input 開始滑）
+      // ✅ 更靈敏方向鎖定：允許從 input 開始滑
       if (!lockedAxis) {
         const adx = Math.abs(dx), ady = Math.abs(dy);
-
         if (adx > 6 && adx > ady * 0.75) lockedAxis = "x";
         else if (ady > 10 && ady > adx * 1.2) lockedAxis = "y";
         else return;
@@ -6234,7 +6277,7 @@ if (code) {
 
       if (lockedAxis !== "x") return;
 
-      // ✅ 一旦確定水平滑：取消 input focus，避免鍵盤/選字干擾
+      // ✅ 一旦確認水平滑：取消輸入 focus（避免鍵盤/選字）
       const active = document.activeElement;
       if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
         active.blur();
@@ -6249,14 +6292,14 @@ if (code) {
       else activeWrap.classList.remove("is-armed");
     }
 
-    async function onEnd(){
+    function onEnd() {
       if (!dragging || !activeWrap) return;
 
       const id = activeWrap.dataset.id;
       const items = loadLocal();
       const it = items.find(x => x.id === id);
 
-      // reset visual first
+      // 視覺先回正
       activeFg.style.transition = "transform 180ms ease";
       activeFg.style.transform = "translateX(0px)";
       activeWrap.classList.remove("is-armed");
@@ -6266,7 +6309,7 @@ if (code) {
 
       if (!it) return;
 
-      // LEFT commit
+      // 左滑：刪除 or 取消完成
       if (x <= -SWIPE_COMMIT) {
         if (it.bought) {
           const ok = confirm("是否取消已完成狀態？");
@@ -6286,7 +6329,7 @@ if (code) {
         return;
       }
 
-      // RIGHT commit
+      // 右滑：完成採買
       if (x >= SWIPE_COMMIT) {
         if (!it.bought) {
           const ok = confirm("確定買對東西齁？");
@@ -6305,26 +6348,27 @@ if (code) {
         onStart(e.clientX, e.clientY, e.target);
       });
 
-      rootEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY, e), { passive:false });
+      rootEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY, e), { passive: false });
       rootEl.addEventListener("pointerup", onEnd);
       rootEl.addEventListener("pointercancel", () => resetActive(true));
     } else {
       rootEl.addEventListener("touchstart", (e) => {
         const t = e.touches[0];
         onStart(t.clientX, t.clientY, e.target);
-      }, { passive:true });
+      }, { passive: true });
 
       rootEl.addEventListener("touchmove", (e) => {
         const t = e.touches[0];
         onMove(t.clientX, t.clientY, e);
-      }, { passive:false });
+      }, { passive: false });
 
-      rootEl.addEventListener("touchend", onEnd, { passive:true });
-      rootEl.addEventListener("touchcancel", () => resetActive(true), { passive:true });
+      rootEl.addEventListener("touchend", onEnd, { passive: true });
+      rootEl.addEventListener("touchcancel", () => resetActive(true), { passive: true });
     }
   }
 
 })();
+
 
 </script>
 	<script>

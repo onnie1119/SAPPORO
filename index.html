@@ -5786,12 +5786,12 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
     startPolling(code);
 
-    // 按儲存才顯示「已完成備份」
-    if (!silentApply) {
-      const ok = await saveAndVerify(code, loadLocal());
-      if (ok) flashStatusOnce("✅ 已完成備份", 1400);
-      // 失敗不顯示（你想要靜默）
-    }
+    // 按儲存才顯示「已完成備份」：只要 POST 送得出去就顯示
+if (!silentApply) {
+  const ok = await cloudSaveAndShowOK(code, loadLocal());
+  if (ok) flashStatusOnce("✅ 已完成備份", 1400);
+}
+
   }
 
   function cloudLoadJSONP(code) {
@@ -5837,6 +5837,32 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       return 0;
     }
   }
+async function cloudSaveAndShowOK(code, items) {
+  // 只要 fetch(no-cors) 沒 throw，就當作「已送出」= 顯示成功
+  const sentAt = await cloudSaveNoCors(code, items);
+  if (!sentAt) return false;
+
+  // 背景驗證：成功就順便刷新（不影響提示）
+  (async () => {
+    const deadline = Date.now() + 6000;
+    while (Date.now() < deadline) {
+      const cloud = await cloudLoadJSONP(code); // 你原本的 cloudLoadJSONP / cloudLoad
+      if (cloud && cloud.ok && !cloud.empty) {
+        const u = Number(cloud.updatedAt || 0) || 0;
+        if (u >= sentAt) {
+          lastCloudUpdatedAt = u;
+          const latest = safeParseItems(cloud.payload);
+          saveLocal(latest);
+          if (!isTypingInside()) render(latest);
+          return;
+        }
+      }
+      await new Promise(r => setTimeout(r, 600));
+    }
+  })();
+
+  return true;
+}
 
   async function saveAndVerify(code, items) {
     const sentAt = await cloudSaveNoCors(code, items);

@@ -6065,7 +6065,14 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       const items = loadLocal();
       for (const f of files) {
         const img = await fileToDataURL(f);
-        items.unshift({ id: uid(), image: img, name: "", location: "", price: 0 });
+       items.push({
+  id: uid(),
+  image: img,
+  name: "",
+  location: "",
+  price: 0
+});
+
       }
       persist(items);
       render(items);

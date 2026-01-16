@@ -4260,9 +4260,11 @@ let currentPageId = "home-page";
 function safeCall(fn, ...args) {
   try {
     if (typeof fn === "function") return fn(...args);
-  } catch (e) {
-    console.error(e);
-  }
+  } catch(e){
+  console.error(e);
+  return null;   // ✅ 離線時回 null，代表「不要動現有資料」
+}
+
 }
 
 /* =========================

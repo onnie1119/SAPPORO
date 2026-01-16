@@ -2412,7 +2412,37 @@ body.nav-back #menuBtn > div{
   border: none;
 }
 
-		#shopTotalTop{margin:1rem;}
+#shopTotalTop{margin:1rem;}
+
+/* ===== 圖片全螢幕預覽 ===== */
+.shop-image-viewer{
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.shop-image-viewer-bg{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+}
+
+.shop-image-viewer-img{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 92vw;
+  max-height: 92vh;
+  transform: translate(-50%, -50%);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}
+
+/* 點擊可關閉 */
+.shop-image-viewer{
+  cursor: zoom-out;
+}
+
 </style>
 </head>
 <body>
@@ -5597,6 +5627,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 
 <script>
+	let longPressTimer = null;
+let longPressMoved = false;
+
 /* =========================================================
    Shopping List – FINAL FULL JS + Cloud Sync (Firestore)
    - Sync code: computer + phone enter same code => realtime sync
@@ -5684,6 +5717,10 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
         <!-- 點圖片更換用 -->
         <input id="shopImageReplaceInput" type="file" accept="image/*" hidden>
       </div>
+	  <div id="shopImageViewer" class="shop-image-viewer" hidden>
+		  <div class="shop-image-viewer-bg"></div>
+		  <img class="shop-image-viewer-img" src="">
+		</div>
     `;
 
     // sync code init
@@ -5932,6 +5969,48 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
         await startCloudIfReady();
       }
     });
+
+	  // ===== 長按圖片 → 放大預覽 =====
+rootEl.addEventListener("pointerdown", (e) => {
+  const img = e.target.closest(".shop-thumb");
+  if (!img) return;
+
+  longPressMoved = false;
+
+  longPressTimer = setTimeout(() => {
+    openImageViewer(img.src);
+  }, 450); // 長按時間（ms）
+});
+
+rootEl.addEventListener("pointermove", (e) => {
+  if (!longPressTimer) return;
+  // 有位移就取消長按（避免滑動誤觸）
+  longPressMoved = true;
+  clearTimeout(longPressTimer);
+  longPressTimer = null;
+});
+
+rootEl.addEventListener("pointerup", cancelLongPress);
+rootEl.addEventListener("pointercancel", cancelLongPress);
+
+function cancelLongPress(){
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+function openImageViewer(src){
+  const viewer = document.getElementById("shopImageViewer");
+  const img = viewer.querySelector(".shop-image-viewer-img");
+  img.src = src;
+  viewer.hidden = false;
+}
+
+document.addEventListener("click", (e) => {
+  const viewer = document.getElementById("shopImageViewer");
+  if (!viewer || viewer.hidden) return;
+  viewer.hidden = true;
+});
 
     // Add items by images (multiple)
     rootEl.addEventListener("change", async (e) => {

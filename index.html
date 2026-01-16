@@ -5732,7 +5732,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     rootEl.innerHTML = `
       <div class="shopping-page-wrap">
         <label class="shop-upload-btn">
-          ＋ 從相簿加入圖片
+          加入購物品項
           <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
         </label>
 
@@ -5740,7 +5740,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
           <input id="shopSyncCode" class="shop-input" placeholder="同步代碼（手機/電腦輸入同一組）" style="flex:1;">
           <button id="shopSyncApply" type="button"
             style="padding:8px 12px;border-radius:5px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
-            套用
+            儲存
           </button>
         </div>
 
@@ -5920,7 +5920,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     updateTotal(items);
 
     if (!items.length) {
-      list.innerHTML = `<div class="shop-empty">目前沒有項目，請點上方「從相簿加入圖片」新增</div>`;
+      list.innerHTML = `<div class="shop-empty">您的購物清單尚未有品項</div>`;
       return;
     }
 
@@ -5935,15 +5935,15 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
               <div class="shop-fields">
                 <div class="shop-field">
                   <span class="shop-icon icon-location-shopping"></span>
-                  <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(it.name)}">
+                  <input class="shop-input" data-k="name" placeholder="品項名稱" value="${esc(it.name)}">
                 </div>
                 <div class="shop-row">
                   <div class="shop-field shop-field-location">
                     <span class="shop-icon icon-location"></span>
-                    <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+                    <input class="shop-input" data-k="location" placeholder="販售通路" value="${esc(it.location)}">
                   </div>
                   <div class="shop-field shop-field-price">
-                    <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(it.price)}">
+                    <input class="shop-input shop-price" data-k="price" placeholder="售價" inputmode="decimal" value="${fmtMoney(it.price)}">
                   </div>
                 </div>
               </div>
@@ -6233,7 +6233,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       // LEFT commit
       if (x <= -SWIPE_COMMIT) {
         if (it.bought) {
-          const ok = confirm("要取消「已完成採買」狀態，恢復為未完成嗎？");
+          const ok = confirm("是否取消已完成狀態？");
           if (!ok) return;
           it.bought = false;
           persist(items);
@@ -6241,7 +6241,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
           const card = rootEl.querySelector(`.shop-card[data-id="${id}"]`);
           if (card) card.classList.remove("is-bought");
         } else {
-          const ok = confirm("確定要移除這個項目嗎？");
+          const ok = confirm("是否移除這個品項？");
           if (!ok) return;
           const idx = items.findIndex(x => x.id === id);
           if (idx >= 0) items.splice(idx, 1);
@@ -6254,7 +6254,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       // RIGHT commit
       if (x >= SWIPE_COMMIT) {
         if (!it.bought) {
-          const ok = confirm("採買完成？確認後將標記為已完成。");
+          const ok = confirm("確定買對東西齁？");
           if (!ok) return;
           it.bought = true;
           persist(items);

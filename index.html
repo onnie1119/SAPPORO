@@ -5854,17 +5854,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (!typing) render(items);
   }
 
-  function startHeartbeatAndReconnect(code){
-    if (heartbeatTimer) clearInterval(heartbeatTimer);
-    heartbeatTimer = setInterval(async () => {
-      const activeCode = getCode();
-      if (!activeCode || activeCode !== code) return;
-      try { await refFor(code).get(); } catch { scheduleReconnect(code,false); }
-    }, HEARTBEAT_MS);
 
-    window.addEventListener("online", () => scheduleReconnect(code,true), { passive:true });
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) scheduleReconnect(code,true); }, { passive:true });
-  }
 
   function scheduleReconnect(code, immediate){
     if (reconnectTimer) clearTimeout(reconnectTimer);

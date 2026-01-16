@@ -5636,15 +5636,12 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-
+   shopping.js – FINAL (Swipe Smooth + Delegate, Silent Sync)
 ========================================================= */
-
 (function () {
   "use strict";
 
-  /* =========================
-     [A] 你必填：Firebase config
-  ========================= */
+  /* ===== Firebase config (fill yours) ===== */
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -5654,37 +5651,21 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     appId: "YOUR_APP_ID",
   };
 
-  /* =========================
-     DOM container id
-  ========================= */
   const SHOP_ROOT_ID = "shoppingRoot";
-
-  /* =========================
-     Options
-  ========================= */
   const CURRENCY = "¥";
   const SAVE_DEBOUNCE = 250;
 
-  // swipe threshold (px)
-  const SWIPE_ARM = 110;       // 超過這距離視為「已武裝」
-  const SWIPE_COMMIT = 150;    // 放手時超過這距離才「確定觸發」
-
+  const SWIPE_COMMIT = 150;   // commit px
+  const SWIPE_LIMIT = 220;    // max translate
   const LONGPRESS_MS = 450;
 
-  // background reconnect (silent)
-  const HEARTBEAT_MS = 20000;  // 20s 心跳避免長連線被踢
-  const RECONNECT_MS = 3000;   // 離線後 3s 嘗試重連
+  const HEARTBEAT_MS = 20000;
+  const RECONNECT_MS = 3000;
 
-  /* =========================
-     LocalStorage keys
-  ========================= */
   const LS_ITEMS  = "shop_items_local_v1";
   const LS_CODE   = "shop_sync_code_v1";
   const LS_CLIENT = "shop_client_id_v1";
 
-  /* =========================
-     Runtime state
-  ========================= */
   let rootEl = null;
   let db = null;
   let unsub = null;
@@ -5708,31 +5689,26 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     rootEl = document.getElementById(SHOP_ROOT_ID);
     if (!rootEl) return;
 
+    mountUI();
+
     if (!initFirebase()) {
-      mountUI();
-      // 靜默：不一直顯示錯，只在需要時顯示一次
       flashStatusOnce("Firebase 未載入（請先引入 SDK）", 1800, true);
       render(loadLocal());
+      bindEventsOnce(); // still allow local
       return;
     }
 
-    mountUI();
-    bindEvents();
-
-    const local = loadLocal();
-    render(local);
+    render(loadLocal());
+    bindEventsOnce();
 
     const code = getCode();
     if (code) {
       const el = document.getElementById("shopSyncCode");
       if (el) el.value = code;
-      applyCode(code, /*silentApply*/ true);
+      applyCode(code, true);
     }
   };
 
-  /* =========================
-     Firebase init (compat)
-  ========================= */
   function initFirebase() {
     try {
       if (!window.firebase || !firebase.initializeApp) return false;
@@ -5759,12 +5735,11 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
         <div style="display:flex; gap:8px; margin-top:10px;">
           <input id="shopSyncCode" class="shop-input" placeholder="同步代碼（手機/電腦輸入同一組）" style="flex:1;">
           <button id="shopSyncApply" type="button"
-            style="padding:8px 12px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
+            style="padding:8px 12px;border-radius:5px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
             套用
           </button>
         </div>
 
-        <!-- 狀態列：平常是空白，只在套用時閃一次 -->
         <div id="shopStatus" style="margin-top:6px;font-size:12px; min-height: 16px;"></div>
 
         <div id="shopTotalTop" class="shop-total" style="margin-top:10px;"></div>
@@ -5772,9 +5747,8 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
         <input id="shopReplaceInput" type="file" accept="image/*" hidden>
 
-        <!-- 長按放大預覽遮罩 -->
         <div id="shopPreview" style="
-          position: fixed; inset: 0; z-index: 9999;    margin-top: -20rem;
+          position: fixed; inset: 0; z-index: 9999;
           display:none; align-items:center; justify-content:center;
           background: rgba(0,0,0,.65);
         ">
@@ -5792,23 +5766,17 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   function flashStatusOnce(msg, ms = 1500, isErr = false) {
     const el = document.getElementById("shopStatus");
     if (!el) return;
-
     el.textContent = msg;
     el.style.color = isErr ? "#d44" : "#2f7a3e";
     el.style.opacity = "1";
-
-    setTimeout(() => {
-      el.textContent = "";
-      el.style.opacity = "0";
-    }, ms);
+    setTimeout(() => { el.textContent = ""; el.style.opacity = "0"; }, ms);
   }
 
   /* =========================
-     Sync code + Cloud
+     Sync code + Cloud (silent)
   ========================= */
   function getCode() { return (localStorage.getItem(LS_CODE) || "").trim(); }
   function setCode(code){ localStorage.setItem(LS_CODE, (code||"").trim()); }
-
   function refFor(code){ return db.collection("shops").doc(code); }
 
   async function applyCode(code, silentApply = false) {
@@ -5817,74 +5785,41 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
     stopCloud();
 
-    if (!db) {
-      if (!silentApply) flashStatusOnce("Firebase 未就緒", 1500, true);
-      return;
-    }
+    if (!db) { if (!silentApply) flashStatusOnce("Firebase 未就緒", 1500, true); return; }
+    if (!code) { render(loadLocal()); return; }
 
-    if (!code) {
-      // 清除代碼：只用本機，不提示
-      render(loadLocal());
-      return;
-    }
-
-    // 先拉一次雲端資料（靜默）
     const cloudItems = await cloudLoad(code);
-    if (cloudItems !== null) {
-      saveLocal(cloudItems);
-      render(cloudItems);
-    }
+    if (cloudItems !== null) { saveLocal(cloudItems); render(cloudItems); }
 
-    // 建立即時監聽
     buildSnapshotListener(code);
-
-    // 啟用心跳 + 自動重連（靜默）
     startHeartbeatAndReconnect(code);
 
-    // ✅ 只有按「套用」才提示一次
     if (!silentApply) flashStatusOnce("已完成備份");
   }
 
   function buildSnapshotListener(code) {
-    // 先清掉舊的
     if (unsub) { try { unsub(); } catch {} unsub = null; }
 
     unsub = refFor(code).onSnapshot(
       (snap) => {
         if (!snap.exists) { onCloudItems([]); return; }
-
         const data = snap.data() || {};
         const updatedAt = Number(data.updatedAt || 0) || 0;
         const updatedBy = String(data.updatedBy || "");
 
-        // ignore echo
         if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
         if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
 
         onCloudItems(Array.isArray(data.items) ? data.items : []);
       },
-      (err) => {
-        console.error(err);
-        // 靜默：不顯示任何 offline/錯誤文字
-        // 但仍安排重連
-        scheduleReconnect(code, false);
-      }
+      (err) => { console.error(err); scheduleReconnect(code, false); }
     );
   }
 
   function stopCloud(){
-    if (unsub) {
-      try { unsub(); } catch {}
-      unsub = null;
-    }
-    if (heartbeatTimer) {
-      clearInterval(heartbeatTimer);
-      heartbeatTimer = null;
-    }
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-    }
+    if (unsub) { try { unsub(); } catch {} unsub = null; }
+    if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   }
 
   async function cloudLoad(code){
@@ -5894,11 +5829,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       const data = snap.data() || {};
       lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
       return Array.isArray(data.items) ? data.items : [];
-    } catch(err){
-      console.error(err);
-      // 靜默：不顯示 offline
-      return null;
-    }
+    } catch(e){ console.error(e); return null; }
   }
 
   async function cloudSave(code, items){
@@ -5906,46 +5837,29 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       const now = Date.now();
       lastCloudUpdatedAt = now;
       await refFor(code).set({ items, updatedAt: now, updatedBy: clientId }, { merge:true });
-      // 靜默：不顯示寫入成功/失敗
       return true;
-    } catch(err){
-      console.error(err);
-      scheduleReconnect(code, false);
-      return false;
-    }
+    } catch(e){ console.error(e); scheduleReconnect(code,false); return false; }
   }
 
   function onCloudItems(items){
     saveLocal(items);
     updateTotal(items);
 
-    // typing guard: 正在輸入不整頁重繪
     const ae = document.activeElement;
     const typing = ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae);
     if (!typing) render(items);
   }
 
   function startHeartbeatAndReconnect(code){
-    // 心跳：避免長連線被 Wi-Fi 踢掉（靜默）
     if (heartbeatTimer) clearInterval(heartbeatTimer);
     heartbeatTimer = setInterval(async () => {
       const activeCode = getCode();
       if (!activeCode || activeCode !== code) return;
-      if (!db) return;
-
-      try {
-        await refFor(code).get();
-      } catch (e) {
-        // 靜默：只排程重連
-        scheduleReconnect(code, false);
-      }
+      try { await refFor(code).get(); } catch { scheduleReconnect(code,false); }
     }, HEARTBEAT_MS);
 
-    // online/offline
-    window.addEventListener("online", () => scheduleReconnect(code, true), { passive:true });
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) scheduleReconnect(code, true);
-    }, { passive:true });
+    window.addEventListener("online", () => scheduleReconnect(code,true), { passive:true });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) scheduleReconnect(code,true); }, { passive:true });
   }
 
   function scheduleReconnect(code, immediate){
@@ -5957,49 +5871,31 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       if (!activeCode || activeCode !== code) return;
       if (!db) return;
 
-      // 重新拉一次最新資料（靜默）
       const cloudItems = await cloudLoad(code);
-      if (cloudItems !== null) {
-        saveLocal(cloudItems);
-        render(cloudItems);
-      }
+      if (cloudItems !== null) { saveLocal(cloudItems); render(cloudItems); }
 
-      // 重建監聽
       buildSnapshotListener(code);
     }, immediate ? 0 : RECONNECT_MS);
   }
 
   /* =========================
-     Local persistence
+     Local + helpers
   ========================= */
-  function loadLocal(){
-    try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); }
-    catch { return []; }
-  }
-  function saveLocal(items){
-    localStorage.setItem(LS_ITEMS, JSON.stringify(items || []));
-  }
+  function loadLocal(){ try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); } catch { return []; } }
+  function saveLocal(items){ localStorage.setItem(LS_ITEMS, JSON.stringify(items || [])); }
 
   function persist(items){
     saveLocal(items);
     updateTotal(items);
-
     const code = getCode();
     if (!code) return;
 
     if (persistTimer) clearTimeout(persistTimer);
-    persistTimer = setTimeout(() => {
-      persistTimer = null;
-      cloudSave(code, items);
-    }, SAVE_DEBOUNCE);
+    persistTimer = setTimeout(() => { persistTimer=null; cloudSave(code, items); }, SAVE_DEBOUNCE);
   }
 
-  /* =========================
-     Helpers
-  ========================= */
-  function uid(){
-    return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now() + Math.random());
-  }
+  function uid(){ return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()+Math.random()); }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
   function toNumber(v){
     const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
     return Number.isFinite(n) ? n : 0;
@@ -6022,7 +5918,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   }
 
   /* =========================
-     Render (Swipe layers; no "刪除/完成" text)
+     Render (NO bg text)
   ========================= */
   function render(items){
     const list = document.getElementById("shopList");
@@ -6037,37 +5933,30 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     list.innerHTML = items.map(it => {
       const boughtClass = it.bought ? "is-bought" : "";
       return `
-      <div class="shop-swipe" data-id="${it.id}">
-        <!-- 背景層：不放任何文字 -->
-        <div class="shop-swipe-bg"></div>
-
-        <div class="shop-swipe-fg">
-          <div class="shop-card ${boughtClass}" data-id="${it.id}">
-            <img class="shop-thumb" src="${it.image || ""}" alt="">
-
-            <div class="shop-fields">
-              <div class="shop-field">
-                <span class="shop-icon icon-location-shopping"></span>
-                <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(it.name)}">
-              </div>
-
-              <div class="shop-row">
-                <div class="shop-field shop-field-location">
-                  <span class="shop-icon icon-location"></span>
-                  <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+        <div class="shop-swipe" data-id="${it.id}">
+          <div class="shop-swipe-bg"></div>
+          <div class="shop-swipe-fg">
+            <div class="shop-card ${boughtClass}" data-id="${it.id}">
+              <img class="shop-thumb" src="${it.image || ""}" alt="">
+              <div class="shop-fields">
+                <div class="shop-field">
+                  <span class="shop-icon icon-location-shopping"></span>
+                  <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(it.name)}">
                 </div>
-
-                <div class="shop-field shop-field-price">
-                  <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(it.price)}">
+                <div class="shop-row">
+                  <div class="shop-field shop-field-location">
+                    <span class="shop-icon icon-location"></span>
+                    <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+                  </div>
+                  <div class="shop-field shop-field-price">
+                    <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(it.price)}">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>`;
+        </div>`;
     }).join("");
-
-    bindSwipeAll();
   }
 
   function updateTotal(items){
@@ -6077,21 +5966,36 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   }
 
   /* =========================
-     Events: input/add/replace/preview + sync apply
+     Events – bind ONCE (delegate)
   ========================= */
-  function bindEvents(){
-    const applyBtn   = document.getElementById("shopSyncApply");
-    const codeInput  = document.getElementById("shopSyncCode");
-    const fileInput  = document.getElementById("shopFileInput");
-    const replaceInp = document.getElementById("shopReplaceInput");
+  function bindEventsOnce(){
+    if (rootEl.__shopBound) return;
+    rootEl.__shopBound = true;
 
-    applyBtn.onclick = () => applyCode(codeInput.value, false);
-    codeInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); applyCode(codeInput.value, false); }
+    const applyBtn   = () => document.getElementById("shopSyncApply");
+    const codeInput  = () => document.getElementById("shopSyncCode");
+    const fileInput  = () => document.getElementById("shopFileInput");
+    const replaceInp = () => document.getElementById("shopReplaceInput");
+    const preview    = () => document.getElementById("shopPreview");
+    const previewImg = () => document.getElementById("shopPreviewImg");
+
+    // Apply
+    rootEl.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "shopSyncApply") {
+        applyCode(codeInput().value, false);
+      }
     });
 
-    // add images (append => top-to-bottom order)
-    fileInput.addEventListener("change", async (e) => {
+    rootEl.addEventListener("keydown", (e) => {
+      if (e.target && e.target.id === "shopSyncCode" && e.key === "Enter") {
+        e.preventDefault();
+        applyCode(codeInput().value, false);
+      }
+    });
+
+    // Add images
+    rootEl.addEventListener("change", async (e) => {
+      if (!e.target || e.target.id !== "shopFileInput") return;
       const files = Array.from(e.target.files || []);
       if (!files.length) return;
 
@@ -6105,20 +6009,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       e.target.value = "";
     });
 
-    // click image => replace (long press preview will intercept click)
-    rootEl.addEventListener("click", (e) => {
-      const img = e.target.closest(".shop-thumb");
-      if (!img) return;
-      const card = img.closest(".shop-card");
-      if (!card) return;
-
-      pendingReplaceId = card.dataset.id;
-      replaceInp.value = "";
-      replaceInp.click();
-    });
-
-    // replace file chosen
-    replaceInp.addEventListener("change", async (e) => {
+    // Replace image picker
+    rootEl.addEventListener("change", async (e) => {
+      if (!e.target || e.target.id !== "shopReplaceInput") return;
       const file = e.target.files && e.target.files[0];
       if (!file || !pendingReplaceId) return;
 
@@ -6136,15 +6029,15 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       e.target.value = "";
     });
 
-    // input editing
+    // Input edit
     rootEl.addEventListener("input", (e) => {
       const el = e.target;
-      if (!el.classList || !el.classList.contains("shop-input")) return;
+      if (!el || !el.classList || !el.classList.contains("shop-input")) return;
 
       const card = el.closest(".shop-card");
       if (!card) return;
 
-      const id  = card.dataset.id;
+      const id = card.dataset.id;
       const key = el.dataset.k;
       if (!id || !key) return;
 
@@ -6158,17 +6051,17 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       persist(items);
     });
 
-    // price formatting
+    // Price format
     rootEl.addEventListener("focusin", (e) => {
       const el = e.target;
-      if (!el.classList || !el.classList.contains("shop-price")) return;
+      if (!el || !el.classList || !el.classList.contains("shop-price")) return;
       const n = toNumber(el.value);
       el.value = n ? String(n) : "";
     });
 
     rootEl.addEventListener("focusout", (e) => {
       const el = e.target;
-      if (!el.classList || !el.classList.contains("shop-price")) return;
+      if (!el || !el.classList || !el.classList.contains("shop-price")) return;
 
       const card = el.closest(".shop-card");
       if (!card) return;
@@ -6180,45 +6073,26 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
       it.price = toNumber(el.value);
       persist(items);
-
       el.value = fmtMoney(it.price);
     });
 
-    bindLongPressPreview();
-  }
+    // Preview close
+    rootEl.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "shopPreview") {
+        preview().style.display = "none";
+        previewImg().src = "";
+      }
+    });
 
-  /* =========================
-     Long press preview (and block click replace)
-  ========================= */
-  function bindLongPressPreview(){
-    const preview = document.getElementById("shopPreview");
-    const previewImg = document.getElementById("shopPreviewImg");
-
-    function openPreview(src){
-      if (!src) return;
-      previewImg.src = src;
-      preview.style.display = "flex";
-    }
-    function closePreview(){
-      preview.style.display = "none";
-      previewImg.src = "";
-    }
-
-    preview.addEventListener("click", closePreview);
-
-    // prevent iOS context menu on image
+    // Prevent iOS context menu on images
     rootEl.addEventListener("contextmenu", (e) => {
       if (e.target.closest(".shop-thumb")) e.preventDefault();
     });
 
-    let lpTimer = null;
-    let lpTriggered = false;
-    let startX = 0, startY = 0;
+    // ===== Long press preview (touch) + block click replace after longpress =====
+    let lpTimer = null, lpTriggered = false, lpStartX = 0, lpStartY = 0;
 
-    function clearLP(){
-      if (lpTimer) clearTimeout(lpTimer);
-      lpTimer = null;
-    }
+    function clearLP(){ if (lpTimer) clearTimeout(lpTimer); lpTimer=null; }
 
     rootEl.addEventListener("touchstart", (e) => {
       const img = e.target.closest(".shop-thumb");
@@ -6226,121 +6100,155 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
       lpTriggered = false;
       const t = e.touches[0];
-      startX = t.clientX;
-      startY = t.clientY;
+      lpStartX = t.clientX; lpStartY = t.clientY;
 
       clearLP();
       lpTimer = setTimeout(() => {
         lpTriggered = true;
-        openPreview(img.src);
+        previewImg().src = img.src;
+        preview().style.display = "flex";
       }, LONGPRESS_MS);
     }, { passive:true });
 
     rootEl.addEventListener("touchmove", (e) => {
       if (!lpTimer) return;
       const t = e.touches[0];
-      const dx = Math.abs(t.clientX - startX);
-      const dy = Math.abs(t.clientY - startY);
-      if (dx > 10 || dy > 10) clearLP();
+      if (Math.abs(t.clientX - lpStartX) > 10 || Math.abs(t.clientY - lpStartY) > 10) clearLP();
     }, { passive:true });
 
-    rootEl.addEventListener("touchend", () => clearLP(), { passive:true });
-    rootEl.addEventListener("touchcancel", () => clearLP(), { passive:true });
+    rootEl.addEventListener("touchend", clearLP, { passive:true });
+    rootEl.addEventListener("touchcancel", clearLP, { passive:true });
 
-    // capture click to block replace after long press
+    // Block replace click after long press
     rootEl.addEventListener("click", (e) => {
       const img = e.target.closest(".shop-thumb");
       if (!img) return;
-
       if (lpTriggered) {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         lpTriggered = false;
       }
     }, true);
+
+    // ===== Click image => replace (only if not longpressed) =====
+    rootEl.addEventListener("click", (e) => {
+      const img = e.target.closest(".shop-thumb");
+      if (!img) return;
+      const card = img.closest(".shop-card");
+      if (!card) return;
+
+      pendingReplaceId = card.dataset.id;
+      const inp = replaceInp();
+      inp.value = "";
+      inp.click();
+    });
+
+    // ===== SWIPE – delegate (smooth, works for all items) =====
+    setupSwipeDelegate();
   }
 
   /* =========================
-     Swipe (left delete / right bought / bought-left revert)
+     Swipe Delegate (smooth & only bind once)
   ========================= */
-  function bindSwipeAll(){
-    const wraps = rootEl.querySelectorAll(".shop-swipe");
-    wraps.forEach(w => bindSwipeOne(w));
-  }
+  function setupSwipeDelegate(){
+    if (rootEl.__swipeDelegate) return;
+    rootEl.__swipeDelegate = true;
 
-  function bindSwipeOne(wrap){
-    if (wrap.__swipeBound) return;
-    wrap.__swipeBound = true;
-
-    const fg = wrap.querySelector(".shop-swipe-fg");
-    const card = wrap.querySelector(".shop-card");
-    if (!fg || !card) return;
+    let activeWrap = null;
+    let activeFg = null;
+    let activeCard = null;
 
     let dragging = false;
-    let startX = 0;
-    let startY = 0;
+    let startX = 0, startY = 0;
     let currentX = 0;
     let lockedAxis = null; // 'x' or 'y'
 
-    const pointerSupported = "PointerEvent" in window;
+    function resetActive(animate=true){
+      if (!activeFg) return;
+      activeFg.style.transition = animate ? "transform 180ms ease" : "none";
+      activeFg.style.transform = "translateX(0px)";
+      if (activeWrap) activeWrap.classList.remove("is-armed");
+      activeWrap = activeFg = activeCard = null;
+      dragging = false;
+      lockedAxis = null;
+      currentX = 0;
+    }
 
-    const shouldIgnoreStart = (target) => {
-      return !!target.closest("input, textarea, button, select, label");
-    };
+    function findSwipeWrap(target){
+      const wrap = target.closest(".shop-swipe");
+      if (!wrap) return null;
+      // ignore inputs
+      if (target.closest("input, textarea, button, select, label")) return null;
+      const fg = wrap.querySelector(".shop-swipe-fg");
+      const card = wrap.querySelector(".shop-card");
+      if (!fg || !card) return null;
+      return { wrap, fg, card };
+    }
 
-    const onStart = (clientX, clientY) => {
+    function onStart(x,y, target){
+      const found = findSwipeWrap(target);
+      if (!found) return;
+
+      activeWrap = found.wrap;
+      activeFg = found.fg;
+      activeCard = found.card;
+
       dragging = true;
-      startX = clientX;
-      startY = clientY;
+      startX = x; startY = y;
       currentX = 0;
       lockedAxis = null;
-      fg.style.transition = "none";
-    };
 
-    const onMove = (clientX, clientY) => {
-      if (!dragging) return;
+      activeFg.style.transition = "none";
+    }
 
-      const dx = clientX - startX;
-      const dy = clientY - startY;
+    function onMove(x,y, ev){
+      if (!dragging || !activeFg) return;
 
-      if (!lockedAxis) lockedAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      const dx = x - startX;
+      const dy = y - startY;
+
+      if (!lockedAxis) lockedAxis = (Math.abs(dx) > Math.abs(dy)) ? "x" : "y";
       if (lockedAxis !== "x") return;
 
-      currentX = clamp(dx, -220, 220);
-      fg.style.transform = `translateX(${currentX}px)`;
+      // IMPORTANT: once we commit to horizontal swipe, prevent scroll
+      ev.preventDefault();
 
-      // armed class（如果你 CSS 有用到可保留）
-      if (Math.abs(currentX) > SWIPE_ARM) wrap.classList.add("is-armed");
-      else wrap.classList.remove("is-armed");
-    };
+      currentX = clamp(dx, -SWIPE_LIMIT, SWIPE_LIMIT);
+      activeFg.style.transform = `translateX(${currentX}px)`;
 
-    const onEnd = async () => {
-      if (!dragging) return;
-      dragging = false;
+      if (Math.abs(currentX) > 110) activeWrap.classList.add("is-armed");
+      else activeWrap.classList.remove("is-armed");
+    }
 
-      fg.style.transition = "transform 180ms ease";
-      wrap.classList.remove("is-armed");
+    async function onEnd(){
+      if (!dragging || !activeWrap) return;
 
-      const id = wrap.dataset.id;
+      const id = activeWrap.dataset.id;
       const items = loadLocal();
       const it = items.find(x => x.id === id);
 
-      // commit left
-      if (currentX <= -SWIPE_COMMIT) {
-        fg.style.transform = "translateX(0px)";
-        if (!it) return;
+      // reset visual first
+      activeFg.style.transition = "transform 180ms ease";
+      activeFg.style.transform = "translateX(0px)";
+      activeWrap.classList.remove("is-armed");
 
+      const x = currentX;
+      resetActive(false);
+
+      if (!it) return;
+
+      // LEFT commit
+      if (x <= -SWIPE_COMMIT) {
         if (it.bought) {
           const ok = confirm("要取消「已完成採買」狀態，恢復為未完成嗎？");
           if (!ok) return;
-
           it.bought = false;
           persist(items);
-          card.classList.remove("is-bought");
+          // quick patch (no full render needed)
+          const card = rootEl.querySelector(`.shop-card[data-id="${id}"]`);
+          if (card) card.classList.remove("is-bought");
         } else {
           const ok = confirm("確定要移除這個項目嗎？");
           if (!ok) return;
-
           const idx = items.findIndex(x => x.id === id);
           if (idx >= 0) items.splice(idx, 1);
           persist(items);
@@ -6349,55 +6257,48 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
         return;
       }
 
-      // commit right
-      if (currentX >= SWIPE_COMMIT) {
-        fg.style.transform = "translateX(0px)";
-        if (!it) return;
-
+      // RIGHT commit
+      if (x >= SWIPE_COMMIT) {
         if (!it.bought) {
           const ok = confirm("採買完成？確認後將標記為已完成。");
           if (!ok) return;
-
           it.bought = true;
           persist(items);
-          card.classList.add("is-bought"); // CSS 控制 opacity 0.35
+          const card = rootEl.querySelector(`.shop-card[data-id="${id}"]`);
+          if (card) card.classList.add("is-bought"); // CSS controls opacity 0.35
         }
-        return;
       }
+    }
 
-      // bounce back
-      fg.style.transform = "translateX(0px)";
-    };
-
-    if (pointerSupported) {
-      wrap.addEventListener("pointerdown", (e) => {
-        if (shouldIgnoreStart(e.target)) return;
+    // Pointer events (best)
+    if ("PointerEvent" in window) {
+      rootEl.addEventListener("pointerdown", (e) => {
         if (e.pointerType === "mouse" && e.button !== 0) return;
-        wrap.setPointerCapture?.(e.pointerId);
-        onStart(e.clientX, e.clientY);
+        onStart(e.clientX, e.clientY, e.target);
       });
 
-      wrap.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY));
-      wrap.addEventListener("pointerup", onEnd);
-      wrap.addEventListener("pointercancel", onEnd);
+      rootEl.addEventListener("pointermove", (e) => {
+        onMove(e.clientX, e.clientY, e);
+      }, { passive:false });
+
+      rootEl.addEventListener("pointerup", onEnd);
+      rootEl.addEventListener("pointercancel", () => resetActive(true));
     } else {
-      wrap.addEventListener("touchstart", (e) => {
-        if (shouldIgnoreStart(e.target)) return;
+      // Touch fallback
+      rootEl.addEventListener("touchstart", (e) => {
         const t = e.touches[0];
-        onStart(t.clientX, t.clientY);
+        onStart(t.clientX, t.clientY, e.target);
       }, { passive:true });
 
-      wrap.addEventListener("touchmove", (e) => {
+      rootEl.addEventListener("touchmove", (e) => {
         const t = e.touches[0];
-        onMove(t.clientX, t.clientY);
-      }, { passive:true });
+        onMove(t.clientX, t.clientY, e);
+      }, { passive:false });
 
-      wrap.addEventListener("touchend", onEnd, { passive:true });
-      wrap.addEventListener("touchcancel", onEnd, { passive:true });
+      rootEl.addEventListener("touchend", onEnd, { passive:true });
+      rootEl.addEventListener("touchcancel", () => resetActive(true), { passive:true });
     }
   }
-
-  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
 })();
 

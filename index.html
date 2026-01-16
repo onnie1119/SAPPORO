@@ -3371,6 +3371,8 @@ body.nav-back #menuBtn > div{
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 
+<script src="shopping.js"></script>
+
  
 <script>
 		let isFirstHomeRender = true;
@@ -5634,15 +5636,24 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   Shopping List – Cloud Sync (NO AUTH) – NON-module version
-   - Firestore only (no Firebase Auth)
-   - Same code => same data (PC <-> Phone real-time)
+   shopping.js – FINAL (GitHub Pages / PC+Phone sync)
+   ✅ Firestore 同步（免 Firebase Auth，不會再遇到 auth/network-request-failed）
+   ✅ 同步代碼 = 同一份雲端資料（手機/電腦即時同步）
+   ✅ 新增圖片、點圖片更換、編輯名稱/地點/價格
+   ✅ 價格與合計：¥ + 千分位
+   ⚠️ 你必須：
+      1) index.html 先載入 firebase compat SDK（兩行，見下方說明）
+      2) 把 firebaseConfig 換成你的
+      3) Firestore Rules 放行 /shops/{code} 讀寫（見下方說明）
 ========================================================= */
 
 (function () {
   "use strict";
 
-  /* ====== 0) Firebase config（換成你的） ====== */
+  /* =========================
+     [A] 你必填：Firebase config
+     Firebase Console → 專案設定 → 你的應用程式（Web）→ SDK 設定
+  ========================= */
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -5652,55 +5663,99 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     appId: "YOUR_APP_ID",
   };
 
-  /* ====== 1) Init (compat) ====== */
-  if (!window.firebase || !firebase.initializeApp) {
-    console.error("Firebase SDK not loaded. Did you include firebase-app-compat.js ?");
-    return;
-  }
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  /* ====== 2) DOM ====== */
+  /* =========================
+     [B] 你的頁面要有這個容器
+     <div id="shoppingRoot"></div>
+  ========================= */
   const SHOP_ROOT_ID = "shoppingRoot";
-  const LS_ITEMS = "shop_items_local_v1";
-  const LS_CODE = "shop_sync_code_v1";
-  const LS_CLIENT = "shop_client_id_v1";
-  const clientId = localStorage.getItem(LS_CLIENT) || (String(Date.now()) + "-" + Math.random().toString(16).slice(2));
-  localStorage.setItem(LS_CLIENT, clientId);
 
+  /* =========================
+     Options
+  ========================= */
   const CURRENCY = "¥";
   const SAVE_DEBOUNCE = 250;
 
+  /* =========================
+     LocalStorage keys
+  ========================= */
+  const LS_ITEMS = "shop_items_local_v1";
+  const LS_CODE = "shop_sync_code_v1";
+  const LS_CLIENT = "shop_client_id_v1";
+
+  /* =========================
+     Runtime state
+  ========================= */
   let rootEl = null;
+  let db = null;
   let unsub = null;
   let lastCloudUpdatedAt = 0;
   let persistTimer = null;
   let pendingReplaceId = null;
 
-  /* ====== 3) Public entry ====== */
+  const clientId =
+    localStorage.getItem(LS_CLIENT) ||
+    (String(Date.now()) + "-" + Math.random().toString(16).slice(2));
+  localStorage.setItem(LS_CLIENT, clientId);
+
+  /* =========================
+     Public entry
+     你在切到購物頁時呼叫：Shop_EnterShoppingPage()
+  ========================= */
   window.Shop_EnterShoppingPage = function () {
     rootEl = document.getElementById(SHOP_ROOT_ID);
     if (!rootEl) return;
 
+    if (!initFirebase()) {
+      mountUI();
+      setStatus(
+        "同步：Firebase SDK 未載入 ❌（請先在 index.html 引入 firebase-app-compat.js / firebase-firestore-compat.js）",
+        true
+      );
+      render(loadLocal());
+      return;
+    }
+
     mountUI();
     bindEvents();
 
+    // 先用本機渲染
     const local = loadLocal();
     render(local);
     setStatus("同步：待套用同步代碼");
 
+    // 若已有代碼自動套用
     const code = getCode();
     if (code) {
-      document.getElementById("shopSyncCode").value = code;
+      const el = document.getElementById("shopSyncCode");
+      if (el) el.value = code;
       applyCode(code);
     }
   };
 
-  /* ====== UI ====== */
+  /* =========================
+     Firebase init (compat)
+  ========================= */
+  function initFirebase() {
+    try {
+      if (!window.firebase || !firebase.initializeApp) return false;
+
+      if (!firebase.apps || !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.firestore();
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+  /* =========================
+     UI
+  ========================= */
   function mountUI() {
     rootEl.innerHTML = `
       <div class="shopping-page-wrap">
-
         <label class="shop-upload-btn">
           ＋ 從相簿加入圖片
           <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
@@ -5709,13 +5764,12 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
         <div style="display:flex; gap:8px; margin-top:10px;">
           <input id="shopSyncCode" class="shop-input" placeholder="同步代碼（手機/電腦輸入同一組）" style="flex:1;">
           <button id="shopSyncApply" type="button"
-            style="padding:8px 12px;border-radius:5px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
+            style="padding:8px 12px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
             套用
           </button>
         </div>
 
         <div id="shopStatus" style="margin-top:6px;font-size:12px;color:#666;"></div>
-
         <div id="shopTotalTop" class="shop-total" style="margin-top:10px;"></div>
 
         <div id="shopList" class="shop-list" style="margin-top:12px;"></div>
@@ -5732,17 +5786,30 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     el.style.color = isErr ? "#d44" : "#666";
   }
 
-  /* ====== Code ====== */
-  function getCode() { return (localStorage.getItem(LS_CODE) || "").trim(); }
-  function setCode(code) { localStorage.setItem(LS_CODE, (code || "").trim()); }
+  /* =========================
+     Sync code
+  ========================= */
+  function getCode() {
+    return (localStorage.getItem(LS_CODE) || "").trim();
+  }
+  function setCode(code) {
+    localStorage.setItem(LS_CODE, (code || "").trim());
+  }
 
-  function refFor(code) { return db.collection("shops").doc(code); }
+  function refFor(code) {
+    return db.collection("shops").doc(code);
+  }
 
   async function applyCode(code) {
     code = (code || "").trim();
     setCode(code);
 
     stopCloud();
+
+    if (!db) {
+      setStatus("同步：Firebase 未就緒 ❌", true);
+      return;
+    }
 
     if (!code) {
       setStatus("同步：已清除同步代碼（僅本機）");
@@ -5753,43 +5820,47 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     setStatus(`同步：使用代碼「${code}」讀取雲端…`);
 
     const cloudItems = await cloudLoad(code);
-    if (cloudItems) {
+    if (cloudItems !== null) {
       saveLocal(cloudItems);
       render(cloudItems);
     } else {
+      // 讀取失敗：保留本機
       render(loadLocal());
+      return;
     }
 
-    unsub = refFor(code).onSnapshot((snap) => {
-      if (!snap.exists) { onCloudItems([]); return; }
-      const data = snap.data() || {};
-      const updatedAt = Number(data.updatedAt || 0) || 0;
-      const updatedBy = String(data.updatedBy || "");
+    unsub = refFor(code).onSnapshot(
+      (snap) => {
+        if (!snap.exists) {
+          onCloudItems([]);
+          return;
+        }
+        const data = snap.data() || {};
+        const updatedAt = Number(data.updatedAt || 0) || 0;
+        const updatedBy = String(data.updatedBy || "");
 
-      if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
-      if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
+        // 忽略自己剛寫入的回波
+        if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
+        if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
 
-      onCloudItems(Array.isArray(data.items) ? data.items : []);
-    }, (err) => {
-      console.error(err);
-      setStatus("同步：監聽失敗 ❌ " + (err.message || err), true);
-    });
+        onCloudItems(Array.isArray(data.items) ? data.items : []);
+      },
+      (err) => {
+        console.error(err);
+        setStatus("同步：監聽失敗 ❌ " + (err.message || err), true);
+      }
+    );
 
     setStatus("同步：已連線（即時同步中 ✅）");
   }
 
-  function onCloudItems(items) {
-    saveLocal(items);
-    updateTotal(items);
-
-    // 正在輸入就不要整頁重繪
-    const ae = document.activeElement;
-    const typing = ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae);
-    if (!typing) render(items);
-  }
-
   function stopCloud() {
-    if (unsub) { try { unsub(); } catch (e) {} unsub = null; }
+    if (unsub) {
+      try {
+        unsub();
+      } catch {}
+      unsub = null;
+    }
   }
 
   async function cloudLoad(code) {
@@ -5801,7 +5872,15 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       return Array.isArray(data.items) ? data.items : [];
     } catch (err) {
       console.error(err);
-      setStatus("同步：雲端讀取失敗 ❌ " + (err.message || err), true);
+      // 常見：公司網路擋 googleapis => offline
+      if (String(err && err.message).toLowerCase().includes("offline")) {
+        setStatus(
+          "同步：雲端連線被阻擋（client is offline）❌ 請改用 4G/5G 或關閉擋廣告/防火牆後重試",
+          true
+        );
+      } else {
+        setStatus("同步：雲端讀取失敗 ❌ " + (err.message || err), true);
+      }
       return null;
     }
   }
@@ -5810,19 +5889,54 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     try {
       const now = Date.now();
       lastCloudUpdatedAt = now;
-      await refFor(code).set({ items: items, updatedAt: now, updatedBy: clientId }, { merge: true });
+      await refFor(code).set(
+        { items: items, updatedAt: now, updatedBy: clientId },
+        { merge: true }
+      );
       setStatus("同步：已寫入雲端 ✅");
       return true;
     } catch (err) {
       console.error(err);
-      setStatus("同步：雲端寫入失敗 ❌ " + (err.message || err), true);
+      if (String(err && err.message).toLowerCase().includes("offline")) {
+        setStatus(
+          "同步：雲端寫入失敗（client is offline）❌ 請改用 4G/5G 或關閉擋廣告/防火牆後重試",
+          true
+        );
+      } else {
+        setStatus("同步：雲端寫入失敗 ❌ " + (err.message || err), true);
+      }
       return false;
     }
   }
 
-  /* ====== Local ====== */
-  function loadLocal() { try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); } catch { return []; } }
-  function saveLocal(items) { localStorage.setItem(LS_ITEMS, JSON.stringify(items || [])); }
+  function onCloudItems(items) {
+    saveLocal(items);
+    updateTotal(items);
+
+    // 正在輸入就不要整頁重繪（避免打字要重點）
+    const ae = document.activeElement;
+    const typing =
+      ae &&
+      ae.classList &&
+      ae.classList.contains("shop-input") &&
+      rootEl.contains(ae);
+
+    if (!typing) render(items);
+  }
+
+  /* =========================
+     Local data
+  ========================= */
+  function loadLocal() {
+    try {
+      return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]");
+    } catch {
+      return [];
+    }
+  }
+  function saveLocal(items) {
+    localStorage.setItem(LS_ITEMS, JSON.stringify(items || []));
+  }
 
   function persist(items) {
     saveLocal(items);
@@ -5838,20 +5952,33 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     }, SAVE_DEBOUNCE);
   }
 
-  /* ====== Helpers ====== */
-  function uid() { return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())); }
+  /* =========================
+     Helpers
+  ========================= */
+  function uid() {
+    return crypto && crypto.randomUUID
+      ? crypto.randomUUID()
+      : String(Date.now() + Math.random());
+  }
+
   function toNumber(v) {
     const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
     return Number.isFinite(n) ? n : 0;
   }
+
   function fmtMoney(v) {
     const n = toNumber(v);
     return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
   }
+
   function esc(s) {
     return String(s ?? "")
-      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
   }
+
   function fileToDataURL(file) {
     return new Promise((res, rej) => {
       const r = new FileReader();
@@ -5861,7 +5988,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     });
   }
 
-  /* ====== Render ====== */
+  /* =========================
+     Render
+  ========================= */
   function render(items) {
     const list = document.getElementById("shopList");
     items = Array.isArray(items) ? items : [];
@@ -5871,28 +6000,37 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       list.innerHTML = `<div class="shop-empty">目前沒有項目，請點上方「從相簿加入圖片」新增</div>`;
       return;
     }
-    }
 
-    list.innerHTML = items.map(it => `
+    list.innerHTML = items
+      .map(
+        (it) => `
       <div class="shop-card" data-id="${it.id}">
         <img class="shop-thumb" src="${it.image || ""}" alt="">
         <div class="shop-fields">
           <div class="shop-field">
             <span class="shop-icon icon-location-shopping"></span>
-            <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(it.name)}">
+            <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(
+              it.name
+            )}">
           </div>
           <div class="shop-row">
             <div class="shop-field shop-field-location">
               <span class="shop-icon icon-location"></span>
-              <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+              <input class="shop-input" data-k="location" placeholder="地點" value="${esc(
+                it.location
+              )}">
             </div>
             <div class="shop-field shop-field-price">
-              <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(it.price)}">
+              <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(
+                it.price
+              )}">
             </div>
           </div>
         </div>
       </div>
-    `).join("");
+    `
+      )
+      .join("");
   }
 
   function updateTotal(items) {
@@ -5902,15 +6040,25 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (t) t.textContent = text;
   }
 
-  /* ====== Events ====== */
+  /* =========================
+     Events
+  ========================= */
   function bindEvents() {
-    document.getElementById("shopSyncApply").onclick = () => applyCode(document.getElementById("shopSyncCode").value);
+    const applyBtn = document.getElementById("shopSyncApply");
+    const codeInput = document.getElementById("shopSyncCode");
+    const fileInput = document.getElementById("shopFileInput");
+    const replaceInput = document.getElementById("shopReplaceInput");
 
-    document.getElementById("shopSyncCode").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); applyCode(document.getElementById("shopSyncCode").value); }
+    applyBtn.onclick = () => applyCode(codeInput.value);
+    codeInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyCode(codeInput.value);
+      }
     });
 
-    document.getElementById("shopFileInput").addEventListener("change", async (e) => {
+    // Add images
+    fileInput.addEventListener("change", async (e) => {
       const files = Array.from(e.target.files || []);
       if (!files.length) return;
 
@@ -5924,6 +6072,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       e.target.value = "";
     });
 
+    // Click image => replace
     rootEl.addEventListener("click", (e) => {
       const img = e.target.closest(".shop-thumb");
       if (!img) return;
@@ -5931,32 +6080,35 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       if (!card) return;
 
       pendingReplaceId = card.dataset.id;
-      const inp = document.getElementById("shopReplaceInput");
-      inp.value = "";
-      inp.click();
+      replaceInput.value = "";
+      replaceInput.click();
     });
 
-    document.getElementById("shopReplaceInput").addEventListener("change", async (e) => {
+    replaceInput.addEventListener("change", async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file || !pendingReplaceId) return;
 
       const items = loadLocal();
-      const it = items.find(x => x.id === pendingReplaceId);
+      const it = items.find((x) => x.id === pendingReplaceId);
       if (!it) return;
 
       it.image = await fileToDataURL(file);
       persist(items);
 
-      const imgEl = rootEl.querySelector(`.shop-card[data-id="${pendingReplaceId}"] .shop-thumb`);
+      const imgEl = rootEl.querySelector(
+        `.shop-card[data-id="${pendingReplaceId}"] .shop-thumb`
+      );
       if (imgEl) imgEl.src = it.image;
 
       pendingReplaceId = null;
       e.target.value = "";
     });
 
+    // Input changes
     rootEl.addEventListener("input", (e) => {
       const el = e.target;
       if (!el.classList || !el.classList.contains("shop-input")) return;
+
       const card = el.closest(".shop-card");
       if (!card) return;
 
@@ -5965,18 +6117,19 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       if (!id || !key) return;
 
       const items = loadLocal();
-      const it = items.find(x => x.id === id);
+      const it = items.find((x) => x.id === id);
       if (!it) return;
 
       if (key === "price") {
         it.price = toNumber(el.value);
-        persist(items);
       } else {
         it[key] = el.value;
-        persist(items);
       }
+
+      persist(items);
     });
 
+    // Price formatting
     rootEl.addEventListener("focusin", (e) => {
       const el = e.target;
       if (!el.classList || !el.classList.contains("shop-price")) return;
@@ -5993,16 +6146,18 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
       const id = card.dataset.id;
       const items = loadLocal();
-      const it = items.find(x => x.id === id);
+      const it = items.find((x) => x.id === id);
       if (!it) return;
 
       it.price = toNumber(el.value);
       persist(items);
+
       el.value = fmtMoney(it.price);
     });
   }
 
 })();
+
 
 </script>
 	<script>

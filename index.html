@@ -5652,768 +5652,434 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   Shopping List – FINAL ALL-IN-ONE JS (Local + Firestore Sync)
-   - Top upload (multi)
-   - Empty state + total = 0
-   - Swipe confirm:
-        Unbought: left=delete confirm, right=bought confirm
-        Bought: left=revert confirm, right=no-op
-   - Price format: ¥ 1,234 (focus raw, blur formatted)
-   - Click image: replace image (no rerender, keep focus)
-   - Long press image: fullscreen preview (move cancels)
-   - Firestore sync w/ Anonymous auth (via window.__SHOP_SYNC__)
-     + Sync code + Apply button ALWAYS works
-     + Status line shows what's happening
+   Shopping List – Cloud Sync (NO AUTH) – GitHub Pages OK
+   - Firestore only (no Firebase Auth)
+   - Same sync code => same data (PC <-> Phone real-time)
+   - Add by photo, edit name/location/price, click image to replace
+   - Price: ¥ 1,234 ; total auto
 ========================================================= */
-(function () {
-  "use strict";
 
-  /* -------------------- Config -------------------- */
-  const SHOP_LS_KEY = "shopping_items_v1";
-  const SHOP_SYNC_CODE_KEY = "shop_sync_code_v1";
-  const SHOP_CURRENCY = "¥";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-  const LEFT_THRESHOLD = 0.55;   // 左滑觸發比例
-  const RIGHT_THRESHOLD = 0.35;  // 右滑觸發比例
+/* =========================
+   1) 填入你自己的 Firebase config
+   Firebase Console → Project settings → Your apps（Web）
+========================= */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
 
-  const LONGPRESS_MS = 450;      // 長按放大預覽
-  const PERSIST_DEBOUNCE_MS = 250; // 避免每打一字就寫雲端
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // clientId：避免 snapshot 回波干擾輸入
-  const CLIENT_ID_KEY = "shop_client_id_v1";
-  const clientId = (localStorage.getItem(CLIENT_ID_KEY) ||
-    (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())));
-  localStorage.setItem(CLIENT_ID_KEY, clientId);
+/* =========================
+   DOM ids (你頁面要有這個容器)
+   <div id="shoppingRoot"></div>
+========================= */
+const SHOP_ROOT_ID = "shoppingRoot";
 
-  let rootEl = null;
-  let inited = false;
+/* =========================
+   Storage keys
+========================= */
+const LS_ITEMS = "shop_items_local_v1";
+const LS_CODE  = "shop_sync_code_v1";
+const LS_CLIENT= "shop_client_id_v1";
+const clientId = localStorage.getItem(LS_CLIENT) || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+localStorage.setItem(LS_CLIENT, clientId);
 
-  // swipe state
-  let swipe = null;
+/* =========================
+   State
+========================= */
+let rootEl = null;
+let unsubscribe = null;
+let lastCloudUpdatedAt = 0;
+let persistTimer = null;
+let pendingReplaceId = null;
 
-  // image replace state
-  let pendingImageItemId = null;
+const CURRENCY = "¥";
+const SAVE_DEBOUNCE = 250;
 
-  // long press preview state
-  let longPressTimer = null;
-  let longPressStartX = 0;
-  let longPressStartY = 0;
-  let longPressTriggered = false;
+/* =========================
+   Entry: 你原本 showPage 進購物頁時呼叫這個
+   window.Shop_EnterShoppingPage()
+========================= */
+window.Shop_EnterShoppingPage = function () {
+  rootEl = document.getElementById(SHOP_ROOT_ID);
+  if (!rootEl) return;
 
-  // cloud subscribe
-  let unsubscribe = null;
-  let lastCloudUpdatedAt = 0;
+  mountUI();
+  bindEvents();
 
-  // persist debounce
-  let persistTimer = null;
-  let persistPendingItems = null;
+  // render local first
+  const local = loadLocal();
+  render(local);
+  setStatus("同步：待套用同步代碼");
 
-  /* =========================
-     Entry
-  ========================= */
-  window.Shop_EnterShoppingPage = function () {
-    rootEl = document.getElementById("shoppingRoot");
-    if (!rootEl) return;
+  // auto start if code exists
+  const code = getCode();
+  if (code) {
+    document.getElementById("shopSyncCode").value = code;
+    applyCode(code);
+  }
+};
 
-    if (!inited) {
-      inited = true;
-      mountUI();
-      bindEventsOnce();
-    }
+/* =========================
+   UI
+========================= */
+function mountUI() {
+  rootEl.innerHTML = `
+    <div class="shopping-page-wrap">
 
-    // quick local render
-    render(loadLocalItems());
-    // show firebase ready status
-    setSyncStatus(cloudReady() ? "同步：Firebase 已就緒 ✅" : "同步：Firebase 未就緒 ❌（請確認初始化 script 有載入）", !cloudReady());
+      <label class="shop-upload-btn">
+        ＋ 從相簿加入圖片
+        <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
+      </label>
 
-    // start sync if code exists
-    startCloudIfReady();
-  };
-
-  /* =========================
-     UI
-  ========================= */
-  function mountUI() {
-    rootEl.innerHTML = `
-      <div class="shopping-page-wrap">
-
-        <div class="shop-topbar">
-          <label class="shop-upload-btn">
-            ＋ 從相簿加入圖片
-            <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
-          </label>
-
-          <!-- Sync code row -->
-          <div class="shop-syncbar" style="display:flex; gap:8px; margin-top:10px;">
-            <input id="shopSyncCode" class="shop-input" placeholder="同步代碼（例：JERRY-2026）" style="flex:1;">
-            <button id="shopSyncApply" type="button"
-              style="padding:8px 12px; border-radius:8px; border:1px solid #e6e6e6; background:#fff; cursor:pointer;">
-              套用
-            </button>
-          </div>
-
-          <div id="shopSyncStatus" style="margin-top:6px;font-size:12px;color:#666;"></div>
-
-          <div id="shopTotalTop" class="shop-total"></div>
-        </div>
-
-        <div id="shopList" class="shop-list"></div>
-
-        <!-- Bottom total (optional, keep if you like) -->
-        <div class="shop-bottom-bar">
-          <div id="shopTotal" class="shop-total"></div>
-        </div>
-
-        <!-- Replace image input -->
-        <input id="shopImageReplaceInput" type="file" accept="image/*" hidden>
-
-        <!-- Fullscreen image viewer -->
-        <div id="shopImageViewer" class="shop-image-viewer" hidden>
-          <div class="shop-image-viewer-bg"></div>
-          <img class="shop-image-viewer-img" src="" alt="">
-        </div>
-
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <input id="shopSyncCode" class="shop-input" placeholder="同步代碼（手機/電腦輸入同一組）" style="flex:1;">
+        <button id="shopSyncApply" type="button"
+          style="padding:8px 12px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
+          套用
+        </button>
       </div>
-    `;
 
-    // init sync code input
-    const code = getSyncCode();
-    const input = document.getElementById("shopSyncCode");
-    if (input) input.value = code;
+      <div id="shopStatus" style="margin-top:6px;font-size:12px;color:#666;"></div>
 
-    // ✅ Bind Apply button directly (guaranteed)
-    const btn = document.getElementById("shopSyncApply");
-    if (btn) {
-      btn.type = "button";
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        applySyncCodeNow();
-      });
-    }
+      <div id="shopTotalTop" class="shop-total" style="margin-top:10px;"></div>
 
-    if (input) {
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          applySyncCodeNow();
-        }
-      });
-    }
+      <div id="shopList" class="shop-list" style="margin-top:12px;"></div>
 
-    // Close viewer on click
-    const viewer = document.getElementById("shopImageViewer");
-    if (viewer) {
-      viewer.addEventListener("click", () => closeImageViewer());
-    }
+      <input id="shopReplaceInput" type="file" accept="image/*" hidden>
+    </div>
+  `;
+}
+
+function setStatus(msg, isErr=false){
+  const el = document.getElementById("shopStatus");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isErr ? "#d44" : "#666";
+}
+
+/* =========================
+   Sync code apply
+========================= */
+function getCode(){ return (localStorage.getItem(LS_CODE) || "").trim(); }
+function setCode(code){ localStorage.setItem(LS_CODE, (code||"").trim()); }
+
+async function applyCode(code){
+  code = (code || "").trim();
+  setCode(code);
+
+  stopCloud();
+
+  if (!code) {
+    setStatus("同步：已清除同步代碼（僅本機）");
+    render(loadLocal());
+    return;
   }
 
-  /* =========================
-     Status
-  ========================= */
-  function setSyncStatus(msg, isError = false) {
-    const el = document.getElementById("shopSyncStatus");
-    if (!el) return;
-    el.textContent = msg;
-    el.style.color = isError ? "#d44" : "#666";
+  setStatus(`同步：使用代碼「${code}」讀取雲端…`);
+
+  const cloudItems = await cloudLoad(code);
+  if (cloudItems) {
+    saveLocal(cloudItems);
+    render(cloudItems);
+  } else {
+    render(loadLocal());
   }
 
-  function applySyncCodeNow() {
-    const input = document.getElementById("shopSyncCode");
-    const code = (input?.value || "").trim();
-
-    setSyncCode(code);
-
-    if (!code) {
-      setSyncStatus("已清除同步代碼（使用本機儲存）");
-      stopCloud();
-      render(loadLocalItems());
-      return;
-    }
-
-    setSyncStatus(`同步代碼已套用：${code}（準備連線…）`);
-    startCloudIfReady(true);
-  }
-
-  /* =========================
-     Local storage
-  ========================= */
-  function loadLocalItems() {
-    try { return JSON.parse(localStorage.getItem(SHOP_LS_KEY) || "[]"); }
-    catch { return []; }
-  }
-  function saveLocalItems(items) {
-    localStorage.setItem(SHOP_LS_KEY, JSON.stringify(items));
-  }
-
-  /* =========================
-     Sync code
-  ========================= */
-  function getSyncCode() {
-    return (localStorage.getItem(SHOP_SYNC_CODE_KEY) || "").trim();
-  }
-  function setSyncCode(code) {
-    localStorage.setItem(SHOP_SYNC_CODE_KEY, (code || "").trim());
-  }
-
-  /* =========================
-     Cloud (Firestore via window.__SHOP_SYNC__)
-  ========================= */
-  function cloudReady() {
-    return !!(window.__SHOP_SYNC__ && window.__SHOP_SYNC__.db);
-  }
-  function docRef(code) {
-    const api = window.__SHOP_SYNC__;
-    if (!api || !api.db || !api.doc) return null;
-    return api.doc(api.db, "shops", code);
-  }
-
-  async function cloudLoad(code) {
-    const api = window.__SHOP_SYNC__;
-    const ref = docRef(code);
-    if (!cloudReady() || !api.getDoc || !ref) {
-      setSyncStatus("同步：Firebase 未就緒（無法讀取）", true);
-      return null;
-    }
-    try {
-      setSyncStatus("同步：讀取雲端中…");
-      const snap = await api.getDoc(ref);
-      if (!snap.exists()) {
-        setSyncStatus("同步：雲端尚無資料（第一次寫入後會建立）");
-        return [];
-      }
-      const data = snap.data() || {};
-      lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
-      setSyncStatus("同步：雲端讀取成功 ✅");
-      return Array.isArray(data.items) ? data.items : [];
-    } catch (err) {
-      console.error("cloudLoad error:", err);
-      setSyncStatus("同步：雲端讀取失敗 ❌ " + (err?.message || err), true);
-      return null;
-    }
-  }
-
-  async function cloudSave(code, items) {
-    const api = window.__SHOP_SYNC__;
-    const ref = docRef(code);
-    if (!cloudReady() || !api.setDoc || !ref) {
-      setSyncStatus("同步：Firebase 未就緒（無法寫入）", true);
-      return false;
-    }
-    try {
-      const now = Date.now();
-      lastCloudUpdatedAt = now; // prevent local echo
-      await api.setDoc(ref, { items, updatedAt: now, updatedBy: clientId }, { merge: true });
-      setSyncStatus("同步：已寫入雲端 ✅");
-      return true;
-    } catch (err) {
-      console.error("cloudSave error:", err);
-      setSyncStatus("同步：雲端寫入失敗 ❌ " + (err?.message || err), true);
-      return false;
-    }
-  }
-
-  function cloudSubscribe(code, onItems) {
-    const api = window.__SHOP_SYNC__;
-    const ref = docRef(code);
-    if (!cloudReady() || !api.onSnapshot || !ref) {
-      setSyncStatus("同步：Firebase 未就緒（無法監聽）", true);
-      return () => {};
-    }
-
-    setSyncStatus("同步：監聽雲端中（onSnapshot）…");
-
-    return api.onSnapshot(
-      ref,
-      (snap) => {
-        if (!snap.exists()) {
-          setSyncStatus("同步：監聽中（雲端尚無資料）");
-          onItems([]);
-          return;
-        }
-        const data = snap.data() || {};
-        const updatedAt = Number(data.updatedAt || 0) || 0;
-        const updatedBy = String(data.updatedBy || "");
-
-        // ignore self echo
-        if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
-
-        if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
-
-        setSyncStatus("同步：收到雲端更新 ✅");
-        onItems(Array.isArray(data.items) ? data.items : []);
-      },
-      (err) => {
-        console.error("onSnapshot error:", err);
-        setSyncStatus("同步：監聽失敗 ❌ " + (err?.message || err), true);
-      }
-    );
-  }
-
-  function stopCloud() {
-    if (unsubscribe) {
-      try { unsubscribe(); } catch {}
-      unsubscribe = null;
-    }
-  }
-
-  async function startCloudIfReady(force = false) {
-    const code = getSyncCode();
-    if (!code) {
-      stopCloud();
-      return;
-    }
-
-    if (!cloudReady()) {
-      setSyncStatus("同步：Firebase 未就緒 ❌（請確認初始化 script 有載入）", true);
-      return;
-    }
-
-    // if already subscribed and not force, keep
-    if (unsubscribe && !force) return;
-
-    stopCloud();
-
-    // cloud-first load
-    const cloudItems = await cloudLoad(code);
-    if (cloudItems) {
-      saveLocalItems(cloudItems);
-      render(cloudItems);
-    } else {
-      // cloud load failed -> keep local
-      render(loadLocalItems());
-    }
-
-    // subscribe
-    unsubscribe = cloudSubscribe(code, (items) => {
-      // avoid rerender if user is typing
-      const ae = document.activeElement;
-      const typing = ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae);
-
-      saveLocalItems(items);
-      updateTotal(items);
-
-      if (!typing) {
-        render(items);
-      }
-    });
-  }
-
-  /* =========================
-     Persist (debounced, local + optional cloud)
-  ========================= */
-  function persist(items) {
-    saveLocalItems(items);
-
-    // update total immediately
+  unsubscribe = cloudSubscribe(code, (items) => {
+    saveLocal(items);
     updateTotal(items);
 
-    // debounce cloud save
-    persistPendingItems = items;
-    if (persistTimer) clearTimeout(persistTimer);
+    // 使用者正在輸入就不重繪，避免斷輸入
+    const ae = document.activeElement;
+    const typing = ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae);
+    if (!typing) render(items);
+  });
 
-    persistTimer = setTimeout(async () => {
-      persistTimer = null;
-      const code = getSyncCode();
-      if (code && cloudReady()) {
-        await cloudSave(code, persistPendingItems);
-      }
-    }, PERSIST_DEBOUNCE_MS);
-  }
+  setStatus("同步：已連線（即時同步中 ✅）");
+}
 
-  /* =========================
-     Model helpers
-  ========================= */
-  function uid() {
-    return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+function stopCloud(){
+  if (unsubscribe) {
+    try { unsubscribe(); } catch {}
+    unsubscribe = null;
   }
-  function toNumber(v) {
-    const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
-    return Number.isFinite(n) ? n : 0;
-  }
-  function fmtMoney(v) {
-    const n = toNumber(v);
-    return n ? `${SHOP_CURRENCY} ${n.toLocaleString()}` : "";
-  }
-  function escAttr(s) {
-    return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
-  }
+}
 
-  /* =========================
-     Render
-  ========================= */
-  function render(items) {
-    const listEl = document.getElementById("shopList");
-    const arr = Array.isArray(items) ? items : [];
+/* =========================
+   Firestore (no auth)
+========================= */
+function refFor(code){
+  return doc(db, "shops", code);
+}
 
-    updateTotal(arr);
+async function cloudLoad(code){
+  try{
+    const snap = await getDoc(refFor(code));
+    if (!snap.exists()) return [];
+    const data = snap.data() || {};
+    lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
+    return Array.isArray(data.items) ? data.items : [];
+  } catch(err){
+    console.error(err);
+    setStatus("同步：雲端讀取失敗 ❌ " + (err?.message || err), true);
+    return null;
+  }
+}
 
-    if (arr.length === 0) {
-      listEl.innerHTML = `
-        <div class="shop-empty">
-          目前沒有項目，請點上方「從相簿加入圖片」開始新增
-        </div>
-      `;
-      return;
+async function cloudSave(code, items){
+  try{
+    const now = Date.now();
+    lastCloudUpdatedAt = now;
+    await setDoc(refFor(code), { items, updatedAt: now, updatedBy: clientId }, { merge:true });
+    setStatus("同步：已寫入雲端 ✅");
+    return true;
+  } catch(err){
+    console.error(err);
+    setStatus("同步：雲端寫入失敗 ❌ " + (err?.message || err), true);
+    return false;
+  }
+}
+
+function cloudSubscribe(code, onItems){
+  return onSnapshot(
+    refFor(code),
+    (snap) => {
+      if (!snap.exists()) { onItems([]); return; }
+      const data = snap.data() || {};
+      const updatedAt = Number(data.updatedAt || 0) || 0;
+      const updatedBy = String(data.updatedBy || "");
+
+      // 忽略自己剛寫入的回波
+      if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
+
+      if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
+      onItems(Array.isArray(data.items) ? data.items : []);
+    },
+    (err) => {
+      console.error(err);
+      setStatus("同步：監聽失敗 ❌ " + (err?.message || err), true);
     }
+  );
+}
 
-    listEl.innerHTML = arr.map(it => `
-      <div class="shop-swipe ${it.bought ? "is-bought" : ""}" data-id="${it.id}">
-        <div class="shop-swipe-bg"></div>
+/* =========================
+   Local
+========================= */
+function loadLocal(){
+  try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); }
+  catch { return []; }
+}
+function saveLocal(items){
+  localStorage.setItem(LS_ITEMS, JSON.stringify(items || []));
+}
 
-        <div class="shop-card shop-swipe-fg ${it.bought ? "is-bought" : ""}">
-          <img class="shop-thumb" src="${it.image}" alt="">
-          <div class="shop-fields">
+/* =========================
+   Persist (local + cloud debounce)
+========================= */
+function persist(items){
+  saveLocal(items);
+  updateTotal(items);
 
-            <div class="shop-field">
-              <span class="shop-icon icon-location-shopping"></span>
-              <input class="shop-input" data-k="name" placeholder="商品名稱"
-                     value="${escAttr(it.name)}">
-            </div>
+  const code = getCode();
+  if (!code) return; // no cloud
 
-            <div class="shop-row">
-              <div class="shop-field shop-field-location">
-                <span class="shop-icon icon-location"></span>
-                <input class="shop-input" data-k="location" placeholder="地點"
-                       value="${escAttr(it.location)}">
-              </div>
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    cloudSave(code, items);
+  }, SAVE_DEBOUNCE);
+}
 
-              <div class="shop-field shop-field-price">
-                <input class="shop-input shop-price" data-k="price"
-                       inputmode="decimal" placeholder="價格"
-                       value="${fmtMoney(it.price)}">
-              </div>
-            </div>
+/* =========================
+   Render helpers
+========================= */
+function uid(){ return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()); }
+function toNumber(v){
+  const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+function fmtMoney(v){
+  const n = toNumber(v);
+  return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
+}
+function esc(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+function fileToDataURL(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result));
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
 
+function render(items){
+  const list = document.getElementById("shopList");
+  items = Array.isArray(items) ? items : [];
+
+  updateTotal(items);
+
+  if (!items.length) {
+    list.innerHTML = `<div class="shop-empty">目前沒有項目，請點上方「從相簿加入圖片」新增</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(it => `
+    <div class="shop-card" data-id="${it.id}">
+      <img class="shop-thumb" src="${it.image || ""}" alt="">
+      <div class="shop-fields">
+        <div class="shop-field">
+          <span class="shop-icon icon-location-shopping"></span>
+          <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(it.name)}">
+        </div>
+        <div class="shop-row">
+          <div class="shop-field shop-field-location">
+            <span class="shop-icon icon-location"></span>
+            <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+          </div>
+          <div class="shop-field shop-field-price">
+            <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(it.price)}">
           </div>
         </div>
       </div>
-    `).join("");
-  }
+    </div>
+  `).join("");
+}
 
-  function updateTotal(items) {
-    const total = (items || []).reduce((s, it) => s + toNumber(it?.price), 0);
-    const text = `合計：${SHOP_CURRENCY} ${total.toLocaleString()}`;
+function updateTotal(items){
+  const total = (items || []).reduce((s,it)=> s + toNumber(it.price), 0);
+  const text = `合計：${CURRENCY} ${total.toLocaleString()}`;
+  const t = document.getElementById("shopTotalTop");
+  if (t) t.textContent = text;
+}
 
-    const t1 = document.getElementById("shopTotal");
-    const t2 = document.getElementById("shopTotalTop");
-    if (t1) t1.textContent = text;
-    if (t2) t2.textContent = text;
-  }
+/* =========================
+   Events
+========================= */
+function bindEvents(){
+  // Apply code
+  document.getElementById("shopSyncApply").onclick = () => {
+    applyCode(document.getElementById("shopSyncCode").value);
+  };
+  document.getElementById("shopSyncCode").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyCode(document.getElementById("shopSyncCode").value);
+    }
+  });
 
-  /* =========================
-     Image viewer
-  ========================= */
-  function openImageViewer(src) {
-    const viewer = document.getElementById("shopImageViewer");
-    if (!viewer) return;
-    const img = viewer.querySelector(".shop-image-viewer-img");
-    if (img) img.src = src;
-    viewer.hidden = false;
-  }
+  // Add images
+  document.getElementById("shopFileInput").addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
-  function closeImageViewer() {
-    const viewer = document.getElementById("shopImageViewer");
-    if (!viewer) return;
-    viewer.hidden = true;
-    const img = viewer.querySelector(".shop-image-viewer-img");
-    if (img) img.src = "";
-  }
+    const items = loadLocal();
+    for (const f of files) {
+      const img = await fileToDataURL(f);
+      items.unshift({ id: uid(), image: img, name:"", location:"", price:0 });
+    }
+    persist(items);
+    render(items);
+    e.target.value = "";
+  });
 
-  /* =========================
-     Events
-  ========================= */
-  function bindEventsOnce() {
-    // Add items by images (multiple)
-    rootEl.addEventListener("change", async (e) => {
-      const input = e.target;
-      if (!input) return;
+  // Click image => replace
+  rootEl.addEventListener("click", (e) => {
+    const img = e.target.closest(".shop-thumb");
+    if (!img) return;
+    const card = img.closest(".shop-card");
+    if (!card) return;
 
-      if (input.id === "shopFileInput") {
-        const files = Array.from(input.files || []);
-        if (!files.length) return;
+    pendingReplaceId = card.dataset.id;
+    const inp = document.getElementById("shopReplaceInput");
+    inp.value = "";
+    inp.click();
+  });
 
-        const items = loadLocalItems();
-        for (const f of files) {
-          const img = await fileToDataURL(f);
-          items.unshift({ id: uid(), image: img, name: "", location: "", price: 0, bought: false });
-        }
+  // Replace chosen
+  document.getElementById("shopReplaceInput").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !pendingReplaceId) return;
 
-        persist(items);
-        render(items);
-        input.value = "";
-        return;
-      }
+    const items = loadLocal();
+    const it = items.find(x => x.id === pendingReplaceId);
+    if (!it) return;
 
-      if (input.id === "shopImageReplaceInput") {
-        if (!pendingImageItemId) return;
-        const file = input.files?.[0];
-        if (!file) return;
+    it.image = await fileToDataURL(file);
+    persist(items);
 
-        const items = loadLocalItems();
-        const it = items.find(x => x.id === pendingImageItemId);
-        if (!it) return;
+    // update only image (keep typing)
+    const imgEl = rootEl.querySelector(`.shop-card[data-id="${pendingReplaceId}"] .shop-thumb`);
+    if (imgEl) imgEl.src = it.image;
 
-        it.image = await fileToDataURL(file);
-        persist(items);
+    pendingReplaceId = null;
+    e.target.value = "";
+  });
 
-        // update only img (no rerender => keep focus)
-        const imgEl = rootEl.querySelector(`.shop-swipe[data-id="${pendingImageItemId}"] .shop-thumb`);
-        if (imgEl) imgEl.src = it.image;
+  // Typing
+  rootEl.addEventListener("input", (e) => {
+    const el = e.target;
+    if (!el.classList?.contains("shop-input")) return;
 
-        pendingImageItemId = null;
-        input.value = "";
-      }
-    });
+    const card = el.closest(".shop-card");
+    if (!card) return;
 
-    // Click image => replace (but ignore if longpress triggered)
-    rootEl.addEventListener("click", (e) => {
-      const img = e.target.closest(".shop-thumb");
-      if (!img) return;
+    const id = card.dataset.id;
+    const key = el.dataset.k;
+    if (!id || !key) return;
 
-      // if we just long-pressed and opened viewer, don't treat as replace
-      if (longPressTriggered) {
-        longPressTriggered = false;
-        return;
-      }
+    const items = loadLocal();
+    const it = items.find(x => x.id === id);
+    if (!it) return;
 
-      const wrap = img.closest(".shop-swipe");
-      if (!wrap) return;
-
-      pendingImageItemId = wrap.dataset.id;
-
-      const fileInput = document.getElementById("shopImageReplaceInput");
-      if (fileInput) {
-        fileInput.value = "";
-        fileInput.click();
-      }
-    });
-
-    // Long press image => viewer
-    rootEl.addEventListener("pointerdown", (e) => {
-      const img = e.target.closest(".shop-thumb");
-      if (!img) return;
-
-      longPressTriggered = false;
-      longPressStartX = e.clientX;
-      longPressStartY = e.clientY;
-
-      if (longPressTimer) clearTimeout(longPressTimer);
-      longPressTimer = setTimeout(() => {
-        longPressTriggered = true;
-        openImageViewer(img.src);
-        if (navigator.vibrate) navigator.vibrate(10);
-      }, LONGPRESS_MS);
-    }, { passive: true });
-
-    rootEl.addEventListener("pointermove", (e) => {
-      if (!longPressTimer) return;
-      const dx = Math.abs(e.clientX - longPressStartX);
-      const dy = Math.abs(e.clientY - longPressStartY);
-      if (dx + dy > 10) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
-    }, { passive: true });
-
-    rootEl.addEventListener("pointerup", () => {
-      if (longPressTimer) clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }, { passive: true });
-
-    rootEl.addEventListener("pointercancel", () => {
-      if (longPressTimer) clearTimeout(longPressTimer);
-      longPressTimer = null;
-    }, { passive: true });
-
-    // Save typing (NO rerender)
-    rootEl.addEventListener("input", (e) => {
-      const el = e.target;
-      if (!el.classList?.contains("shop-input")) return;
-
-      const wrap = el.closest(".shop-swipe");
-      const id = wrap?.dataset.id;
-      const key = el.dataset.k;
-      if (!id || !key) return;
-
-      const items = loadLocalItems();
-      const it = items.find(x => x.id === id);
-      if (!it) return;
-
-      if (key === "price") {
-        it.price = toNumber(el.value);
-        persist(items);
-        // total already updated inside persist
-      } else {
-        it[key] = el.value;
-        persist(items);
-      }
-    });
-
-    // Price focus => raw number
-    rootEl.addEventListener("focusin", (e) => {
-      const el = e.target;
-      if (!el.classList?.contains("shop-price")) return;
-      const n = toNumber(el.value);
-      el.value = n ? String(n) : "";
-    });
-
-    // Price blur => formatted money
-    rootEl.addEventListener("focusout", (e) => {
-      const el = e.target;
-      if (!el.classList?.contains("shop-price")) return;
-
-      const wrap = el.closest(".shop-swipe");
-      const id = wrap?.dataset.id;
-
-      const items = loadLocalItems();
-      const it = items.find(x => x.id === id);
-      if (!it) return;
-
+    if (key === "price") {
       it.price = toNumber(el.value);
       persist(items);
-
-      el.value = fmtMoney(it.price);
-    });
-
-    // Swipe
-    rootEl.addEventListener("pointerdown", onDown, { passive: true });
-    rootEl.addEventListener("pointermove", onMove, { passive: false });
-    rootEl.addEventListener("pointerup", onUp, { passive: true });
-    rootEl.addEventListener("pointercancel", onUp, { passive: true });
-  }
-
-  /* =========================
-     Swipe with confirms
-  ========================= */
-  function onDown(e) {
-    const fg = e.target.closest(".shop-swipe-fg");
-    const wrap = e.target.closest(".shop-swipe");
-    if (!fg || !wrap) return;
-
-    swipe = {
-      fg, wrap,
-      id: wrap.dataset.id,
-      sx: e.clientX,
-      sy: e.clientY,
-      dx: 0,
-      decided: false,
-      horizontal: false
-    };
-
-    fg.style.transition = "none";
-  }
-
-  function onMove(e) {
-    if (!swipe) return;
-
-    const dx = e.clientX - swipe.sx;
-    const dy = e.clientY - swipe.sy;
-
-    if (!swipe.decided) {
-      if (Math.abs(dx) + Math.abs(dy) < 10) return;
-      swipe.decided = true;
-      swipe.horizontal = Math.abs(dx) >= Math.abs(dy) * 0.9;
-      if (!swipe.horizontal) return;
+    } else {
+      it[key] = el.value;
+      persist(items);
     }
-    if (!swipe.horizontal) return;
+  });
 
-    const w = swipe.wrap.clientWidth;
-    swipe.dx = clamp(dx, -w, w);
-    swipe.fg.style.transform = `translateX(${swipe.dx}px)`;
-    e.preventDefault();
-  }
+  // Price focus => raw
+  rootEl.addEventListener("focusin", (e) => {
+    const el = e.target;
+    if (!el.classList?.contains("shop-price")) return;
+    const n = toNumber(el.value);
+    el.value = n ? String(n) : "";
+  });
 
-  function onUp() {
-    if (!swipe) return;
+  // Price blur => formatted
+  rootEl.addEventListener("focusout", (e) => {
+    const el = e.target;
+    if (!el.classList?.contains("shop-price")) return;
 
-    const items = loadLocalItems();
-    const it = items.find(x => x.id === swipe.id);
-    if (!it) {
-      resetSwipe();
-      swipe = null;
-      return;
-    }
+    const card = el.closest(".shop-card");
+    if (!card) return;
 
-    const w = swipe.wrap.clientWidth;
-    const dx = swipe.dx;
+    const id = card.dataset.id;
+    const items = loadLocal();
+    const it = items.find(x => x.id === id);
+    if (!it) return;
 
-    const leftTriggered  = dx <= -w * LEFT_THRESHOLD;
-    const rightTriggered = dx >=  w * RIGHT_THRESHOLD;
+    it.price = toNumber(el.value);
+    persist(items);
 
-    resetSwipe(); // always spring back
-
-    // Bought: left=revert confirm; right=no-op
-    if (it.bought) {
-      if (leftTriggered) {
-        const ok = window.confirm("要將此項目恢復為「未採買」狀態嗎？");
-        if (ok) {
-          it.bought = false;
-          persist(items);
-          swipe.wrap.classList.remove("is-bought");
-          swipe.fg.classList.remove("is-bought");
-        }
-      }
-      swipe = null;
-      return;
-    }
-
-    // Unbought: left=delete confirm
-    if (leftTriggered) {
-      const ok = window.confirm("確定要移除此項目嗎？");
-      if (ok) {
-        const newItems = items.filter(x => x.id !== it.id);
-        persist(newItems);
-        render(newItems);
-      }
-      swipe = null;
-      return;
-    }
-
-    // Unbought: right=bought confirm
-    if (rightTriggered) {
-      const ok = window.confirm("採買完成。要將此項目標記為已買到嗎？");
-      if (ok) {
-        it.bought = true;
-        persist(items);
-        swipe.wrap.classList.add("is-bought");
-        swipe.fg.classList.add("is-bought");
-      }
-      swipe = null;
-      return;
-    }
-
-    swipe = null;
-
-    function resetSwipe() {
-      if (!swipe) return;
-      swipe.fg.style.transition = "transform 180ms ease";
-      swipe.fg.style.transform = "translateX(0)";
-    }
-  }
-
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(max, v));
-  }
-
-  /* =========================
-     Utils
-  ========================= */
-  function fileToDataURL(file) {
-    return new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(String(r.result));
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-  }
-
-})();
-
+    el.value = fmtMoney(it.price);
+  });
+}
 
 </script>
 	<script>

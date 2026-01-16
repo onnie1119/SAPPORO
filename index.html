@@ -3367,30 +3367,12 @@ body.nav-back #menuBtn > div{
         
 </div>	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <!-- Firebase 初始化（一定要先） -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+<!-- Firebase compat (NON-module) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 
-    const firebaseConfig = {
-      apiKey: "…",
-      authDomain: "…",
-      projectId: "…",
-      storageBucket: "…",
-      messagingSenderId: "…",
-      appId: "…"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    await signInAnonymously(auth);
-
-    // ⭐ 關鍵：一定要有這行
-    window.__SHOP_SYNC__ = { db, doc, setDoc, getDoc, onSnapshot };
-  </script>
-	<script>
+ 
+<script>
 		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
 		let navMode = "menu"; // menu | back
@@ -5652,434 +5634,374 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   Shopping List – Cloud Sync (NO AUTH) – GitHub Pages OK
+   Shopping List – Cloud Sync (NO AUTH) – NON-module version
    - Firestore only (no Firebase Auth)
-   - Same sync code => same data (PC <-> Phone real-time)
-   - Add by photo, edit name/location/price, click image to replace
-   - Price: ¥ 1,234 ; total auto
+   - Same code => same data (PC <-> Phone real-time)
 ========================================================= */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+(function () {
+  "use strict";
 
-/* =========================
-   1) 填入你自己的 Firebase config
-   Firebase Console → Project settings → Your apps（Web）
-========================= */
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-};
+  /* ====== 0) Firebase config（換成你的） ====== */
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID",
+  };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-/* =========================
-   DOM ids (你頁面要有這個容器)
-   <div id="shoppingRoot"></div>
-========================= */
-const SHOP_ROOT_ID = "shoppingRoot";
-
-/* =========================
-   Storage keys
-========================= */
-const LS_ITEMS = "shop_items_local_v1";
-const LS_CODE  = "shop_sync_code_v1";
-const LS_CLIENT= "shop_client_id_v1";
-const clientId = localStorage.getItem(LS_CLIENT) || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
-localStorage.setItem(LS_CLIENT, clientId);
-
-/* =========================
-   State
-========================= */
-let rootEl = null;
-let unsubscribe = null;
-let lastCloudUpdatedAt = 0;
-let persistTimer = null;
-let pendingReplaceId = null;
-
-const CURRENCY = "¥";
-const SAVE_DEBOUNCE = 250;
-
-/* =========================
-   Entry: 你原本 showPage 進購物頁時呼叫這個
-   window.Shop_EnterShoppingPage()
-========================= */
-window.Shop_EnterShoppingPage = function () {
-  rootEl = document.getElementById(SHOP_ROOT_ID);
-  if (!rootEl) return;
-
-  mountUI();
-  bindEvents();
-
-  // render local first
-  const local = loadLocal();
-  render(local);
-  setStatus("同步：待套用同步代碼");
-
-  // auto start if code exists
-  const code = getCode();
-  if (code) {
-    document.getElementById("shopSyncCode").value = code;
-    applyCode(code);
-  }
-};
-
-/* =========================
-   UI
-========================= */
-function mountUI() {
-  rootEl.innerHTML = `
-    <div class="shopping-page-wrap">
-
-      <label class="shop-upload-btn">
-        ＋ 從相簿加入圖片
-        <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
-      </label>
-
-      <div style="display:flex; gap:8px; margin-top:10px;">
-        <input id="shopSyncCode" class="shop-input" placeholder="同步代碼（手機/電腦輸入同一組）" style="flex:1;">
-        <button id="shopSyncApply" type="button"
-          style="padding:8px 12px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
-          套用
-        </button>
-      </div>
-
-      <div id="shopStatus" style="margin-top:6px;font-size:12px;color:#666;"></div>
-
-      <div id="shopTotalTop" class="shop-total" style="margin-top:10px;"></div>
-
-      <div id="shopList" class="shop-list" style="margin-top:12px;"></div>
-
-      <input id="shopReplaceInput" type="file" accept="image/*" hidden>
-    </div>
-  `;
-}
-
-function setStatus(msg, isErr=false){
-  const el = document.getElementById("shopStatus");
-  if (!el) return;
-  el.textContent = msg;
-  el.style.color = isErr ? "#d44" : "#666";
-}
-
-/* =========================
-   Sync code apply
-========================= */
-function getCode(){ return (localStorage.getItem(LS_CODE) || "").trim(); }
-function setCode(code){ localStorage.setItem(LS_CODE, (code||"").trim()); }
-
-async function applyCode(code){
-  code = (code || "").trim();
-  setCode(code);
-
-  stopCloud();
-
-  if (!code) {
-    setStatus("同步：已清除同步代碼（僅本機）");
-    render(loadLocal());
+  /* ====== 1) Init (compat) ====== */
+  if (!window.firebase || !firebase.initializeApp) {
+    console.error("Firebase SDK not loaded. Did you include firebase-app-compat.js ?");
     return;
   }
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  setStatus(`同步：使用代碼「${code}」讀取雲端…`);
+  /* ====== 2) DOM ====== */
+  const SHOP_ROOT_ID = "shoppingRoot";
+  const LS_ITEMS = "shop_items_local_v1";
+  const LS_CODE = "shop_sync_code_v1";
+  const LS_CLIENT = "shop_client_id_v1";
+  const clientId = localStorage.getItem(LS_CLIENT) || (String(Date.now()) + "-" + Math.random().toString(16).slice(2));
+  localStorage.setItem(LS_CLIENT, clientId);
 
-  const cloudItems = await cloudLoad(code);
-  if (cloudItems) {
-    saveLocal(cloudItems);
-    render(cloudItems);
-  } else {
-    render(loadLocal());
+  const CURRENCY = "¥";
+  const SAVE_DEBOUNCE = 250;
+
+  let rootEl = null;
+  let unsub = null;
+  let lastCloudUpdatedAt = 0;
+  let persistTimer = null;
+  let pendingReplaceId = null;
+
+  /* ====== 3) Public entry ====== */
+  window.Shop_EnterShoppingPage = function () {
+    rootEl = document.getElementById(SHOP_ROOT_ID);
+    if (!rootEl) return;
+
+    mountUI();
+    bindEvents();
+
+    const local = loadLocal();
+    render(local);
+    setStatus("同步：待套用同步代碼");
+
+    const code = getCode();
+    if (code) {
+      document.getElementById("shopSyncCode").value = code;
+      applyCode(code);
+    }
+  };
+
+  /* ====== UI ====== */
+  function mountUI() {
+    rootEl.innerHTML = `
+      <div class="shopping-page-wrap">
+
+        <label class="shop-upload-btn">
+          ＋ 從相簿加入圖片
+          <input id="shopFileInput" type="file" accept="image/*" multiple hidden>
+        </label>
+
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <input id="shopSyncCode" class="shop-input" placeholder="同步代碼（手機/電腦輸入同一組）" style="flex:1;">
+          <button id="shopSyncApply" type="button"
+            style="padding:8px 12px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;cursor:pointer;">
+            套用
+          </button>
+        </div>
+
+        <div id="shopStatus" style="margin-top:6px;font-size:12px;color:#666;"></div>
+
+        <div id="shopTotalTop" class="shop-total" style="margin-top:10px;"></div>
+
+        <div id="shopList" class="shop-list" style="margin-top:12px;"></div>
+
+        <input id="shopReplaceInput" type="file" accept="image/*" hidden>
+      </div>
+    `;
   }
 
-  unsubscribe = cloudSubscribe(code, (items) => {
-    saveLocal(items);
-    updateTotal(items);
-
-    // 使用者正在輸入就不重繪，避免斷輸入
-    const ae = document.activeElement;
-    const typing = ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae);
-    if (!typing) render(items);
-  });
-
-  setStatus("同步：已連線（即時同步中 ✅）");
-}
-
-function stopCloud(){
-  if (unsubscribe) {
-    try { unsubscribe(); } catch {}
-    unsubscribe = null;
+  function setStatus(msg, isErr) {
+    const el = document.getElementById("shopStatus");
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isErr ? "#d44" : "#666";
   }
-}
 
-/* =========================
-   Firestore (no auth)
-========================= */
-function refFor(code){
-  return doc(db, "shops", code);
-}
+  /* ====== Code ====== */
+  function getCode() { return (localStorage.getItem(LS_CODE) || "").trim(); }
+  function setCode(code) { localStorage.setItem(LS_CODE, (code || "").trim()); }
 
-async function cloudLoad(code){
-  try{
-    const snap = await getDoc(refFor(code));
-    if (!snap.exists()) return [];
-    const data = snap.data() || {};
-    lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
-    return Array.isArray(data.items) ? data.items : [];
-  } catch(err){
-    console.error(err);
-    setStatus("同步：雲端讀取失敗 ❌ " + (err?.message || err), true);
-    return null;
-  }
-}
+  function refFor(code) { return db.collection("shops").doc(code); }
 
-async function cloudSave(code, items){
-  try{
-    const now = Date.now();
-    lastCloudUpdatedAt = now;
-    await setDoc(refFor(code), { items, updatedAt: now, updatedBy: clientId }, { merge:true });
-    setStatus("同步：已寫入雲端 ✅");
-    return true;
-  } catch(err){
-    console.error(err);
-    setStatus("同步：雲端寫入失敗 ❌ " + (err?.message || err), true);
-    return false;
-  }
-}
+  async function applyCode(code) {
+    code = (code || "").trim();
+    setCode(code);
 
-function cloudSubscribe(code, onItems){
-  return onSnapshot(
-    refFor(code),
-    (snap) => {
-      if (!snap.exists()) { onItems([]); return; }
+    stopCloud();
+
+    if (!code) {
+      setStatus("同步：已清除同步代碼（僅本機）");
+      render(loadLocal());
+      return;
+    }
+
+    setStatus(`同步：使用代碼「${code}」讀取雲端…`);
+
+    const cloudItems = await cloudLoad(code);
+    if (cloudItems) {
+      saveLocal(cloudItems);
+      render(cloudItems);
+    } else {
+      render(loadLocal());
+    }
+
+    unsub = refFor(code).onSnapshot((snap) => {
+      if (!snap.exists) { onCloudItems([]); return; }
       const data = snap.data() || {};
       const updatedAt = Number(data.updatedAt || 0) || 0;
       const updatedBy = String(data.updatedBy || "");
 
-      // 忽略自己剛寫入的回波
       if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
-
       if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
-      onItems(Array.isArray(data.items) ? data.items : []);
-    },
-    (err) => {
+
+      onCloudItems(Array.isArray(data.items) ? data.items : []);
+    }, (err) => {
       console.error(err);
-      setStatus("同步：監聽失敗 ❌ " + (err?.message || err), true);
-    }
-  );
-}
+      setStatus("同步：監聽失敗 ❌ " + (err.message || err), true);
+    });
 
-/* =========================
-   Local
-========================= */
-function loadLocal(){
-  try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); }
-  catch { return []; }
-}
-function saveLocal(items){
-  localStorage.setItem(LS_ITEMS, JSON.stringify(items || []));
-}
-
-/* =========================
-   Persist (local + cloud debounce)
-========================= */
-function persist(items){
-  saveLocal(items);
-  updateTotal(items);
-
-  const code = getCode();
-  if (!code) return; // no cloud
-
-  if (persistTimer) clearTimeout(persistTimer);
-  persistTimer = setTimeout(() => {
-    persistTimer = null;
-    cloudSave(code, items);
-  }, SAVE_DEBOUNCE);
-}
-
-/* =========================
-   Render helpers
-========================= */
-function uid(){ return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()); }
-function toNumber(v){
-  const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
-  return Number.isFinite(n) ? n : 0;
-}
-function fmtMoney(v){
-  const n = toNumber(v);
-  return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
-}
-function esc(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-}
-function fileToDataURL(file){
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(String(r.result));
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
-
-function render(items){
-  const list = document.getElementById("shopList");
-  items = Array.isArray(items) ? items : [];
-
-  updateTotal(items);
-
-  if (!items.length) {
-    list.innerHTML = `<div class="shop-empty">目前沒有項目，請點上方「從相簿加入圖片」新增</div>`;
-    return;
+    setStatus("同步：已連線（即時同步中 ✅）");
   }
 
-  list.innerHTML = items.map(it => `
-    <div class="shop-card" data-id="${it.id}">
-      <img class="shop-thumb" src="${it.image || ""}" alt="">
-      <div class="shop-fields">
-        <div class="shop-field">
-          <span class="shop-icon icon-location-shopping"></span>
-          <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(it.name)}">
-        </div>
-        <div class="shop-row">
-          <div class="shop-field shop-field-location">
-            <span class="shop-icon icon-location"></span>
-            <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+  function onCloudItems(items) {
+    saveLocal(items);
+    updateTotal(items);
+
+    // 正在輸入就不要整頁重繪
+    const ae = document.activeElement;
+    const typing = ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae);
+    if (!typing) render(items);
+  }
+
+  function stopCloud() {
+    if (unsub) { try { unsub(); } catch (e) {} unsub = null; }
+  }
+
+  async function cloudLoad(code) {
+    try {
+      const snap = await refFor(code).get();
+      if (!snap.exists) return [];
+      const data = snap.data() || {};
+      lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
+      return Array.isArray(data.items) ? data.items : [];
+    } catch (err) {
+      console.error(err);
+      setStatus("同步：雲端讀取失敗 ❌ " + (err.message || err), true);
+      return null;
+    }
+  }
+
+  async function cloudSave(code, items) {
+    try {
+      const now = Date.now();
+      lastCloudUpdatedAt = now;
+      await refFor(code).set({ items: items, updatedAt: now, updatedBy: clientId }, { merge: true });
+      setStatus("同步：已寫入雲端 ✅");
+      return true;
+    } catch (err) {
+      console.error(err);
+      setStatus("同步：雲端寫入失敗 ❌ " + (err.message || err), true);
+      return false;
+    }
+  }
+
+  /* ====== Local ====== */
+  function loadLocal() { try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); } catch { return []; } }
+  function saveLocal(items) { localStorage.setItem(LS_ITEMS, JSON.stringify(items || [])); }
+
+  function persist(items) {
+    saveLocal(items);
+    updateTotal(items);
+
+    const code = getCode();
+    if (!code) return;
+
+    if (persistTimer) clearTimeout(persistTimer);
+    persistTimer = setTimeout(() => {
+      persistTimer = null;
+      cloudSave(code, items);
+    }, SAVE_DEBOUNCE);
+  }
+
+  /* ====== Helpers ====== */
+  function uid() { return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())); }
+  function toNumber(v) {
+    const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  }
+  function fmtMoney(v) {
+    const n = toNumber(v);
+    return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
+  }
+  function esc(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  }
+  function fileToDataURL(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result));
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  /* ====== Render ====== */
+  function render(items) {
+    const list = document.getElementById("shopList");
+    items = Array.isArray(items) ? items : [];
+    updateTotal(items);
+
+    if (!items.length) {
+      list.innerHTML = `<div class="shop-empty">目前沒有項目，請點上方「從相簿加入圖片」新增</div>`;
+      return;
+    }
+
+    list.innerHTML = items.map(it => `
+      <div class="shop-card" data-id="${it.id}">
+        <img class="shop-thumb" src="${it.image || ""}" alt="">
+        <div class="shop-fields">
+          <div class="shop-field">
+            <span class="shop-icon icon-location-shopping"></span>
+            <input class="shop-input" data-k="name" placeholder="商品名稱" value="${esc(it.name)}">
           </div>
-          <div class="shop-field shop-field-price">
-            <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(it.price)}">
+          <div class="shop-row">
+            <div class="shop-field shop-field-location">
+              <span class="shop-icon icon-location"></span>
+              <input class="shop-input" data-k="location" placeholder="地點" value="${esc(it.location)}">
+            </div>
+            <div class="shop-field shop-field-price">
+              <input class="shop-input shop-price" data-k="price" placeholder="價格" inputmode="decimal" value="${fmtMoney(it.price)}">
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  `).join("");
-}
+    `).join("");
+  }
 
-function updateTotal(items){
-  const total = (items || []).reduce((s,it)=> s + toNumber(it.price), 0);
-  const text = `合計：${CURRENCY} ${total.toLocaleString()}`;
-  const t = document.getElementById("shopTotalTop");
-  if (t) t.textContent = text;
-}
+  function updateTotal(items) {
+    const total = (items || []).reduce((s, it) => s + toNumber(it.price), 0);
+    const text = `合計：${CURRENCY} ${total.toLocaleString()}`;
+    const t = document.getElementById("shopTotalTop");
+    if (t) t.textContent = text;
+  }
 
-/* =========================
-   Events
-========================= */
-function bindEvents(){
-  // Apply code
-  document.getElementById("shopSyncApply").onclick = () => {
-    applyCode(document.getElementById("shopSyncCode").value);
-  };
-  document.getElementById("shopSyncCode").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      applyCode(document.getElementById("shopSyncCode").value);
-    }
-  });
+  /* ====== Events ====== */
+  function bindEvents() {
+    document.getElementById("shopSyncApply").onclick = () => applyCode(document.getElementById("shopSyncCode").value);
 
-  // Add images
-  document.getElementById("shopFileInput").addEventListener("change", async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+    document.getElementById("shopSyncCode").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); applyCode(document.getElementById("shopSyncCode").value); }
+    });
 
-    const items = loadLocal();
-    for (const f of files) {
-      const img = await fileToDataURL(f);
-      items.unshift({ id: uid(), image: img, name:"", location:"", price:0 });
-    }
-    persist(items);
-    render(items);
-    e.target.value = "";
-  });
+    document.getElementById("shopFileInput").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
 
-  // Click image => replace
-  rootEl.addEventListener("click", (e) => {
-    const img = e.target.closest(".shop-thumb");
-    if (!img) return;
-    const card = img.closest(".shop-card");
-    if (!card) return;
+      const items = loadLocal();
+      for (const f of files) {
+        const img = await fileToDataURL(f);
+        items.unshift({ id: uid(), image: img, name: "", location: "", price: 0 });
+      }
+      persist(items);
+      render(items);
+      e.target.value = "";
+    });
 
-    pendingReplaceId = card.dataset.id;
-    const inp = document.getElementById("shopReplaceInput");
-    inp.value = "";
-    inp.click();
-  });
+    rootEl.addEventListener("click", (e) => {
+      const img = e.target.closest(".shop-thumb");
+      if (!img) return;
+      const card = img.closest(".shop-card");
+      if (!card) return;
 
-  // Replace chosen
-  document.getElementById("shopReplaceInput").addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !pendingReplaceId) return;
+      pendingReplaceId = card.dataset.id;
+      const inp = document.getElementById("shopReplaceInput");
+      inp.value = "";
+      inp.click();
+    });
 
-    const items = loadLocal();
-    const it = items.find(x => x.id === pendingReplaceId);
-    if (!it) return;
+    document.getElementById("shopReplaceInput").addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file || !pendingReplaceId) return;
 
-    it.image = await fileToDataURL(file);
-    persist(items);
+      const items = loadLocal();
+      const it = items.find(x => x.id === pendingReplaceId);
+      if (!it) return;
 
-    // update only image (keep typing)
-    const imgEl = rootEl.querySelector(`.shop-card[data-id="${pendingReplaceId}"] .shop-thumb`);
-    if (imgEl) imgEl.src = it.image;
+      it.image = await fileToDataURL(file);
+      persist(items);
 
-    pendingReplaceId = null;
-    e.target.value = "";
-  });
+      const imgEl = rootEl.querySelector(`.shop-card[data-id="${pendingReplaceId}"] .shop-thumb`);
+      if (imgEl) imgEl.src = it.image;
 
-  // Typing
-  rootEl.addEventListener("input", (e) => {
-    const el = e.target;
-    if (!el.classList?.contains("shop-input")) return;
+      pendingReplaceId = null;
+      e.target.value = "";
+    });
 
-    const card = el.closest(".shop-card");
-    if (!card) return;
+    rootEl.addEventListener("input", (e) => {
+      const el = e.target;
+      if (!el.classList || !el.classList.contains("shop-input")) return;
+      const card = el.closest(".shop-card");
+      if (!card) return;
 
-    const id = card.dataset.id;
-    const key = el.dataset.k;
-    if (!id || !key) return;
+      const id = card.dataset.id;
+      const key = el.dataset.k;
+      if (!id || !key) return;
 
-    const items = loadLocal();
-    const it = items.find(x => x.id === id);
-    if (!it) return;
+      const items = loadLocal();
+      const it = items.find(x => x.id === id);
+      if (!it) return;
 
-    if (key === "price") {
+      if (key === "price") {
+        it.price = toNumber(el.value);
+        persist(items);
+      } else {
+        it[key] = el.value;
+        persist(items);
+      }
+    });
+
+    rootEl.addEventListener("focusin", (e) => {
+      const el = e.target;
+      if (!el.classList || !el.classList.contains("shop-price")) return;
+      const n = toNumber(el.value);
+      el.value = n ? String(n) : "";
+    });
+
+    rootEl.addEventListener("focusout", (e) => {
+      const el = e.target;
+      if (!el.classList || !el.classList.contains("shop-price")) return;
+
+      const card = el.closest(".shop-card");
+      if (!card) return;
+
+      const id = card.dataset.id;
+      const items = loadLocal();
+      const it = items.find(x => x.id === id);
+      if (!it) return;
+
       it.price = toNumber(el.value);
       persist(items);
-    } else {
-      it[key] = el.value;
-      persist(items);
-    }
-  });
+      el.value = fmtMoney(it.price);
+    });
+  }
 
-  // Price focus => raw
-  rootEl.addEventListener("focusin", (e) => {
-    const el = e.target;
-    if (!el.classList?.contains("shop-price")) return;
-    const n = toNumber(el.value);
-    el.value = n ? String(n) : "";
-  });
-
-  // Price blur => formatted
-  rootEl.addEventListener("focusout", (e) => {
-    const el = e.target;
-    if (!el.classList?.contains("shop-price")) return;
-
-    const card = el.closest(".shop-card");
-    if (!card) return;
-
-    const id = card.dataset.id;
-    const items = loadLocal();
-    const it = items.find(x => x.id === id);
-    if (!it) return;
-
-    it.price = toNumber(el.value);
-    persist(items);
-
-    el.value = fmtMoney(it.price);
-  });
-}
+})();
 
 </script>
 	<script>

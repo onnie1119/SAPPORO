@@ -5703,6 +5703,8 @@ let longPressMoved = false;
             <button id="shopSyncApply" class="shop-sync-btn" type="button" style="padding:8px 12px; border-radius:8px; border:1px solid #e6e6e6; background:#fff; cursor:pointer;">
               套用
             </button>
+			<div id="shopSyncStatus" style="margin-top:6px;font-size:12px;color:#666;"></div>
+
           </div>
 
           <div id="shopTotalTop" class="shop-total"></div>
@@ -5746,65 +5748,92 @@ let longPressMoved = false;
 
   /* -------------------- Cloud (Firestore) -------------------- */
   function cloudReady() {
-    return !!(window.__SHOP_SYNC__ && window.__SHOP_SYNC__.db);
-  }
-  function docRef(code) {
-    const api = window.__SHOP_SYNC__;
-    if (!api || !api.db || !api.doc) return null;
-    return api.doc(api.db, "shops", code);
+  return !!(window.__SHOP_SYNC__ && window.__SHOP_SYNC__.db);
+}
+
+function docRef(code) {
+  const api = window.__SHOP_SYNC__;
+  if (!api || !api.db || !api.doc) return null;
+  return api.doc(api.db, "shops", code);
+}
+
+async function cloudLoad(code) {
+  const api = window.__SHOP_SYNC__;
+  const ref = docRef(code);
+
+  if (!cloudReady() || !api.getDoc || !ref) {
+    setSyncStatus("同步：Firebase 未就緒（__SHOP_SYNC__ 不存在）", true);
+    return null;
   }
 
-  async function cloudLoad(code) {
-    const api = window.__SHOP_SYNC__;
-    const ref = docRef(code);
-    if (!api || !api.getDoc || !ref) return null;
-
+  try{
+    setSyncStatus("同步：讀取雲端中…");
     const snap = await api.getDoc(ref);
-    if (!snap.exists()) return [];
+    if (!snap.exists()) {
+      setSyncStatus("同步：雲端尚無資料（會在第一次寫入後出現）");
+      return [];
+    }
     const data = snap.data() || {};
-    lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
+    setSyncStatus("同步：雲端讀取成功 ✅");
     return Array.isArray(data.items) ? data.items : [];
+  } catch (err) {
+    console.error("cloudLoad error:", err);
+    setSyncStatus("同步：雲端讀取失敗 ❌ " + (err?.message || err), true);
+    return null;
+  }
+}
+
+async function cloudSave(code, items, clientId) {
+  const api = window.__SHOP_SYNC__;
+  const ref = docRef(code);
+
+  if (!cloudReady() || !api.setDoc || !ref) {
+    setSyncStatus("同步：Firebase 未就緒（無法寫入）", true);
+    return false;
   }
 
-  async function cloudSave(code, items) {
-    const api = window.__SHOP_SYNC__;
-    const ref = docRef(code);
-    if (!api || !api.setDoc || !ref) return false;
-
-    const payload = {
-      items,
-      updatedAt: Date.now(),
-      updatedBy: clientId
-    };
-    await api.setDoc(ref, payload, { merge: true });
+  try{
+    setSyncStatus("同步：寫入雲端中…");
+    await api.setDoc(ref, { items, updatedAt: Date.now(), updatedBy: clientId }, { merge: true });
+    setSyncStatus("同步：已寫入雲端 ✅");
     return true;
+  } catch (err) {
+    console.error("cloudSave error:", err);
+    setSyncStatus("同步：雲端寫入失敗 ❌ " + (err?.message || err), true);
+    return false;
+  }
+}
+
+function cloudSubscribe(code, onItems) {
+  const api = window.__SHOP_SYNC__;
+  const ref = docRef(code);
+
+  if (!cloudReady() || !api.onSnapshot || !ref) {
+    setSyncStatus("同步：Firebase 未就緒（無法監聽）", true);
+    return () => {};
   }
 
-  function cloudSubscribe(code) {
-    const api = window.__SHOP_SYNC__;
-    const ref = docRef(code);
-    if (!api || !api.onSnapshot || !ref) return () => {};
+  setSyncStatus("同步：監聽雲端中（onSnapshot）…");
 
-    return api.onSnapshot(ref, (snap) => {
+  return api.onSnapshot(
+    ref,
+    (snap) => {
       if (!snap.exists()) {
-        // doc not exists => treat as empty
-        applyCloudItems([]);
+        setSyncStatus("同步：監聽中（雲端尚無資料）");
+        onItems([]);
         return;
       }
       const data = snap.data() || {};
-      const updatedAt = Number(data.updatedAt || 0) || 0;
-      const updatedBy = String(data.updatedBy || "");
+      setSyncStatus("同步：收到雲端更新 ✅");
+      onItems(Array.isArray(data.items) ? data.items : []);
+    },
+    (err) => {
+      console.error("onSnapshot error:", err);
+      setSyncStatus("同步：監聽失敗 ❌ " + (err?.message || err), true);
+    }
+  );
+}
 
-      // 忽略自己剛寫出去的回波（避免輸入中被重繪）
-      if (updatedBy === clientId && updatedAt <= lastCloudUpdatedAt) return;
-
-      // 記錄最新時間
-      if (updatedAt > lastCloudUpdatedAt) lastCloudUpdatedAt = updatedAt;
-
-      const items = Array.isArray(data.items) ? data.items : [];
-      applyCloudItems(items);
-    });
-  }
 
   function applyCloudItems(items) {
     // 如果使用者正在輸入欄位，避免強制重繪造成失焦（跨裝置同步時才可能略延遲顯示）
@@ -5819,6 +5848,12 @@ let longPressMoved = false;
       render(items);
     }
   }
+function setSyncStatus(msg, isError=false){
+  const el = document.getElementById("shopSyncStatus");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? "#d44" : "#666";
+}
 
   async function startCloudIfReady() {
     const code = getSyncCode();

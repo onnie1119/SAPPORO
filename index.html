@@ -5696,7 +5696,12 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       const el = document.getElementById("shopSyncCode");
       if (el) el.value = code;
     }
-    if (code) applyCode(code, true);
+   if (code) {
+  // 進頁面就強制拉雲端一次（捷徑/PWA 很需要）
+  applyCode(code, true);
+  setTimeout(() => applyCode(code, true), 800); // 再補一次，避免初次還沒通網
+}
+
   };
 
   /* =========================
@@ -5813,7 +5818,8 @@ if (!silentApply) {
       };
 
       const script = document.createElement("script");
-      script.src = `${SYNC_API_URL}?code=${encodeURIComponent(code)}&callback=${encodeURIComponent(cb)}&_=${Date.now()}`;
+    script.src = `${SYNC_API_URL}?code=${encodeURIComponent(code)}&callback=${encodeURIComponent(cb)}&_=${Date.now()}`;
+
       script.onerror = () => cleanup(null);
       document.head.appendChild(script);
     });

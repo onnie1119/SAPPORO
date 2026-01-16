@@ -5640,40 +5640,30 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   shopping.js – FINAL (Google Sheets Sync via Apps Script)
-   - No Firestore
-   - Smooth swipe (works on inputs)
-   - Silent background sync (polling)
+   shopping.js – FINAL (Apps Script JSONP Sync, Smooth Swipe)
 ========================================================= */
 (function () {
   "use strict";
 
-  /* ====== 你的 Apps Script Web App URL ====== */
   const SYNC_API_URL =
     "https://script.google.com/macros/s/AKfycbzDuRFhkB4biAjMNiSho_zzdL6WDN0fEn8MWINPCwCh7hpsvL1u8KG7geHMIr-KYew/exec";
 
-  /* ====== Basic config ====== */
   const SHOP_ROOT_ID = "shoppingRoot";
   const CURRENCY = "¥";
 
   const SAVE_DEBOUNCE = 300;
 
-  // Swipe
-  const SWIPE_COMMIT = 110;   // 觸發門檻（越小越靈敏）
-  const SWIPE_LIMIT  = 220;   // 最大滑動距離
+  const SWIPE_COMMIT = 110;
+  const SWIPE_LIMIT  = 220;
 
-  // Long press preview
   const LONGPRESS_MS = 450;
-
-  // Cloud polling
   const POLL_MS = 3500;
 
-  // LocalStorage keys
   const LS_ITEMS  = "shop_items_local_v1";
   const LS_CODE   = "shop_sync_code_v1";
   const LS_CLIENT = "shop_client_id_v1";
 
-  // 若你不想一進頁面就把代碼顯示在輸入框，把這個改 false
+  // 不想一進頁面就顯示上次代碼，可改 false
   const SHOW_CODE_IN_INPUT = true;
 
   let rootEl = null;
@@ -5682,7 +5672,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   let pendingReplaceId = null;
 
   let lastCloudUpdatedAt = 0;
-  let currentCode = "";
 
   const clientId =
     localStorage.getItem(LS_CLIENT) ||
@@ -5699,18 +5688,15 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     mountUI();
     bindEventsOnce();
 
-    // 先顯示本機資料
+    // 先顯示本機
     render(loadLocal());
 
-    // 若有既存代碼：靜默啟用同步（不跳提示）
     const code = getCode();
-    if (code) {
-      if (SHOW_CODE_IN_INPUT) {
-        const el = document.getElementById("shopSyncCode");
-        if (el) el.value = code;
-      }
-      applyCode(code, true);
+    if (code && SHOW_CODE_IN_INPUT) {
+      const el = document.getElementById("shopSyncCode");
+      if (el) el.value = code;
     }
+    if (code) applyCode(code, true);
   };
 
   /* =========================
@@ -5755,11 +5741,11 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     `;
   }
 
-  function flashStatusOnce(msg, ms = 1400, isErr = false) {
+  function flashStatusOnce(msg, ms = 1200) {
     const el = document.getElementById("shopStatus");
     if (!el) return;
     el.textContent = msg;
-    el.style.color = isErr ? "#d44" : "#2f7a3e";
+    el.style.color = "#2f7a3e";
     el.style.opacity = "1";
     clearTimeout(el.__t);
     el.__t = setTimeout(() => {
@@ -5769,140 +5755,150 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   }
 
   /* =========================
-     Sync core (Apps Script)
+     Sync (JSONP GET + no-cors POST + verify)
   ========================= */
-  function getCode() {
-    return (localStorage.getItem(LS_CODE) || "").trim();
-  }
-  function setCode(code) {
-    localStorage.setItem(LS_CODE, (code || "").trim());
-  }
+  function getCode() { return (localStorage.getItem(LS_CODE) || "").trim(); }
+  function setCode(code){ localStorage.setItem(LS_CODE, (code||"").trim()); }
 
-  async function applyCode(code, silentApply = false) {
+  async function applyCode(code, silentApply) {
     code = (code || "").trim();
     setCode(code);
-    currentCode = code;
 
     stopPolling();
 
-    // 沒輸入代碼：只用本機
     if (!code) {
       render(loadLocal());
       return;
     }
 
-    // 先顯示本機（避免等待雲端）
-    render(loadLocal());
-
-    // 拉雲端
-    const cloud = await cloudLoad(code);
-    if (cloud && Array.isArray(cloud.items)) {
-      // ✅ 只在雲端真的有資料時才覆蓋本機
-      saveLocal(cloud.items);
-      lastCloudUpdatedAt = cloud.updatedAt || lastCloudUpdatedAt;
-      render(cloud.items);
+    // 拉雲端（JSONP，無 CORS）
+    const cloud = await cloudLoadJSONP(code);
+    if (cloud && cloud.ok && !cloud.empty) {
+      const items = safeParseItems(cloud.payload);
+      lastCloudUpdatedAt = Number(cloud.updatedAt || 0) || lastCloudUpdatedAt;
+      saveLocal(items);
+      render(items);
     } else {
-      // 雲端空/取不到：如果本機有資料，seed 上去（不打擾使用者）
+      // 雲端空 → 有本機就先 seed 上去（靜默）
       const local = loadLocal();
-      if (local.length) {
-        await cloudSave(code, local);
-      }
+      if (local.length) await cloudSaveNoCors(code, local);
     }
 
-    // 啟動背景輪詢
     startPolling(code);
 
-    // 按「儲存」才顯示已備份（silentApply 不顯示）
+    // 按儲存才顯示「已完成備份」
     if (!silentApply) {
-      flashStatusOnce("⏳ 備份中…", 800, false);
-      const ok = await cloudSave(code, loadLocal());
-      if (ok) flashStatusOnce("✅ 已完成備份", 1400, false);
-      else flashStatusOnce("❌ 備份失敗（雲端未寫入）", 2000, true);
+      const ok = await saveAndVerify(code, loadLocal());
+      if (ok) flashStatusOnce("✅ 已完成備份", 1400);
+      // 失敗不顯示（你想要靜默）
     }
   }
 
-  async function cloudLoad(code) {
-    try {
-      const url = `${SYNC_API_URL}?code=${encodeURIComponent(code)}`;
-      const r = await fetch(url, { method: "GET", cache: "no-store", mode: "cors" });
-      const j = await r.json();
-      if (!j || !j.ok) return null;
-      if (j.empty) return null;
+  function cloudLoadJSONP(code) {
+    return new Promise((resolve) => {
+      const cb = "__shop_jsonp_cb_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+      const t = setTimeout(() => {
+        cleanup(null);
+      }, 8000);
 
-      const payload = String(j.payload || "");
-      const updatedAt = Number(j.updatedAt || 0) || 0;
+      function cleanup(result){
+        clearTimeout(t);
+        try { delete window[cb]; } catch {}
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+        resolve(result);
+      }
 
-      let items = [];
-      try { items = JSON.parse(payload || "[]"); } catch { items = []; }
-      if (!Array.isArray(items)) items = [];
+      window[cb] = function (data) {
+        cleanup(data);
+      };
 
-      return { items, updatedAt };
-    } catch (_e) {
-      return null;
-    }
+      const script = document.createElement("script");
+      script.src = `${SYNC_API_URL}?code=${encodeURIComponent(code)}&callback=${encodeURIComponent(cb)}&_=${Date.now()}`;
+      script.onerror = () => cleanup(null);
+      document.head.appendChild(script);
+    });
   }
 
-  async function cloudSave(code, items) {
-    try {
-      const payload = JSON.stringify(items || []);
-      const body = JSON.stringify({
-        code,
-        payload,
-        updatedAt: Date.now(),
-        updatedBy: clientId
-      });
+  async function cloudSaveNoCors(code, items) {
+    const updatedAt = Date.now();
+    const payload = JSON.stringify(items || []);
+    const bodyObj = { code, payload, updatedAt, updatedBy: clientId };
+    const body = JSON.stringify(bodyObj);
 
-      const r = await fetch(SYNC_API_URL, {
+    try {
+      await fetch(SYNC_API_URL, {
         method: "POST",
-        mode: "cors",
-        // Apps Script 最穩的做法：text/plain
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
         body
       });
-
-      const j = await r.json().catch(() => null);
-      return !!(j && j.ok);
-    } catch (_e) {
-      return false;
+      return updatedAt;
+    } catch {
+      return 0;
     }
+  }
+
+  async function saveAndVerify(code, items) {
+    const sentAt = await cloudSaveNoCors(code, items);
+    if (!sentAt) return false;
+
+    // 送出後用 JSONP 讀回來確認 updatedAt
+    const deadline = Date.now() + 6500;
+    while (Date.now() < deadline) {
+      const cloud = await cloudLoadJSONP(code);
+      if (cloud && cloud.ok && !cloud.empty) {
+        const u = Number(cloud.updatedAt || 0) || 0;
+        if (u >= sentAt) {
+          lastCloudUpdatedAt = u;
+          const latest = safeParseItems(cloud.payload);
+          saveLocal(latest);
+          render(latest);
+          return true;
+        }
+      }
+      await sleep(600);
+    }
+    return false;
   }
 
   function startPolling(code) {
     stopPolling();
+
     pollTimer = setInterval(async () => {
-      // 沒有代碼就不輪詢
       const activeCode = getCode();
       if (!activeCode || activeCode !== code) return;
-
-      // 若正在輸入，不要覆蓋畫面
       if (isTypingInside()) return;
 
-      const cloud = await cloudLoad(code);
-      if (!cloud) return;
+      const cloud = await cloudLoadJSONP(code);
+      if (!cloud || !cloud.ok || cloud.empty) return;
 
-      // 如果雲端更新比較新才套用
-      if ((cloud.updatedAt || 0) > (lastCloudUpdatedAt || 0)) {
-        lastCloudUpdatedAt = cloud.updatedAt || lastCloudUpdatedAt;
-        saveLocal(cloud.items);
-        render(cloud.items);
+      const u = Number(cloud.updatedAt || 0) || 0;
+      if (u > (lastCloudUpdatedAt || 0)) {
+        lastCloudUpdatedAt = u;
+        const items = safeParseItems(cloud.payload);
+        saveLocal(items);
+        render(items);
       }
     }, POLL_MS);
 
-    // 回到前景就補拉一次
-    document.addEventListener("visibilitychange", onVis, { passive: true });
-    function onVis() {
+    document.addEventListener("visibilitychange", onVis, { passive:true });
+    function onVis(){
       if (!document.hidden) {
-        // 立刻跑一次輪詢
+        // 回前景補拉一次
         (async () => {
           const activeCode = getCode();
           if (!activeCode || activeCode !== code) return;
           if (isTypingInside()) return;
-          const cloud = await cloudLoad(code);
-          if (!cloud) return;
-          if ((cloud.updatedAt || 0) > (lastCloudUpdatedAt || 0)) {
-            lastCloudUpdatedAt = cloud.updatedAt || lastCloudUpdatedAt;
-            saveLocal(cloud.items);
-            render(cloud.items);
+
+          const cloud = await cloudLoadJSONP(code);
+          if (!cloud || !cloud.ok || cloud.empty) return;
+
+          const u = Number(cloud.updatedAt || 0) || 0;
+          if (u > (lastCloudUpdatedAt || 0)) {
+            lastCloudUpdatedAt = u;
+            const items = safeParseItems(cloud.payload);
+            saveLocal(items);
+            render(items);
           }
         })();
       }
@@ -5920,21 +5916,16 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
   function isTypingInside() {
     const ae = document.activeElement;
-    return !!(ae && ae.classList && ae.classList.contains("shop-input") && rootEl && rootEl.contains(ae));
+    return !!(ae && ae.classList && ae.classList.contains("shop-input") && rootEl.contains(ae));
   }
 
   /* =========================
-     Local helpers
+     Local + utils
   ========================= */
-  function loadLocal() {
-    try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); }
-    catch { return []; }
-  }
-  function saveLocal(items) {
-    localStorage.setItem(LS_ITEMS, JSON.stringify(items || []));
-  }
+  function loadLocal(){ try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); } catch { return []; } }
+  function saveLocal(items){ localStorage.setItem(LS_ITEMS, JSON.stringify(items || [])); }
 
-  function persist(items) {
+  function persist(items){
     saveLocal(items);
     updateTotal(items);
 
@@ -5942,37 +5933,30 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (!code) return;
 
     if (persistTimer) clearTimeout(persistTimer);
-    persistTimer = setTimeout(async () => {
+    persistTimer = setTimeout(() => {
       persistTimer = null;
-      // 背景靜默同步（不提示）
-      const ok = await cloudSave(code, items);
-      if (ok) {
-        // 成功時更新 lastCloudUpdatedAt（避免下一次輪詢把同一份再覆蓋）
-        lastCloudUpdatedAt = Date.now();
-      }
+      // 靜默背景存（不顯示任何字）
+      cloudSaveNoCors(code, items).then((sentAt) => {
+        if (sentAt) lastCloudUpdatedAt = sentAt;
+      });
     }, SAVE_DEBOUNCE);
   }
 
-  function uid() {
-    return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now() + Math.random());
-  }
-  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
-  function toNumber(v) {
+  function uid(){ return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()+Math.random()); }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+  function toNumber(v){
     const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
     return Number.isFinite(n) ? n : 0;
   }
-  function fmtMoney(v) {
+  function fmtMoney(v){
     const n = toNumber(v);
     return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
   }
-  function esc(s) {
+  function esc(s){
     return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;");
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
   }
-  function fileToDataURL(file) {
+  function fileToDataURL(file){
     return new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(String(r.result));
@@ -5980,11 +5964,20 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       r.readAsDataURL(file);
     });
   }
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+  function safeParseItems(payload){
+    try {
+      const arr = JSON.parse(payload || "[]");
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
 
   /* =========================
      Render
   ========================= */
-  function render(items) {
+  function render(items){
     const list = document.getElementById("shopList");
     items = Array.isArray(items) ? items : [];
     updateTotal(items);
@@ -6023,8 +6016,8 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     }).join("");
   }
 
-  function updateTotal(items) {
-    const total = (items || []).reduce((s, it) => s + toNumber(it.price), 0);
+  function updateTotal(items){
+    const total = (items || []).reduce((s,it)=> s + toNumber(it.price), 0);
     const t = document.getElementById("shopTotalTop");
     if (t) t.textContent = `合計：${CURRENCY} ${total.toLocaleString()}`;
   }
@@ -6032,7 +6025,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   /* =========================
      Events (delegate)
   ========================= */
-  function bindEventsOnce() {
+  function bindEventsOnce(){
     if (rootEl.__shopBound) return;
     rootEl.__shopBound = true;
 
@@ -6041,7 +6034,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     const preview    = () => document.getElementById("shopPreview");
     const previewImg = () => document.getElementById("shopPreviewImg");
 
-    // Apply / Save
+    // Save
     rootEl.addEventListener("click", (e) => {
       if (e.target && e.target.id === "shopSyncApply") {
         applyCode(codeInput().value, false);
@@ -6055,7 +6048,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       }
     });
 
-    // Add images
+    // Add images (push => 上到下順序)
     rootEl.addEventListener("change", async (e) => {
       if (!e.target || e.target.id !== "shopFileInput") return;
       const files = Array.from(e.target.files || []);
@@ -6064,8 +6057,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       const items = loadLocal();
       for (const f of files) {
         const img = await fileToDataURL(f);
-        // ✅ 新增順序由上往下：push
-        items.push({ id: uid(), image: img, name: "", location: "", price: 0, bought: false });
+        items.push({ id: uid(), image: img, name:"", location:"", price:0, bought:false });
       }
       persist(items);
       render(items);
@@ -6152,7 +6144,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       if (e.target.closest(".shop-thumb")) e.preventDefault();
     });
 
-    // ===== Long press preview =====
+    // Long press preview (touch)
     let lpTimer = null, lpTriggered = false, lpStartX = 0, lpStartY = 0;
     function clearLP(){ if (lpTimer) clearTimeout(lpTimer); lpTimer=null; }
 
@@ -6204,14 +6196,14 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       inp.click();
     });
 
-    // Swipe delegate
+    // Swipe
     setupSwipeDelegate();
   }
 
   /* =========================
-     Swipe Delegate (works on inputs)
+     Swipe Delegate (input 上也能滑)
   ========================= */
-  function setupSwipeDelegate() {
+  function setupSwipeDelegate(){
     if (rootEl.__swipeDelegate) return;
     rootEl.__swipeDelegate = true;
 
@@ -6221,9 +6213,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     let dragging = false;
     let startX = 0, startY = 0;
     let currentX = 0;
-    let lockedAxis = null; // 'x' or 'y'
+    let lockedAxis = null;
 
-    function resetActive(animate = true) {
+    function resetActive(animate=true){
       if (!activeFg) return;
       activeFg.style.transition = animate ? "transform 180ms ease" : "none";
       activeFg.style.transform = "translateX(0px)";
@@ -6234,17 +6226,15 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       currentX = 0;
     }
 
-    function findSwipeWrap(target) {
+    function findSwipeWrap(target){
       const wrap = target.closest(".shop-swipe");
       if (!wrap) return null;
       const fg = wrap.querySelector(".shop-swipe-fg");
-      const card = wrap.querySelector(".shop-card");
-      if (!fg || !card) return null;
-      return { wrap, fg, card };
+      if (!fg) return null;
+      return { wrap, fg };
     }
 
-    function onStart(x, y, target) {
-      // 若上一張殘留，先收回
+    function onStart(x,y,target){
       resetActive(true);
 
       const found = findSwipeWrap(target);
@@ -6261,27 +6251,23 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       activeFg.style.transition = "none";
     }
 
-    function onMove(x, y, ev) {
+    function onMove(x,y,ev){
       if (!dragging || !activeFg) return;
 
       const dx = x - startX;
       const dy = y - startY;
 
-      // ✅ 更靈敏方向鎖定：允許從 input 開始滑
       if (!lockedAxis) {
         const adx = Math.abs(dx), ady = Math.abs(dy);
         if (adx > 6 && adx > ady * 0.75) lockedAxis = "x";
         else if (ady > 10 && ady > adx * 1.2) lockedAxis = "y";
         else return;
       }
-
       if (lockedAxis !== "x") return;
 
-      // ✅ 一旦確認水平滑：取消輸入 focus（避免鍵盤/選字）
-      const active = document.activeElement;
-      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
-        active.blur();
-      }
+      // 一旦水平滑動成立：取消輸入 focus
+      const ae = document.activeElement;
+      if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA")) ae.blur();
 
       ev.preventDefault();
 
@@ -6292,14 +6278,14 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       else activeWrap.classList.remove("is-armed");
     }
 
-    function onEnd() {
+    function onEnd(){
       if (!dragging || !activeWrap) return;
 
       const id = activeWrap.dataset.id;
       const items = loadLocal();
       const it = items.find(x => x.id === id);
 
-      // 視覺先回正
+      // 回正
       activeFg.style.transition = "transform 180ms ease";
       activeFg.style.transform = "translateX(0px)";
       activeWrap.classList.remove("is-armed");
@@ -6348,22 +6334,22 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
         onStart(e.clientX, e.clientY, e.target);
       });
 
-      rootEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY, e), { passive: false });
+      rootEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY, e), { passive:false });
       rootEl.addEventListener("pointerup", onEnd);
       rootEl.addEventListener("pointercancel", () => resetActive(true));
     } else {
       rootEl.addEventListener("touchstart", (e) => {
         const t = e.touches[0];
         onStart(t.clientX, t.clientY, e.target);
-      }, { passive: true });
+      }, { passive:true });
 
       rootEl.addEventListener("touchmove", (e) => {
         const t = e.touches[0];
         onMove(t.clientX, t.clientY, e);
-      }, { passive: false });
+      }, { passive:false });
 
-      rootEl.addEventListener("touchend", onEnd, { passive: true });
-      rootEl.addEventListener("touchcancel", () => resetActive(true), { passive: true });
+      rootEl.addEventListener("touchend", onEnd, { passive:true });
+      rootEl.addEventListener("touchcancel", () => resetActive(true), { passive:true });
     }
   }
 
@@ -6576,6 +6562,88 @@ renderHourly24({
 }
 
 </script>
+<script>
+	const SHEET_NAME = "Sheet1";
 
+function doGet(e) {
+  const code = String((e.parameter && e.parameter.code) || "").trim();
+  const cb = String((e.parameter && e.parameter.callback) || "").trim();
+
+  const result = readRow_(code);
+
+  // JSONP：回傳 callback({...});
+  if (cb) {
+    const js = `${cb}(${JSON.stringify(result)});`;
+    return ContentService.createTextOutput(js)
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  // 一般 JSON
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const text = (e.postData && e.postData.contents) ? String(e.postData.contents) : "";
+  let body = null;
+  try { body = JSON.parse(text); } catch (err) {}
+
+  if (!body) {
+    return ContentService.createTextOutput(JSON.stringify({ ok:false, error:"bad_json" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const code = String(body.code || "").trim();
+  const payload = String(body.payload || "");
+  const updatedAt = Number(body.updatedAt || Date.now()) || Date.now();
+
+  if (!code) {
+    return ContentService.createTextOutput(JSON.stringify({ ok:false, error:"missing_code" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  upsertRow_(code, payload, updatedAt);
+
+  return ContentService.createTextOutput(JSON.stringify({ ok:true, updatedAt }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/* ===== helpers ===== */
+function readRow_(code){
+  if (!code) return { ok:true, code:"", payload:"", updatedAt:0, empty:true };
+
+  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
+  if (!sh) return { ok:false, error:"missing_sheet", sheet:SHEET_NAME };
+
+  const values = sh.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim() === code) {
+      return {
+        ok: true,
+        code,
+        payload: String(values[i][1] || ""),
+        updatedAt: Number(values[i][2] || 0) || 0,
+        empty: false
+      };
+    }
+  }
+  return { ok:true, code, payload:"", updatedAt:0, empty:true };
+}
+
+function upsertRow_(code, payload, updatedAt){
+  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
+  const values = sh.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim() === code) {
+      sh.getRange(i+1, 2).setValue(payload);
+      sh.getRange(i+1, 3).setValue(updatedAt);
+      return;
+    }
+  }
+  sh.appendRow([code, payload, updatedAt]);
+}
+
+</script>
 </body>
 </html>

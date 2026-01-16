@@ -5796,7 +5796,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (cloudItems !== null) { saveLocal(cloudItems); render(cloudItems); }
 
     buildSnapshotListener(code);
-    startHeartbeatAndReconnect(code);
+  
 
     if (!silentApply) flashStatusOnce("已完成備份");
   }

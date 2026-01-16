@@ -3367,6 +3367,29 @@ body.nav-back #menuBtn > div{
         
 </div>	
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <!-- Firebase 初始化（一定要先） -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "…",
+      authDomain: "…",
+      projectId: "…",
+      storageBucket: "…",
+      messagingSenderId: "…",
+      appId: "…"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    await signInAnonymously(auth);
+
+    // ⭐ 關鍵：一定要有這行
+    window.__SHOP_SYNC__ = { db, doc, setDoc, getDoc, onSnapshot };
+  </script>
 	<script>
 		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";

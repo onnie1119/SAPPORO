@@ -5703,12 +5703,12 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     render(loadLocal());
     bindEventsOnce();
 
-    const code = getCode();
-    if (code) {
-      const el = document.getElementById("shopSyncCode");
-      if (el) el.value = code;
-      applyCode(code, true);
-    }
+   const code = getCode();
+if (code) {
+  // 不把 code 填回輸入框
+  applyCode(code, true);
+}
+
   };
 
   function initFirebase() {

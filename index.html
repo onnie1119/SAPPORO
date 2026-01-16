@@ -5640,7 +5640,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   shopping.js – FINAL (Swipe Smooth + Delegate, Silent Sync)
+   shopping.js – FINAL (Fix: no disappear + swipe on inputs)
 ========================================================= */
 (function () {
   "use strict";
@@ -5659,11 +5659,11 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   const CURRENCY = "¥";
   const SAVE_DEBOUNCE = 250;
 
-  const SWIPE_COMMIT = 150;   // commit px
-  const SWIPE_LIMIT = 220;    // max translate
+  // ✅ 建議更靈敏
+  const SWIPE_COMMIT = 110;   // 原 150 太硬，改 110 手感好很多
+  const SWIPE_LIMIT  = 220;
   const LONGPRESS_MS = 450;
 
-  const HEARTBEAT_MS = 20000;
   const RECONNECT_MS = 3000;
 
   const LS_ITEMS  = "shop_items_local_v1";
@@ -5675,8 +5675,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   let unsub = null;
   let lastCloudUpdatedAt = 0;
   let persistTimer = null;
-
-  let heartbeatTimer = null;
   let reconnectTimer = null;
 
   let pendingReplaceId = null;
@@ -5698,7 +5696,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (!initFirebase()) {
       flashStatusOnce("Firebase 未載入（請先引入 SDK）", 1800, true);
       render(loadLocal());
-      bindEventsOnce(); // still allow local
+      bindEventsOnce();
       return;
     }
 
@@ -5753,7 +5751,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
         <div id="shopPreview" style="
           position: fixed; inset: 0; z-index: 9999;
-          display:none; align-items:center; justify-content:center;margin-top:-20rem;
+          display:none; align-items:center; justify-content:center;
           background: rgba(0,0,0,.65);
         ">
           <img id="shopPreviewImg" src="" style="
@@ -5792,11 +5790,21 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (!db) { if (!silentApply) flashStatusOnce("Firebase 未就緒", 1500, true); return; }
     if (!code) { render(loadLocal()); return; }
 
+    // ✅ 先顯示本機（避免等待雲端）
+    render(loadLocal());
+
     const cloudItems = await cloudLoad(code);
-    if (cloudItems !== null) { saveLocal(cloudItems); render(cloudItems); }
+    // ✅ 離線/不存在 => cloudItems = null，絕不覆蓋本機
+    if (cloudItems !== null) {
+      saveLocal(cloudItems);
+      render(cloudItems);
+    } else {
+      // ✅ 若雲端不可用但本機有資料，就先 seed 一次（成功才會真的寫上去）
+      const local = loadLocal();
+      if (local.length) cloudSave(code, local);
+    }
 
     buildSnapshotListener(code);
-  
 
     if (!silentApply) flashStatusOnce("已完成備份");
   }
@@ -5806,7 +5814,13 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
     unsub = refFor(code).onSnapshot(
       (snap) => {
-        if (!snap.exists) { onCloudItems([]); return; }
+        // ✅ 文件不存在：不要清空畫面，改成 seed 本機到雲端
+        if (!snap.exists) {
+          const local = loadLocal();
+          if (local.length) cloudSave(code, local);
+          return;
+        }
+
         const data = snap.data() || {};
         const updatedAt = Number(data.updatedAt || 0) || 0;
         const updatedBy = String(data.updatedBy || "");
@@ -5816,24 +5830,29 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
         onCloudItems(Array.isArray(data.items) ? data.items : []);
       },
-      (err) => { console.error(err); scheduleReconnect(code, false); }
+      (_err) => {
+        // 靜默：只排程重連
+        scheduleReconnect(code, false);
+      }
     );
   }
 
   function stopCloud(){
     if (unsub) { try { unsub(); } catch {} unsub = null; }
-    if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   }
 
+  // ✅ 重要：不存在/離線都回 null（不要覆蓋本機）
   async function cloudLoad(code){
     try{
       const snap = await refFor(code).get();
-      if (!snap.exists) return [];
+      if (!snap.exists) return null; // 不存在 => 不覆蓋本機
       const data = snap.data() || {};
       lastCloudUpdatedAt = Number(data.updatedAt || 0) || lastCloudUpdatedAt;
       return Array.isArray(data.items) ? data.items : [];
-    } catch(e){ console.error(e); return null; }
+    } catch(_e){
+      return null; // 離線/被擋 => 不覆蓋本機
+    }
   }
 
   async function cloudSave(code, items){
@@ -5842,7 +5861,10 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       lastCloudUpdatedAt = now;
       await refFor(code).set({ items, updatedAt: now, updatedBy: clientId }, { merge:true });
       return true;
-    } catch(e){ console.error(e); scheduleReconnect(code,false); return false; }
+    } catch(_e){
+      scheduleReconnect(code,false);
+      return false;
+    }
   }
 
   function onCloudItems(items){
@@ -5854,8 +5876,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (!typing) render(items);
   }
 
-
-
   function scheduleReconnect(code, immediate){
     if (reconnectTimer) clearTimeout(reconnectTimer);
     reconnectTimer = setTimeout(async () => {
@@ -5866,7 +5886,11 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       if (!db) return;
 
       const cloudItems = await cloudLoad(code);
-      if (cloudItems !== null) { saveLocal(cloudItems); render(cloudItems); }
+      // ✅ 只有拿到有效資料才覆蓋本機
+      if (cloudItems !== null) {
+        saveLocal(cloudItems);
+        render(cloudItems);
+      }
 
       buildSnapshotListener(code);
     }, immediate ? 0 : RECONNECT_MS);
@@ -5912,7 +5936,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   }
 
   /* =========================
-     Render (NO bg text)
+     Render
   ========================= */
   function render(items){
     const list = document.getElementById("shopList");
@@ -5966,9 +5990,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     if (rootEl.__shopBound) return;
     rootEl.__shopBound = true;
 
-    const applyBtn   = () => document.getElementById("shopSyncApply");
     const codeInput  = () => document.getElementById("shopSyncCode");
-    const fileInput  = () => document.getElementById("shopFileInput");
     const replaceInp = () => document.getElementById("shopReplaceInput");
     const preview    = () => document.getElementById("shopPreview");
     const previewImg = () => document.getElementById("shopPreviewImg");
@@ -5996,6 +6018,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       const items = loadLocal();
       for (const f of files) {
         const img = await fileToDataURL(f);
+        // ✅ 新增順序：由上往下（push）
         items.push({ id: uid(), image: img, name:"", location:"", price:0, bought:false });
       }
       persist(items);
@@ -6083,9 +6106,8 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       if (e.target.closest(".shop-thumb")) e.preventDefault();
     });
 
-    // ===== Long press preview (touch) + block click replace after longpress =====
+    // ===== Long press preview =====
     let lpTimer = null, lpTriggered = false, lpStartX = 0, lpStartY = 0;
-
     function clearLP(){ if (lpTimer) clearTimeout(lpTimer); lpTimer=null; }
 
     rootEl.addEventListener("touchstart", (e) => {
@@ -6123,7 +6145,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       }
     }, true);
 
-    // ===== Click image => replace (only if not longpressed) =====
+    // Click image => replace
     rootEl.addEventListener("click", (e) => {
       const img = e.target.closest(".shop-thumb");
       if (!img) return;
@@ -6136,12 +6158,12 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       inp.click();
     });
 
-    // ===== SWIPE – delegate (smooth, works for all items) =====
+    // Swipe delegate
     setupSwipeDelegate();
   }
 
   /* =========================
-     Swipe Delegate (smooth & only bind once)
+     Swipe Delegate (input 上也能滑)
   ========================= */
   function setupSwipeDelegate(){
     if (rootEl.__swipeDelegate) return;
@@ -6149,7 +6171,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
     let activeWrap = null;
     let activeFg = null;
-    let activeCard = null;
 
     let dragging = false;
     let startX = 0, startY = 0;
@@ -6161,7 +6182,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       activeFg.style.transition = animate ? "transform 180ms ease" : "none";
       activeFg.style.transform = "translateX(0px)";
       if (activeWrap) activeWrap.classList.remove("is-armed");
-      activeWrap = activeFg = activeCard = null;
+      activeWrap = activeFg = null;
       dragging = false;
       lockedAxis = null;
       currentX = 0;
@@ -6170,21 +6191,23 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     function findSwipeWrap(target){
       const wrap = target.closest(".shop-swipe");
       if (!wrap) return null;
-      // ignore inputs
-      if (target.closest("input, textarea, button, select, label")) return null;
+
       const fg = wrap.querySelector(".shop-swipe-fg");
       const card = wrap.querySelector(".shop-card");
       if (!fg || !card) return null;
+
       return { wrap, fg, card };
     }
 
     function onStart(x,y, target){
+      // 如果上一張還殘留狀態，先收回
+      resetActive(true);
+
       const found = findSwipeWrap(target);
       if (!found) return;
 
       activeWrap = found.wrap;
       activeFg = found.fg;
-      activeCard = found.card;
 
       dragging = true;
       startX = x; startY = y;
@@ -6200,16 +6223,29 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       const dx = x - startX;
       const dy = y - startY;
 
-      if (!lockedAxis) lockedAxis = (Math.abs(dx) > Math.abs(dy)) ? "x" : "y";
+      // ✅ 更靈敏的方向鎖定（允許從 input 開始滑）
+      if (!lockedAxis) {
+        const adx = Math.abs(dx), ady = Math.abs(dy);
+
+        if (adx > 6 && adx > ady * 0.75) lockedAxis = "x";
+        else if (ady > 10 && ady > adx * 1.2) lockedAxis = "y";
+        else return;
+      }
+
       if (lockedAxis !== "x") return;
 
-      // IMPORTANT: once we commit to horizontal swipe, prevent scroll
+      // ✅ 一旦確定水平滑：取消 input focus，避免鍵盤/選字干擾
+      const active = document.activeElement;
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+        active.blur();
+      }
+
       ev.preventDefault();
 
       currentX = clamp(dx, -SWIPE_LIMIT, SWIPE_LIMIT);
       activeFg.style.transform = `translateX(${currentX}px)`;
 
-      if (Math.abs(currentX) > 110) activeWrap.classList.add("is-armed");
+      if (Math.abs(currentX) > 90) activeWrap.classList.add("is-armed");
       else activeWrap.classList.remove("is-armed");
     }
 
@@ -6237,7 +6273,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
           if (!ok) return;
           it.bought = false;
           persist(items);
-          // quick patch (no full render needed)
           const card = rootEl.querySelector(`.shop-card[data-id="${id}"]`);
           if (card) card.classList.remove("is-bought");
         } else {
@@ -6259,26 +6294,21 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
           it.bought = true;
           persist(items);
           const card = rootEl.querySelector(`.shop-card[data-id="${id}"]`);
-          if (card) card.classList.add("is-bought"); // CSS controls opacity 0.35
+          if (card) card.classList.add("is-bought");
         }
       }
     }
 
-    // Pointer events (best)
     if ("PointerEvent" in window) {
       rootEl.addEventListener("pointerdown", (e) => {
         if (e.pointerType === "mouse" && e.button !== 0) return;
         onStart(e.clientX, e.clientY, e.target);
       });
 
-      rootEl.addEventListener("pointermove", (e) => {
-        onMove(e.clientX, e.clientY, e);
-      }, { passive:false });
-
+      rootEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY, e), { passive:false });
       rootEl.addEventListener("pointerup", onEnd);
       rootEl.addEventListener("pointercancel", () => resetActive(true));
     } else {
-      // Touch fallback
       rootEl.addEventListener("touchstart", (e) => {
         const t = e.touches[0];
         onStart(t.clientX, t.clientY, e.target);

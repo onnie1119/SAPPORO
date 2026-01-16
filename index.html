@@ -5788,17 +5788,24 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     // start polling
     startPolling(code);
 
-    if (!silentApply) {
-      // ✅ IMPORTANT: show toast immediately, regardless of verify result
-      toast("✅ 已完成備份", 1400, false);
+   if (!silentApply) {
+  // ✅ 先把目前畫面上的輸入內容「強制寫回」local（避免最後幾個字沒存到）
+  const itemsNow = syncDomToLocalItems();
 
-      // background save + verify (silent)
-      cloudSaveNoCors(code, loadLocal()).then((sentAt) => {
-        if (sentAt) lastCloudUpdatedAt = Math.max(lastCloudUpdatedAt, sentAt);
-        // background pull to refresh (no toast)
-        setTimeout(() => pullCloudOnce(code), 600);
-      });
-    }
+  toast("儲存中…", 900, false);
+
+  const sentAt = await cloudSaveNoCors(code, itemsNow);
+  if (!sentAt) {
+    toast("⚠️ 未寫入，請再按一次", 1600, true);
+    return;
+  }
+
+  // 背景回讀驗證：真的寫到 Sheet 才顯示 ✅
+  const ok = await verifySaved(code, sentAt);
+  if (ok) toast("✅ 已完成備份", 1400, false);
+  else toast("⚠️ 未寫入，請重試", 1600, true);
+}
+
   }
 
   async function pullCloudOnce(code) {
@@ -5839,24 +5846,30 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     });
   }
 
-  // no-cors POST (send only)
-  async function cloudSaveNoCors(code, items) {
-    const sentAt = Date.now();
-    const payload = JSON.stringify(items || []);
-    const body = JSON.stringify({ code, payload, updatedAt: sentAt, updatedBy: clientId });
+ async function cloudSaveNoCors(code, items) {
+  const sentAt = Date.now();
+  const payload = JSON.stringify(items || []);
 
-    try {
-      await fetch(SYNC_API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body
-      });
-      return sentAt;
-    } catch {
-      return 0;
-    }
+  // Apps Script 最穩：用 x-www-form-urlencoded
+  const formBody = new URLSearchParams({
+    code,
+    payload,
+    updatedAt: String(sentAt),
+    updatedBy: clientId
+  }).toString();
+
+  try {
+    await fetch(SYNC_API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: formBody
+    });
+    return sentAt;
+  } catch {
+    return 0;
   }
+}
 
   function startPolling(code) {
     stopPolling();
@@ -5891,6 +5904,24 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     }
     rootEl.__shopVisHandler = onVis;
   }
+async function verifySaved(code, sentAt) {
+  const deadline = Date.now() + 6000;
+  while (Date.now() < deadline) {
+    const cloud = await cloudLoadJSONP(code);
+    if (cloud && cloud.ok && !cloud.empty) {
+      const u = Number(cloud.updatedAt || 0) || 0;
+      if (u >= sentAt) {
+        lastCloudUpdatedAt = u;
+        const items = safeParseItems(cloud.payload);
+        saveLocal(items);
+        if (!isTypingInside()) render(items);
+        return true;
+      }
+    }
+    await sleep(650);
+  }
+  return false;
+}
 
   function stopPolling() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
@@ -6622,6 +6653,28 @@ function upsertRow_(code, payload, updatedAt){
     }
   }
   sh.appendRow([code, payload, updatedAt]);
+}
+function syncDomToLocalItems() {
+  const items = loadLocal();
+  const list = document.getElementById("shopList");
+  if (!list) return items;
+
+  list.querySelectorAll(".shop-card[data-id]").forEach(card => {
+    const id = card.dataset.id;
+    const it = items.find(x => x.id === id);
+    if (!it) return;
+
+    const nameEl = card.querySelector('input[data-k="name"]');
+    const locEl  = card.querySelector('input[data-k="location"]');
+    const priceEl= card.querySelector('input[data-k="price"]');
+
+    if (nameEl) it.name = nameEl.value;
+    if (locEl)  it.location = locEl.value;
+    if (priceEl) it.price = toNumber(priceEl.value);
+  });
+
+  saveLocal(items);
+  return items;
 }
 
 </script>

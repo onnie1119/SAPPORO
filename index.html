@@ -6672,9 +6672,24 @@ function syncDomToLocalItems() {
     if (locEl)  it.location = locEl.value;
     if (priceEl) it.price = toNumber(priceEl.value);
   });
+/* =========================
+   Local storage helpers（補齊）
+========================= */
+function loadLocal(){
+  try {
+    return JSON.parse(localStorage.getItem("shop_items_local_v1") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveLocal(items){
+  localStorage.setItem("shop_items_local_v1", JSON.stringify(items || []));
+}
 
   saveLocal(items);
   return items;
+	
 }
 
 </script>

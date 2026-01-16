@@ -5867,9 +5867,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     items = Array.isArray(items) ? items : [];
     updateTotal(items);
 
-    if (!items.length) {
-      list.innerHTML = `<div class="shop-empty">目前沒有項目，請點上方「從相簿加入圖片」新增</div>`;
-      return;
+   
     }
 
     list.innerHTML = items.map(it => `

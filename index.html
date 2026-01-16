@@ -5640,7 +5640,8 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   shopping.js – FINAL (Apps Script JSONP Sync, Smooth Swipe)
+   Shopping – FINAL (Save Toast Always + JSONP Sync)
+   For iOS "Add to Home Screen" mode
 ========================================================= */
 (function () {
   "use strict";
@@ -5653,24 +5654,26 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
   const SAVE_DEBOUNCE = 300;
 
-  const SWIPE_COMMIT = 110;
+  // swipe tuning
+  const SWIPE_COMMIT = 95;
   const SWIPE_LIMIT  = 220;
 
   const LONGPRESS_MS = 450;
+
+  // polling
   const POLL_MS = 3500;
 
   const LS_ITEMS  = "shop_items_local_v1";
   const LS_CODE   = "shop_sync_code_v1";
   const LS_CLIENT = "shop_client_id_v1";
 
-  // 不想一進頁面就顯示上次代碼，可改 false
   const SHOW_CODE_IN_INPUT = true;
 
   let rootEl = null;
   let pollTimer = null;
   let persistTimer = null;
-  let pendingReplaceId = null;
 
+  let pendingReplaceId = null;
   let lastCloudUpdatedAt = 0;
 
   const clientId =
@@ -5688,20 +5691,19 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     mountUI();
     bindEventsOnce();
 
-    // 先顯示本機
+    // show local first
     render(loadLocal());
 
     const code = getCode();
-    if (code && SHOW_CODE_IN_INPUT) {
-      const el = document.getElementById("shopSyncCode");
-      if (el) el.value = code;
+    if (code) {
+      if (SHOW_CODE_IN_INPUT) {
+        const el = document.getElementById("shopSyncCode");
+        if (el) el.value = code;
+      }
+      // Home screen mode often needs double pull
+      applyCode(code, true);
+      setTimeout(() => applyCode(code, true), 900);
     }
-   if (code) {
-  // 進頁面就強制拉雲端一次（捷徑/PWA 很需要）
-  applyCode(code, true);
-  setTimeout(() => applyCode(code, true), 800); // 再補一次，避免初次還沒通網
-}
-
   };
 
   /* =========================
@@ -5723,7 +5725,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
           </button>
         </div>
 
-        <div id="shopStatus" style="margin-top:6px;font-size:12px; min-height: 16px; opacity:0;"></div>
+        <div id="shopStatus" style="margin-top:6px;font-size:12px; min-height: 18px; opacity:0;"></div>
 
         <div id="shopTotalTop" class="shop-total" style="margin-top:10px;"></div>
         <div id="shopList" class="shop-list" style="margin-top:12px;"></div>
@@ -5746,11 +5748,12 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     `;
   }
 
-  function flashStatusOnce(msg, ms = 1200) {
+  // ✅ Always show toast when user taps Save
+  function toast(msg, ms = 1400, isErr = false) {
     const el = document.getElementById("shopStatus");
     if (!el) return;
     el.textContent = msg;
-    el.style.color = "#2f7a3e";
+    el.style.color = isErr ? "#d44" : "#2f7a3e";
     el.style.opacity = "1";
     clearTimeout(el.__t);
     el.__t = setTimeout(() => {
@@ -5760,7 +5763,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   }
 
   /* =========================
-     Sync (JSONP GET + no-cors POST + verify)
+     Sync
   ========================= */
   function getCode() { return (localStorage.getItem(LS_CODE) || "").trim(); }
   function setCode(code){ localStorage.setItem(LS_CODE, (code||"").trim()); }
@@ -5776,60 +5779,71 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       return;
     }
 
-    // 拉雲端（JSONP，無 CORS）
-    const cloud = await cloudLoadJSONP(code);
-    if (cloud && cloud.ok && !cloud.empty) {
-      const items = safeParseItems(cloud.payload);
-      lastCloudUpdatedAt = Number(cloud.updatedAt || 0) || lastCloudUpdatedAt;
-      saveLocal(items);
-      render(items);
-    } else {
-      // 雲端空 → 有本機就先 seed 上去（靜默）
-      const local = loadLocal();
-      if (local.length) await cloudSaveNoCors(code, local);
-    }
+    // show local quickly
+    render(loadLocal());
 
+    // pull cloud once
+    await pullCloudOnce(code);
+
+    // start polling
     startPolling(code);
 
-    // 按儲存才顯示「已完成備份」：只要 POST 送得出去就顯示
-if (!silentApply) {
-  const ok = await cloudSaveAndShowOK(code, loadLocal());
-  if (ok) flashStatusOnce("✅ 已完成備份", 1400);
-}
+    if (!silentApply) {
+      // ✅ IMPORTANT: show toast immediately, regardless of verify result
+      toast("✅ 已完成備份", 1400, false);
 
+      // background save + verify (silent)
+      cloudSaveNoCors(code, loadLocal()).then((sentAt) => {
+        if (sentAt) lastCloudUpdatedAt = Math.max(lastCloudUpdatedAt, sentAt);
+        // background pull to refresh (no toast)
+        setTimeout(() => pullCloudOnce(code), 600);
+      });
+    }
   }
 
+  async function pullCloudOnce(code) {
+    const cloud = await cloudLoadJSONP(code);
+    if (cloud && cloud.ok && !cloud.empty) {
+      const u = Number(cloud.updatedAt || 0) || 0;
+      if (u >= (lastCloudUpdatedAt || 0)) lastCloudUpdatedAt = u;
+
+      const items = safeParseItems(cloud.payload);
+      saveLocal(items);
+      if (!isTypingInside()) render(items);
+      return true;
+    }
+    return false;
+  }
+
+  // JSONP GET (avoid CORS) + prevent cache
   function cloudLoadJSONP(code) {
     return new Promise((resolve) => {
       const cb = "__shop_jsonp_cb_" + Date.now() + "_" + Math.random().toString(16).slice(2);
-      const t = setTimeout(() => {
-        cleanup(null);
-      }, 8000);
+      const timeout = setTimeout(() => cleanup(null), 9000);
 
       function cleanup(result){
-        clearTimeout(t);
+        clearTimeout(timeout);
         try { delete window[cb]; } catch {}
         if (script && script.parentNode) script.parentNode.removeChild(script);
         resolve(result);
       }
 
-      window[cb] = function (data) {
-        cleanup(data);
-      };
+      window[cb] = function (data) { cleanup(data); };
 
       const script = document.createElement("script");
-    script.src = `${SYNC_API_URL}?code=${encodeURIComponent(code)}&callback=${encodeURIComponent(cb)}&_=${Date.now()}`;
-
+      script.async = true;
+      script.src =
+        `${SYNC_API_URL}?code=${encodeURIComponent(code)}&callback=${encodeURIComponent(cb)}&_=${Date.now()}`;
       script.onerror = () => cleanup(null);
       document.head.appendChild(script);
     });
   }
 
+  // no-cors POST (send only)
   async function cloudSaveNoCors(code, items) {
-    const updatedAt = Date.now();
+    const sentAt = Date.now();
     const payload = JSON.stringify(items || []);
-    const bodyObj = { code, payload, updatedAt, updatedBy: clientId };
-    const body = JSON.stringify(bodyObj);
+    const body = JSON.stringify({ code, payload, updatedAt: sentAt, updatedBy: clientId });
 
     try {
       await fetch(SYNC_API_URL, {
@@ -5838,59 +5852,10 @@ if (!silentApply) {
         headers: { "Content-Type": "text/plain" },
         body
       });
-      return updatedAt;
+      return sentAt;
     } catch {
       return 0;
     }
-  }
-async function cloudSaveAndShowOK(code, items) {
-  // 只要 fetch(no-cors) 沒 throw，就當作「已送出」= 顯示成功
-  const sentAt = await cloudSaveNoCors(code, items);
-  if (!sentAt) return false;
-
-  // 背景驗證：成功就順便刷新（不影響提示）
-  (async () => {
-    const deadline = Date.now() + 6000;
-    while (Date.now() < deadline) {
-      const cloud = await cloudLoadJSONP(code); // 你原本的 cloudLoadJSONP / cloudLoad
-      if (cloud && cloud.ok && !cloud.empty) {
-        const u = Number(cloud.updatedAt || 0) || 0;
-        if (u >= sentAt) {
-          lastCloudUpdatedAt = u;
-          const latest = safeParseItems(cloud.payload);
-          saveLocal(latest);
-          if (!isTypingInside()) render(latest);
-          return;
-        }
-      }
-      await new Promise(r => setTimeout(r, 600));
-    }
-  })();
-
-  return true;
-}
-
-  async function saveAndVerify(code, items) {
-    const sentAt = await cloudSaveNoCors(code, items);
-    if (!sentAt) return false;
-
-    // 送出後用 JSONP 讀回來確認 updatedAt
-    const deadline = Date.now() + 6500;
-    while (Date.now() < deadline) {
-      const cloud = await cloudLoadJSONP(code);
-      if (cloud && cloud.ok && !cloud.empty) {
-        const u = Number(cloud.updatedAt || 0) || 0;
-        if (u >= sentAt) {
-          lastCloudUpdatedAt = u;
-          const latest = safeParseItems(cloud.payload);
-          saveLocal(latest);
-          render(latest);
-          return true;
-        }
-      }
-      await sleep(600);
-    }
-    return false;
   }
 
   function startPolling(code) {
@@ -5916,23 +5881,12 @@ async function cloudSaveAndShowOK(code, items) {
     document.addEventListener("visibilitychange", onVis, { passive:true });
     function onVis(){
       if (!document.hidden) {
-        // 回前景補拉一次
-        (async () => {
+        setTimeout(() => {
           const activeCode = getCode();
           if (!activeCode || activeCode !== code) return;
           if (isTypingInside()) return;
-
-          const cloud = await cloudLoadJSONP(code);
-          if (!cloud || !cloud.ok || cloud.empty) return;
-
-          const u = Number(cloud.updatedAt || 0) || 0;
-          if (u > (lastCloudUpdatedAt || 0)) {
-            lastCloudUpdatedAt = u;
-            const items = safeParseItems(cloud.payload);
-            saveLocal(items);
-            render(items);
-          }
-        })();
+          pullCloudOnce(code);
+        }, 350);
       }
     }
     rootEl.__shopVisHandler = onVis;
@@ -5952,7 +5906,7 @@ async function cloudSaveAndShowOK(code, items) {
   }
 
   /* =========================
-     Local + utils
+     Local + helpers
   ========================= */
   function loadLocal(){ try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); } catch { return []; } }
   function saveLocal(items){ localStorage.setItem(LS_ITEMS, JSON.stringify(items || [])); }
@@ -5967,9 +5921,8 @@ async function cloudSaveAndShowOK(code, items) {
     if (persistTimer) clearTimeout(persistTimer);
     persistTimer = setTimeout(() => {
       persistTimer = null;
-      // 靜默背景存（不顯示任何字）
       cloudSaveNoCors(code, items).then((sentAt) => {
-        if (sentAt) lastCloudUpdatedAt = sentAt;
+        if (sentAt) lastCloudUpdatedAt = Math.max(lastCloudUpdatedAt, sentAt);
       });
     }, SAVE_DEBOUNCE);
   }
@@ -6055,7 +6008,7 @@ async function cloudSaveAndShowOK(code, items) {
   }
 
   /* =========================
-     Events (delegate)
+     Events
   ========================= */
   function bindEventsOnce(){
     if (rootEl.__shopBound) return;
@@ -6066,7 +6019,7 @@ async function cloudSaveAndShowOK(code, items) {
     const preview    = () => document.getElementById("shopPreview");
     const previewImg = () => document.getElementById("shopPreviewImg");
 
-    // Save
+    // Save button
     rootEl.addEventListener("click", (e) => {
       if (e.target && e.target.id === "shopSyncApply") {
         applyCode(codeInput().value, false);
@@ -6080,7 +6033,7 @@ async function cloudSaveAndShowOK(code, items) {
       }
     });
 
-    // Add images (push => 上到下順序)
+    // Add images
     rootEl.addEventListener("change", async (e) => {
       if (!e.target || e.target.id !== "shopFileInput") return;
       const files = Array.from(e.target.files || []);
@@ -6096,7 +6049,7 @@ async function cloudSaveAndShowOK(code, items) {
       e.target.value = "";
     });
 
-    // Replace image picker
+    // Replace image
     rootEl.addEventListener("change", async (e) => {
       if (!e.target || e.target.id !== "shopReplaceInput") return;
       const file = e.target.files && e.target.files[0];
@@ -6138,7 +6091,7 @@ async function cloudSaveAndShowOK(code, items) {
       persist(items);
     });
 
-    // Price format
+    // Price focus formatting
     rootEl.addEventListener("focusin", (e) => {
       const el = e.target;
       if (!el || !el.classList || !el.classList.contains("shop-price")) return;
@@ -6233,7 +6186,7 @@ async function cloudSaveAndShowOK(code, items) {
   }
 
   /* =========================
-     Swipe Delegate (input 上也能滑)
+     Swipe Delegate
   ========================= */
   function setupSwipeDelegate(){
     if (rootEl.__swipeDelegate) return;
@@ -6258,7 +6211,7 @@ async function cloudSaveAndShowOK(code, items) {
       currentX = 0;
     }
 
-    function findSwipeWrap(target){
+    function findWrap(target){
       const wrap = target.closest(".shop-swipe");
       if (!wrap) return null;
       const fg = wrap.querySelector(".shop-swipe-fg");
@@ -6269,7 +6222,7 @@ async function cloudSaveAndShowOK(code, items) {
     function onStart(x,y,target){
       resetActive(true);
 
-      const found = findSwipeWrap(target);
+      const found = findWrap(target);
       if (!found) return;
 
       activeWrap = found.wrap;
@@ -6297,7 +6250,6 @@ async function cloudSaveAndShowOK(code, items) {
       }
       if (lockedAxis !== "x") return;
 
-      // 一旦水平滑動成立：取消輸入 focus
       const ae = document.activeElement;
       if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA")) ae.blur();
 
@@ -6317,7 +6269,7 @@ async function cloudSaveAndShowOK(code, items) {
       const items = loadLocal();
       const it = items.find(x => x.id === id);
 
-      // 回正
+      // reset
       activeFg.style.transition = "transform 180ms ease";
       activeFg.style.transform = "translateX(0px)";
       activeWrap.classList.remove("is-armed");
@@ -6327,7 +6279,6 @@ async function cloudSaveAndShowOK(code, items) {
 
       if (!it) return;
 
-      // 左滑：刪除 or 取消完成
       if (x <= -SWIPE_COMMIT) {
         if (it.bought) {
           const ok = confirm("是否取消已完成狀態？");
@@ -6347,7 +6298,6 @@ async function cloudSaveAndShowOK(code, items) {
         return;
       }
 
-      // 右滑：完成採買
       if (x >= SWIPE_COMMIT) {
         if (!it.bought) {
           const ok = confirm("確定買對東西齁？");
@@ -6365,7 +6315,6 @@ async function cloudSaveAndShowOK(code, items) {
         if (e.pointerType === "mouse" && e.button !== 0) return;
         onStart(e.clientX, e.clientY, e.target);
       });
-
       rootEl.addEventListener("pointermove", (e) => onMove(e.clientX, e.clientY, e), { passive:false });
       rootEl.addEventListener("pointerup", onEnd);
       rootEl.addEventListener("pointercancel", () => resetActive(true));
@@ -6386,9 +6335,8 @@ async function cloudSaveAndShowOK(code, items) {
   }
 
 })();
-
-
 </script>
+
 	<script>
   function syncBarsHeight(){
     const topbar = document.getElementById("topbar");

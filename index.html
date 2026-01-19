@@ -2462,8 +2462,8 @@ body.nav-back #menuBtn > div{
 		    <span class="icon-clipboard"></span>
 		    <span class="label">行程</span>
 		</button>
-		<!-- ✅ 底部把「行李清單」改成「航班資訊」，直接進入電子票據的航班頁（同一個內容） -->
-		<button data-page="ticket-page" data-ticket="flight">
+		<!-- ✅ 底部把「行李清單」改成「航班資訊」（獨立主頁），內容沿用原「電子票據→航班資訊」 -->
+		<button data-page="flight-page">
 		    <span class="icon-airplane"></span>
 		    <span class="label">航班</span>
 		</button>
@@ -3299,6 +3299,15 @@ body.nav-back #menuBtn > div{
 					<div id="ticketContentBody"></div>
 				</div>
             </div>
+
+			<!-- ================================
+			      航班資訊（獨立主頁）
+			      ✅ 不顯示返回箭頭、不回到電子票據
+			      ✅ 內容沿用 ticketData.flight.body
+			================================ -->
+			<div id="flight-page" class="ticket-page" style="display:none;">
+				<div class="ticket-category-list" id="flightStandalone"></div>
+			</div>
 			
 			<!-- Shopping Page -->
 	      	<div id="shopping-page" class="content-page shopping-page">
@@ -3966,6 +3975,15 @@ body.nav-back #menuBtn > div{
 				}
 			};
 		
+			// ✅ 航班資訊（獨立主頁）：把原本 ticketData.flight.body 直接渲染進去
+			function renderFlightStandalone() {
+				const host = document.getElementById("flightStandalone");
+				if (!host || !ticketData || !ticketData.flight) return;
+				host.innerHTML = ticketData.flight.body || "";
+			}
+			// 只要 DOM ready 就先渲染一次（資料是靜態字串，不需要等其他 API）
+			document.addEventListener("DOMContentLoaded", renderFlightStandalone);
+
 			// 點分類 → 顯示內容頁
 			document.addEventListener("click", function (e) {
 				const card = e.target.closest(".ticket-category");
@@ -4010,19 +4028,24 @@ body.nav-back #menuBtn > div{
 				return;
 			}
 			
-		  	// ⭐ 住宿 / 航班：留在電子憑證頁
-			if (key === "hotel" || key === "flight") {
+		  	// ⭐ 飯店：留在電子憑證頁（第二層）
+			if (key === "hotel") {
 			  	const list = document.querySelector(".ticket-category-list");
 			  	document.getElementById("ticketContent").style.display = "none";
 			  	list.style.display = "flex";
 			  	list.innerHTML = ticketData[key].body;
 			  	playFadeIn(list);
 			  	ticketLevel = key;
-			
-			  	// ⭐ 航班 & 飯店 都啟用返回鍵
+			  	// 飯店第二層需要返回
 			  	setNavBack();
-			
 			  	return;
+			}
+
+			// ✅ 航班：改為「獨立主頁」，不啟用返回、不回到電子票據
+			if (key === "flight") {
+				renderFlightStandalone();
+				showPage("flight-page");
+				return;
 			}
 
 
@@ -4118,13 +4141,19 @@ body.nav-back #menuBtn > div{
 			const card = e.target.closest(".ticket-category");
 		  	if (!card) return;
 			const key = card.dataset.target;
-			if (key === "hotel" || key === "flight") {
+			if (key === "hotel") {
 				const list = document.querySelector(".ticket-category-list");
 				document.getElementById("ticketContent").style.display = "none";
 				list.style.display = "flex";
 				list.innerHTML = ticketData[key].body;
 				playFadeIn(list);  // 加入動畫效果
 				ticketLevel = key;  // 顯示當前頁面
+				setNavBack();
+				return;
+			}
+			if (key === "flight") {
+				renderFlightStandalone();
+				showPage("flight-page");
 				return;
 			}
 			document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
@@ -4223,7 +4252,7 @@ body.nav-back #menuBtn > div{
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page","packing-page","ticket-page","exchange-page","weather-page","shopping-page"];
+const PAGES = ["home-page","packing-page","flight-page","ticket-page","exchange-page","weather-page","shopping-page"];
 
 let currentPageId = "home-page";
 
@@ -4277,6 +4306,11 @@ function showPage(targetId) {
 
   if (targetId === "ticket-page") {
     safeCall(window.resetTicketPage);
+    resetNavMenu();
+  }
+
+  // ✅ 航班資訊：獨立主頁，永遠維持「漢堡選單」模式（不顯示返回箭頭）
+  if (targetId === "flight-page") {
     resetNavMenu();
   }
 
@@ -4495,20 +4529,7 @@ window.applyInitialHomeOffset = window.applyInitialHomeOffset || function () {
 document.querySelectorAll(".bottom-nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     const page = btn.dataset.page;
-    const ticketTarget = btn.dataset.ticket; // e.g. "flight"
-
-    // ✅ 航班：導到 ticket-page 並自動打開「航班資訊」（同電子票據內的航班頁）
-    if (page === "ticket-page" && ticketTarget === "flight") {
-      showPage("ticket-page");
-
-      // 等 ticket-page 內容 reset/顯示完成，再觸發分類點擊
-      requestAnimationFrame(() => {
-        const flightCard = document.querySelector('#ticket-page .ticket-category[data-target="flight"]');
-        if (flightCard) flightCard.click();
-      });
-    } else {
-      showPage(page);
-    }
+    showPage(page);
 
     document.querySelectorAll(".bottom-nav button")
       .forEach(b => b.classList.remove("active"));

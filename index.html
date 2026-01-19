@@ -2543,19 +2543,19 @@ body.nav-back #menuBtn > div{
 .video-link-list{
   list-style: none;
   padding: 0;
-  margin: 5rem 0 2rem 0;
+  margin: 0;
   display:flex;
   flex-direction: column;
   gap: 10px;
 }
 .video-link-list li a{
-         display: block;
-        padding: 14px 14px;
-	    color:#333;
-        border-radius: 8px;
-        background: #ffffff;
-        box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
-        line-height: 1.35;
+  display:block;
+  padding: 14px 14px;
+  border-radius: 12px;
+  background: #F6F9FC;
+  color:#333;
+  text-decoration:none;
+  line-height: 1.35;
 }
 .video-link-list li a:active{
   transform: scale(0.99);
@@ -2672,11 +2672,6 @@ body.nav-back #menuBtn > div{
   font-size: 14px;
   font-weight: 600;
   letter-spacing: .2px;
-}
-.video-card-row{
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 
@@ -3530,7 +3525,6 @@ body.nav-back #menuBtn > div{
 			
             <!-- Photo Page (出片參數) -->
             <div id="photo-page" class="photo-page" style="display:none;">
-				<h3>Dazz濾鏡</h3>
 				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
                     <!-- ✅ 你要放的圖片：在下方 JS 的 PHOTO_ITEMS 直接加/改即可 -->
                 </div>
@@ -3544,14 +3538,12 @@ body.nav-back #menuBtn > div{
               		</div>
             	</div>
 				<!-- 第二個相簿（新增） -->
-				<h3>構圖參考</h3>
 				<div class="photo-section" style="margin-top: 2rem; margin-bottom: 1.5rem;">
-					<div class="photo-section-title"></div>
+					<div class="photo-section-title"><span class="icon-play-outline"></span><span>影片</span></div>
 					<div id="photoSwiper2" class="photo-swiper"></div>
 					<div id="photoDots2" class="photo-dots"></div>
 				</div>
 				<!-- 影片相簿（新增） -->
-				<h3>短影音參考</h3>
 				<div class="photo-section-title" style="margin-top: 2rem; margin-bottom: 1.5rem;"></div>
 				<ul id="videoLinkList" class="video-link-list"></ul>
 
@@ -4561,6 +4553,7 @@ function showPage(targetId) {
   if (targetId === "photo-page") {
     resetNavMenu();
     // ✅ 每次進入都重畫影片清單（避免列表消失）
+    safeCall(window.initPhotoPage);
     safeCall(window.renderVideoLinkCards);
   }
 
@@ -4722,7 +4715,7 @@ function initVideoGallery() {
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 
-  swiper.innerHTML = (VIDEO_ITEMS || []).map(v => `
+  swiper.innerHTML = (window.VIDEO_ITEMS || []).map(v => `
     <div class="photo-slide video-slide" data-url="${esc(v.url)}">
       <div class="video-cover">
         <img src="${esc(v.cover)}" alt="${esc(v.title)}">
@@ -4745,7 +4738,7 @@ function initVideoGallery() {
   });
 
   // dots
-  dotsEl.innerHTML = (VIDEO_ITEMS || []).map((_, i) =>
+  dotsEl.innerHTML = (window.VIDEO_ITEMS || []).map((_, i) =>
     `<span class="photo-dot ${i===0?"active":""}" data-idx="${i}"></span>`
   ).join("");
 
@@ -4767,22 +4760,31 @@ function initVideoGallery() {
     raf = requestAnimationFrame(() => {
       const w = swiper.clientWidth || 1;
       const idx = Math.round(swiper.scrollLeft / w);
-      setActiveDot(Math.max(0, Math.min(idx, (VIDEO_ITEMS?.length||1)-1)));
+      setActiveDot(Math.max(0, Math.min(idx, (window.VIDEO_ITEMS?.length||1)-1)));
     });
   }, { passive:true });
 }
 function renderVideoLinkCards(){
-  const box = document.getElementById("videoLinkCards");
-  if (!box) return;
+  const ul = document.getElementById("videoLinkList");
+  if (!ul) return;
 
-  box.innerHTML = VIDEO_LINKS.map(v => `
-    <a class="video-card" href="${v.url}" target="_blank" rel="noopener">
-      <div class="video-card-row">
-        <span class="icon-play-outline"></span>
-        <span class="video-card-title">${escapeHtml(v.title)}</span>
-      </div>
-    </a>
-  `).join("");
+  // ✅ 你只要在這裡新增/修改影片連結就好
+  const links = Array.isArray(VIDEO_LINKS) ? VIDEO_LINKS : [];
+
+  if (!links.length){
+    ul.innerHTML = `<li><a href="javascript:void(0)" style="pointer-events:none;opacity:.6;">尚未加入影片連結<span class="video-link-sub">（之後可再新增）</span></a></li>`;
+    return;
+  }
+
+  const esc = (s)=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  ul.innerHTML = links.map(v=>{
+    const title = esc(v.title || "未命名影片");
+    const url   = esc(v.url || "");
+    const sub   = esc(v.sub || "");
+    return `<li><a href="${url}" target="_blank" rel="noopener noreferrer">
+      <span class="icon-play-outline"></span><span>${title}</span>${sub ? `<span class="video-link-sub">${sub}</span>` : ``}
+    </a></li>`;
+  }).join("");
 }
 
 function escapeHtml(s){
@@ -4793,6 +4795,9 @@ function escapeHtml(s){
     .replaceAll('"',"&quot;");
 }
 
+
+window.initPhotoPage = initPhotoPage;
+window.renderVideoLinkCards = renderVideoLinkCards;
 
 document.addEventListener("DOMContentLoaded", () => { initPhotoPage(); renderVideoLinkCards(); });
 /* =========================

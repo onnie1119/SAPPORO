@@ -2569,27 +2569,26 @@ body.nav-back #menuBtn > div{
   width: auto;
   height: auto;
   object-fit: contain;
-  
- 
+  border-radius: 12px;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.45);
   touch-action: pinch-zoom;
 }
 
 .photo-viewer-close{
-	position: absolute;
-    top: 14px;
-    right: 14px;
-    font-family: auto;
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    border: none;
-    background: rgba(255, 255, 255, 0.18);
-    color: #fff;
-    font-size: 35px;
-    line-height: 44px;
-    text-align: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-size: 28px;
+  line-height: 44px;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 .photo-viewer-close:active{ transform: scale(0.98); }
 
@@ -3395,7 +3394,15 @@ body.nav-back #menuBtn > div{
 							<div class="more">⋮</div>
 						</div>
 					
-					
+					<div class="ticket-category bg-yellow" data-target="flight">
+						<div class="icon">
+ 							<img src="images/58.png" alt="folder">
+						</div>
+						<div class="text">
+							<span class="title">航班資訊</span>
+						</div>
+						<div class="more">⋮</div>
+					</div>
 					<div class="ticket-category bg-red" data-target="schedule">
 						<div class="icon">
 							<img src="images/59.png" alt="folder">
@@ -3442,7 +3449,7 @@ body.nav-back #menuBtn > div{
 
             <!-- Photo Page (出片參數) -->
             <div id="photo-page" class="photo-page" style="display:none;">
-                <h2 class="photo-title">Dazz濾鏡</h2>
+                <h2 class="photo-title">出片參數</h2>
                 <div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
                     <!-- ✅ 你要放的圖片：在下方 JS 的 PHOTO_ITEMS 直接加/改即可 -->
                 </div>
@@ -3457,9 +3464,6 @@ body.nav-back #menuBtn > div{
               </div>
             </div>
 </div>
-			<div id="flight-page" class="ticket-page" style="display:none;">
-				<div class="ticket-category-list" id="flightStandalone"></div>
-			</div>
 			
 			<!-- Shopping Page -->
 	      	<div id="shopping-page" class="content-page shopping-page">
@@ -4186,12 +4190,6 @@ body.nav-back #menuBtn > div{
 			  	return;
 			}
 
-			// ✅ 航班：改為「獨立主頁」，不啟用返回、不回到電子票據
-			if (key === "flight") {
-				renderFlightStandalone();
-				showPage("flight-page");
-				return;
-			}
 
 
 		
@@ -4285,19 +4283,13 @@ body.nav-back #menuBtn > div{
 			const card = e.target.closest(".ticket-category");
 		  	if (!card) return;
 			const key = card.dataset.target;
-			if (key === "hotel") {
+			if (key === "hotel" || key === "flight") {
 				const list = document.querySelector(".ticket-category-list");
 				document.getElementById("ticketContent").style.display = "none";
 				list.style.display = "flex";
 				list.innerHTML = ticketData[key].body;
 				playFadeIn(list);  // 加入動畫效果
 				ticketLevel = key;  // 顯示當前頁面
-				setNavBack();
-				return;
-			}
-			if (key === "flight") {
-				renderFlightStandalone();
-				showPage("flight-page");
 				return;
 			}
 			document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
@@ -4396,7 +4388,7 @@ body.nav-back #menuBtn > div{
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page","packing-page","flight-page","ticket-page","exchange-page","weather-page","shopping-page"];
+const PAGES = ["home-page","packing-page","ticket-page","photo-page","exchange-page","weather-page","shopping-page"];
 
 let currentPageId = "home-page";
 
@@ -4452,10 +4444,7 @@ function showPage(targetId) {
     safeCall(window.resetTicketPage);
     resetNavMenu();
   }
- // ✅ 航班資訊：獨立主頁，永遠維持「漢堡選單」模式（不顯示返回箭頭）
-  if (targetId === "flight-page") {
-    resetNavMenu();
-  }
+
   // ✅ 出片參數頁：永遠維持漢堡狀態（避免從票據內容回上一層的 back 狀態殘留）
   if (targetId === "photo-page") {
     resetNavMenu();
@@ -4515,8 +4504,8 @@ window.resetNavMenu = resetNavMenu;
    - 只要改 PHOTO_ITEMS 就能換照片
 ========================= */
 const PHOTO_ITEMS = [
-  { src: "images/photo1.jpg", name: "Dazz適用場合", desc: "點圖片可全螢幕放大、左右滑動切換" },
-  { src: "images/photo2.jpg", name: "Dazz濾鏡分類", desc: "點圖片可全螢幕放大、左右滑動切換" }
+  { src: "images/photo1.jpg", name: "出片參數 1", desc: "點圖片可全螢幕放大，左右滑動切換" },
+  { src: "images/photo2.jpg", name: "出片參數 2", desc: "點圖片可全螢幕放大，左右滑動切換" }
 ];
 
 function initPhotoPage() {

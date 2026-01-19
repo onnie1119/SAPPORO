@@ -3439,7 +3439,9 @@ body.nav-back #menuBtn > div{
 					<div id="ticketContentBody"></div>
 				</div>
             </div>
-
+			<div id="flight-page" class="ticket-page" style="display:none;">
+				<div class="ticket-category-list" id="flightStandalone"></div>
+			</div>
             <!-- Photo Page (出片參數) -->
             <div id="photo-page" class="photo-page" style="display:none;">
                 <h2 class="photo-title">Dazz濾鏡</h2>
@@ -4168,21 +4170,25 @@ body.nav-back #menuBtn > div{
 				return;
 			}
 			
-		  	// ⭐ 住宿 / 航班：留在電子憑證頁
-			if (key === "hotel" || key === "flight") {
+		  	// ⭐ 飯店：留在電子憑證頁（第二層）
+			if (key === "hotel") {
 			  	const list = document.querySelector(".ticket-category-list");
 			  	document.getElementById("ticketContent").style.display = "none";
 			  	list.style.display = "flex";
 			  	list.innerHTML = ticketData[key].body;
 			  	playFadeIn(list);
 			  	ticketLevel = key;
-			
-			  	// ⭐ 航班 & 飯店 都啟用返回鍵
+			  	// 飯店第二層需要返回
 			  	setNavBack();
-			
 			  	return;
 			}
 
+			// ✅ 航班：改為「獨立主頁」，不啟用返回、不回到電子票據
+			if (key === "flight") {
+				renderFlightStandalone();
+				showPage("flight-page");
+				return;
+			}
 
 
 		
@@ -4276,13 +4282,19 @@ body.nav-back #menuBtn > div{
 			const card = e.target.closest(".ticket-category");
 		  	if (!card) return;
 			const key = card.dataset.target;
-			if (key === "hotel" || key === "flight") {
+			if (key === "hotel") {
 				const list = document.querySelector(".ticket-category-list");
 				document.getElementById("ticketContent").style.display = "none";
 				list.style.display = "flex";
 				list.innerHTML = ticketData[key].body;
 				playFadeIn(list);  // 加入動畫效果
 				ticketLevel = key;  // 顯示當前頁面
+				setNavBack();
+				return;
+			}
+			if (key === "flight") {
+				renderFlightStandalone();
+				showPage("flight-page");
 				return;
 			}
 			document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";

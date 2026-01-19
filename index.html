@@ -5640,35 +5640,53 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 <script>
 /* =========================================================
-   Shopping – FINAL (Save Toast Always + JSONP Sync)
-   For iOS "Add to Home Screen" mode
+   Shopping – FINAL (Google Sheet Sync via Apps Script JSONP)
+   - Works for iOS "Add to Home Screen" (PWA-like)
+   - Save shows toast immediately, then verifies by pulling cloud
+   - Cloud write: POST (no-cors) x-www-form-urlencoded
+   - Cloud read: JSONP GET (+ cache-bust)
+   - Swipe: left delete (confirm) / right bought (confirm) / bought left to undo
+   - Bought state: adds .is-bought (your CSS can set opacity: .35)
+   - Long press image: preview
+   - Tap image: replace image
+   - Price: displays "¥ 1,234", edit as number
 ========================================================= */
 (function () {
   "use strict";
 
+  /* =========================
+     Config
+  ========================= */
   const SYNC_API_URL =
     "https://script.google.com/macros/s/AKfycbzDuRFhkB4biAjMNiSho_zzdL6WDN0fEn8MWINPCwCh7hpsvL1u8KG7geHMIr-KYew/exec";
 
   const SHOP_ROOT_ID = "shoppingRoot";
   const CURRENCY = "¥";
 
-  const SAVE_DEBOUNCE = 300;
-
-  // swipe tuning
-  const SWIPE_COMMIT = 95;
-  const SWIPE_LIMIT  = 220;
-
-  const LONGPRESS_MS = 450;
-
-  // polling
-  const POLL_MS = 3500;
-
+  // Local storage keys
   const LS_ITEMS  = "shop_items_local_v1";
   const LS_CODE   = "shop_sync_code_v1";
   const LS_CLIENT = "shop_client_id_v1";
 
+  // UI/behavior
   const SHOW_CODE_IN_INPUT = true;
+  const SAVE_DEBOUNCE = 350;
+  const POLL_MS = 3500;
 
+  // Swipe tuning
+  const SWIPE_COMMIT = 95;   // px threshold to commit action
+  const SWIPE_LIMIT  = 220;  // max translateX
+
+  // Long press
+  const LONGPRESS_MS = 450;
+
+  // Verify saving by pulling cloud
+  const VERIFY_MS = 6500;
+  const VERIFY_STEP = 650;
+
+  /* =========================
+     State
+  ========================= */
   let rootEl = null;
   let pollTimer = null;
   let persistTimer = null;
@@ -5676,6 +5694,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   let pendingReplaceId = null;
   let lastCloudUpdatedAt = 0;
 
+  // one stable client id
   const clientId =
     localStorage.getItem(LS_CLIENT) ||
     (String(Date.now()) + "-" + Math.random().toString(16).slice(2));
@@ -5694,20 +5713,20 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     // show local first
     render(loadLocal());
 
+    // auto apply saved code (iOS home screen often needs double pull)
     const code = getCode();
     if (code) {
       if (SHOW_CODE_IN_INPUT) {
         const el = document.getElementById("shopSyncCode");
         if (el) el.value = code;
       }
-      // Home screen mode often needs double pull
       applyCode(code, true);
       setTimeout(() => applyCode(code, true), 900);
     }
   };
 
   /* =========================
-     UI
+     UI Mount
   ========================= */
   function mountUI() {
     rootEl.innerHTML = `
@@ -5748,7 +5767,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     `;
   }
 
-  // ✅ Always show toast when user taps Save
   function toast(msg, ms = 1400, isErr = false) {
     const el = document.getElementById("shopStatus");
     if (!el) return;
@@ -5763,10 +5781,10 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   }
 
   /* =========================
-     Sync
+     Code + Sync entry
   ========================= */
   function getCode() { return (localStorage.getItem(LS_CODE) || "").trim(); }
-  function setCode(code){ localStorage.setItem(LS_CODE, (code||"").trim()); }
+  function setCode(code) { localStorage.setItem(LS_CODE, (code || "").trim()); }
 
   async function applyCode(code, silentApply) {
     code = (code || "").trim();
@@ -5779,7 +5797,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       return;
     }
 
-    // show local quickly
+    // quick show local
     render(loadLocal());
 
     // pull cloud once
@@ -5788,47 +5806,36 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     // start polling
     startPolling(code);
 
-   if (!silentApply) {
-  // ✅ 先把目前畫面上的輸入內容「強制寫回」local（避免最後幾個字沒存到）
-  const itemsNow = syncDomToLocalItems();
+    // user clicked save
+    if (!silentApply) {
+      // ✅ make sure latest typed content is included
+      const itemsNow = syncDomToLocalItems();
 
-  toast("儲存中…", 900, false);
+      // show feedback immediately
+      toast("儲存中…", 900, false);
 
-  const sentAt = await cloudSaveNoCors(code, itemsNow);
-  if (!sentAt) {
-    toast("⚠️ 未寫入，請再按一次", 1600, true);
-    return;
-  }
+      const sentAt = await cloudSaveNoCors(code, itemsNow);
+      if (!sentAt) {
+        toast("⚠️ 未寫入，請重試", 1600, true);
+        return;
+      }
 
-  // 背景回讀驗證：真的寫到 Sheet 才顯示 ✅
-  const ok = await verifySaved(code, sentAt);
-  if (ok) toast("✅ 已完成備份", 1400, false);
-  else toast("⚠️ 未寫入，請重試", 1600, true);
-}
-
-  }
-
-  async function pullCloudOnce(code) {
-    const cloud = await cloudLoadJSONP(code);
-    if (cloud && cloud.ok && !cloud.empty) {
-      const u = Number(cloud.updatedAt || 0) || 0;
-      if (u >= (lastCloudUpdatedAt || 0)) lastCloudUpdatedAt = u;
-
-      const items = safeParseItems(cloud.payload);
-      saveLocal(items);
-      if (!isTypingInside()) render(items);
-      return true;
+      // verify by reading back (JSONP)
+      const ok = await verifySaved(code, sentAt);
+      if (ok) toast("✅ 已完成備份", 1400, false);
+      else toast("⚠️ 未寫入，請再按一次", 1700, true);
     }
-    return false;
   }
 
-  // JSONP GET (avoid CORS) + prevent cache
+  /* =========================
+     Cloud: JSONP GET (read)
+  ========================= */
   function cloudLoadJSONP(code) {
     return new Promise((resolve) => {
       const cb = "__shop_jsonp_cb_" + Date.now() + "_" + Math.random().toString(16).slice(2);
       const timeout = setTimeout(() => cleanup(null), 9000);
 
-      function cleanup(result){
+      function cleanup(result) {
         clearTimeout(timeout);
         try { delete window[cb]; } catch {}
         if (script && script.parentNode) script.parentNode.removeChild(script);
@@ -5839,38 +5846,82 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
       const script = document.createElement("script");
       script.async = true;
-      script.src =
-        `${SYNC_API_URL}?code=${encodeURIComponent(code)}&callback=${encodeURIComponent(cb)}&_=${Date.now()}`;
+
+      // cache-bust is critical for iOS home screen mode
+      script.src = `${SYNC_API_URL}?code=${encodeURIComponent(code)}&callback=${encodeURIComponent(cb)}&_=${Date.now()}`;
       script.onerror = () => cleanup(null);
+
       document.head.appendChild(script);
     });
   }
 
- async function cloudSaveNoCors(code, items) {
-  const sentAt = Date.now();
-  const payload = JSON.stringify(items || []);
+  async function pullCloudOnce(code) {
+    const cloud = await cloudLoadJSONP(code);
+    if (cloud && cloud.ok && !cloud.empty) {
+      const u = Number(cloud.updatedAt || 0) || 0;
+      if (u > (lastCloudUpdatedAt || 0)) lastCloudUpdatedAt = u;
 
-  // Apps Script 最穩：用 x-www-form-urlencoded
-  const formBody = new URLSearchParams({
-    code,
-    payload,
-    updatedAt: String(sentAt),
-    updatedBy: clientId
-  }).toString();
-
-  try {
-    await fetch(SYNC_API_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body: formBody
-    });
-    return sentAt;
-  } catch {
-    return 0;
+      const items = safeParseItems(cloud.payload);
+      saveLocal(items);
+      if (!isTypingInside()) render(items);
+      return true;
+    }
+    return false;
   }
-}
 
+  /* =========================
+     Cloud: POST (write) – no-cors form
+  ========================= */
+  async function cloudSaveNoCors(code, items) {
+    const sentAt = Date.now();
+    const payload = JSON.stringify(items || []);
+
+    // Apps Script loves urlencoded
+    const body = new URLSearchParams({
+      code,
+      payload,
+      updatedAt: String(sentAt),
+      updatedBy: clientId
+    }).toString();
+
+    try {
+      await fetch(SYNC_API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body
+      });
+      // optimistic: request sent
+      lastCloudUpdatedAt = Math.max(lastCloudUpdatedAt, sentAt);
+      return sentAt;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  async function verifySaved(code, sentAt) {
+    const deadline = Date.now() + VERIFY_MS;
+
+    while (Date.now() < deadline) {
+      const cloud = await cloudLoadJSONP(code);
+      if (cloud && cloud.ok && !cloud.empty) {
+        const u = Number(cloud.updatedAt || 0) || 0;
+        if (u >= sentAt) {
+          lastCloudUpdatedAt = u;
+          const items = safeParseItems(cloud.payload);
+          saveLocal(items);
+          if (!isTypingInside()) render(items);
+          return true;
+        }
+      }
+      await sleep(VERIFY_STEP);
+    }
+    return false;
+  }
+
+  /* =========================
+     Polling: keep devices in sync
+  ========================= */
   function startPolling(code) {
     stopPolling();
 
@@ -5891,8 +5942,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
       }
     }, POLL_MS);
 
+    // foreground refresh (iOS home screen)
     document.addEventListener("visibilitychange", onVis, { passive:true });
-    function onVis(){
+    function onVis() {
       if (!document.hidden) {
         setTimeout(() => {
           const activeCode = getCode();
@@ -5904,24 +5956,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
     }
     rootEl.__shopVisHandler = onVis;
   }
-async function verifySaved(code, sentAt) {
-  const deadline = Date.now() + 6000;
-  while (Date.now() < deadline) {
-    const cloud = await cloudLoadJSONP(code);
-    if (cloud && cloud.ok && !cloud.empty) {
-      const u = Number(cloud.updatedAt || 0) || 0;
-      if (u >= sentAt) {
-        lastCloudUpdatedAt = u;
-        const items = safeParseItems(cloud.payload);
-        saveLocal(items);
-        if (!isTypingInside()) render(items);
-        return true;
-      }
-    }
-    await sleep(650);
-  }
-  return false;
-}
 
   function stopPolling() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
@@ -5937,12 +5971,19 @@ async function verifySaved(code, sentAt) {
   }
 
   /* =========================
-     Local + helpers
+     Local storage helpers
   ========================= */
-  function loadLocal(){ try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); } catch { return []; } }
-  function saveLocal(items){ localStorage.setItem(LS_ITEMS, JSON.stringify(items || [])); }
+  function loadLocal() {
+    try { return JSON.parse(localStorage.getItem(LS_ITEMS) || "[]"); }
+    catch { return []; }
+  }
 
-  function persist(items){
+  function saveLocal(items) {
+    localStorage.setItem(LS_ITEMS, JSON.stringify(items || []));
+  }
+
+  // keep local + total; also auto background save (debounced) when code exists
+  function persist(items) {
     saveLocal(items);
     updateTotal(items);
 
@@ -5952,48 +5993,38 @@ async function verifySaved(code, sentAt) {
     if (persistTimer) clearTimeout(persistTimer);
     persistTimer = setTimeout(() => {
       persistTimer = null;
-      cloudSaveNoCors(code, items).then((sentAt) => {
-        if (sentAt) lastCloudUpdatedAt = Math.max(lastCloudUpdatedAt, sentAt);
-      });
+      cloudSaveNoCors(code, items); // silent
     }, SAVE_DEBOUNCE);
   }
 
-  function uid(){ return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()+Math.random()); }
-  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
-  function toNumber(v){
-    const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
-    return Number.isFinite(n) ? n : 0;
-  }
-  function fmtMoney(v){
-    const n = toNumber(v);
-    return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
-  }
-  function esc(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-  }
-  function fileToDataURL(file){
-    return new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(String(r.result));
-      r.onerror = rej;
-      r.readAsDataURL(file);
+  // ✅ IMPORTANT: "Save" must include the last typed characters
+  function syncDomToLocalItems() {
+    const items = loadLocal();
+    const list = document.getElementById("shopList");
+    if (!list) return items;
+
+    list.querySelectorAll(".shop-card[data-id]").forEach(card => {
+      const id = card.dataset.id;
+      const it = items.find(x => x.id === id);
+      if (!it) return;
+
+      const nameEl = card.querySelector('input[data-k="name"]');
+      const locEl  = card.querySelector('input[data-k="location"]');
+      const priceEl= card.querySelector('input[data-k="price"]');
+
+      if (nameEl) it.name = nameEl.value;
+      if (locEl)  it.location = locEl.value;
+      if (priceEl) it.price = toNumber(priceEl.value);
     });
-  }
-  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-  function safeParseItems(payload){
-    try {
-      const arr = JSON.parse(payload || "[]");
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
-    }
+
+    saveLocal(items);
+    return items;
   }
 
   /* =========================
      Render
   ========================= */
-  function render(items){
+  function render(items) {
     const list = document.getElementById("shopList");
     items = Array.isArray(items) ? items : [];
     updateTotal(items);
@@ -6032,16 +6063,16 @@ async function verifySaved(code, sentAt) {
     }).join("");
   }
 
-  function updateTotal(items){
-    const total = (items || []).reduce((s,it)=> s + toNumber(it.price), 0);
+  function updateTotal(items) {
+    const total = (items || []).reduce((s, it) => s + toNumber(it.price), 0);
     const t = document.getElementById("shopTotalTop");
     if (t) t.textContent = `合計：${CURRENCY} ${total.toLocaleString()}`;
   }
 
   /* =========================
-     Events
+     Events (delegate)
   ========================= */
-  function bindEventsOnce(){
+  function bindEventsOnce() {
     if (rootEl.__shopBound) return;
     rootEl.__shopBound = true;
 
@@ -6050,13 +6081,14 @@ async function verifySaved(code, sentAt) {
     const preview    = () => document.getElementById("shopPreview");
     const previewImg = () => document.getElementById("shopPreviewImg");
 
-    // Save button
+    // Save click
     rootEl.addEventListener("click", (e) => {
       if (e.target && e.target.id === "shopSyncApply") {
         applyCode(codeInput().value, false);
       }
     });
 
+    // Save by Enter
     rootEl.addEventListener("keydown", (e) => {
       if (e.target && e.target.id === "shopSyncCode" && e.key === "Enter") {
         e.preventDefault();
@@ -6064,7 +6096,7 @@ async function verifySaved(code, sentAt) {
       }
     });
 
-    // Add images
+    // Add items by images
     rootEl.addEventListener("change", async (e) => {
       if (!e.target || e.target.id !== "shopFileInput") return;
       const files = Array.from(e.target.files || []);
@@ -6073,14 +6105,15 @@ async function verifySaved(code, sentAt) {
       const items = loadLocal();
       for (const f of files) {
         const img = await fileToDataURL(f);
-        items.push({ id: uid(), image: img, name:"", location:"", price:0, bought:false });
+        // new items append at bottom (top->down order)
+        items.push({ id: uid(), image: img, name: "", location: "", price: 0, bought: false });
       }
       persist(items);
       render(items);
       e.target.value = "";
     });
 
-    // Replace image
+    // Replace image picked
     rootEl.addEventListener("change", async (e) => {
       if (!e.target || e.target.id !== "shopReplaceInput") return;
       const file = e.target.files && e.target.files[0];
@@ -6122,7 +6155,7 @@ async function verifySaved(code, sentAt) {
       persist(items);
     });
 
-    // Price focus formatting
+    // Price edit mode
     rootEl.addEventListener("focusin", (e) => {
       const el = e.target;
       if (!el || !el.classList || !el.classList.contains("shop-price")) return;
@@ -6130,6 +6163,7 @@ async function verifySaved(code, sentAt) {
       el.value = n ? String(n) : "";
     });
 
+    // Price format on blur
     rootEl.addEventListener("focusout", (e) => {
       const el = e.target;
       if (!el || !el.classList || !el.classList.contains("shop-price")) return;
@@ -6147,7 +6181,7 @@ async function verifySaved(code, sentAt) {
       el.value = fmtMoney(it.price);
     });
 
-    // Preview close
+    // Close preview
     rootEl.addEventListener("click", (e) => {
       if (e.target && e.target.id === "shopPreview") {
         preview().style.display = "none";
@@ -6155,14 +6189,14 @@ async function verifySaved(code, sentAt) {
       }
     });
 
-    // Prevent iOS context menu on images
+    // Block iOS context menu on images
     rootEl.addEventListener("contextmenu", (e) => {
       if (e.target.closest(".shop-thumb")) e.preventDefault();
     });
 
     // Long press preview (touch)
     let lpTimer = null, lpTriggered = false, lpStartX = 0, lpStartY = 0;
-    function clearLP(){ if (lpTimer) clearTimeout(lpTimer); lpTimer=null; }
+    function clearLP(){ if (lpTimer) clearTimeout(lpTimer); lpTimer = null; }
 
     rootEl.addEventListener("touchstart", (e) => {
       const img = e.target.closest(".shop-thumb");
@@ -6189,7 +6223,7 @@ async function verifySaved(code, sentAt) {
     rootEl.addEventListener("touchend", clearLP, { passive:true });
     rootEl.addEventListener("touchcancel", clearLP, { passive:true });
 
-    // Block replace click after long press
+    // Block replace click after longpress
     rootEl.addEventListener("click", (e) => {
       const img = e.target.closest(".shop-thumb");
       if (!img) return;
@@ -6199,7 +6233,7 @@ async function verifySaved(code, sentAt) {
       }
     }, true);
 
-    // Click image => replace
+    // Tap image => replace
     rootEl.addEventListener("click", (e) => {
       const img = e.target.closest(".shop-thumb");
       if (!img) return;
@@ -6217,9 +6251,9 @@ async function verifySaved(code, sentAt) {
   }
 
   /* =========================
-     Swipe Delegate
+     Swipe delegate
   ========================= */
-  function setupSwipeDelegate(){
+  function setupSwipeDelegate() {
     if (rootEl.__swipeDelegate) return;
     rootEl.__swipeDelegate = true;
 
@@ -6231,7 +6265,7 @@ async function verifySaved(code, sentAt) {
     let currentX = 0;
     let lockedAxis = null;
 
-    function resetActive(animate=true){
+    function resetActive(animate = true) {
       if (!activeFg) return;
       activeFg.style.transition = animate ? "transform 180ms ease" : "none";
       activeFg.style.transform = "translateX(0px)";
@@ -6242,7 +6276,7 @@ async function verifySaved(code, sentAt) {
       currentX = 0;
     }
 
-    function findWrap(target){
+    function findWrap(target) {
       const wrap = target.closest(".shop-swipe");
       if (!wrap) return null;
       const fg = wrap.querySelector(".shop-swipe-fg");
@@ -6250,7 +6284,7 @@ async function verifySaved(code, sentAt) {
       return { wrap, fg };
     }
 
-    function onStart(x,y,target){
+    function onStart(x, y, target) {
       resetActive(true);
 
       const found = findWrap(target);
@@ -6267,7 +6301,7 @@ async function verifySaved(code, sentAt) {
       activeFg.style.transition = "none";
     }
 
-    function onMove(x,y,ev){
+    function onMove(x, y, ev) {
       if (!dragging || !activeFg) return;
 
       const dx = x - startX;
@@ -6281,6 +6315,7 @@ async function verifySaved(code, sentAt) {
       }
       if (lockedAxis !== "x") return;
 
+      // allow swipe even if user started on input: blur active element
       const ae = document.activeElement;
       if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA")) ae.blur();
 
@@ -6293,14 +6328,14 @@ async function verifySaved(code, sentAt) {
       else activeWrap.classList.remove("is-armed");
     }
 
-    function onEnd(){
+    function onEnd() {
       if (!dragging || !activeWrap) return;
 
       const id = activeWrap.dataset.id;
       const items = loadLocal();
       const it = items.find(x => x.id === id);
 
-      // reset
+      // reset position
       activeFg.style.transition = "transform 180ms ease";
       activeFg.style.transform = "translateX(0px)";
       activeWrap.classList.remove("is-armed");
@@ -6310,31 +6345,37 @@ async function verifySaved(code, sentAt) {
 
       if (!it) return;
 
+      // LEFT: delete or undo bought
       if (x <= -SWIPE_COMMIT) {
         if (it.bought) {
           const ok = confirm("是否取消已完成狀態？");
           if (!ok) return;
           it.bought = false;
           persist(items);
+
           const card = rootEl.querySelector(`.shop-card[data-id="${id}"]`);
           if (card) card.classList.remove("is-bought");
         } else {
           const ok = confirm("是否移除這個品項？");
           if (!ok) return;
+
           const idx = items.findIndex(x => x.id === id);
           if (idx >= 0) items.splice(idx, 1);
+
           persist(items);
           render(items);
         }
         return;
       }
 
+      // RIGHT: mark bought
       if (x >= SWIPE_COMMIT) {
         if (!it.bought) {
           const ok = confirm("確定買對東西齁？");
           if (!ok) return;
           it.bought = true;
           persist(items);
+
           const card = rootEl.querySelector(`.shop-card[data-id="${id}"]`);
           if (card) card.classList.add("is-bought");
         }
@@ -6365,8 +6406,58 @@ async function verifySaved(code, sentAt) {
     }
   }
 
+  /* =========================
+     Utilities
+  ========================= */
+  function uid() {
+    return (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now() + Math.random());
+  }
+
+  function clamp(n, a, b) {
+    return Math.max(a, Math.min(b, n));
+  }
+
+  function toNumber(v) {
+    const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function fmtMoney(v) {
+    const n = toNumber(v);
+    return n ? `${CURRENCY} ${n.toLocaleString()}` : "";
+  }
+
+  function esc(s) {
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;");
+  }
+
+  function fileToDataURL(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result));
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  function safeParseItems(payload) {
+    try {
+      const arr = JSON.parse(payload || "[]");
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 })();
 </script>
+
 
 	<script>
   function syncBarsHeight(){

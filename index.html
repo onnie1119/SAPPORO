@@ -2673,6 +2673,11 @@ body.nav-back #menuBtn > div{
   font-weight: 600;
   letter-spacing: .2px;
 }
+.video-card-row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 
 </style>
@@ -4767,26 +4772,17 @@ function initVideoGallery() {
   }, { passive:true });
 }
 function renderVideoLinkCards(){
-  const ul = document.getElementById("videoLinkList");
-  if (!ul) return;
+  const box = document.getElementById("videoLinkCards");
+  if (!box) return;
 
-  // ✅ 你只要在這裡新增/修改影片連結就好
-  const links = Array.isArray(VIDEO_LINKS) ? VIDEO_LINKS : [];
-
-  if (!links.length){
-    ul.innerHTML = `<li><a href="javascript:void(0)" style="pointer-events:none;opacity:.6;">尚未加入影片連結<span class="video-link-sub">（之後可再新增）</span></a></li>`;
-    return;
-  }
-
-  const esc = (s)=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-  ul.innerHTML = links.map(v=>{
-    const title = esc(v.title || "未命名影片");
-    const url   = esc(v.url || "");
-    const sub   = esc(v.sub || "");
-    return `<li><a href="${url}" target="_blank" rel="noopener noreferrer">
-      ${title}${sub ? `<span class="video-link-sub">${sub}</span>` : ``}
-    </a></li>`;
-  }).join("");
+  box.innerHTML = VIDEO_LINKS.map(v => `
+    <a class="video-card" href="${v.url}" target="_blank" rel="noopener">
+      <div class="video-card-row">
+        <span class="icon-play-outline"></span>
+        <span class="video-card-title">${escapeHtml(v.title)}</span>
+      </div>
+    </a>
+  `).join("");
 }
 
 function escapeHtml(s){

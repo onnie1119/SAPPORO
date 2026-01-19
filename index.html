@@ -3445,23 +3445,28 @@ body.nav-back #menuBtn > div{
 			<div id="flight-page" class="ticket-page" style="display:none;">
 				<div class="ticket-category-list" id="flightStandalone"></div>
 			</div>
+			
             <!-- Photo Page (出片參數) -->
             <div id="photo-page" class="photo-page" style="display:none;">
-                
-                <div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
+				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
                     <!-- ✅ 你要放的圖片：在下方 JS 的 PHOTO_ITEMS 直接加/改即可 -->
                 </div>
                 <div id="photoDots" class="photo-dots" aria-label="頁面指示"></div>
-            
-            <!-- Photo Viewer (full screen) -->
-            <div id="photoViewer" class="photo-viewer" aria-hidden="true">
-              <div class="photo-viewer-bg" data-close="1"></div>
-              <div class="photo-viewer-content">
-                <img id="photoViewerImg" class="photo-viewer-img" src="" alt="">
-                <button class="photo-viewer-close" type="button" aria-label="關閉" data-close="1">×</button>
-              </div>
-            </div>
-</div>
+				<!-- Photo Viewer (full screen) -->
+            	<div id="photoViewer" class="photo-viewer" aria-hidden="true">
+              		<div class="photo-viewer-bg" data-close="1"></div>
+              		<div class="photo-viewer-content">
+                		<img id="photoViewerImg" class="photo-viewer-img" src="" alt="">
+                		<button class="photo-viewer-close" type="button" aria-label="關閉" data-close="1">×</button>
+              		</div>
+            	</div>
+				<!-- 第二個相簿（新增） -->
+				<div class="photo-section">
+					<div class="photo-section-title">其他相簿</div>
+					<div id="photoSwiper2" class="photo-swiper"></div>
+					<div id="photoDots2" class="photo-dots"></div>
+				</div>
+			</div>
 			
 			<!-- Shopping Page -->
 	      	<div id="shopping-page" class="content-page shopping-page">
@@ -4518,87 +4523,86 @@ window.resetNavMenu = resetNavMenu;
 
 /* =========================
    Photo Page（出片參數）
-   - Horizontal swipe gallery
-   - 只要改 PHOTO_ITEMS 就能換照片
 ========================= */
-const PHOTO_ITEMS = [
+
+// 相簿 1（原本那組）
+const PHOTO_ITEMS_1 = [
   { src: "images/photo1.jpg", name: "濾鏡分類", desc: "點圖片可全螢幕放大，左右滑動切換" },
   { src: "images/photo2.jpg", name: "濾鏡適用場合", desc: "點圖片可全螢幕放大，左右滑動切換" }
 ];
 
-function initPhotoPage() {
-  const swiper = document.getElementById("photoSwiper");
-  const dotsEl = document.getElementById("photoDots");
+// 相簿 2（新增這組，換你的照片）
+const PHOTO_ITEMS_2 = [
+  { src: "images/other1.jpg", name: "其他相簿 1", desc: "左右滑動瀏覽" },
+  { src: "images/other2.jpg", name: "其他相簿 2", desc: "點圖片可放大" }
+];
+
+// 共用：初始化某一個相簿（swiperId + dotsId + items）
+function initPhotoGallery(swiperId, dotsId, items) {
+  const swiper = document.getElementById(swiperId);
+  const dotsEl = document.getElementById(dotsId);
   if (!swiper || !dotsEl) return;
 
-  // 防重複初始化
+  // 防重複初始化（每個 swiper 各自記）
   if (swiper.dataset.inited === "1") return;
   swiper.dataset.inited = "1";
 
-  // Render slides
-  swiper.innerHTML = PHOTO_ITEMS.map(item => {
-    const safeName = (item.name || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const safeDesc = (item.desc || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return `
-      <div class="photo-slide">
-        <img src="${item.src}" alt="${safeName}">
-        <div class="photo-meta">
-          <p class="photo-name">${safeName}</p>
-          <p class="photo-desc">${safeDesc}</p>
-        </div>
-      </div>
-    `;
-  }).join("");
+  const esc = (s) => String(s ?? "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 
-  // 點圖片 → 全螢幕檢視
-  swiper.addEventListener('click', (e) => {
-    const img = e.target.closest('img');
+  // Render slides
+  swiper.innerHTML = (items || []).map(item => `
+    <div class="photo-slide">
+      <img src="${esc(item.src)}" alt="${esc(item.name)}">
+      <div class="photo-meta">
+        <p class="photo-name">${esc(item.name)}</p>
+        <p class="photo-desc">${esc(item.desc)}</p>
+      </div>
+    </div>
+  `).join("");
+
+  // 點圖片 → 全螢幕
+  swiper.addEventListener("click", (e) => {
+    const img = e.target.closest("img");
     if (!img) return;
-    pvOpen(img.src, img.alt);
+    openPhotoViewer(img.getAttribute("src"), img.getAttribute("alt") || "");
   });
 
   // Render dots
-  dotsEl.innerHTML = PHOTO_ITEMS.map((_, i) => (
+  dotsEl.innerHTML = (items || []).map((_, i) =>
     `<span class="photo-dot ${i===0?"active":""}" data-idx="${i}" aria-label="第 ${i+1} 張"></span>`
-  )).join("");
+  ).join("");
 
   const dots = Array.from(dotsEl.querySelectorAll(".photo-dot"));
+  const setActiveDot = (idx) => dots.forEach((d,i)=>d.classList.toggle("active", i===idx));
 
-  function setActiveDot(idx) {
-    dots.forEach((d, i) => d.classList.toggle("active", i === idx));
-  }
-
-  // 點點可點選跳到該張
+  // 點 dot 跳轉
   dotsEl.addEventListener("click", (e) => {
     const dot = e.target.closest(".photo-dot");
     if (!dot) return;
     const idx = Number(dot.dataset.idx || 0);
     const slide = swiper.children[idx];
     if (!slide) return;
-    slide.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    slide.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
   });
 
-
-  // 點圖片全螢幕放大
-  swiper.addEventListener('click', (e) => {
-    const img = e.target.closest('img');
-    if (!img) return;
-    openPhotoViewer(img.getAttribute('src'), img.getAttribute('alt') || '');
-  });
-
-  // 依 scroll 位置更新 dot
+  // 依 scroll 更新 dot
   let raf = 0;
   swiper.addEventListener("scroll", () => {
     if (raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(() => {
-      const w = swiper.clientWidth;
+      const w = swiper.clientWidth || 1;
       const idx = Math.round(swiper.scrollLeft / w);
-      setActiveDot(Math.max(0, Math.min(idx, PHOTO_ITEMS.length - 1)));
+      setActiveDot(Math.max(0, Math.min(idx, (items?.length||1)-1)));
     });
-  }, { passive: true });
+  }, { passive:true });
 }
 
-
+function initPhotoPage() {
+  initPhotoGallery("photoSwiper",  "photoDots",  PHOTO_ITEMS_1);
+  initPhotoGallery("photoSwiper2", "photoDots2", PHOTO_ITEMS_2);
+}
 
 document.addEventListener("DOMContentLoaded", initPhotoPage);
 

@@ -2543,7 +2543,7 @@ body.nav-back #menuBtn > div{
 .video-link-list{
   list-style: none;
   padding: 0;
-  margin: 0 0 2rem 0;
+  margin: 0.7rem 0 2rem 0;
   color: #333;
   display:flex;
   flex-direction: column;
@@ -2643,9 +2643,9 @@ body.nav-back #menuBtn > div{
 
 
 .photo-section-title{
-          margin: 18px 0 10px;
+          margin: 3rem 0 0.2rem 0;
         font-weight: 700;
-        font-size: 15px;
+        font-size: 16px;
         margin-top: 2rem;
 }
 
@@ -3526,8 +3526,9 @@ body.nav-back #menuBtn > div{
 			</div>
 			
             <!-- Photo Page (出片參數) -->
+			<input id="photoReplaceInput" type="file" accept="image/*" style="display:none;">
             <div id="photo-page" class="photo-page" style="display:none;">
-				<div class="photo-section-title">Dazz濾鏡</div>
+				<div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
 				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
                     <!-- ✅ 你要放的圖片：在下方 JS 的 PHOTO_ITEMS 直接加/改即可 -->
                 </div>
@@ -4611,6 +4612,87 @@ window.resetNavMenu = resetNavMenu;
 /* =========================
    Photo Page（出片參數）
 ========================= */
+// ===== Photo Replace (點照片換圖) =====
+(function(){
+  const LS_PREFIX = "photo_override__";
+  let pendingKey = null; // 目前要被替換的圖片 key
+
+  function $(id){ return document.getElementById(id); }
+
+  // 把覆蓋圖套回 items（用於 initPhotoPage render 前）
+  function applyOverridesToItems(items){
+    return items.map((it, idx) => {
+      const key = it.key || it.src || ("photo_" + idx);
+      const override = localStorage.getItem(LS_PREFIX + key);
+      return { ...it, key, src: override || it.src };
+    });
+  }
+
+  // 讓外部 initPhotoPage 在 render 前可以用（可選）
+  window.Photo_applyOverridesToItems = applyOverridesToItems;
+
+  // 綁定：點圖片 → 開啟選檔
+  function bindPhotoReplaceClicks(rootEl){
+    if (!rootEl) return;
+
+    rootEl.addEventListener("click", (e) => {
+      const img = e.target.closest("img[data-photo-key]");
+      if (!img) return;
+
+      pendingKey = img.dataset.photoKey;
+      const input = $("photoReplaceInput");
+      if (!input) return;
+
+      input.value = ""; // 重要：同一張再選一次也會觸發 change
+      input.click();
+    });
+  }
+
+  // 選完檔案 → 讀成 dataURL → 寫入 localStorage → 立刻替換畫面
+  function bindFileInput(){
+    const input = $("photoReplaceInput");
+    if (!input) return;
+
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      if (!file || !pendingKey) return;
+
+      // 可選：限制大小，避免 localStorage 爆掉（你可改 2MB/3MB）
+      const MAX = 2 * 1024 * 1024;
+      if (file.size > MAX) {
+        alert("圖片太大，建議小於 2MB（可先縮圖）");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result;
+        try{
+          localStorage.setItem(LS_PREFIX + pendingKey, dataUrl);
+        }catch(err){
+          alert("儲存失敗：可能是儲存空間不足（圖片太大）");
+          return;
+        }
+
+        // 立刻替換所有同 key 的 img
+        document.querySelectorAll(`img[data-photo-key="${pendingKey}"]`)
+          .forEach(img => img.src = dataUrl);
+
+        pendingKey = null;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 對外：initPhotoPage render 完後呼叫一次，把 click 功能掛上去
+  window.Photo_bindReplaceUI = function(){
+    // 你 photo-page 的容器 id 依你實際 render 位置改一下（下面兩個擇一）
+    const page = document.getElementById("photo-page");
+    bindPhotoReplaceClicks(page);
+  };
+
+  bindFileInput();
+})();
 
 // 相簿 1（原本那組）
 const PHOTO_ITEMS_1 = [
@@ -4620,13 +4702,8 @@ const PHOTO_ITEMS_1 = [
 
 // 相簿 2（新增這組，換你的照片）
 const PHOTO_ITEMS_2 = [
-  { src: "images/photo3.jpg", name: "拍照取景參考_1", desc: "點圖片可全螢幕放大，左右滑動切換" },
-  { src: "images/photo3.jpg", name: "拍照取景參考_2", desc: "點圖片可全螢幕放大，左右滑動切換" },
-  { src: "images/photo3.jpg", name: "拍照取景參考_3", desc: "點圖片可全螢幕放大，左右滑動切換" },
-  { src: "images/photo3.jpg", name: "拍照取景參考_4", desc: "點圖片可全螢幕放大，左右滑動切換" },
-  { src: "images/photo3.jpg", name: "拍照取景參考_5", desc: "點圖片可全螢幕放大，左右滑動切換" },
-  { src: "images/photo3.jpg", name: "拍照取景參考_6", desc: "點圖片可全螢幕放大，左右滑動切換" },
-  { src: "images/photo3.jpg", name: "拍照取景參考_7", desc: "點圖片可全螢幕放大，左右滑動切換" }
+  { src: "images/photo3.jpg", name: "拍照取景參考_1", desc: "點圖片可全螢幕放大，左右滑動切換" }
+  
 ];
 
 // 共用：初始化某一個相簿（swiperId + dotsId + items）
@@ -4701,7 +4778,8 @@ function initPhotoPage() {
 const VIDEO_LINKS = [
   { title: " 雪中漫舞", url: "https://www.instagram.com/p/DTSuz_zDLOZ/" },
   { title: " 躺雪少女", url: "https://www.instagram.com/p/DTX1T-Aj9bu/" },
-  { title: " 美瑛雪景", url: "https://www.instagram.com/reel/ZZZZZZZZZZZ/" }
+  { title: " 電影感大片", url: "https://www.instagram.com/p/DRzWURAEmoO/" },
+  { title: " What is love", url: "https://www.instagram.com/p/DTC2eN0gZdI/" }
 ];
 function initVideoGallery() {
   const swiperId = "videoSwiper";

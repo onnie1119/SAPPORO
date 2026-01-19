@@ -3986,11 +3986,11 @@ body.nav-back #menuBtn > div{
 								</div>
 						  	</a>
 							<span class="ticket-divider"></span>
-		         			<a href="pdf/hotel-receipt2.pdf" target="_blank" class="pdf-item">
+		         			<a href="pdf/hotel-reservation2.pdf" target="_blank" class="pdf-item">
 		            			<img src="images/57.png" class="pdf-icon">
 		            			<div class="pdf-info">
 		              				<div class="pdf-title">Payment Receipt</div>
-		              				<div class="pdf-sub">付款收據</div>
+		              				<div class="pdf-sub">付款收據(尚未付款)</div>
 		            			</div>
 		          			</a>
 		        		</div>
@@ -4124,15 +4124,6 @@ body.nav-back #menuBtn > div{
 				}
 			};
 		
-			// ✅ 航班資訊（獨立主頁）：把原本 ticketData.flight.body 直接渲染進去
-			function renderFlightStandalone() {
-				const host = document.getElementById("flightStandalone");
-				if (!host || !ticketData || !ticketData.flight) return;
-				host.innerHTML = ticketData.flight.body || "";
-			}
-			// 只要 DOM ready 就先渲染一次（資料是靜態字串，不需要等其他 API）
-			document.addEventListener("DOMContentLoaded", renderFlightStandalone);
-
 			// 點分類 → 顯示內容頁
 			document.addEventListener("click", function (e) {
 				const card = e.target.closest(".ticket-category");
@@ -4177,24 +4168,19 @@ body.nav-back #menuBtn > div{
 				return;
 			}
 			
-		  	// ⭐ 飯店：留在電子憑證頁（第二層）
-			if (key === "hotel") {
+		  	// ⭐ 住宿 / 航班：留在電子憑證頁
+			if (key === "hotel" || key === "flight") {
 			  	const list = document.querySelector(".ticket-category-list");
 			  	document.getElementById("ticketContent").style.display = "none";
 			  	list.style.display = "flex";
 			  	list.innerHTML = ticketData[key].body;
 			  	playFadeIn(list);
 			  	ticketLevel = key;
-			  	// 飯店第二層需要返回
+			
+			  	// ⭐ 航班 & 飯店 都啟用返回鍵
 			  	setNavBack();
+			
 			  	return;
-			}
-
-			// ✅ 航班：改為「獨立主頁」，不啟用返回、不回到電子票據
-			if (key === "flight") {
-				renderFlightStandalone();
-				showPage("flight-page");
-				return;
 			}
 
 
@@ -4290,19 +4276,13 @@ body.nav-back #menuBtn > div{
 			const card = e.target.closest(".ticket-category");
 		  	if (!card) return;
 			const key = card.dataset.target;
-			if (key === "hotel") {
+			if (key === "hotel" || key === "flight") {
 				const list = document.querySelector(".ticket-category-list");
 				document.getElementById("ticketContent").style.display = "none";
 				list.style.display = "flex";
 				list.innerHTML = ticketData[key].body;
 				playFadeIn(list);  // 加入動畫效果
 				ticketLevel = key;  // 顯示當前頁面
-				setNavBack();
-				return;
-			}
-			if (key === "flight") {
-				renderFlightStandalone();
-				showPage("flight-page");
 				return;
 			}
 			document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
@@ -4401,7 +4381,7 @@ body.nav-back #menuBtn > div{
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page","packing-page","flight-page","ticket-page","exchange-page","weather-page","shopping-page","photo-page"];
+const PAGES = ["home-page","packing-page","ticket-page","photo-page","exchange-page","weather-page","shopping-page"];
 
 let currentPageId = "home-page";
 
@@ -4458,15 +4438,11 @@ function showPage(targetId) {
     resetNavMenu();
   }
 
-  // ✅ 航班資訊：獨立主頁，永遠維持「漢堡選單」模式（不顯示返回箭頭）
-  if (targetId === "flight-page") {
-    resetNavMenu();
-  }
-// ✅ 出片參數頁：永遠維持漢堡狀態（避免從票據內容回上一層的 back 狀態殘留）
+  // ✅ 出片參數頁：永遠維持漢堡狀態（避免從票據內容回上一層的 back 狀態殘留）
   if (targetId === "photo-page") {
     resetNavMenu();
   }
-	
+
 // ✅ 購物清單：進入時渲染/初始化
 if (targetId === "shopping-page") {
   safeCall(window.Shop_EnterShoppingPage);
@@ -4514,6 +4490,144 @@ window.showPage = showPage;
 window.setBottomNavActive = setBottomNavActive;
 window.setNavBack = setNavBack;
 window.resetNavMenu = resetNavMenu;
+
+/* =========================
+   Photo Page（出片參數）
+   - Horizontal swipe gallery
+   - 只要改 PHOTO_ITEMS 就能換照片
+========================= */
+const PHOTO_ITEMS = [
+  { src: "images/photo1.jpg", name: "濾鏡分類", desc: "點圖片可全螢幕放大，左右滑動切換" },
+  { src: "images/photo2.jpg", name: "濾鏡適用場合", desc: "點圖片可全螢幕放大，左右滑動切換" }
+];
+
+function initPhotoPage() {
+  const swiper = document.getElementById("photoSwiper");
+  const dotsEl = document.getElementById("photoDots");
+  if (!swiper || !dotsEl) return;
+
+  // 防重複初始化
+  if (swiper.dataset.inited === "1") return;
+  swiper.dataset.inited = "1";
+
+  // Render slides
+  swiper.innerHTML = PHOTO_ITEMS.map(item => {
+    const safeName = (item.name || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeDesc = (item.desc || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `
+      <div class="photo-slide">
+        <img src="${item.src}" alt="${safeName}">
+        <div class="photo-meta">
+          <p class="photo-name">${safeName}</p>
+          <p class="photo-desc">${safeDesc}</p>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  // 點圖片 → 全螢幕檢視
+  swiper.addEventListener('click', (e) => {
+    const img = e.target.closest('img');
+    if (!img) return;
+    pvOpen(img.src, img.alt);
+  });
+
+  // Render dots
+  dotsEl.innerHTML = PHOTO_ITEMS.map((_, i) => (
+    `<span class="photo-dot ${i===0?"active":""}" data-idx="${i}" aria-label="第 ${i+1} 張"></span>`
+  )).join("");
+
+  const dots = Array.from(dotsEl.querySelectorAll(".photo-dot"));
+
+  function setActiveDot(idx) {
+    dots.forEach((d, i) => d.classList.toggle("active", i === idx));
+  }
+
+  // 點點可點選跳到該張
+  dotsEl.addEventListener("click", (e) => {
+    const dot = e.target.closest(".photo-dot");
+    if (!dot) return;
+    const idx = Number(dot.dataset.idx || 0);
+    const slide = swiper.children[idx];
+    if (!slide) return;
+    slide.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  });
+
+
+  // 點圖片全螢幕放大
+  swiper.addEventListener('click', (e) => {
+    const img = e.target.closest('img');
+    if (!img) return;
+    openPhotoViewer(img.getAttribute('src'), img.getAttribute('alt') || '');
+  });
+
+  // 依 scroll 位置更新 dot
+  let raf = 0;
+  swiper.addEventListener("scroll", () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      const w = swiper.clientWidth;
+      const idx = Math.round(swiper.scrollLeft / w);
+      setActiveDot(Math.max(0, Math.min(idx, PHOTO_ITEMS.length - 1)));
+    });
+  }, { passive: true });
+}
+
+
+
+document.addEventListener("DOMContentLoaded", initPhotoPage);
+
+
+/* =========================
+   Photo Viewer (Full Screen)
+   - 點圖片全螢幕放大
+   - 點背景/右上角/ESC 關閉
+========================= */
+function openPhotoViewer(src, alt='') {
+  const viewer = document.getElementById('photoViewer');
+  const img = document.getElementById('photoViewerImg');
+  if (!viewer || !img) return;
+
+  img.src = src;
+  img.alt = alt || '';
+  viewer.classList.add('is-open');
+  viewer.setAttribute('aria-hidden','false');
+
+  // 盡量進入真正全螢幕（iOS PWA/部分瀏覽器可能不支援，沒關係）
+  try {
+    if (viewer.requestFullscreen) viewer.requestFullscreen();
+  } catch(e){}
+}
+
+function closePhotoViewer() {
+  const viewer = document.getElementById('photoViewer');
+  const img = document.getElementById('photoViewerImg');
+  if (!viewer) return;
+
+  viewer.classList.remove('is-open');
+  viewer.setAttribute('aria-hidden','true');
+  if (img) img.src = '';
+
+  try {
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+  } catch(e){}
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePhotoViewer();
+});
+
+
+// Photo viewer close handlers (once)
+document.addEventListener('DOMContentLoaded', () => {
+  const viewer = document.getElementById('photoViewer');
+  if (!viewer || viewer.dataset.bound === '1') return;
+  viewer.dataset.bound = '1';
+  viewer.addEventListener('click', (e) => {
+    if (e.target && e.target.getAttribute('data-close') === '1') closePhotoViewer();
+  });
+});
+
 
 /* =========================
    TOP button（scroll to top）
@@ -4682,6 +4796,7 @@ window.applyInitialHomeOffset = window.applyInitialHomeOffset || function () {
 document.querySelectorAll(".bottom-nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     const page = btn.dataset.page;
+
     showPage(page);
 
     document.querySelectorAll(".bottom-nav button")

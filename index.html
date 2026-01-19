@@ -2462,9 +2462,10 @@ body.nav-back #menuBtn > div{
 		    <span class="icon-clipboard"></span>
 		    <span class="label">行程</span>
 		</button>
-		<button data-page="packing-page">
-		    <span class="icon-briefcase1"></span>
-		    <span class="label">行李</span>
+		<!-- ✅ 底部把「行李清單」改成「航班資訊」，直接進入電子票據的航班頁（同一個內容） -->
+		<button data-page="ticket-page" data-ticket="flight">
+		    <span class="icon-airplane"></span>
+		    <span class="label">航班</span>
 		</button>
 		<button data-page="ticket-page">
 		    <span class="icon-ticket"></span>
@@ -4494,8 +4495,20 @@ window.applyInitialHomeOffset = window.applyInitialHomeOffset || function () {
 document.querySelectorAll(".bottom-nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     const page = btn.dataset.page;
+    const ticketTarget = btn.dataset.ticket; // e.g. "flight"
 
-    showPage(page);
+    // ✅ 航班：導到 ticket-page 並自動打開「航班資訊」（同電子票據內的航班頁）
+    if (page === "ticket-page" && ticketTarget === "flight") {
+      showPage("ticket-page");
+
+      // 等 ticket-page 內容 reset/顯示完成，再觸發分類點擊
+      requestAnimationFrame(() => {
+        const flightCard = document.querySelector('#ticket-page .ticket-category[data-target="flight"]');
+        if (flightCard) flightCard.click();
+      });
+    } else {
+      showPage(page);
+    }
 
     document.querySelectorAll(".bottom-nav button")
       .forEach(b => b.classList.remove("active"));

@@ -4191,6 +4191,12 @@ body.nav-back #menuBtn > div{
 			  	return;
 			}
 
+			// ✅ 航班：改為「獨立主頁」，不啟用返回、不回到電子票據
+			if (key === "flight") {
+				renderFlightStandalone();
+				showPage("flight-page");
+				return;
+			}
 
 
 		
@@ -4284,13 +4290,19 @@ body.nav-back #menuBtn > div{
 			const card = e.target.closest(".ticket-category");
 		  	if (!card) return;
 			const key = card.dataset.target;
-			if (key === "hotel" || key === "flight") {
+			if (key === "hotel") {
 				const list = document.querySelector(".ticket-category-list");
 				document.getElementById("ticketContent").style.display = "none";
 				list.style.display = "flex";
 				list.innerHTML = ticketData[key].body;
 				playFadeIn(list);  // 加入動畫效果
 				ticketLevel = key;  // 顯示當前頁面
+				setNavBack();
+				return;
+			}
+			if (key === "flight") {
+				renderFlightStandalone();
+				showPage("flight-page");
 				return;
 			}
 			document.getElementById("ticketContentTitle").textContent = ticketData[key].title || "";
@@ -4389,7 +4401,7 @@ body.nav-back #menuBtn > div{
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page","packing-page","ticket-page","photo-page","exchange-page","weather-page","shopping-page"];
+const PAGES = ["home-page","packing-page","flight-page","ticket-page","exchange-page","weather-page","shopping-page"];
 
 let currentPageId = "home-page";
 
@@ -4445,7 +4457,10 @@ function showPage(targetId) {
     safeCall(window.resetTicketPage);
     resetNavMenu();
   }
-
+ // ✅ 航班資訊：獨立主頁，永遠維持「漢堡選單」模式（不顯示返回箭頭）
+  if (targetId === "flight-page") {
+    resetNavMenu();
+  }
   // ✅ 出片參數頁：永遠維持漢堡狀態（避免從票據內容回上一層的 back 狀態殘留）
   if (targetId === "photo-page") {
     resetNavMenu();

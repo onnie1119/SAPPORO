@@ -3466,6 +3466,12 @@ body.nav-back #menuBtn > div{
 					<div id="photoSwiper2" class="photo-swiper"></div>
 					<div id="photoDots2" class="photo-dots"></div>
 				</div>
+				<!-- 影片相簿（新增） -->
+				<div class="photo-section">
+					<div class="photo-section-title">影片相簿</div>
+					<div id="videoSwiper" class="photo-swiper"></div>
+				 	<div id="videoDots" class="photo-dots"></div>
+				</div>
 			</div>
 			
 			<!-- Shopping Page -->
@@ -4607,6 +4613,86 @@ function initPhotoGallery(swiperId, dotsId, items) {
 function initPhotoPage() {
   initPhotoGallery("photoSwiper",  "photoDots",  PHOTO_ITEMS_1);
   initPhotoGallery("photoSwiper2", "photoDots2", PHOTO_ITEMS_2);
+  initVideoGallery(); // ✅ 新增
+}
+// 影片相簿（封面 + 連結）
+const VIDEO_ITEMS = [
+  {
+    cover: "images/video1.jpg",     // 封面圖（你自備）
+    title: "札幌街拍",
+    desc: "點封面開影片",
+    url: "https://www.instagram.com/p/DTSuz_zDLOZ/" // 影片連結（YouTube/Drive/網站皆可）
+  },
+  {
+    cover: "images/video2.jpg",
+    title: "小樽散步",
+    desc: "點封面開影片",
+    url: "https://www.instagram.com/p/DTSuz_zDLOZ/"
+  }
+];
+function initVideoGallery() {
+  const swiperId = "videoSwiper";
+  const dotsId = "videoDots";
+
+  const swiper = document.getElementById(swiperId);
+  const dotsEl = document.getElementById(dotsId);
+  if (!swiper || !dotsEl) return;
+
+  if (swiper.dataset.inited === "1") return;
+  swiper.dataset.inited = "1";
+
+  const esc = (s) => String(s ?? "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+
+  swiper.innerHTML = (VIDEO_ITEMS || []).map(v => `
+    <div class="photo-slide video-slide" data-url="${esc(v.url)}">
+      <div class="video-cover">
+        <img src="${esc(v.cover)}" alt="${esc(v.title)}">
+        <div class="video-play-badge">▶</div>
+      </div>
+      <div class="photo-meta">
+        <p class="photo-name">${esc(v.title)}</p>
+        <p class="photo-desc">${esc(v.desc)}</p>
+      </div>
+    </div>
+  `).join("");
+
+  // 點封面 → 開連結（新分頁）
+  swiper.addEventListener("click", (e) => {
+    const slide = e.target.closest(".video-slide");
+    if (!slide) return;
+    const url = slide.dataset.url;
+    if (!url) return;
+    window.open(url, "_blank");
+  });
+
+  // dots
+  dotsEl.innerHTML = (VIDEO_ITEMS || []).map((_, i) =>
+    `<span class="photo-dot ${i===0?"active":""}" data-idx="${i}"></span>`
+  ).join("");
+
+  const dots = Array.from(dotsEl.querySelectorAll(".photo-dot"));
+  const setActiveDot = (idx) => dots.forEach((d,i)=>d.classList.toggle("active", i===idx));
+
+  dotsEl.addEventListener("click", (e) => {
+    const dot = e.target.closest(".photo-dot");
+    if (!dot) return;
+    const idx = Number(dot.dataset.idx || 0);
+    const slide = swiper.children[idx];
+    if (!slide) return;
+    slide.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
+  });
+
+  let raf = 0;
+  swiper.addEventListener("scroll", () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      const w = swiper.clientWidth || 1;
+      const idx = Math.round(swiper.scrollLeft / w);
+      setActiveDot(Math.max(0, Math.min(idx, (VIDEO_ITEMS?.length||1)-1)));
+    });
+  }, { passive:true });
 }
 
 document.addEventListener("DOMContentLoaded", initPhotoPage);

@@ -4126,6 +4126,15 @@ body.nav-back #menuBtn > div{
 				}
 			};
 		
+			// ✅ 航班資訊（獨立主頁）：把原本 ticketData.flight.body 直接渲染進去
+			function renderFlightStandalone() {
+				const host = document.getElementById("flightStandalone");
+				if (!host || !ticketData || !ticketData.flight) return;
+				host.innerHTML = ticketData.flight.body || "";
+			}
+			// 只要 DOM ready 就先渲染一次（資料是靜態字串，不需要等其他 API）
+			document.addEventListener("DOMContentLoaded", renderFlightStandalone);
+
 			// 點分類 → 顯示內容頁
 			document.addEventListener("click", function (e) {
 				const card = e.target.closest(".ticket-category");

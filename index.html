@@ -5073,8 +5073,9 @@ function initPhotoGallery(swiperId, dotsId, items) {
 function initPhotoPage() {
 	bindHeaderAddButtonsOnce(); 
   bindPhotoReplaceInputOnce();
-  initPhotoGallery("photoSwiper",  "photoDots",  PHOTO_ITEMS_1);
-  initPhotoGallery("photoSwiper2", "photoDots2", PHOTO_ITEMS_2);
+ initPhotoGallery("photoSwiper",  "photoDots",  getAllAlbumItems(1));
+initPhotoGallery("photoSwiper2", "photoDots2", getAllAlbumItems(2));
+
   initVideoGallery(); // ✅ 新增
   
 }

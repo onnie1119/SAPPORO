@@ -2831,6 +2831,50 @@ color: #d95380;
         font-family: fangsong;
         cursor: pointer;
 }
+		/* ✅ 永遠以「手機螢幕」為基準的全螢幕預覽層 */
+.photo-viewer{
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  width: 100vw;
+  height: 100dvh;          /* ⭐ 關鍵：用動態 viewport 高度 */
+  z-index: 2147483647;     /* ⭐ 關鍵：確保在最上層 */
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,0.85);
+}
+
+/* 打開 */
+.photo-viewer.is-open{ display:flex; }
+
+/* ✅ 內容容器也鎖定 viewport */
+.photo-viewer-content{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100dvh;
+
+  display: flex;
+  align-items: center;      /* 垂直：螢幕正中央 */
+  justify-content: center;  /* 水平：螢幕正中央 */
+
+  padding: 0;
+}
+
+/* ✅ 圖片最大尺寸限制，不影響「中心定位」 */
+.photo-viewer-img{
+  max-width: 92vw;
+  max-height: 92dvh;
+  object-fit: contain;
+  width: auto;
+  height: auto;
+}
+
 </style>
 </head>
 <body>

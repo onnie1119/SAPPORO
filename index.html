@@ -2736,7 +2736,8 @@ body.nav-back #menuBtn > div{
   width: 100%;
   border: 0;
   background: transparent;
-  padding: 14px 12px;
+  padding: 15px 0;
+	border-top: 1px solid rgba(0, 0, 0, .10);
   font-size: 17px;
   color: #007AFF;
   cursor: pointer;
@@ -2751,9 +2752,7 @@ body.nav-back #menuBtn > div{
   background: rgba(0,0,0,.06);
 }
 
-.ios-alert-btn-cancel{
-  font-weight: 700;
-}
+
 
 .ios-alert-mask.is-open .ios-alert{
   animation: iosAlertIn .16s ease-out;
@@ -4756,7 +4755,7 @@ function ensurePhotoActionSheet(){
   sheet.innerHTML = `
     <div class="ios-alert" role="dialog" aria-modal="true">
       <div class="ios-alert-body">
-        <div class="ios-alert-title">想要取用您的照片</div>
+        <div class="ios-alert-title">北海道の旅想要取用您的照片</div>
         <div class="ios-alert-desc">請選擇要更換的圖片來源</div>
       </div>
 

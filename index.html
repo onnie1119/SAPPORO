@@ -2537,7 +2537,7 @@ body.nav-back #menuBtn > div{
   border-radius: 12px;
   box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
   padding: 14px 14px;
-  margin-top: 14px;
+  margin-top: calc(var(--topbar-h) + env(safe-area-inset-top) + 14px);
 }
 .photo-section-box .section-title{
   font-size: 16px;
@@ -2613,12 +2613,16 @@ body.nav-back #menuBtn > div{
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
+  box-sizing: border-box;
+  padding-left: 18px;
+  padding-right: 18px;
+  padding-top: calc(var(--topbar-h) + env(safe-area-inset-top) + 12px);
+  padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
 }
 
 .photo-viewer-img{
   max-width: 100vw;
-  max-height: 100vh;
+  max-height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px);
   width: auto;
   height: auto;
   object-fit: contain;
@@ -2629,7 +2633,7 @@ body.nav-back #menuBtn > div{
 
 .photo-viewer-close{
           position: absolute;
-        top: 14px;
+        top: calc(var(--topbar-h) + env(safe-area-inset-top) + 14px);
         right: 14px;
         width: 44px;
         height: 44px;
@@ -6396,11 +6400,16 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
         <div id="shopPreview" style="
           position: fixed; inset: 0; z-index: 9999;
-          display:none; align-items:center; justify-content:center;    margin-top: -9rem;
+          display:none; align-items:center; justify-content:center;
           background: rgba(0,0,0,.65);
+          box-sizing: border-box;
+          padding-top: calc(var(--topbar-h) + env(safe-area-inset-top) + 8px);
+          padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
+          padding-left: 10px;
+          padding-right: 10px;
         ">
           <img id="shopPreviewImg" src="" style="
-            max-width: 92vw; max-height: 88vh;
+            max-width: 92vw; max-height: calc(100dvh - var(--topbar-h) - var(--bottom-nav-h) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
             border-radius: 14px;
             box-shadow: 0 12px 40px rgba(0,0,0,.35);
             background: #fff;

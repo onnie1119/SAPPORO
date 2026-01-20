@@ -2496,7 +2496,12 @@ body.nav-back #menuBtn > div{
   height: 320px;
   object-fit: cover;
   display: block;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
+
 
 .photo-meta{
   padding: 12px 14px;
@@ -2717,7 +2722,7 @@ body.nav-back #menuBtn > div{
               
               <li data-target="packing-page">行李清單</li>
 			  <li data-target="shopping-page">購物清單</li>
-             
+              <li data-target="ticket-page">電子票據</li>
               <li data-target="photo-page">出片參數</li>
               
 			  <li data-target="weather-page">天氣預報</li>
@@ -3526,7 +3531,6 @@ body.nav-back #menuBtn > div{
 			</div>
 			
             <!-- Photo Page (出片參數) -->
-			<input id="photoReplaceInput" type="file" accept="image/*" style="display:none;">
             <div id="photo-page" class="photo-page" style="display:none;">
 				<div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
 				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
@@ -3550,6 +3554,9 @@ body.nav-back #menuBtn > div{
 				<!-- 影片相簿（新增） -->
 				<div class="photo-section-title">短影音參考</div>
 				<ul id="videoLinkList" class="video-link-list"></ul>
+			<!-- 長按更換圖片用（隱藏選圖） -->
+			<input id="photoReplaceInput" type="file" accept="image/*" hidden>
+
 
 			</div>
 			
@@ -4612,87 +4619,6 @@ window.resetNavMenu = resetNavMenu;
 /* =========================
    Photo Page（出片參數）
 ========================= */
-// ===== Photo Replace (點照片換圖) =====
-(function(){
-  const LS_PREFIX = "photo_override__";
-  let pendingKey = null; // 目前要被替換的圖片 key
-
-  function $(id){ return document.getElementById(id); }
-
-  // 把覆蓋圖套回 items（用於 initPhotoPage render 前）
-  function applyOverridesToItems(items){
-    return items.map((it, idx) => {
-      const key = it.key || it.src || ("photo_" + idx);
-      const override = localStorage.getItem(LS_PREFIX + key);
-      return { ...it, key, src: override || it.src };
-    });
-  }
-
-  // 讓外部 initPhotoPage 在 render 前可以用（可選）
-  window.Photo_applyOverridesToItems = applyOverridesToItems;
-
-  // 綁定：點圖片 → 開啟選檔
-  function bindPhotoReplaceClicks(rootEl){
-    if (!rootEl) return;
-
-    rootEl.addEventListener("click", (e) => {
-      const img = e.target.closest("img[data-photo-key]");
-      if (!img) return;
-
-      pendingKey = img.dataset.photoKey;
-      const input = $("photoReplaceInput");
-      if (!input) return;
-
-      input.value = ""; // 重要：同一張再選一次也會觸發 change
-      input.click();
-    });
-  }
-
-  // 選完檔案 → 讀成 dataURL → 寫入 localStorage → 立刻替換畫面
-  function bindFileInput(){
-    const input = $("photoReplaceInput");
-    if (!input) return;
-
-    input.addEventListener("change", () => {
-      const file = input.files && input.files[0];
-      if (!file || !pendingKey) return;
-
-      // 可選：限制大小，避免 localStorage 爆掉（你可改 2MB/3MB）
-      const MAX = 2 * 1024 * 1024;
-      if (file.size > MAX) {
-        alert("圖片太大，建議小於 2MB（可先縮圖）");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result;
-        try{
-          localStorage.setItem(LS_PREFIX + pendingKey, dataUrl);
-        }catch(err){
-          alert("儲存失敗：可能是儲存空間不足（圖片太大）");
-          return;
-        }
-
-        // 立刻替換所有同 key 的 img
-        document.querySelectorAll(`img[data-photo-key="${pendingKey}"]`)
-          .forEach(img => img.src = dataUrl);
-
-        pendingKey = null;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // 對外：initPhotoPage render 完後呼叫一次，把 click 功能掛上去
-  window.Photo_bindReplaceUI = function(){
-    // 你 photo-page 的容器 id 依你實際 render 位置改一下（下面兩個擇一）
-    const page = document.getElementById("photo-page");
-    bindPhotoReplaceClicks(page);
-  };
-
-  bindFileInput();
-})();
 
 // 相簿 1（原本那組）
 const PHOTO_ITEMS_1 = [
@@ -4705,6 +4631,90 @@ const PHOTO_ITEMS_2 = [
   { src: "images/photo3.jpg", name: "拍照取景參考_1", desc: "點圖片可全螢幕放大，左右滑動切換" }
   
 ];
+
+
+
+// ===== Photo: 長按更換圖片（localStorage 覆蓋）===== 
+const PHOTO_OVERRIDE_LS_PREFIX = "photo_override__";
+const PHOTO_OVERRIDE_MAX_BYTES = 2 * 1024 * 1024; // 2MB，避免 localStorage 爆掉
+let __photoReplacePendingKey = null;
+
+function ensurePhotoToast(){
+  let el = document.getElementById('photoToast');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'photoToast';
+  el.style.cssText = [
+    'position:fixed','left:50%','bottom:90px','transform:translateX(-50%)',
+    'background:rgba(0,0,0,.78)','color:#fff','padding:10px 14px','border-radius:999px',
+    'font-size:13px','letter-spacing:.5px','z-index:10000','opacity:0','pointer-events:none',
+    'transition:opacity .18s ease'
+  ].join(';');
+  document.body.appendChild(el);
+  return el;
+}
+function photoToast(msg, ms=1400){
+  const el = ensurePhotoToast();
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el.__t);
+  el.__t = setTimeout(()=>{ el.style.opacity = '0'; }, ms);
+}
+
+function bindPhotoReplaceInputOnce(){
+  const input = document.getElementById('photoReplaceInput');
+  if (!input || input.dataset.bound === '1') return;
+  input.dataset.bound = '1';
+
+  input.addEventListener('change', () => {
+    const file = input.files && input.files[0];
+    if (!file || !__photoReplacePendingKey) return;
+
+    if (!/^image\//.test(file.type || '')) {
+      photoToast('⚠️ 請選擇圖片檔');
+      return;
+    }
+    if (file.size > PHOTO_OVERRIDE_MAX_BYTES) {
+      photoToast('⚠️ 圖片太大，建議小於 2MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      try {
+        localStorage.setItem(PHOTO_OVERRIDE_LS_PREFIX + __photoReplacePendingKey, dataUrl);
+      } catch (e) {
+        photoToast('⚠️ 儲存失敗：空間不足（圖片太大）', 1800);
+        return;
+      }
+
+      // 立刻替換所有相同 key 的圖片
+      document.querySelectorAll('img[data-photo-key]').forEach(img => {
+        if (img.dataset.photoKey === __photoReplacePendingKey) {
+          img.src = dataUrl;
+        }
+      });
+
+      photoToast('✅ 已更換圖片');
+      __photoReplacePendingKey = null;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function openPhotoReplacePicker(photoKey){
+  const input = document.getElementById('photoReplaceInput');
+  if (!input) return;
+  __photoReplacePendingKey = photoKey;
+  input.value = '';
+  input.click();
+}
+
+function getPhotoOverrideSrc(photoKey){
+  try { return localStorage.getItem(PHOTO_OVERRIDE_LS_PREFIX + photoKey) || ''; }
+  catch(e){ return ''; }
+}
 
 // 共用：初始化某一個相簿（swiperId + dotsId + items）
 function initPhotoGallery(swiperId, dotsId, items) {
@@ -4720,10 +4730,16 @@ function initPhotoGallery(swiperId, dotsId, items) {
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 
-  // Render slides
-  swiper.innerHTML = (items || []).map(item => `
+  // Render slides（套用 localStorage 覆蓋圖 + 設定 key）
+  const normalizedItems = (items || []).map((item, idx) => {
+    const key = item.key || item.src || (swiperId + '_' + idx);
+    const overridden = getPhotoOverrideSrc(key);
+    return { ...item, key, src: overridden || item.src };
+  });
+
+  swiper.innerHTML = normalizedItems.map(item => `
     <div class="photo-slide">
-      <img src="${esc(item.src)}" alt="${esc(item.name)}">
+      <img src="${esc(item.src)}" alt="${esc(item.name)}" data-photo-key="${esc(item.key)}">
       <div class="photo-meta">
         <p class="photo-name">${esc(item.name)}</p>
         <p class="photo-desc">${esc(item.desc)}</p>
@@ -4731,10 +4747,66 @@ function initPhotoGallery(swiperId, dotsId, items) {
     </div>
   `).join("");
 
-  // 點圖片 → 全螢幕
+  // 點一下 → 全螢幕；長按 → 更換圖片
+  const LONG_PRESS_MS = 550;
+  let lpTimer = 0;
+  let lpTriggered = false;
+  let startX = 0, startY = 0;
+  let suppressClick = false;
+
+  const clearLP = () => {
+    if (lpTimer) { clearTimeout(lpTimer); lpTimer = 0; }
+  };
+
+  swiper.addEventListener('pointerdown', (e) => {
+    const img = e.target.closest('img[data-photo-key]');
+    if (!img) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+    lpTriggered = false;
+    startX = e.clientX; startY = e.clientY;
+    clearLP();
+
+    lpTimer = setTimeout(() => {
+      lpTriggered = true;
+      suppressClick = true;
+      try { if (navigator.vibrate) navigator.vibrate(10); } catch(_) {}
+      openPhotoReplacePicker(img.dataset.photoKey);
+    }, LONG_PRESS_MS);
+  });
+
+  swiper.addEventListener('pointermove', (e) => {
+    if (!lpTimer) return;
+    const dx = Math.abs(e.clientX - startX);
+    const dy = Math.abs(e.clientY - startY);
+    if (dx > 12 || dy > 12) clearLP();
+  }, { passive: true });
+
+  swiper.addEventListener('pointerup', () => {
+    clearLP();
+    if (lpTriggered) setTimeout(() => { suppressClick = false; }, 50);
+  }, { passive: true });
+
+  swiper.addEventListener('pointercancel', () => {
+    clearLP();
+    if (lpTriggered) setTimeout(() => { suppressClick = false; }, 50);
+  }, { passive: true });
+
+  // 取消長按的系統右鍵/選單（桌機/部分瀏覽器）
+  swiper.addEventListener('contextmenu', (e) => {
+    const img = e.target.closest('img[data-photo-key]');
+    if (!img) return;
+    e.preventDefault();
+  });
+
   swiper.addEventListener("click", (e) => {
     const img = e.target.closest("img");
     if (!img) return;
+    if (suppressClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     openPhotoViewer(img.getAttribute("src"), img.getAttribute("alt") || "");
   });
 
@@ -4769,6 +4841,7 @@ function initPhotoGallery(swiperId, dotsId, items) {
 }
 
 function initPhotoPage() {
+  bindPhotoReplaceInputOnce();
   initPhotoGallery("photoSwiper",  "photoDots",  PHOTO_ITEMS_1);
   initPhotoGallery("photoSwiper2", "photoDots2", PHOTO_ITEMS_2);
   initVideoGallery(); // ✅ 新增

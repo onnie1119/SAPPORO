@@ -2704,8 +2704,8 @@ body.nav-back #menuBtn > div{
 }
 
 .ios-alert{
-  width: min(320px, 92vw);
-  background: rgba(255,255,255,.94);
+         width: min(290px, 92vw);
+        background: rgba(255, 255, 255, .95);
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 12px 30px rgba(0,0,0,.25);
@@ -2763,6 +2763,26 @@ body.nav-back #menuBtn > div{
   to  { transform: scale(1);   opacity: 1; }
 }
 
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.btn-add-photo{
+  border:1px solid rgba(0,0,0,.12);
+  background:rgba(255,255,255,.85);
+  border-radius:10px;
+  padding:6px 10px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.btn-add-photo:active{
+  background:rgba(0,0,0,.06);
+}
 
 </style>
 </head>
@@ -3614,7 +3634,12 @@ body.nav-back #menuBtn > div{
 			
             <!-- Photo Page (出片參數) -->
             <div id="photo-page" class="photo-page" style="display:none;">
-				<div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
+				<div class="section-head">
+				  <div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
+				  <button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
+				</div>
+
+				
 				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
                     <!-- ✅ 你要放的圖片：在下方 JS 的 PHOTO_ITEMS 直接加/改即可 -->
                 </div>
@@ -3629,7 +3654,11 @@ body.nav-back #menuBtn > div{
             	</div>
 				<!-- 第二個相簿（新增） -->
 				<div class="photo-section">
-					<div class="photo-section-title">構圖參考</div>
+					<div class="section-head">
+					  <div class="photo-section-title">構圖參考</div>
+					  <button class="btn-add-photo" type="button" data-add-album="2">＋ 新增</button>
+					</div>
+					
 					<div id="photoSwiper2" class="photo-swiper"></div>
 					<div id="photoDots2" class="photo-dots"></div>
 				</div>
@@ -4995,10 +5024,12 @@ function initPhotoGallery(swiperId, dotsId, items) {
 }
 
 function initPhotoPage() {
+	bindHeaderAddButtonsOnce(); 
   bindPhotoReplaceInputOnce();
   initPhotoGallery("photoSwiper",  "photoDots",  PHOTO_ITEMS_1);
   initPhotoGallery("photoSwiper2", "photoDots2", PHOTO_ITEMS_2);
   initVideoGallery(); // ✅ 新增
+  
 }
 // 影片相簿（封面 + 連結）
 
@@ -5008,6 +5039,80 @@ const VIDEO_LINKS = [
   { title: " 電影感大片", url: "https://www.instagram.com/p/DRzWURAEmoO/" },
   { title: " What is love", url: "https://www.instagram.com/p/DTC2eN0gZdI/" }
 ];
+
+const PHOTO_USER_LS_KEY_1 = "photo_user_items__album1";
+const PHOTO_USER_LS_KEY_2 = "photo_user_items__album2";
+
+function loadUserItems(lsKey){
+  try { return JSON.parse(localStorage.getItem(lsKey) || "[]") || []; }
+  catch(e){ return []; }
+}
+function saveUserItems(lsKey, arr){
+  localStorage.setItem(lsKey, JSON.stringify(arr || []));
+}
+
+function getAllAlbumItems(albumNo){
+  const base = (albumNo === 1) ? PHOTO_ITEMS_1 : PHOTO_ITEMS_2;
+  const users = loadUserItems(albumNo === 1 ? PHOTO_USER_LS_KEY_1 : PHOTO_USER_LS_KEY_2);
+  return [...base, ...users];
+}
+
+function refreshPhotoAlbums(){
+  const s1 = document.getElementById("photoSwiper");
+  const d1 = document.getElementById("photoDots");
+  const s2 = document.getElementById("photoSwiper2");
+  const d2 = document.getElementById("photoDots2");
+
+  if (s1) { delete s1.dataset.inited; s1.innerHTML = ""; }
+  if (d1) d1.innerHTML = "";
+  if (s2) { delete s2.dataset.inited; s2.innerHTML = ""; }
+  if (d2) d2.innerHTML = "";
+
+  initPhotoGallery("photoSwiper",  "photoDots",  getAllAlbumItems(1));
+  initPhotoGallery("photoSwiper2", "photoDots2", getAllAlbumItems(2));
+}
+
+let __photoAddTargetAlbum = 1;
+
+function bindHeaderAddButtonsOnce(){
+  const input = document.getElementById("photoAddInput");
+  if (!input || input.dataset.bound === "1") return;
+  input.dataset.bound = "1";
+
+  // 右上角新增按鈕（用 data-add-album 決定要加到哪個欄位）
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".btn-add-photo[data-add-album]");
+    if (!btn) return;
+    __photoAddTargetAlbum = parseInt(btn.dataset.addAlbum, 10) || 1;
+    input.value = "";
+    input.click(); // ✅ 由按鈕 click 觸發，手機/iPhone 可正常開相簿
+  });
+
+  input.addEventListener("change", async ()=>{
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+
+    const lsKey = (__photoAddTargetAlbum === 1) ? PHOTO_USER_LS_KEY_1 : PHOTO_USER_LS_KEY_2;
+    const old = loadUserItems(lsKey);
+
+    for (const f of files){
+      if (!/^image\//.test(f.type || "")) continue;
+
+      const dataUrl = await new Promise((resolve)=>{
+        const r = new FileReader();
+        r.onload = ()=>resolve(String(r.result || ""));
+        r.readAsDataURL(f);
+      });
+
+      const key = `user_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      old.push({ key, src: dataUrl, name: f.name || "新增圖片", desc: "" });
+    }
+
+    saveUserItems(lsKey, old);
+    refreshPhotoAlbums();
+  });
+}
+
 function initVideoGallery() {
   const swiperId = "videoSwiper";
   const dotsId = "videoDots";

@@ -2494,8 +2494,14 @@ body.nav-back #menuBtn > div{
 
 .photo-slide img{
   width: 100%;
-  height: 320px;
-  object-fit: cover;
+  /* ✅ 出片參數頁：手機介面截圖多為直式長圖
+     先前用固定高度 + object-fit: cover 會把上下裁掉，造成「預覽下移 / 2/3 被切到」。
+     改成 contain + top 對齊，並用 viewport 高度當上限，確保整張都看得到。 */
+  height: 60vh;
+  max-height: 520px;
+  object-fit: contain;
+  object-position: center top;
+  background: #f2f4f7;
   display: block;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -2587,7 +2593,8 @@ body.nav-back #menuBtn > div{
 }
 
 @media (max-width: 480px){
-  .photo-slide img{ height: 500px; }
+  /* 手機：用螢幕高度決定，避免固定 500px 造成看起來被切 / 位置怪 */
+  .photo-slide img{ height: 68vh; max-height: 68vh; }
 }
 
 /* =========================================================

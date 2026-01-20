@@ -2788,6 +2788,26 @@ body.nav-back #menuBtn > div{
   display: none !important;
 }
 
+
+
+/* ===== Photo header actions (Add/Remove) ===== */
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.photo-section-actions{display:flex;gap:8px;align-items:center;}
+.btn-remove-photo{
+  border:1px solid rgba(0,0,0,.12);
+  background:rgba(255,255,255,.88);
+  border-radius:10px;
+  padding:6px 10px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  color:#d84a4a;
+}
+.btn-remove-photo:active{background:rgba(0,0,0,.06);}
+
+/* 隱藏照片下方資訊（photo-meta） */
+#photo-page .photo-meta{display:none !important;}
+
 </style>
 </head>
 <body>
@@ -3640,7 +3660,10 @@ body.nav-back #menuBtn > div{
             <div id="photo-page" class="photo-page" style="display:none;">
 				<div class="section-head">
 				  <div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
-				  <button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
+				  <div class="photo-section-actions">
+  <button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
+  <button class="btn-remove-photo" type="button" data-remove-album="1">移除</button>
+</div>
 				</div>
 
 				
@@ -3660,7 +3683,10 @@ body.nav-back #menuBtn > div{
 				<div class="photo-section">
 					<div class="section-head">
 					  <div class="photo-section-title">構圖參考</div>
-					  <button class="btn-add-photo" type="button" data-add-album="2" style="    margin-top: 1.4rem;>＋ 新增</button>
+					  <div class="photo-section-actions">
+  <button class="btn-add-photo" type="button" data-add-album="2">＋ 新增</button>
+  <button class="btn-remove-photo" type="button" data-remove-album="2">移除</button>
+</div>
 					</div>
 					
 					<div id="photoSwiper2" class="photo-swiper"></div>
@@ -5073,8 +5099,8 @@ function initPhotoGallery(swiperId, dotsId, items) {
 function initPhotoPage() {
 	bindHeaderAddButtonsOnce(); 
   bindPhotoReplaceInputOnce();
-initPhotoGallery("photoSwiper",  "photoDots",  PHOTO_ITEMS_1);
-initPhotoGallery("photoSwiper2", "photoDots2", PHOTO_ITEMS_2);
+initPhotoGallery("photoSwiper",  "photoDots",  getAllAlbumItems(1));
+initPhotoGallery("photoSwiper2", "photoDots2", getAllAlbumItems(2));
 
   initVideoGallery(); // ✅ 新增
   
@@ -5136,7 +5162,25 @@ function bindHeaderAddButtonsOnce(){
     input.click(); // ✅ 由按鈕 click 觸發，手機/iPhone 可正常開相簿
   });
 
-  input.addEventListener("change", async ()=>{
+  
+  // 右上角移除按鈕（移除該相簿最後一張新增圖片，不動內建圖）
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".btn-remove-photo[data-remove-album]");
+    if (!btn) return;
+    const albumNo = parseInt(btn.dataset.removeAlbum, 10) || 1;
+    const lsKey = (albumNo === 1) ? PHOTO_USER_LS_KEY_1 : PHOTO_USER_LS_KEY_2;
+    const arr = loadUserItems(lsKey);
+    if (!arr.length) {
+      if (typeof photoToast === "function") photoToast("沒有可移除的新增圖片");
+      return;
+    }
+    arr.pop();
+    saveUserItems(lsKey, arr);
+    refreshPhotoAlbums();
+    if (typeof photoToast === "function") photoToast("已移除最後一張新增圖片");
+  });
+
+input.addEventListener("change", async ()=>{
     const files = Array.from(input.files || []);
     if (!files.length) return;
 

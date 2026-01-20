@@ -2587,7 +2587,7 @@ body.nav-back #menuBtn > div{
 }
 
 @media (max-width: 480px){
-  .photo-slide img{ height: 500px;; }
+  .photo-slide img{ height: 500px; }
 }
 
 /* =========================================================
@@ -2620,7 +2620,7 @@ body.nav-back #menuBtn > div{
   justify-content: center;
   /* ✅ 以『整個手機可視高度』置中（不扣 topbar/bottom nav） */
   box-sizing: border-box;
-  padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 200px);
+  padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
 }
 
 .photo-viewer-img{
@@ -2630,7 +2630,7 @@ body.nav-back #menuBtn > div{
   width: auto;
   height: auto;
   object-fit: contain;
-  
+  margin-top: -20rem;
   box-shadow: 0 18px 60px rgba(0,0,0,0.45);
   touch-action: pinch-zoom;
 }

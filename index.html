@@ -2553,11 +2553,11 @@ body.nav-back #menuBtn > div{
   color: #333;
   display:flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .video-link-list li a{
  display: block;
-        padding: 18px 14px;
+        padding: 14px 14px;
         border-radius: 8px;
         background: #ffffff;
         color: #333;
@@ -2614,26 +2614,25 @@ body.nav-back #menuBtn > div{
 .photo-viewer-content{
   position: fixed;
   inset: 0;
-
   display: flex;
-  align-items: center;     /* 垂直正中 */
-  justify-content: center; /* 水平正中 */
-
-  padding: 0;              /* ❗不留安全邊距 */
+  align-items: center;
+  justify-content: center;
+  /* ✅ 以『整個手機可視高度』置中（不扣 topbar/bottom nav） */
+  box-sizing: border-box;
+  padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
 }
-
 
 .photo-viewer-img{
-  max-width: 90vw;
-  max-height: 90vh;
-  object-fit: contain;
-
+  max-width: 100vw;
+  /* ✅ 以動態 viewport 高度為準，避免 iOS 位址列伸縮造成偏移 */
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
   width: auto;
   height: auto;
-
+  object-fit: contain;
+  
   box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+  touch-action: pinch-zoom;
 }
-
 
 .photo-viewer-close{
           position: absolute;
@@ -2658,7 +2657,7 @@ body.nav-back #menuBtn > div{
 .photo-section-title{
           margin: 3rem 0 0.2rem 0;
         font-weight: 700;
-        font-size: 20px;
+        font-size: 18px;
         margin-top: 2rem;
 }
 
@@ -2777,7 +2776,7 @@ body.nav-back #menuBtn > div{
         background: rgba(255, 255, 255, .85);
         border-radius: 7px;
         padding: 4px 10px;
-        font-size: 16px;
+        font-size: 13px;
         color: #007aff;
         font-family: fangsong;
         cursor: pointer;
@@ -2794,14 +2793,14 @@ body.nav-back #menuBtn > div{
 
 /* ===== Photo header actions (Add/Remove) ===== */
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.photo-section-actions,.video-section-actions{display:flex;gap:8px;align-items:center;}
+.photo-section-actions{display:flex;gap:8px;align-items:center;}
 .btn-remove-photo{
 color: #d95380;
         border: 1px solid #d95380;
         background: rgba(255, 255, 255, .85);
         border-radius: 7px;
         padding: 4px 10px;
-        font-size: 16px;
+        font-size: 13px;
         /* color: #007aff; */
         font-family: fangsong;
         cursor: pointer;
@@ -2810,70 +2809,6 @@ color: #d95380;
 
 /* 隱藏照片下方資訊（photo-meta） */
 #photo-page .photo-meta{display:none !important;}
-		
-.btn-add-video{        border: 1px solid #007aff;
-        background: rgba(255, 255, 255, .85);
-        border-radius: 7px;
-        padding: 4px 10px;
-        font-size: 16px;
-        color: #007aff;
-        font-family: fangsong;
-        cursor: pointer;}
-
-.btn-remove-video{
-	        color: #d95380;
-        border: 1px solid #d95380;
-        background: rgba(255, 255, 255, .85);
-        border-radius: 7px;
-        padding: 4px 10px;
-        font-size: 16px;
-        /* color: #007aff; */
-        font-family: fangsong;
-        cursor: pointer;
-}
-		/* ✅ 永遠以「手機螢幕」為基準的全螢幕預覽層 */
-.photo-viewer{
-  position: fixed;
-  left: 0;
-  top: 0;
-
-  width: 100vw;
-  height: 100dvh;          /* ⭐ 關鍵：用動態 viewport 高度 */
-  z-index: 2147483647;     /* ⭐ 關鍵：確保在最上層 */
-
-  display: none;
-  align-items: center;
-  justify-content: center;
-
-  background: rgba(0,0,0,0.85);
-}
-
-/* 打開 */
-.photo-viewer.is-open{ display:flex; }
-
-/* ✅ 內容容器也鎖定 viewport */
-.photo-viewer-content{
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100dvh;
-
-  display: flex;
-  align-items: center;      /* 垂直：螢幕正中央 */
-  justify-content: center;  /* 水平：螢幕正中央 */
-
-  padding: 0;
-}
-
-/* ✅ 圖片最大尺寸限制，不影響「中心定位」 */
-.photo-viewer-img{
-  max-width: 92vw;
-  max-height: 92dvh;
-  object-fit: contain;
-  width: auto;
-  height: auto;
-}
 
 </style>
 </head>
@@ -3751,8 +3686,8 @@ color: #d95380;
 					<div class="section-head">
 					  <div class="photo-section-title">構圖參考</div>
 					  <div class="photo-section-actions">
-  <button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.5rem;">＋ 新增</button>
-  <button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.5rem;">移除</button>
+  <button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.3rem;">＋ 新增</button>
+  <button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.3rem;">移除</button>
 </div>
 					</div>
 					
@@ -3760,13 +3695,12 @@ color: #d95380;
 					<div id="photoDots2" class="photo-dots"></div>
 				</div>
 				<!-- 影片相簿（新增） -->
-				<div class="section-head">
-					<div class="photo-section-title">短影音參考</div>
-					<div class="video-section-actions">
-	  					<button class="photo-btn-action btn-add-video" type="button" style="margin-top: 1.7rem;">＋ 新增</button>
-	  					<button class="photo-btn-action danger btn-remove-video" type="button" style="margin-top: 1.7rem;">移除</button>
-					</div>
-				</div>
+				<div class="photo-section-title">短影音參考</div>
+				<div class="video-section-actions">
+  <button class="photo-btn-action btn-add-video" type="button">＋ 新增</button>
+  <button class="photo-btn-action danger btn-remove-video" type="button">移除</button>
+</div>
+
 				<ul id="videoLinkList" class="video-link-list"></ul>
 			<!-- 長按更換圖片用（隱藏選圖） -->
 			<input id="photoReplaceInput" type="file" accept="image/*" hidden>
@@ -5517,8 +5451,13 @@ function openPhotoViewer(src, alt='') {
   viewer.classList.add('is-open');
   viewer.setAttribute('aria-hidden','false');
 
-  // ✅ 手機：避免底層捲動造成視覺偏移
-  try { document.body.style.overflow = 'hidden'; } catch(e){}
+  // ✅ 手機：鎖住底層捲動（並記住原本狀態，關閉時復原）
+  try {
+    if (document.body.dataset.pvPrevOverflow === undefined) {
+      document.body.dataset.pvPrevOverflow = document.body.style.overflow || '';
+    }
+    document.body.style.overflow = 'hidden';
+  } catch(e){}
 
   // 盡量進入真正全螢幕（iOS PWA/部分瀏覽器可能不支援，沒關係）
   try {
@@ -5534,6 +5473,13 @@ function closePhotoViewer() {
   viewer.classList.remove('is-open');
   viewer.setAttribute('aria-hidden','true');
   if (img) img.src = '';
+
+  // ✅ 關閉時恢復捲動
+  try {
+    const prev = document.body.dataset.pvPrevOverflow;
+    document.body.style.overflow = (prev === undefined) ? '' : prev;
+    delete document.body.dataset.pvPrevOverflow;
+  } catch(e){}
 
   try {
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();

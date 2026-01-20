@@ -2499,7 +2499,7 @@ body.nav-back #menuBtn > div{
      改成 contain + top 對齊，並用 viewport 高度當上限，確保整張都看得到。 */
   height: 60vh;
   max-height: 520px;
-  object-fit: contain;
+  
   object-position: center top;
   background: #f2f4f7;
   display: block;
@@ -2592,10 +2592,6 @@ body.nav-back #menuBtn > div{
   background: rgba(58,122,254,0.9);
 }
 
-@media (max-width: 480px){
-  /* 手機：用螢幕高度決定，避免固定 500px 造成看起來被切 / 位置怪 */
-  .photo-slide img{ height: 68vh; max-height: 68vh; }
-}
 
 /* =========================================================
    Photo Viewer (Fullscreen)

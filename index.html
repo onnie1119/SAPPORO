@@ -3667,6 +3667,8 @@ body.nav-back #menuBtn > div{
 				<ul id="videoLinkList" class="video-link-list"></ul>
 			<!-- 長按更換圖片用（隱藏選圖） -->
 			<input id="photoReplaceInput" type="file" accept="image/*" hidden>
+			<!-- 新增圖片用（隱藏選圖，可多選） -->
+			<input id="photoAddInput" type="file" accept="image/*" multiple hidden>
 
 
 			</div>
@@ -4962,7 +4964,8 @@ function initPhotoGallery(swiperId, dotsId, items) {
     if (!lpTimer) return;
     const dx = Math.abs(e.clientX - startX);
     const dy = Math.abs(e.clientY - startY);
-    if (dx > 12 || dy > 12) clearLP();
+    const th = (e.pointerType === 'touch' || e.pointerType === 'pen') ? 18 : 12;
+    if (dx > th || dy > th) clearLP();
   }, { passive: true });
 
   swiper.addEventListener('pointerup', () => {
@@ -4974,6 +4977,46 @@ function initPhotoGallery(swiperId, dotsId, items) {
     clearLP();
     if (lpTriggered) setTimeout(() => { suppressClick = false; }, 50);
   }, { passive: true });
+
+  // Fallback: iOS/older browsers without reliable PointerEvents
+  if (!('PointerEvent' in window)) {
+    let tStartX = 0, tStartY = 0;
+    swiper.addEventListener('touchstart', (e) => {
+      const img = e.target.closest('img[data-photo-key]');
+      if (!img) return;
+      const t = (e.touches && e.touches[0]) ? e.touches[0] : null;
+      if (!t) return;
+      lpTriggered = false;
+      tStartX = t.clientX; tStartY = t.clientY;
+      clearLP();
+      lpTimer = setTimeout(() => {
+        lpTriggered = true;
+        suppressClick = true;
+        try { if (navigator.vibrate) navigator.vibrate(10); } catch(_) {}
+        openPhotoActionSheet(img.dataset.photoKey);
+      }, LONG_PRESS_MS);
+    }, { passive: true });
+
+    swiper.addEventListener('touchmove', (e) => {
+      if (!lpTimer) return;
+      const t = (e.touches && e.touches[0]) ? e.touches[0] : null;
+      if (!t) return;
+      const dx = Math.abs(t.clientX - tStartX);
+      const dy = Math.abs(t.clientY - tStartY);
+      if (dx > 18 || dy > 18) clearLP();
+    }, { passive: true });
+
+    swiper.addEventListener('touchend', () => {
+      clearLP();
+      if (lpTriggered) setTimeout(() => { suppressClick = false; }, 50);
+    }, { passive: true });
+
+    swiper.addEventListener('touchcancel', () => {
+      clearLP();
+      if (lpTriggered) setTimeout(() => { suppressClick = false; }, 50);
+    }, { passive: true });
+  }
+
 
   // 取消長按的系統右鍵/選單（桌機/部分瀏覽器）
   swiper.addEventListener('contextmenu', (e) => {

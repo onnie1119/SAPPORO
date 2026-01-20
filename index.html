@@ -2688,64 +2688,84 @@ body.nav-back #menuBtn > div{
 }
 
 
-</style>
+/* =========================
+   iOS-like Photo Action Sheet (centered alert)
+========================= */
+.ios-alert-mask{
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: none; /* open -> flex */
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0,0,0,.35);
+  -webkit-tap-highlight-color: transparent;
+}
 
-<style id="photoActionSheetStyles">
-  /* iOS-like centered action sheet */
-  #photoActionSheet{
-    background: rgba(0,0,0,.35);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:16px;
-    padding-top: calc(env(safe-area-inset-top) + 16px);
-    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
-  }
-  #photoActionSheet .ps-card{
-    width: min(360px, 92vw);
-    border-radius: 20px;
-    overflow: hidden;
-    background: rgba(255,255,255,.92);
-    box-shadow: 0 22px 60px rgba(0,0,0,.28);
-    border: 1px solid rgba(255,255,255,.35);
-    transform: translateY(6px) scale(.98);
-    opacity: 0;
-    transition: transform .16s ease, opacity .16s ease;
-  }
-  #photoActionSheet.ps-show .ps-card{
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  #photoActionSheet .ps-btn{
-    width:100%;
-    padding:14px 14px;
-    border:0;
-    background: transparent;
-    font-size:17px;
-    font-weight:600;
-    color:#007AFF;
-  }
-  #photoActionSheet .ps-btn:active{
-    background: rgba(0,0,0,.06);
-  }
-  #photoActionSheet .ps-sep{
-    height:1px;
-    background: rgba(60,60,67,.18);
-  }
-  #photoActionSheet .ps-groupgap{
-    height:10px;
-    background: transparent;
-  }
-  #photoActionSheet .ps-cancel{
-    font-weight:700;
-    color:#007AFF;
-  }
-  #photoActionSheet .ps-danger{
-    color:#FF3B30;
-    font-weight:600;
-  }
+.ios-alert{
+  width: min(320px, 92vw);
+  background: rgba(255,255,255,.94);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.ios-alert-body{
+  padding: 18px 16px 14px;
+  text-align: center;
+}
+
+.ios-alert-title{
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 6px;
+  color: #000;
+}
+
+.ios-alert-desc{
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(0,0,0,.65);
+}
+
+.ios-alert-btn{
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 14px 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #007AFF;
+  cursor: pointer;
+  outline: none;
+}
+
+.ios-alert-btn + .ios-alert-btn{
+  border-top: 1px solid rgba(0,0,0,.10);
+}
+
+.ios-alert-btn:active{
+  background: rgba(0,0,0,.06);
+}
+
+.ios-alert-btn-cancel{
+  font-weight: 700;
+}
+
+.ios-alert-mask.is-open .ios-alert{
+  animation: iosAlertIn .16s ease-out;
+}
+
+@keyframes iosAlertIn{
+  from{ transform: scale(.98); opacity: 0; }
+  to  { transform: scale(1);   opacity: 1; }
+}
+
+
 </style>
 </head>
 <body>
@@ -4733,25 +4753,25 @@ function ensurePhotoActionSheet(){
   if (sheet) return sheet;
   sheet = document.createElement('div');
   sheet.id = 'photoActionSheet';
-  sheet.style.cssText = [
-    'position:fixed','inset:0','z-index:10001',
-    '-webkit-tap-highlight-color:transparent'
-  ].join(';');
+  sheet.className = 'ios-alert-mask';
   sheet.innerHTML = `
-    <div data-ps-close="1" style="position:absolute;inset:0;"></div>
-    <div class="ps-card" role="dialog" aria-modal="true">
-      <button id="photoASReplace" type="button" class="ps-btn">更換這張圖片</button>
-      <div class="ps-sep"></div>
-      <button id="photoASReset" type="button" class="ps-btn ps-danger">恢復原本圖片</button>
-      <div class="ps-groupgap"></div>
-      <button id="photoASCancel" type="button" class="ps-btn ps-cancel">取消</button>
+    <div class="ios-alert" role="dialog" aria-modal="true">
+      <div class="ios-alert-body">
+        <div class="ios-alert-title">想要取用您的照片</div>
+        <div class="ios-alert-desc">請選擇要更換的圖片來源</div>
+      </div>
+
+      <button id="photoASReplace" type="button" class="ios-alert-btn">選取更多照片…</button>
+      <button id="photoASReset" type="button" class="ios-alert-btn">恢復原本圖片</button>
+      <button id="photoASCancel" type="button" class="ios-alert-btn ios-alert-btn-cancel">取消</button>
     </div>
   `;
   document.body.appendChild(sheet);
 
   // close handlers
   sheet.addEventListener('click', (e)=>{
-    if (e.target && (e.target.dataset.psClose === '1' || e.target.id === 'photoASCancel')) {
+    // 點背景關閉；點取消也關閉
+    if (e.target && (e.target.id === 'photoActionSheet' || e.target.id === 'photoASCancel')) {
       closePhotoActionSheet();
     }
   });
@@ -4779,12 +4799,16 @@ function ensurePhotoActionSheet(){
 function openPhotoActionSheet(photoKey){
   __photoActionSheetKey = photoKey;
   const sheet = ensurePhotoActionSheet();
-  sheet.style.display = 'flex'; sheet.classList.add('ps-show');
+  sheet.style.display = 'flex';
+  sheet.classList.add('is-open');
 }
 
 function closePhotoActionSheet(){
   const sheet = document.getElementById('photoActionSheet');
-  if (sheet) { sheet.classList.remove('ps-show'); sheet.style.display = 'none'; }
+  if (sheet) {
+    sheet.classList.remove('is-open');
+    sheet.style.display = 'none';
+  }
   __photoActionSheetKey = null;
 }
 

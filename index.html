@@ -2613,14 +2613,18 @@ body.nav-back #menuBtn > div{
 }
 
 .photo-viewer-content{
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* ✅ 以『整個手機可視高度』置中（不扣 topbar/bottom nav） */
-  box-sizing: border-box;
-  padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
+         position: fixed;
+        /* inset: 0; */
+        /* display: flex; */
+        /* align-items: center; */
+        /* left: 50%; */
+        /* transform: translateX(50%); */
+        /* right: 50%; */
+        bottom: 50%;
+        transform: translateY(50%);
+        justify-content: center;
+        box-sizing: border-box;
+        padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
 }
 
 .photo-viewer-img{

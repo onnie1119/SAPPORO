@@ -2599,8 +2599,11 @@ body.nav-back #menuBtn > div{
   inset: 0;
   z-index: 9999;
   display: none;
+  /* 以 viewport 為基準置中（手機/PWA 最穩） */
+  align-items: center;
+  justify-content: center;
 }
-.photo-viewer.is-open{ display: block; }
+.photo-viewer.is-open{ display: flex; }
 
 .photo-viewer-bg{
   position: absolute;
@@ -2609,7 +2612,7 @@ body.nav-back #menuBtn > div{
 }
 
 .photo-viewer-content{
-  position: absolute;
+  position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
@@ -5106,6 +5109,7 @@ function initPhotoGallery(swiperId, dotsId, items) {
 function initPhotoPage() {
 	bindHeaderAddButtonsOnce(); 
   bindPhotoReplaceInputOnce();
+  bindVideoLinkActionsOnce();
 initPhotoGallery("photoSwiper",  "photoDots",  getAllAlbumItems(1));
 initPhotoGallery("photoSwiper2", "photoDots2", getAllAlbumItems(2));
 
@@ -5120,6 +5124,129 @@ const VIDEO_LINKS = [
   { title: " 電影感大片", url: "https://www.instagram.com/reel/DRzWURAEmoO/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==" },
   { title: " What is love", url: "https://www.instagram.com/reel/DTC2eN0gZdI/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==" }
 ];
+
+// ===== 短影音連結：使用者自訂（localStorage）=====
+const VIDEO_USER_LS_KEY = 'video_links_user_v1';
+
+function loadUserVideoLinks(){
+  try {
+    const arr = JSON.parse(localStorage.getItem(VIDEO_USER_LS_KEY) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch(e){ return []; }
+}
+function saveUserVideoLinks(arr){
+  try { localStorage.setItem(VIDEO_USER_LS_KEY, JSON.stringify(arr || [])); } catch(e) {}
+}
+function getAllVideoLinks(){
+  const base = Array.isArray(VIDEO_LINKS) ? VIDEO_LINKS : [];
+  const users = loadUserVideoLinks();
+  return [...base, ...users];
+}
+
+function ensureModal(){
+  return {
+    modal: document.getElementById('itemModal'),
+    titleEl: document.getElementById('modalTitle'),
+    input: document.getElementById('modalInput'),
+    ok: document.getElementById('modalOK'),
+    cancel: document.getElementById('modalCancel')
+  };
+}
+
+function openSingleInputModal({ title, placeholder, defaultValue='' }){
+  const { modal, titleEl, input, ok, cancel } = ensureModal();
+  if (!modal || !titleEl || !input || !ok || !cancel) {
+    // fallback
+    const v = prompt(title || '', defaultValue || '');
+    return Promise.resolve((v || '').trim());
+  }
+
+  titleEl.textContent = title || '輸入';
+  input.placeholder = placeholder || '';
+  input.value = defaultValue || '';
+
+  // reset previous handlers
+  ok.onclick = null;
+  cancel.onclick = null;
+
+  modal.style.display = 'flex';
+  // iOS：避免 autofocus 造成捲動偏移，延遲 focus
+  setTimeout(()=>{ try{ input.focus(); input.select(); }catch(e){} }, 50);
+
+  return new Promise((resolve)=>{
+    const close = (val)=>{
+      modal.style.display = 'none';
+      resolve((val || '').trim());
+    };
+    cancel.onclick = ()=> close('');
+    ok.onclick = ()=> close(input.value);
+  });
+}
+
+function normalizeUrl(u){
+  u = String(u||'').trim();
+  if (!u) return '';
+  // if user pasted without protocol, prepend https
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  return u;
+}
+
+async function addVideoLinkFlow(){
+  const urlRaw = await openSingleInputModal({
+    title: '新增短影音連結',
+    placeholder: '貼上 IG Reel / YouTube Shorts 連結…'
+  });
+  const url = normalizeUrl(urlRaw);
+  if (!url) return;
+
+  // title optional
+  const titleRaw = await openSingleInputModal({
+    title: '影片標題（可留空）',
+    placeholder: '例如：雪中漫舞',
+    defaultValue: ''
+  });
+
+  const users = loadUserVideoLinks();
+  const num = users.length + 1;
+  users.push({ title: (titleRaw || `短影音 ${num}`), url });
+  saveUserVideoLinks(users);
+  renderVideoLinkCards();
+
+  if (typeof photoToast === 'function') photoToast('✅ 已新增短影音連結');
+}
+
+function removeLastVideoLink(){
+  const users = loadUserVideoLinks();
+  if (!users.length){
+    if (typeof photoToast === 'function') photoToast('沒有可移除的新增連結');
+    return;
+  }
+  users.pop();
+  saveUserVideoLinks(users);
+  renderVideoLinkCards();
+  if (typeof photoToast === 'function') photoToast('已移除最後一個新增連結');
+}
+
+function bindVideoLinkActionsOnce(){
+  if (bindVideoLinkActionsOnce._bound) return;
+  bindVideoLinkActionsOnce._bound = true;
+
+  document.addEventListener('click', (e)=>{
+    const addBtn = e.target.closest('.btn-add-video');
+    if (addBtn){
+      e.preventDefault();
+      addVideoLinkFlow();
+      return;
+    }
+    const rmBtn = e.target.closest('.btn-remove-video');
+    if (rmBtn){
+      e.preventDefault();
+      removeLastVideoLink();
+      return;
+    }
+  });
+}
+
 
 const PHOTO_USER_LS_KEY_1 = "photo_user_items__album1";
 const PHOTO_USER_LS_KEY_2 = "photo_user_items__album2";
@@ -5281,7 +5408,7 @@ function renderVideoLinkCards(){
   if (!ul) return;
 
   // ✅ 你只要在這裡新增/修改影片連結就好
-  const links = Array.isArray(VIDEO_LINKS) ? VIDEO_LINKS : [];
+  const links = getAllVideoLinks();
 
   if (!links.length){
     ul.innerHTML = `<li><a href="javascript:void(0)" style="pointer-events:none;opacity:.6;">尚未加入影片連結<span class="video-link-sub">（之後可再新增）</span></a></li>`;
@@ -5326,6 +5453,9 @@ function openPhotoViewer(src, alt='') {
   img.alt = alt || '';
   viewer.classList.add('is-open');
   viewer.setAttribute('aria-hidden','false');
+
+  // ✅ 手機：避免底層捲動造成視覺偏移
+  try { document.body.style.overflow = 'hidden'; } catch(e){}
 
   // 盡量進入真正全螢幕（iOS PWA/部分瀏覽器可能不支援，沒關係）
   try {

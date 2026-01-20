@@ -2689,6 +2689,64 @@ body.nav-back #menuBtn > div{
 
 
 </style>
+
+<style id="photoActionSheetStyles">
+  /* iOS-like centered action sheet */
+  #photoActionSheet{
+    background: rgba(0,0,0,.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    padding-top: calc(env(safe-area-inset-top) + 16px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+  #photoActionSheet .ps-card{
+    width: min(360px, 92vw);
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 22px 60px rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.35);
+    transform: translateY(6px) scale(.98);
+    opacity: 0;
+    transition: transform .16s ease, opacity .16s ease;
+  }
+  #photoActionSheet.ps-show .ps-card{
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  #photoActionSheet .ps-btn{
+    width:100%;
+    padding:14px 14px;
+    border:0;
+    background: transparent;
+    font-size:17px;
+    font-weight:600;
+    color:#007AFF;
+  }
+  #photoActionSheet .ps-btn:active{
+    background: rgba(0,0,0,.06);
+  }
+  #photoActionSheet .ps-sep{
+    height:1px;
+    background: rgba(60,60,67,.18);
+  }
+  #photoActionSheet .ps-groupgap{
+    height:10px;
+    background: transparent;
+  }
+  #photoActionSheet .ps-cancel{
+    font-weight:700;
+    color:#007AFF;
+  }
+  #photoActionSheet .ps-danger{
+    color:#FF3B30;
+    font-weight:600;
+  }
+</style>
 </head>
 <body>
 	<div class="topbar" id="topbar">
@@ -4676,27 +4734,17 @@ function ensurePhotoActionSheet(){
   sheet = document.createElement('div');
   sheet.id = 'photoActionSheet';
   sheet.style.cssText = [
-    'position:fixed','inset:0','z-index:10001','display:none',
-    'background:rgba(0,0,0,.45)','-webkit-tap-highlight-color:transparent'
+    'position:fixed','inset:0','z-index:10001',
+    '-webkit-tap-highlight-color:transparent'
   ].join(';');
   sheet.innerHTML = `
     <div data-ps-close="1" style="position:absolute;inset:0;"></div>
-    <div style="
-      position:absolute;left:12px;right:12px;
-      bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
-      background:#fff;border-radius:16px;box-shadow:0 18px 60px rgba(0,0,0,.28);
-      overflow:hidden;">
-      <button id="photoASReplace" type="button" style="
-        width:100%;padding:16px 14px;border:0;background:#fff;
-        font-size:16px;font-weight:700;">更換這張圖片</button>
-      <div style="height:1px;background:#eee;"></div>
-      <button id="photoASReset" type="button" style="
-        width:100%;padding:14px 14px;border:0;background:#fff;
-        font-size:14px;color:#666;">恢復原本圖片</button>
-      <div style="height:8px;background:#f3f3f3;"></div>
-      <button id="photoASCancel" type="button" style="
-        width:100%;padding:14px 14px;border:0;background:#fff;
-        font-size:16px;">取消</button>
+    <div class="ps-card" role="dialog" aria-modal="true">
+      <button id="photoASReplace" type="button" class="ps-btn">更換這張圖片</button>
+      <div class="ps-sep"></div>
+      <button id="photoASReset" type="button" class="ps-btn ps-danger">恢復原本圖片</button>
+      <div class="ps-groupgap"></div>
+      <button id="photoASCancel" type="button" class="ps-btn ps-cancel">取消</button>
     </div>
   `;
   document.body.appendChild(sheet);
@@ -4731,12 +4779,12 @@ function ensurePhotoActionSheet(){
 function openPhotoActionSheet(photoKey){
   __photoActionSheetKey = photoKey;
   const sheet = ensurePhotoActionSheet();
-  sheet.style.display = 'block';
+  sheet.style.display = 'flex'; sheet.classList.add('ps-show');
 }
 
 function closePhotoActionSheet(){
   const sheet = document.getElementById('photoActionSheet');
-  if (sheet) sheet.style.display = 'none';
+  if (sheet) { sheet.classList.remove('ps-show'); sheet.style.display = 'none'; }
   __photoActionSheetKey = null;
 }
 

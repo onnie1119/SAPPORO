@@ -2494,14 +2494,8 @@ body.nav-back #menuBtn > div{
 
 .photo-slide img{
   width: 100%;
-  /* ✅ 出片參數頁：手機介面截圖多為直式長圖
-     先前用固定高度 + object-fit: cover 會把上下裁掉，造成「預覽下移 / 2/3 被切到」。
-     改成 contain + top 對齊，並用 viewport 高度當上限，確保整張都看得到。 */
-  height: 60vh;
-  max-height: 520px;
-  object-fit: contain;
-  object-position: center top;
-  background: #f2f4f7;
+  height: 320px;
+  object-fit: cover;
   display: block;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -2593,8 +2587,7 @@ body.nav-back #menuBtn > div{
 }
 
 @media (max-width: 480px){
-  /* 手機：用螢幕高度決定，避免固定 500px 造成看起來被切 / 位置怪 */
-  .photo-slide img{ height: 68vh; max-height: 68vh; }
+  .photo-slide img{ height: 500px; }
 }
 
 /* =========================================================
@@ -2605,11 +2598,13 @@ body.nav-back #menuBtn > div{
 .photo-viewer{
   position: fixed;
   inset: 0;
-  /* 拉到很高，避免被 topbar/bottomnav 蓋住 */
-  z-index: 2147483647;
+  z-index: 9999;
   display: none;
+  /* 以 viewport 為基準置中（手機/PWA 最穩） */
+  align-items: center;
+  justify-content: center;
 }
-.photo-viewer.is-open{ display:block; }
+.photo-viewer.is-open{ display: flex; }
 
 .photo-viewer-bg{
   position: absolute;
@@ -2617,44 +2612,49 @@ body.nav-back #menuBtn > div{
   background: rgba(0,0,0,0.85);
 }
 
-/* 用 inset:0 + flex 置中最穩，不要用 bottom:50% 這種會偏移 */
 .photo-viewer-content{
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
+         position: fixed;
+        /* inset: 0; */
+        /* display: flex; */
+        /* align-items: center; */
+        /* left: 50%; */
+        /* transform: translateX(50%); */
+        /* right: 50%; */
+        bottom: 50%;
+        transform: translateY(50%);
+        justify-content: center;
+        box-sizing: border-box;
+        padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
 }
 
 .photo-viewer-img{
   max-width: 100vw;
+  /* ✅ 以動態 viewport 高度為準，避免 iOS 位址列伸縮造成偏移 */
   max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
   width: auto;
   height: auto;
   object-fit: contain;
+ 
   box-shadow: 0 18px 60px rgba(0,0,0,0.45);
   touch-action: pinch-zoom;
 }
 
-/* 關閉鈕用 fixed，避免因為內容區 padding / 變形導致跑掉 */
 .photo-viewer-close{
-  position: fixed;
-  top: calc(env(safe-area-inset-top) + 12px);
-  right: 14px;
-  width: 44px;
-  height: 44px;
-  font-family: math;
-  border-radius: 999px;
-  border: none;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  font-size: 25px;
-  line-height: 44px;
-  text-align: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+          position: absolute;
+        top: calc(var(--topbar-h) + env(safe-area-inset-top) + 12px);
+        right: 14px;
+        width: 44px;
+        height: 44px;
+        font-family: math;
+        border-radius: 999px;
+        border: none;
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        font-size: 25px;
+        line-height: 44px;
+        text-align: center;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
 }
 .photo-viewer-close:active{ transform: scale(0.98); }
 
@@ -5477,12 +5477,6 @@ function openPhotoViewer(src, alt='') {
   viewer.classList.add('is-open');
   viewer.setAttribute('aria-hidden','false');
 
-  // ✅ 保險：若先前有殘留的 iOS ActionSheet 遮罩，先移除（避免看到第二層半透明）
-  try {
-    document.querySelectorAll('.ios-alert-mask').forEach(el => el.remove());
-  } catch(e){}
-
-
   // ✅ 手機：鎖住底層捲動（並記住原本狀態，關閉時復原）
   try {
     if (document.body.dataset.pvPrevOverflow === undefined) {
@@ -5491,9 +5485,10 @@ function openPhotoViewer(src, alt='') {
     document.body.style.overflow = 'hidden';
   } catch(e){}
 
-  // ⚠️ 避免「兩層遮罩」：不要強制 requestFullscreen（iOS/部分瀏覽器會再疊一層黑底）
-  // 若你之後真的想要全螢幕，再另外做一個按鈕觸發即可。
-
+  // 盡量進入真正全螢幕（iOS PWA/部分瀏覽器可能不支援，沒關係）
+  try {
+    if (viewer.requestFullscreen) viewer.requestFullscreen();
+  } catch(e){}
 }
 
 function closePhotoViewer() {
@@ -5511,12 +5506,6 @@ function closePhotoViewer() {
     document.body.style.overflow = (prev === undefined) ? '' : prev;
     delete document.body.dataset.pvPrevOverflow;
   } catch(e){}
-
-  // ✅ 保險：關閉時也清掉可能殘留的 action sheet 遮罩
-  try {
-    document.querySelectorAll('.ios-alert-mask').forEach(el => el.remove());
-  } catch(e){}
-
 
   try {
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();

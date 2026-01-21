@@ -3197,6 +3197,7 @@ color: #d95380;
   display:flex;
   gap:12px;
 }
+
 </style>
 
 
@@ -3223,6 +3224,32 @@ color: #d95380;
   opacity:1 !important;
   visibility:visible !important;
 }
+.tr-select-wrap {
+  position: relative;
+  flex: 1;
+}
+
+/* 關掉系統箭頭 */
+.tr-select-wrap select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding-right: 40px;   /* ⭐ 一定要留空間 */
+}
+
+/* 你的 cheveron icon */
+.tr-select-wrap .icon-cheveron-down {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;       /* 依你 icon font */
+  color: #8e8e93;
+  pointer-events: none; /* ⭐ 關鍵：不影響點擊 */
+}
+
 </style>
 
 </head>
@@ -4078,26 +4105,34 @@ color: #d95380;
 <!-- Translate Page (即時翻譯) -->
 
 <div class="translate-page" id="translate-page" style="display:none;">
-<div class="tr-head">
-<div class="tr-head-title">即時翻譯</div>
-<button aria-label="交換語言" class="tr-head-swap" id="trSwapBtn" type="button"><span class="icon-repeat"></span></button>
-</div>
+
 <div aria-label="語言選擇" class="tr-langbar" role="group">
   <div class="tr-lang-select">
-    <select id="trFromSelect" aria-label="來源語言">
-      <option value="auto" selected>偵測</option>
-      <option value="ja">日文</option>
-      <option value="zh-TW">中文</option>
-      <option value="en">英文</option>
-    </select>
+
+    <div class="tr-select-wrap">
+      <select id="trFromSelect" aria-label="來源語言">
+        <option value="auto" selected>偵測</option>
+        <option value="ja">日文</option>
+        <option value="zh-TW">中文</option>
+        <option value="en">英文</option>
+      </select>
+      <span class="icon-cheveron-down"></span>
+    </div>
+
     <span class="tr-lang-arrow">→</span>
-    <select id="trToSelect" aria-label="翻譯語言">
-      <option value="ja" selected>日文</option>
-      <option value="zh-TW">中文</option>
-      <option value="en">英文</option>
-    </select>
+
+    <div class="tr-select-wrap">
+      <select id="trToSelect" aria-label="翻譯語言">
+        <option value="ja" selected>日文</option>
+        <option value="zh-TW">中文</option>
+        <option value="en">英文</option>
+      </select>
+      <span class="icon-cheveron-down"></span>
+    </div>
+
   </div>
 </div>
+
 <div class="tr-stack">
 <div class="tr-card-one">
 <div class="tr-card-label" id="trFromLabel">中文（繁體）</div>

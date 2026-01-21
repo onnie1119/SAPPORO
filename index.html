@@ -2987,8 +2987,8 @@ color: #d95380;
 }
 
 .tr-result-one .tr-card-label{
-  color:#333;
-  margin-bottom: 8px;
+  color:#8e8e93;
+  margin-bottom:15px;
 }
 
 .tr-output-one{
@@ -3002,7 +3002,7 @@ color: #d95380;
 
 .tr-roman-one{
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 16px;
   color:#8e8e93;
   white-space: pre-wrap;
   word-break: break-word;
@@ -3248,13 +3248,13 @@ color: #d95380;
   color: #333;
   pointer-events: none; /* ⭐ 關鍵：不影響點擊 */
 }
-/* 輸入框：改成自動高度 */
-#trInputOne {
-  height: auto;          /* 不要固定高度 */
-  min-height: 3.2em;     /* 初始大約 1～2 行 */
-  max-height: 40vh;      /* 防止打太多撐爆畫面（可調） */
-  resize: none;          /* 不讓使用者拉 */
-  overflow-y: hidden;    /* 交給 JS 算高度 */
+#trInputOne{
+  height: 56px;          /* ⭐ 初始高度（你可改 48 / 56 / 64） */
+  min-height: 56px;
+  max-height: 40vh;
+  resize: none;
+  overflow-y: hidden;
+  box-sizing: border-box;
   line-height: 1.6;
 }
 
@@ -8679,10 +8679,27 @@ function saveLocal(items){
   }
 const inputEl = document.getElementById("trInputOne");
 
-function autoGrow(el) {
-  el.style.height = "auto";                 // 先歸零
-  el.style.height = el.scrollHeight + "px"; // 撐到實際內容高度
+const MIN_H = 56;                 // 要跟 CSS 一致
+const MAX_H = window.innerHeight * 0.40;
+
+function autoGrow(el){
+  // ⭐ 關鍵：先回到最小高度
+  el.style.height = MIN_H + "px";
+
+  // 再依內容撐高（逐行增加）
+  const next = Math.min(MAX_H, el.scrollHeight);
+  el.style.height = next + "px";
+
+  // 超過最大高度才出現捲動
+  el.style.overflowY = (el.scrollHeight > MAX_H) ? "auto" : "hidden";
 }
+
+// 初始化（頁面載入時）
+autoGrow(inputEl);
+
+// 每次輸入才調整高度
+inputEl.addEventListener("input", () => autoGrow(inputEl));
+
 
 /* 初始化（頁面進來時） */
 autoGrow(inputEl);

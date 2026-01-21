@@ -3248,6 +3248,15 @@ color: #d95380;
   color: #333;
   pointer-events: none; /* ⭐ 關鍵：不影響點擊 */
 }
+/* 輸入框：改成自動高度 */
+#trInputOne {
+  height: auto;          /* 不要固定高度 */
+  min-height: 3.2em;     /* 初始大約 1～2 行 */
+  max-height: 40vh;      /* 防止打太多撐爆畫面（可調） */
+  resize: none;          /* 不讓使用者拉 */
+  overflow-y: hidden;    /* 交給 JS 算高度 */
+  line-height: 1.6;
+}
 
 </style>
 
@@ -8668,6 +8677,20 @@ function saveLocal(items){
       out.textContent = "OCR 失敗";
     }
   }
+const inputEl = document.getElementById("trInputOne");
+
+function autoGrow(el) {
+  el.style.height = "auto";                 // 先歸零
+  el.style.height = el.scrollHeight + "px"; // 撐到實際內容高度
+}
+
+/* 初始化（頁面進來時） */
+autoGrow(inputEl);
+
+/* 每次輸入時自動調整 */
+inputEl.addEventListener("input", () => {
+  autoGrow(inputEl);
+});
 
   function bindTranslateUI(){
     const page = $("translate-page");
@@ -8734,7 +8757,9 @@ function saveLocal(items){
   }else{
     window.TR_EnterTranslatePage();
   }
-})();</script>
+})();
+
+</script>
 
 
 

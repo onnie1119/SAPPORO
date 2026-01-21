@@ -2586,7 +2586,7 @@ body.nav-back #menuBtn > div{
 }
 
 @media (max-width: 480px){
-  .photo-slide img{ height: 260px; }
+  .photo-slide img{  height: 510px; }
 }
 
 /* =========================================================
@@ -2657,7 +2657,7 @@ body.nav-back #menuBtn > div{
 .photo-section-title{
           margin: 3rem 0 0.2rem 0;
         font-weight: 700;
-        font-size: 18px;
+        font-size: 22px;
         margin-top: 2rem;
 }
 
@@ -2771,12 +2771,12 @@ body.nav-back #menuBtn > div{
   gap:12px;
 }
 
-.btn-add-photo{
+.btn-add-photo,.btn-add-video{
           border: 1px solid #007aff;
         background: rgba(255, 255, 255, .85);
         border-radius: 7px;
         padding: 4px 10px;
-        font-size: 13px;
+        font-size: 16px;
         color: #007aff;
         font-family: fangsong;
         cursor: pointer;
@@ -2794,13 +2794,13 @@ body.nav-back #menuBtn > div{
 /* ===== Photo header actions (Add/Remove) ===== */
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .photo-section-actions{display:flex;gap:8px;align-items:center;}
-.btn-remove-photo{
+.btn-remove-photo,.btn-remove-video{
 color: #d95380;
         border: 1px solid #d95380;
         background: rgba(255, 255, 255, .85);
         border-radius: 7px;
         padding: 4px 10px;
-        font-size: 13px;
+        font-size: 16px;
         /* color: #007aff; */
         font-family: fangsong;
         cursor: pointer;
@@ -3695,12 +3695,13 @@ color: #d95380;
 					<div id="photoDots2" class="photo-dots"></div>
 				</div>
 				<!-- 影片相簿（新增） -->
-				<div class="photo-section-title">短影音參考</div>
-				<div class="video-section-actions">
-  <button class="photo-btn-action btn-add-video" type="button">＋ 新增</button>
-  <button class="photo-btn-action danger btn-remove-video" type="button">移除</button>
-</div>
-
+				<div class="section-head">
+					<div class="photo-section-title">短影音參考</div>
+					<div class="video-section-actions">
+  						<button class="photo-btn-action btn-add-video" type="button">＋ 新增</button>
+  						<button class="photo-btn-action danger btn-remove-video" type="button">移除</button>
+					</div>
+				</div>
 				<ul id="videoLinkList" class="video-link-list"></ul>
 			<!-- 長按更換圖片用（隱藏選圖） -->
 			<input id="photoReplaceInput" type="file" accept="image/*" hidden>

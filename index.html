@@ -2453,9 +2453,6 @@ body.nav-back #menuBtn > div{
 /* =========================================================
    Photo Page（出片參數）- Swipe Gallery
 ========================================================= */
-/* =========================================================
-   Photo Page（出片參數）
-========================================================= */
 .photo-page{
   display:none;
   padding: 20px;
@@ -2465,67 +2462,13 @@ body.nav-back #menuBtn > div{
   animation: fadeIn 0.4s ease;
 }
 
-.photo-section{
-  margin-bottom: 18px;
-}
-
-.section-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.photo-section-title{
+.photo-page .photo-title{
+  font-size: 22px;
   font-weight: 700;
-  font-size: 20px;
-  color:#333;
-  margin: 0.5rem 0 0.2rem 0;
+  color: #333;
+  margin: 0 0 12px 0;
 }
 
-.photo-section-actions,
-.video-section-actions{
-  display:flex;
-  gap: 8px;
-  align-items:center;
-}
-
-/* buttons */
-.btn-add-photo,
-.btn-add-video{
-  border: 1px solid #007aff;
-  background: rgba(255, 255, 255, .85);
-  border-radius: 7px;
-  padding: 4px 10px;
-  font-size: 16px;
-  color: #007aff;
-  font-family: fangsong;
-  cursor: pointer;
-}
-.btn-remove-photo,
-.btn-remove-video{
-  color: #d95380;
-  border: 1px solid #d95380;
-  background: rgba(255, 255, 255, .85);
-  border-radius: 7px;
-  padding: 4px 10px;
-  font-size: 16px;
-  font-family: fangsong;
-  cursor: pointer;
-}
-
-.btn-add-photo:active,
-.btn-remove-photo:active,
-.btn-add-video:active,
-.btn-remove-video:active{
-  background: rgba(0,0,0,.06);
-}
-
-.is-spaced{ margin-top: 1.2rem; } /* 取代你原本 inline margin-top */
-
-/* =========================================================
-   Swipe Gallery
-========================================================= */
 .photo-swiper{
   width: 100%;
   overflow-x: auto;
@@ -2536,6 +2479,7 @@ body.nav-back #menuBtn > div{
   touch-action: pan-x;
   padding-bottom: 6px;
 }
+
 .photo-swiper::-webkit-scrollbar{ display:none; }
 
 .photo-slide{
@@ -2548,41 +2492,67 @@ body.nav-back #menuBtn > div{
   overflow: hidden;
 }
 
-/* ✅ 相簿預覽：完整顯示直式截圖，不裁切 */
 .photo-slide img{
   width: 100%;
-  height: min(70dvh, 560px);     /* 手機也不會被切 */
-  object-fit: contain;          /* 不裁切 */
-  object-position: center top;  /* 你想看上半部就用 top */
+  /* ✅ 出片參數頁：手機介面截圖多為直式長圖
+     先前用固定高度 + object-fit: cover 會把上下裁掉，造成「預覽下移 / 2/3 被切到」。
+     改成 contain + top 對齊，並用 viewport 高度當上限，確保整張都看得到。 */
+  height: 60vh;
+  max-height: 520px;
+  object-fit: contain;
+  object-position: center top;
+  background: #f2f4f7;
   display: block;
-  background: #00000008;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
 }
 
-/* dots */
+
+.photo-meta{
+  padding: 12px 14px;
+}
+
+.photo-meta .photo-name{
+  font-size: 18px;
+  font-weight: 700;
+  color:#333;
+  margin: 0 0 6px 0;
+}
+
+.photo-meta .photo-desc{
+  font-size: 14px;
+  color:#8e8e93;
+  line-height: 1.5;
+  margin: 0;
+}
+
 .photo-dots{
   display:flex;
   gap: 8px;
   justify-content:center;
   margin-top: 12px;
-  margin-bottom: 1.2rem;
-}
-.photo-dot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.18);
-}
-.photo-dot.active{
-  background: rgba(58,122,254,0.9);
+  margin-bottom: 1.5rem;
 }
 
+
 /* =========================================================
-   Video list
+   Photo Page – Video Links (text list)
 ========================================================= */
+.photo-section-box{
+  background:#fff;
+  border-radius: 12px;
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+  padding: 14px 14px;
+  margin-top: 14px;
+}
+.photo-section-box .section-title{
+  font-size: 16px;
+  font-weight: 700;
+  color:#333;
+  margin: 0 0 10px 0;
+}
 .video-link-list{
   list-style: none;
   padding: 0;
@@ -2593,36 +2563,53 @@ body.nav-back #menuBtn > div{
   gap: 8px;
 }
 .video-link-list li a{
-  display:block;
-  padding: 16px 14px;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #333;
-  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
-  text-decoration: none;
-  line-height: 1.35;
+ display: block;
+        padding: 16px 14px;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #333;
+        box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+        text-decoration: none;
+        line-height: 1.35;
 }
-.video-link-list li a:active{ transform: scale(0.99); }
+.video-link-list li a:active{
+  transform: scale(0.99);
+}
 .video-link-sub{
   display:block;
   font-size: 12px;
   color:#8e8e93;
   margin-top: 4px;
 }
+.photo-dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.18);
+}
+
+.photo-dot.active{
+  background: rgba(58,122,254,0.9);
+}
+
+@media (max-width: 480px){
+  /* 手機：用螢幕高度決定，避免固定 500px 造成看起來被切 / 位置怪 */
+  .photo-slide img{ height: 68vh; max-height: 68vh; }
+}
 
 /* =========================================================
-   Photo Viewer（Fullscreen）- ✅ 永遠以 viewport 置中
+   Photo Viewer (Fullscreen)
 ========================================================= */
+.photo-slide img{ cursor: zoom-in; }
+
 .photo-viewer{
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100dvh;          /* ✅ 關鍵：dvh */
-  z-index: 12000;          /* ✅ 高於 ios-alert-mask(10001) */
+  /* 拉到很高，避免被 topbar/bottomnav 蓋住 */
+  z-index: 2147483647;
   display: none;
 }
-
-.photo-viewer.is-open{ display: block; }
+.photo-viewer.is-open{ display:block; }
 
 .photo-viewer-bg{
   position: absolute;
@@ -2630,21 +2617,20 @@ body.nav-back #menuBtn > div{
   background: rgba(0,0,0,0.85);
 }
 
+/* 用 inset:0 + flex 置中最穩，不要用 bottom:50% 這種會偏移 */
 .photo-viewer-content{
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: calc(env(safe-area-inset-top) + 12px) 12px
-           calc(env(safe-area-inset-bottom) + 12px);
   box-sizing: border-box;
+  padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
 }
 
 .photo-viewer-img{
-  max-width: calc(100vw - 24px);
-  max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  max-width: 100vw;
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
   width: auto;
   height: auto;
   object-fit: contain;
@@ -2652,20 +2638,19 @@ body.nav-back #menuBtn > div{
   touch-action: pinch-zoom;
 }
 
-/* ✅ Close 永遠在 viewport 右上（不吃 topbar 變數） */
+/* 關閉鈕用 fixed，避免因為內容區 padding / 變形導致跑掉 */
 .photo-viewer-close{
   position: fixed;
   top: calc(env(safe-area-inset-top) + 12px);
   right: 14px;
-  z-index: 12001;
-
   width: 44px;
   height: 44px;
+  font-family: math;
   border-radius: 999px;
   border: none;
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
-  font-size: 26px;
+  font-size: 25px;
   line-height: 44px;
   text-align: center;
   cursor: pointer;
@@ -2673,6 +2658,183 @@ body.nav-back #menuBtn > div{
 }
 .photo-viewer-close:active{ transform: scale(0.98); }
 
+
+.photo-section-title{
+          margin: 3rem 0 0.2rem 0;
+        font-weight: 700;
+        font-size: 20px;
+        margin-top: 2rem;
+}
+
+..video-card-list{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.video-card{
+  display: block;
+  padding: 16px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.75);
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  text-decoration: none;
+  color: inherit;
+}
+
+.video-card:active{
+  transform: scale(.98);
+  box-shadow: 0 3px 10px rgba(0,0,0,.08);
+}
+
+.video-card-title{
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+
+/* =========================
+   iOS-like Photo Action Sheet (centered alert)
+========================= */
+.ios-alert-mask{
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: none; /* open -> flex */
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0,0,0,.35);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-alert{
+         width: min(290px, 92vw);
+        background: rgba(255, 255, 255, .95);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.ios-alert-body{
+  padding: 18px 16px 14px;
+  text-align: center;
+}
+
+.ios-alert-title{
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 6px;
+  color: #000;
+}
+
+.ios-alert-desc{
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(0,0,0,.65);
+}
+
+.ios-alert-btn{
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 15px 0;
+	border-top: 1px solid rgba(0, 0, 0, .10);
+  font-size: 17px;
+  color: #007AFF;
+  cursor: pointer;
+  outline: none;
+}
+
+.ios-alert-btn + .ios-alert-btn{
+  border-top: 1px solid rgba(0,0,0,.10);
+}
+
+.ios-alert-btn:active{
+  background: rgba(0,0,0,.06);
+}
+
+
+
+.ios-alert-mask.is-open .ios-alert{
+  animation: iosAlertIn .16s ease-out;
+}
+
+@keyframes iosAlertIn{
+  from{ transform: scale(.98); opacity: 0; }
+  to  { transform: scale(1);   opacity: 1; }
+}
+
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.btn-add-photo{
+          border: 1px solid #007aff;
+        background: rgba(255, 255, 255, .85);
+        border-radius: 7px;
+        padding: 4px 10px;
+        font-size:16px;
+        color: #007aff;
+        font-family: fangsong;
+        cursor: pointer;
+}
+
+.btn-add-photo:active{
+  background:rgba(0,0,0,.06);
+}
+#photo-page .photo-meta {
+  display: none !important;
+}
+
+
+
+/* ===== Photo header actions (Add/Remove) ===== */
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.photo-section-actions{display:flex;gap:8px;align-items:center;}
+.btn-remove-photo{
+color: #d95380;
+        border: 1px solid #d95380;
+        background: rgba(255, 255, 255, .85);
+        border-radius: 7px;
+        padding: 4px 10px;
+        font-size: 16px;
+        /* color: #007aff; */
+        font-family: fangsong;
+        cursor: pointer;
+}
+.btn-remove-photo:active{background:rgba(0,0,0,.06);}
+
+/* 隱藏照片下方資訊（photo-meta） */
+#photo-page .photo-meta{display:none !important;}
+		
+.btn-add-video{        border: 1px solid #007aff;
+        background: rgba(255, 255, 255, .85);
+        border-radius: 7px;
+        padding: 4px 10px;
+        font-size: 16px;
+        color: #007aff;
+        font-family: fangsong;
+        cursor: pointer;}
+
+.btn-remove-video{
+	        color: #d95380;
+        border: 1px solid #d95380;
+        background: rgba(255, 255, 255, .85);
+        border-radius: 7px;
+        padding: 4px 10px;
+        font-size: 16px;
+        /* color: #007aff; */
+        font-family: fangsong;
+        cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -3521,67 +3683,58 @@ body.nav-back #menuBtn > div{
 				<div class="ticket-category-list" id="flightStandalone"></div>
 			</div>
 			
-           <!-- Photo Page (出片參數) -->
-<div id="photo-page" class="photo-page" style="display:none;">
-
-  <!-- ===== 相簿 1 ===== -->
-  <div class="photo-section">
-    <div class="section-head">
-      <div class="photo-section-title">Dazz濾鏡</div>
-      <div class="photo-section-actions">
-        <button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
-        <button class="btn-remove-photo" type="button" data-remove-album="1">移除</button>
-      </div>
-    </div>
-
-    <div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器"></div>
-    <div id="photoDots" class="photo-dots" aria-label="頁面指示"></div>
-  </div>
-
-  <!-- ===== 相簿 2 ===== -->
-  <div class="photo-section">
-    <div class="section-head">
-      <div class="photo-section-title">構圖參考</div>
-      <div class="photo-section-actions">
-        <button class="btn-add-photo is-spaced" type="button" data-add-album="2">＋ 新增</button>
-        <button class="btn-remove-photo is-spaced" type="button" data-remove-album="2">移除</button>
-      </div>
-    </div>
-
-    <div id="photoSwiper2" class="photo-swiper" aria-label="相片瀏覽器-2"></div>
-    <div id="photoDots2" class="photo-dots" aria-label="頁面指示-2"></div>
-  </div>
-
-  <!-- ===== 影片清單 ===== -->
-  <div class="photo-section">
-    <div class="section-head">
-      <div class="photo-section-title">短影音參考</div>
-      <div class="video-section-actions">
-        <button class="btn-add-video is-spaced" type="button">＋ 新增</button>
-        <button class="btn-remove-video is-spaced" type="button">移除</button>
-      </div>
-    </div>
-
-    <ul id="videoLinkList" class="video-link-list"></ul>
-  </div>
-
-  <!-- ===== Photo Viewer (全螢幕) ===== -->
-  <div id="photoViewer" class="photo-viewer" aria-hidden="true">
-    <div class="photo-viewer-bg" data-close="1"></div>
-
-    <div class="photo-viewer-content" role="dialog" aria-modal="true">
-      <img id="photoViewerImg" class="photo-viewer-img" src="" alt="">
-    </div>
-
-    <button class="photo-viewer-close" type="button" aria-label="關閉" data-close="1">×</button>
-  </div>
-
-  <!-- ===== hidden inputs ===== -->
-  <input id="photoReplaceInput" type="file" accept="image/*" hidden>
-  <input id="photoAddInput" type="file" accept="image/*" multiple hidden>
-
+            <!-- Photo Page (出片參數) -->
+            <div id="photo-page" class="photo-page" style="display:none;">
+				<div class="section-head">
+				  <div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
+				  <div class="photo-section-actions">
+  <button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
+  <button class="btn-remove-photo" type="button" data-remove-album="1">移除</button>
 </div>
+				</div>
 
+				
+				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
+                    <!-- ✅ 你要放的圖片：在下方 JS 的 PHOTO_ITEMS 直接加/改即可 -->
+                </div>
+                <div id="photoDots" class="photo-dots" aria-label="頁面指示"></div>
+				<!-- Photo Viewer (full screen) -->
+            	<div id="photoViewer" class="photo-viewer" aria-hidden="true">
+              		<div class="photo-viewer-bg" data-close="1"></div>
+              		<div class="photo-viewer-content">
+                		<img id="photoViewerImg" class="photo-viewer-img" src="" alt="">
+                		<button class="photo-viewer-close" type="button" aria-label="關閉" data-close="1">×</button>
+              		</div>
+            	</div>
+				<!-- 第二個相簿（新增） -->
+				<div class="photo-section">
+					<div class="section-head">
+					  <div class="photo-section-title">構圖參考</div>
+					  <div class="photo-section-actions">
+  <button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.5rem;">＋ 新增</button>
+  <button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.5rem;">移除</button>
+</div>
+					</div>
+					
+					<div id="photoSwiper2" class="photo-swiper"></div>
+					<div id="photoDots2" class="photo-dots"></div>
+				</div>
+				<!-- 影片相簿（新增） -->
+				<div class="section-head">
+					<div class="photo-section-title">短影音參考</div>
+					<div class="video-section-actions">
+  						<button class="photo-btn-action btn-add-video" type="button" style="margin-top: 1.8rem;">＋ 新增</button>
+  						<button class="photo-btn-action danger btn-remove-video" type="button" style="margin-top: 1.8rem;">移除</button>
+					</div>
+				</div>
+				<ul id="videoLinkList" class="video-link-list"></ul>
+			<!-- 長按更換圖片用（隱藏選圖） -->
+			<input id="photoReplaceInput" type="file" accept="image/*" hidden>
+			<!-- 新增圖片用（隱藏選圖，可多選） -->
+			<input id="photoAddInput" type="file" accept="image/*" multiple hidden>
+
+
+			</div>
 			
 			<!-- Shopping Page -->
 	      	<div id="shopping-page" class="content-page shopping-page">
@@ -5324,6 +5477,12 @@ function openPhotoViewer(src, alt='') {
   viewer.classList.add('is-open');
   viewer.setAttribute('aria-hidden','false');
 
+  // ✅ 保險：若先前有殘留的 iOS ActionSheet 遮罩，先移除（避免看到第二層半透明）
+  try {
+    document.querySelectorAll('.ios-alert-mask').forEach(el => el.remove());
+  } catch(e){}
+
+
   // ✅ 手機：鎖住底層捲動（並記住原本狀態，關閉時復原）
   try {
     if (document.body.dataset.pvPrevOverflow === undefined) {
@@ -5332,10 +5491,9 @@ function openPhotoViewer(src, alt='') {
     document.body.style.overflow = 'hidden';
   } catch(e){}
 
-  // 盡量進入真正全螢幕（iOS PWA/部分瀏覽器可能不支援，沒關係）
-  try {
-    if (viewer.requestFullscreen) viewer.requestFullscreen();
-  } catch(e){}
+  // ⚠️ 避免「兩層遮罩」：不要強制 requestFullscreen（iOS/部分瀏覽器會再疊一層黑底）
+  // 若你之後真的想要全螢幕，再另外做一個按鈕觸發即可。
+
 }
 
 function closePhotoViewer() {
@@ -5353,6 +5511,12 @@ function closePhotoViewer() {
     document.body.style.overflow = (prev === undefined) ? '' : prev;
     delete document.body.dataset.pvPrevOverflow;
   } catch(e){}
+
+  // ✅ 保險：關閉時也清掉可能殘留的 action sheet 遮罩
+  try {
+    document.querySelectorAll('.ios-alert-mask').forEach(el => el.remove());
+  } catch(e){}
+
 
   try {
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();

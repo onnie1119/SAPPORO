@@ -2809,6 +2809,124 @@ color: #d95380;
 
 /* 隱藏照片下方資訊（photo-meta） */
 #photo-page .photo-meta{display:none !important;}
+.translate-page{
+  display:none;
+  padding: 20px;
+  padding-top: 90px;
+  padding-bottom: 120px;
+  background: #F6F9FC;
+}
+
+.translate-title{
+  font-weight: 800;
+  font-size: 20px;
+  color:#333;
+}
+
+.translate-row{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+.tr-select{
+  flex: 1;
+  padding: 10px 10px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background:#fff;
+  font-size: 16px;
+}
+
+.tr-arrow{ color:#8e8e93; font-weight:700; }
+
+.tr-card{
+  background:#fff;
+  border-radius: 12px;
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.tr-card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tr-card-title{ font-weight: 800; color:#333; }
+.tr-actions{ display:flex; gap:8px; align-items:center; }
+
+.tr-btn{
+  border: 1px solid #cfd8e3;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tr-primary{
+  border: 1px solid #007aff;
+  background: rgba(0, 122, 255, .12);
+  color:#007aff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  cursor:pointer;
+}
+
+.tr-btn.danger{
+  border-color:#d95380;
+  color:#d95380;
+}
+
+.tr-file{ display:inline-flex; align-items:center; justify-content:center; }
+
+.tr-textarea{
+  width: 100%;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 16px;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.tr-bottom-actions{
+  display:flex;
+  gap:10px;
+  margin-top: 10px;
+}
+
+.tr-hint{
+  font-size: 12px;
+  color:#8e8e93;
+}
+
+.tr-preview{
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #F6F9FC;
+  border: 1px solid #e6eef9;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 40px;
+}
+
+.tr-output{
+  padding: 10px;
+  border-radius: 10px;
+  background: #F6F9FC;
+  border: 1px solid #e6eef9;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 80px;
+}
 
 </style>
 </head>
@@ -2838,8 +2956,8 @@ color: #d95380;
 		    <span class="label">匯率</span>
 		</button>
 		<button data-page="weather-page">
-		    <span class="icon-leaf"></span>
-		    <span class="label">天氣</span>
+		    <span class="icon-bubbles3"></span>
+		    <span class="label">翻譯</span>
 		</button>
 	</nav>
 
@@ -3661,17 +3779,13 @@ color: #d95380;
             <!-- Photo Page (出片參數) -->
             <div id="photo-page" class="photo-page" style="display:none;">
 				<div class="section-head">
-				  <div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
-				  <div class="photo-section-actions">
-  <button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
-  <button class="btn-remove-photo" type="button" data-remove-album="1">移除</button>
-</div>
+					<div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
+					<div class="photo-section-actions">
+						<button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
+						<button class="btn-remove-photo" type="button" data-remove-album="1">移除</button>
+					</div>
 				</div>
-
-				
-				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器">
-                    <!-- ✅ 你要放的圖片：在下方 JS 的 PHOTO_ITEMS 直接加/改即可 -->
-                </div>
+				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器"> </div>
                 <div id="photoDots" class="photo-dots" aria-label="頁面指示"></div>
 				<!-- Photo Viewer (full screen) -->
             	<div id="photoViewer" class="photo-viewer" aria-hidden="true">
@@ -3684,13 +3798,12 @@ color: #d95380;
 				<!-- 第二個相簿（新增） -->
 				<div class="photo-section">
 					<div class="section-head">
-					  <div class="photo-section-title">構圖參考</div>
-					  <div class="photo-section-actions">
-  <button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.4rem;">＋ 新增</button>
-  <button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.4rem;">移除</button>
-</div>
+						<div class="photo-section-title">構圖參考</div>
+						<div class="photo-section-actions">
+							<button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.4rem;">＋ 新增</button>
+							<button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.4rem;">移除</button>
+						</div>
 					</div>
-					
 					<div id="photoSwiper2" class="photo-swiper"></div>
 					<div id="photoDots2" class="photo-dots"></div>
 				</div>
@@ -3703,14 +3816,102 @@ color: #d95380;
 					</div>
 				</div>
 				<ul id="videoLinkList" class="video-link-list"></ul>
-			<!-- 長按更換圖片用（隱藏選圖） -->
-			<input id="photoReplaceInput" type="file" accept="image/*" hidden>
-			<!-- 新增圖片用（隱藏選圖，可多選） -->
-			<input id="photoAddInput" type="file" accept="image/*" multiple hidden>
-
-
+				<!-- 長按更換圖片用（隱藏選圖） -->
+				<input id="photoReplaceInput" type="file" accept="image/*" hidden>
+				<!-- 新增圖片用（隱藏選圖，可多選） -->
+				<input id="photoAddInput" type="file" accept="image/*" multiple hidden>
 			</div>
-			
+			<!-- Translate Page (即時翻譯) -->
+<div id="translate-page" class="translate-page" style="display:none;">
+
+  <div class="section-head">
+    <div class="translate-title">即時翻譯</div>
+  </div>
+
+  <!-- 語言選擇 -->
+  <div class="translate-row">
+    <select id="trFrom" class="tr-select">
+      <option value="auto">自動偵測</option>
+      <option value="zh">中文</option>
+      <option value="ja">日文</option>
+      <option value="en">英文</option>
+    </select>
+
+    <span class="tr-arrow">→</span>
+
+    <select id="trTo" class="tr-select">
+      <option value="ja">日文</option>
+      <option value="zh">中文</option>
+      <option value="en">英文</option>
+    </select>
+  </div>
+
+  <!-- 文字輸入 -->
+  <div class="tr-card">
+    <div class="tr-card-head">
+      <div class="tr-card-title">輸入文字</div>
+      <div class="tr-actions">
+        <button id="btnTrPaste" class="tr-btn">貼上</button>
+        <button id="btnTrClear" class="tr-btn danger">清空</button>
+      </div>
+    </div>
+
+    <textarea id="trInput" class="tr-textarea" rows="5" placeholder="輸入要翻譯的文字…"></textarea>
+
+    <div class="tr-bottom-actions">
+      <button id="btnTranslate" class="tr-primary">翻譯</button>
+      <button id="btnSwapLang" class="tr-btn">交換語言</button>
+    </div>
+  </div>
+
+  <!-- 語音輸入 -->
+  <div class="tr-card">
+    <div class="tr-card-head">
+      <div class="tr-card-title">麥克風語音轉文字</div>
+      <div class="tr-hint" id="speechHint">（部分 iPhone 可能不支援）</div>
+    </div>
+
+    <div class="tr-bottom-actions">
+      <button id="btnMicStart" class="tr-primary">開始錄音</button>
+      <button id="btnMicStop" class="tr-btn danger" disabled>停止</button>
+    </div>
+
+    <div id="micResult" class="tr-preview"></div>
+  </div>
+
+  <!-- 拍照 / 圖片 OCR -->
+  <div class="tr-card">
+    <div class="tr-card-head">
+      <div class="tr-card-title">拍照掃描（OCR）</div>
+      <div class="tr-actions">
+        <label class="tr-primary tr-file">
+          選擇照片
+          <input id="ocrFile" type="file" accept="image/*" capture="environment" hidden>
+        </label>
+      </div>
+    </div>
+
+    <div id="ocrStatus" class="tr-hint">選擇圖片後會自動辨識文字</div>
+    <div id="ocrText" class="tr-preview"></div>
+
+    <div class="tr-bottom-actions">
+      <button id="btnOcrToInput" class="tr-btn">套用到輸入框</button>
+    </div>
+  </div>
+
+  <!-- 翻譯結果 -->
+  <div class="tr-card">
+    <div class="tr-card-head">
+      <div class="tr-card-title">翻譯結果</div>
+      <div class="tr-actions">
+        <button id="btnCopyOut" class="tr-btn">複製</button>
+      </div>
+    </div>
+    <div id="trOutput" class="tr-output"></div>
+  </div>
+
+</div>
+
 			<!-- Shopping Page -->
 	      	<div id="shopping-page" class="content-page shopping-page">
 				<div id="shoppingRoot" style="    margin-top: 5rem;"></div>
@@ -3747,7 +3948,7 @@ color: #d95380;
 					</div>
 				</div>
 			</div>
-
+	
 			
 		</div>
 		
@@ -7849,6 +8050,185 @@ function saveLocal(items){
 	
 }
 
+</script>
+	<script>/* =========================================================
+   REALTIME TRANSLATE - FULL JS (ONE FILE)
+   Features:
+   - Text input translate
+   - Speech to text (Web Speech API)
+   - OCR (Tesseract.js)
+   - Clipboard / swap language
+========================================================= */
+
+(() => {
+
+  /* ---------- utils ---------- */
+  const $ = (id) => document.getElementById(id);
+
+  /* ---------- translate API (ONLY PLACE YOU NEED TO CHANGE) ---------- */
+  async function translateViaAPI(text, from, to){
+    /*
+      TODO:
+      Replace with your real translation service
+      Recommended:
+      - Google Apps Script proxy
+      - DeepL API
+      - LibreTranslate
+    */
+
+    // fake response for UI testing
+    await new Promise(r => setTimeout(r, 400));
+    return `[${from} → ${to}]\n${text}`;
+  }
+
+  /* ---------- text translate ---------- */
+  async function doTranslate(){
+    const input  = $("trInput");
+    const output = $("trOutput");
+    if(!input || !output) return;
+
+    const text = input.value.trim();
+    if(!text){
+      output.textContent = "";
+      return;
+    }
+
+    const from = $("trFrom")?.value || "auto";
+    const to   = $("trTo")?.value || "ja";
+
+    output.textContent = "翻譯中…";
+
+    try{
+      const result = await translateViaAPI(text, from, to);
+      output.textContent = result || "";
+    }catch(err){
+      console.error(err);
+      output.textContent = "翻譯失敗，請檢查網路或服務設定";
+    }
+  }
+
+  $("btnTranslate")?.addEventListener("click", doTranslate);
+
+  $("btnTrClear")?.addEventListener("click", ()=>{
+    if($("trInput"))  $("trInput").value = "";
+    if($("trOutput")) $("trOutput").textContent = "";
+  });
+
+  $("btnTrPaste")?.addEventListener("click", async ()=>{
+    try{
+      const t = await navigator.clipboard.readText();
+      if($("trInput")) $("trInput").value = t;
+    }catch(e){}
+  });
+
+  $("btnCopyOut")?.addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText($("trOutput")?.textContent || "");
+    }catch(e){}
+  });
+
+  $("btnSwapLang")?.addEventListener("click", ()=>{
+    const from = $("trFrom");
+    const to   = $("trTo");
+    if(!from || !to) return;
+
+    const a = from.value;
+    from.value = to.value === "auto" ? a : to.value;
+    to.value   = a;
+  });
+
+  /* ---------- speech to text ---------- */
+  let speechRec = null;
+
+  function setupSpeech(){
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if(!SpeechRecognition){
+      if($("speechHint")) $("speechHint").textContent = "（此瀏覽器不支援語音轉文字）";
+      if($("btnMicStart")) $("btnMicStart").disabled = true;
+      return;
+    }
+
+    speechRec = new SpeechRecognition();
+    speechRec.lang = "ja-JP";
+    speechRec.continuous = true;
+    speechRec.interimResults = true;
+
+    speechRec.onresult = (ev)=>{
+      let text = "";
+      for(let i = ev.resultIndex; i < ev.results.length; i++){
+        text += ev.results[i][0].transcript;
+      }
+      if($("micResult")) $("micResult").textContent = text;
+      if($("trInput"))  $("trInput").value = text;
+    };
+
+    speechRec.onend = ()=>{
+      if($("btnMicStart")) $("btnMicStart").disabled = false;
+      if($("btnMicStop"))  $("btnMicStop").disabled = true;
+    };
+  }
+
+  $("btnMicStart")?.addEventListener("click", ()=>{
+    if(!speechRec) setupSpeech();
+    if(!speechRec) return;
+
+    if($("btnMicStart")) $("btnMicStart").disabled = true;
+    if($("btnMicStop"))  $("btnMicStop").disabled = false;
+    if($("micResult"))   $("micResult").textContent = "";
+
+    try{ speechRec.start(); }catch(e){}
+  });
+
+  $("btnMicStop")?.addEventListener("click", ()=>{
+    try{ speechRec?.stop(); }catch(e){}
+    if($("btnMicStop")) $("btnMicStop").disabled = true;
+  });
+
+  /* ---------- OCR ---------- */
+  $("ocrFile")?.addEventListener("change", async (e)=>{
+    const file = e.target.files?.[0];
+    if(!file || !window.Tesseract) return;
+
+    if($("ocrStatus")) $("ocrStatus").textContent = "辨識中…";
+    if($("ocrText"))   $("ocrText").textContent = "";
+
+    try{
+      const imgURL = URL.createObjectURL(file);
+      const { data } = await Tesseract.recognize(
+        imgURL,
+        "jpn+chi_tra+eng",
+        {
+          logger: m=>{
+            if(m.status === "recognizing text" && m.progress != null){
+              if($("ocrStatus")){
+                $("ocrStatus").textContent =
+                  `辨識中… ${(m.progress * 100).toFixed(0)}%`;
+              }
+            }
+          }
+        }
+      );
+
+      URL.revokeObjectURL(imgURL);
+
+      const text = (data.text || "").trim();
+      if($("ocrText"))   $("ocrText").textContent = text || "(沒有辨識到文字)";
+      if($("ocrStatus")) $("ocrStatus").textContent = "完成";
+
+    }catch(err){
+      console.error(err);
+      if($("ocrStatus")) $("ocrStatus").textContent = "OCR 失敗，請換一張清楚的照片";
+    }
+  });
+
+  $("btnOcrToInput")?.addEventListener("click", ()=>{
+    const t = ($("ocrText")?.textContent || "").trim();
+    if(t && $("trInput")) $("trInput").value = t;
+  });
+
+})();
 </script>
 </body>
 </html>

@@ -3268,6 +3268,50 @@ color: #d95380;
   color: #b0b0b5;
   opacity: 1;
 }
+/* ===== 翻譯輸出欄位：去掉預設框線、撐滿卡片 ===== */
+#trOutputOne{
+  width: 100% !important;
+  display: block !important;
+
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+
+  background: transparent !important;
+  resize: none !important;
+
+  padding: 0 !important;       /* 讓它像文字，而不是輸入框 */
+  margin: 0 !important;
+
+  font-size: 28px;             /* 跟你輸入區一致可調 */
+  line-height: 1.4;
+  color: #111;
+  box-sizing: border-box;
+}
+/* ===== 讓翻譯卡內排版固定直向，不被 flex 橫向擠壞 ===== */
+.tr-card-two,
+#translate-page .tr-card-two{
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+/* 如果你有放「日文 + 喇叭」那一列，應該要左右排列 */
+.tr-card-two .tr-card-head{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* 避免任何子元素把寬度撐爆 */
+.tr-card-two *{
+  max-width: 100%;
+}
+#trOutputOne::placeholder{
+  color:#b0b0b5;
+  opacity:1;
+}
 
 </style>
 

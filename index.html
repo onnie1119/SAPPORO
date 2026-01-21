@@ -628,7 +628,6 @@
 	
 	.modal-box {
 	  	background: #fff;
-		margin-top: 25rem;
 	  	width: 80%;
 	  	max-width: 330px;
 	  	border-radius: 8px;
@@ -2494,14 +2493,8 @@ body.nav-back #menuBtn > div{
 
 .photo-slide img{
   width: 100%;
-  /* ✅ 出片參數頁：手機介面截圖多為直式長圖
-     先前用固定高度 + object-fit: cover 會把上下裁掉，造成「預覽下移 / 2/3 被切到」。
-     改成 contain + top 對齊，並用 viewport 高度當上限，確保整張都看得到。 */
-  height: 60vh;
-  max-height: 520px;
-  object-fit: contain;
-  object-position: center top;
-  background: #f2f4f7;
+  height: 320px;
+  object-fit: cover;
   display: block;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -2560,11 +2553,11 @@ body.nav-back #menuBtn > div{
   color: #333;
   display:flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .video-link-list li a{
  display: block;
-        padding: 16px 14px;
+        padding: 14px 14px;
         border-radius: 8px;
         background: #ffffff;
         color: #333;
@@ -2593,8 +2586,7 @@ body.nav-back #menuBtn > div{
 }
 
 @media (max-width: 480px){
-  /* 手機：用螢幕高度決定，避免固定 500px 造成看起來被切 / 位置怪 */
-  .photo-slide img{ height: 68vh; max-height: 68vh; }
+  .photo-slide img{ height: 260px; }
 }
 
 /* =========================================================
@@ -2620,18 +2612,14 @@ body.nav-back #menuBtn > div{
 }
 
 .photo-viewer-content{
-         position: fixed;
-        /* inset: 0; */
-        /* display: flex; */
-        /* align-items: center; */
-        /* left: 50%; */
-        /* transform: translateX(50%); */
-        /* right: 50%; */
-        bottom: 50%;
-        transform: translateY(50%);
-        justify-content: center;
-        box-sizing: border-box;
-        padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* ✅ 以『整個手機可視高度』置中（不扣 topbar/bottom nav） */
+  box-sizing: border-box;
+  padding: calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px);
 }
 
 .photo-viewer-img{
@@ -2641,7 +2629,7 @@ body.nav-back #menuBtn > div{
   width: auto;
   height: auto;
   object-fit: contain;
- 
+  
   box-shadow: 0 18px 60px rgba(0,0,0,0.45);
   touch-action: pinch-zoom;
 }
@@ -2669,7 +2657,7 @@ body.nav-back #menuBtn > div{
 .photo-section-title{
           margin: 3rem 0 0.2rem 0;
         font-weight: 700;
-        font-size: 20px;
+        font-size: 18px;
         margin-top: 2rem;
 }
 
@@ -2788,7 +2776,7 @@ body.nav-back #menuBtn > div{
         background: rgba(255, 255, 255, .85);
         border-radius: 7px;
         padding: 4px 10px;
-        font-size:16px;
+        font-size: 13px;
         color: #007aff;
         font-family: fangsong;
         cursor: pointer;
@@ -2812,7 +2800,7 @@ color: #d95380;
         background: rgba(255, 255, 255, .85);
         border-radius: 7px;
         padding: 4px 10px;
-        font-size: 16px;
+        font-size: 13px;
         /* color: #007aff; */
         font-family: fangsong;
         cursor: pointer;
@@ -2821,27 +2809,7 @@ color: #d95380;
 
 /* 隱藏照片下方資訊（photo-meta） */
 #photo-page .photo-meta{display:none !important;}
-		
-.btn-add-video{        border: 1px solid #007aff;
-        background: rgba(255, 255, 255, .85);
-        border-radius: 7px;
-        padding: 4px 10px;
-        font-size: 16px;
-        color: #007aff;
-        font-family: fangsong;
-        cursor: pointer;}
 
-.btn-remove-video{
-	        color: #d95380;
-        border: 1px solid #d95380;
-        background: rgba(255, 255, 255, .85);
-        border-radius: 7px;
-        padding: 4px 10px;
-        font-size: 16px;
-        /* color: #007aff; */
-        font-family: fangsong;
-        cursor: pointer;
-}
 </style>
 </head>
 <body>
@@ -3718,8 +3686,8 @@ color: #d95380;
 					<div class="section-head">
 					  <div class="photo-section-title">構圖參考</div>
 					  <div class="photo-section-actions">
-  <button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.5rem;">＋ 新增</button>
-  <button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.5rem;">移除</button>
+  <button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.3rem;">＋ 新增</button>
+  <button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.3rem;">移除</button>
 </div>
 					</div>
 					
@@ -3727,13 +3695,12 @@ color: #d95380;
 					<div id="photoDots2" class="photo-dots"></div>
 				</div>
 				<!-- 影片相簿（新增） -->
-				<div class="section-head">
-					<div class="photo-section-title">短影音參考</div>
-					<div class="video-section-actions">
-  						<button class="photo-btn-action btn-add-video" type="button" style="margin-top: 1.8rem;">＋ 新增</button>
-  						<button class="photo-btn-action danger btn-remove-video" type="button" style="margin-top: 1.8rem;">移除</button>
-					</div>
-				</div>
+				<div class="photo-section-title">短影音參考</div>
+				<div class="video-section-actions">
+  <button class="photo-btn-action btn-add-video" type="button">＋ 新增</button>
+  <button class="photo-btn-action danger btn-remove-video" type="button">移除</button>
+</div>
+
 				<ul id="videoLinkList" class="video-link-list"></ul>
 			<!-- 長按更換圖片用（隱藏選圖） -->
 			<input id="photoReplaceInput" type="file" accept="image/*" hidden>

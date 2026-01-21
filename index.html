@@ -3268,6 +3268,7 @@ color: #d95380;
   height: 56px;          /* ⭐ 初始高度（你可改 48 / 56 / 64） */
   min-height: 56px;
   max-height: 40vh;
+	color: #333;
   resize: none;
   overflow-y: hidden;
   box-sizing: border-box;
@@ -3348,6 +3349,7 @@ color: #d95380;
   border: 0;
   outline: none;
   box-shadow: none;
+	color: #333;
   background: transparent;
   resize: none;
   padding: 0;
@@ -9097,6 +9099,22 @@ inputEl.addEventListener("input", () => {
   // init
   if(dstLabel) dstLabel.textContent = "日文";
 })();
+	/* =========================
+   Camera Overlay (拍照 → OCR → 翻譯)
+========================= */
+
+function openCameraOverlay() {
+  // 如果你是用 <input type="file"> 方案（最穩）
+  const camInput = document.getElementById("camInput");
+  if (camInput) {
+    camInput.click();
+    return;
+  }
+
+  // 如果未來你改成 getUserMedia overlay
+  console.warn("camInput not found");
+}
+
 </script>
 
 

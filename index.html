@@ -2938,8 +2938,11 @@ color: #d95380;
   color:#333;
   font-size: 30px;
   line-height: 1.35;
-  min-height: 96px;
+  min-height: 70px; /* 初始更矮，輸入後再自動長高 */
+  padding: 0;
+  box-sizing: border-box;
 }
+
 
 .tr-input-one::placeholder{ color: rgba(255,255,255,.55); }
 
@@ -2992,6 +2995,13 @@ color: #d95380;
 }
 
 .tr-output-one{
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  padding: 0;
+  box-sizing: border-box;
   font-size: 25px;
   line-height: 1.45;
   color:#222;
@@ -2999,6 +3009,7 @@ color: #d95380;
   word-break: break-word;
   min-height: 70px;
 }
+
 
 .tr-roman-one{
   margin-top: 10px;
@@ -3132,15 +3143,17 @@ color: #d95380;
 }
 
 #translate-page .tr-card{
- position: relative;
-    overflow: hidden;
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 14px 14px 10px;
-    margin-top: 0.5rem;
-    box-shadow: 0 0px 3px rgba(0, 0, 0, .10);
-    color: #fff;
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px 14px 10px;
+  margin-top: 0.5rem;
+  box-shadow: 0 0px 3px rgba(0, 0, 0, .10);
+  color: #222;
+  box-sizing: border-box;
 }
+
 #translate-page .tr-section{ padding:14px; position:relative; }
 #translate-page .tr-divider{ height:1px; background:rgba(255,255,255,.12); }
 
@@ -4232,7 +4245,7 @@ color: #d95380;
 </div>
 
 <div class="tr-stack">
-<div class="tr-card-one">
+<div class="tr-card tr-card-one">
 <div class="tr-card-label" id="trFromLabel">中文（繁體）</div>
 <textarea
   id="trInputOne"
@@ -8498,16 +8511,24 @@ function saveLocal(items){
     const input = $("trInputOne");
     const out   = $("trOutputOne");
     if(input && out){
-      const outText = (out.textContent || "").trim();
+      const outText = (out.value || "").trim();
       input.value = outText;
-      out.textContent = "";
+      out.value = "";
       $("trRomanSrc") && ($("trRomanSrc").textContent = "");
       $("trRomanDst") && ($("trRomanDst").textContent = "");
       scheduleTranslate();
     }
   }
 
-  /* ---------- phonetic helpers ---------- */
+  
+  /* ---------- textarea auto-resize (by lines) ---------- */
+  function autoResizeTextarea(el, minPx=70, maxPx=280){
+    if(!el) return;
+    el.style.height = minPx + "px";
+    const next = Math.min(maxPx, el.scrollHeight);
+    el.style.height = next + "px";
+  }
+/* ---------- phonetic helpers ---------- */
   // 用於「來源語言=偵測」時，先用字元做快速猜測，讓輸入框下方也能即時顯示拼音/羅馬字
   function guessLang(text){
     const t = String(text||"");
@@ -8664,7 +8685,8 @@ function saveLocal(items){
 
     const text = (input.value || "").trim();
     if(!text){
-      out.textContent = "";
+      out.value = "";
+      autoResizeTextarea(out);
       lastDetected = "";
       updateLabels();
       updatePhonetics("", fromLang, "", toLang);
@@ -8672,7 +8694,8 @@ function saveLocal(items){
     }
 
     const reqId = ++lastReqId;
-    out.textContent = "翻譯中…";
+    out.value = "翻譯中…";
+    autoResizeTextarea(out);
 
     try{
       const { translated, detected } = await translateViaAPI(text, fromLang, toLang);
@@ -8681,7 +8704,8 @@ function saveLocal(items){
       lastDetected = detected || "";
       updateLabels();
 
-      out.textContent = translated || "";
+      out.value = translated || "";
+      autoResizeTextarea(out);
       const srcLangForPh = (fromLang === "auto" ? lastDetected : fromLang);
       updatePhonetics(text, srcLangForPh, translated, toLang);
     }catch(err){
@@ -8837,8 +8861,10 @@ inputEl.addEventListener("input", () => {
     $("trInputOne")?.addEventListener("input", ()=>{
       const input = $("trInputOne");
       const out   = $("trOutputOne");
+      autoResizeTextarea(input);
+
       const srcText = (input?.value || "");
-      const dstTextRaw = (out?.textContent || "");
+      const dstTextRaw = (out?.value || "");
       const dstText = (/^翻譯中/.test(dstTextRaw) || /^翻譯失敗/.test(dstTextRaw)) ? "" : dstTextRaw;
 
       const srcLangForPh = (fromLang === "auto") ? guessLang(srcText) : fromLang;

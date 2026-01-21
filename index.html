@@ -712,7 +712,7 @@
 		margin: 20px 0;
 		margin-top: 8px;
 		margin-bottom: 3px;
-		padding: 24px 14px;
+		padding: 22px 14px;
 	  	display: flex;
 	  	align-items: center;
 	  	gap: 10px;
@@ -5437,71 +5437,6 @@ window.initPhotoPage = initPhotoPage;
 window.renderVideoLinkCards = renderVideoLinkCards;
 
 document.addEventListener("DOMContentLoaded", () => { initPhotoPage(); renderVideoLinkCards(); });
-/* =========================
-   Photo Viewer (Full Screen)
-   - 點圖片全螢幕放大
-   - 點背景/右上角/ESC 關閉
-========================= */
-function openPhotoViewer(src, alt='') {
-  const viewer = document.getElementById('photoViewer');
-  const img = document.getElementById('photoViewerImg');
-  if (!viewer || !img) return;
-
-  img.src = src;
-  img.alt = alt || '';
-  viewer.classList.add('is-open');
-  viewer.setAttribute('aria-hidden','false');
-
-  // ✅ 手機：鎖住底層捲動（並記住原本狀態，關閉時復原）
-  try {
-    if (document.body.dataset.pvPrevOverflow === undefined) {
-      document.body.dataset.pvPrevOverflow = document.body.style.overflow || '';
-    }
-    document.body.style.overflow = 'hidden';
-  } catch(e){}
-
-  // 盡量進入真正全螢幕（iOS PWA/部分瀏覽器可能不支援，沒關係）
-  try {
-    if (viewer.requestFullscreen) viewer.requestFullscreen();
-  } catch(e){}
-}
-
-function closePhotoViewer() {
-  const viewer = document.getElementById('photoViewer');
-  const img = document.getElementById('photoViewerImg');
-  if (!viewer) return;
-
-  viewer.classList.remove('is-open');
-  viewer.setAttribute('aria-hidden','true');
-  if (img) img.src = '';
-
-  // ✅ 關閉時恢復捲動
-  try {
-    const prev = document.body.dataset.pvPrevOverflow;
-    document.body.style.overflow = (prev === undefined) ? '' : prev;
-    delete document.body.dataset.pvPrevOverflow;
-  } catch(e){}
-
-  try {
-    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
-  } catch(e){}
-}
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closePhotoViewer();
-});
-
-
-// Photo viewer close handlers (once)
-document.addEventListener('DOMContentLoaded', () => {
-  const viewer = document.getElementById('photoViewer');
-  if (!viewer || viewer.dataset.bound === '1') return;
-  viewer.dataset.bound = '1';
-  viewer.addEventListener('click', (e) => {
-    if (e.target && e.target.getAttribute('data-close') === '1') closePhotoViewer();
-  });
-});
-
 
 /* =========================
    TOP button（scroll to top）

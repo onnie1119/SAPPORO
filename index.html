@@ -3189,6 +3189,7 @@ color: #d95380;
 #translate-page .tr-roman{
   margin-top:6px;
   font-size:14px;
+  margin-bottom: 1rem;
   color:#9a9aa0;
   white-space:pre-wrap;
   word-break:break-word;
@@ -8453,13 +8454,21 @@ function saveLocal(items){
   let lastReqId = 0;
   let lastDetected = ""; // e.g. "ja", "zh-TW", "en"
 
+  function simplifyDetectedLang(code){
+    const c = String(code||"").toLowerCase();
+    if(c.startsWith("zh")) return "中文";
+    if(c.startsWith("ja")) return "日文";
+    if(c.startsWith("en")) return "英文";
+    return "";
+  }
+
   function updateLabels(){
     const fromLabel = $("trFromLabel");
     const toLabel   = $("trToLabel");
     if(fromLabel){
       if(fromLang === "auto" && lastDetected){
-        const det = LANG_META[lastDetected]?.label || lastDetected;
-        fromLabel.textContent = `偵測（${det}）`;
+        const det = simplifyDetectedLang(lastDetected) || (LANG_META[lastDetected]?.label || "");
+        fromLabel.textContent = det ? `偵測（${det}）` : "偵測";
       }else{
         fromLabel.textContent = LANG_META[fromLang]?.label || fromLang;
       }

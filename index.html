@@ -3008,6 +3008,75 @@ color: #d95380;
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* ===== Translate Page: layout fixes + romaji lines ===== */
+.translate-page,
+.translate-page *{ box-sizing: border-box; }
+
+.translate-page{ padding-left: 16px; padding-right: 16px; }
+
+.tr-stack{ width:100%; max-width: 520px; margin: 0 auto; }
+
+.tr-langbar{ width:100%; }
+.tr-lang-select{
+  width:100%;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.tr-lang-select select{
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tr-card-one,
+.tr-result-one{
+  width:100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.tr-input-one{
+  width:100%;
+  max-width: 100%;
+  resize: vertical;
+}
+
+.tr-output-one{
+  width:100%;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* romaji / pinyin line */
+.tr-roman-one{
+  width:100%;
+  overflow-wrap:anywhere;
+  word-break: break-word;
+  margin-top: 8px;
+  padding: 0 2px;
+}
+
+/* result header with speak icon on the right */
+.tr-result-top{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* ensure icon button doesn't push width */
+.tr-icon-btn{
+  flex: 0 0 auto;
+}
+
+/* prevent cards from touching edges on tiny screens */
+@media (max-width: 380px){
+  .translate-page{ padding-left: 12px; padding-right: 12px; }
+  .tr-lang-select{ gap: 8px; }
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
@@ -4035,9 +4104,6 @@ color: #d95380;
 <textarea class="tr-input-one" id="trInputOne" placeholder="輸入您的文字" rows="4"></textarea>
 <div class="tr-roman-one" id="trRomanSrc"></div>
 <div class="tr-card-actions">
-<button aria-label="播放翻譯" class="tr-icon-btn" id="trSpeakOutBtn" type="button">
-<span class="icon-volume-down"></span>
-</button>
 <div class="tr-actions-right">
 <button aria-label="拍照/選擇圖片翻譯" class="tr-icon-btn is-blue" id="trCameraBtn" type="button">
 <span class="icon-camera1"></span>
@@ -4050,7 +4116,12 @@ color: #d95380;
 </div>
 </div>
 <div class="tr-result-one">
-<div class="tr-card-label" id="trToLabel">日文</div>
+<div class="tr-result-top">
+  <div class="tr-card-label" id="trToLabel">日文</div>
+  <button aria-label="播放翻譯" class="tr-icon-btn" id="trSpeakOutBtn" type="button">
+    <span class="icon-volume-down"></span>
+  </button>
+</div>
 <div class="tr-output-one" id="trOutputOne"></div>
 <div class="tr-roman-one" id="trRomanDst"></div>
 </div>
@@ -8286,6 +8357,15 @@ function saveLocal(items){
   }
 
   /* ---------- phonetic helpers ---------- */
+  // 用於「來源語言=偵測」時，先用字元做快速猜測，讓輸入框下方也能即時顯示拼音/羅馬字
+  function guessLang(text){
+    const t = String(text||"");
+    if(/[\u3040-\u30ff]/.test(t)) return "ja";      // Hiragana/Katakana
+    if(/[\u4e00-\u9fff]/.test(t)) return "zh-TW";  // CJK Unified Ideographs
+    if(/[A-Za-z]/.test(t)) return "en";
+    return "auto";
+  }
+
   function toRomaji(text){
     if(window.wanakana && typeof window.wanakana.toRomaji === "function"){
       return window.wanakana.toRomaji(text);
@@ -8480,7 +8560,17 @@ function saveLocal(items){
     $("trSwapBtn")?.addEventListener("click", swapLang);
 
     // Input -> realtime translate
-    $("trInputOne")?.addEventListener("input", scheduleTranslate);
+    $("trInputOne")?.addEventListener("input", ()=>{
+      const input = $("trInputOne");
+      const out   = $("trOutputOne");
+      const srcText = (input?.value || "");
+      const dstTextRaw = (out?.textContent || "");
+      const dstText = (/^翻譯中/.test(dstTextRaw) || /^翻譯失敗/.test(dstTextRaw)) ? "" : dstTextRaw;
+
+      const srcLangForPh = (fromLang === "auto") ? guessLang(srcText) : fromLang;
+      updatePhonetics(srcText, srcLangForPh, dstText, toLang);
+      scheduleTranslate();
+    });
 
     // Speak translated
     $("trSpeakOutBtn")?.addEventListener("click", ()=>{

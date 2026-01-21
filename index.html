@@ -8851,7 +8851,28 @@ autoGrow(inputEl);
 inputEl.addEventListener("input", () => {
   autoGrow(inputEl);
 });
+ </script>
+	<script>
+/* ===== Camera overlay helpers (avoid ReferenceError) ===== */
+window.openCameraOverlay = window.openCameraOverlay || function openCameraOverlay(){
+  // 用 input + capture 嘗試直接開相機（手機支援度取決於瀏覽器/系統）
+  const fileInput = document.getElementById("trOcrFile") || document.getElementById("ocrFile");
+  if (!fileInput) return;
 
+  // 讓手機偏向開後鏡頭
+  try { fileInput.setAttribute("capture", "environment"); } catch(e){}
+  try { fileInput.setAttribute("accept", "image/*"); } catch(e){}
+
+  fileInput.click();
+};
+
+window.closeCameraOverlay = window.closeCameraOverlay || function closeCameraOverlay(){
+  // 你目前用的是 <input type="file"> 拍照/選圖流程，其實沒有「overlay」可關
+  // 先做成 no-op，避免報錯；未來若你真的做 overlay 再補內容
+};
+</script>
+
+	<script>
   function bindTranslateUI(){
     const page = $("translate-page");
     if(!page) return;

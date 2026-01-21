@@ -8893,12 +8893,24 @@ inputEl.addEventListener("input", () => {
     $("trMicBtn")?.addEventListener("click", startMic);
 
     // Camera/OCR
-    $("trCameraBtn")?.addEventListener("click", ()=> $("trOcrFile")?.click());
+    $("trCameraBtn")?.addEventListener("click", openCameraOverlay);
     $("trOcrFile")?.addEventListener("change", (e)=>{
       const file = e.target.files && e.target.files[0];
       if(file) runOCR(file);
       e.target.value = "";
     });
+
+    // Camera overlay controls
+    $("trCamCloseBtn")?.addEventListener("click", closeCameraOverlay);
+    $("trCamShotBtn")?.addEventListener("click", captureCameraFrameToOCR);
+    $("trCamUseAlbumBtn")?.addEventListener("click", ()=>{ closeCameraOverlay(); $("trOcrFile")?.click(); });
+
+    // Tap outside to close
+    $("trCamOverlay")?.addEventListener("click", (e)=>{
+      if(e.target && e.target.id === "trCamOverlay") closeCameraOverlay();
+    });
+
+
 
     // default
     setLang(fromLang, toLang);
@@ -9086,6 +9098,24 @@ inputEl.addEventListener("input", () => {
   if(dstLabel) dstLabel.textContent = "日文";
 })();
 </script>
+
+
+<!-- === Translate Camera Overlay (open camera instead of album) === -->
+<div id="trCamOverlay" class="tr-cam-overlay" hidden aria-hidden="true">
+  <div class="tr-cam-sheet" role="dialog" aria-label="相機拍照翻譯">
+    <div class="tr-cam-top">
+      <div class="tr-cam-title">拍照翻譯</div>
+      <button type="button" id="trCamCloseBtn" class="tr-cam-close" aria-label="關閉相機">×</button>
+    </div>
+    <video id="trCamVideo" class="tr-cam-video" autoplay playsinline muted></video>
+    <div class="tr-cam-actions">
+      <button type="button" id="trCamShotBtn" class="tr-cam-shot" aria-label="拍照">拍照</button>
+      <button type="button" id="trCamUseAlbumBtn" class="tr-cam-alt" aria-label="改用相簿選圖">相簿</button>
+    </div>
+    <div class="tr-cam-hint" id="trCamHint">對準文字後按「拍照」，會自動 OCR 並翻譯。</div>
+  </div>
+</div>
+<canvas id="trCamCanvas" width="1280" height="720" hidden></canvas>
 
 </body>
 </html>

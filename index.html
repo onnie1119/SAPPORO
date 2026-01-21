@@ -9115,5 +9115,35 @@ inputEl.addEventListener("input", () => {
 })();
 </script>
 
+
+<script>
+/* ===== Romanization helpers (FIXED) ===== */
+function toChinesePinyin(text){
+  if(!text || !window.pinyinPro) return "";
+  return window.pinyinPro.pinyin(text, {
+    toneType: "symbol",
+    type: "array"
+  }).join(" ");
+}
+
+function toJapaneseRomajiReadable(text){
+  if(!text || !window.wanakana) return "";
+  let r = window.wanakana.toRomaji(text);
+  return r
+    .replace(/aa/g, "ā")
+    .replace(/ii/g, "ī")
+    .replace(/uu/g, "ū")
+    .replace(/ee/g, "ē")
+    .replace(/ou/g, "ō");
+}
+
+function renderRoman(text, lang){
+  if(!text) return "";
+  if(lang && lang.startsWith("zh")) return toChinesePinyin(text);
+  if(lang === "ja") return toJapaneseRomajiReadable(text);
+  return "";
+}
+</script>
+
 </body>
 </html>

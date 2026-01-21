@@ -5056,23 +5056,7 @@ function initPhotoGallery(swiperId, dotsId, items) {
   }
 
 
-  // 取消長按的系統右鍵/選單（桌機/部分瀏覽器）
-  swiper.addEventListener('contextmenu', (e) => {
-    const img = e.target.closest('img[data-photo-key]');
-    if (!img) return;
-    e.preventDefault();
-  });
-
-  swiper.addEventListener("click", (e) => {
-    const img = e.target.closest("img");
-    if (!img) return;
-    if (suppressClick) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    openPhotoViewer(img.getAttribute("src"), img.getAttribute("alt") || "");
-  });
+ 
 
   // Render dots
   dotsEl.innerHTML = (items || []).map((_, i) =>

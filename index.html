@@ -3268,7 +3268,6 @@ color: #d95380;
   height: 56px;          /* ⭐ 初始高度（你可改 48 / 56 / 64） */
   min-height: 56px;
   max-height: 40vh;
-	color: #333;
   resize: none;
   overflow-y: hidden;
   box-sizing: border-box;
@@ -3349,7 +3348,6 @@ color: #d95380;
   border: 0;
   outline: none;
   box-shadow: none;
-	color: #333;
   background: transparent;
   resize: none;
   padding: 0;
@@ -8851,28 +8849,23 @@ autoGrow(inputEl);
 inputEl.addEventListener("input", () => {
   autoGrow(inputEl);
 });
- </script>
-	<script>
-/* ===== Camera overlay helpers (avoid ReferenceError) ===== */
-window.openCameraOverlay = window.openCameraOverlay || function openCameraOverlay(){
-  // 用 input + capture 嘗試直接開相機（手機支援度取決於瀏覽器/系統）
-  const fileInput = document.getElementById("trOcrFile") || document.getElementById("ocrFile");
-  if (!fileInput) return;
 
-  // 讓手機偏向開後鏡頭
-  try { fileInput.setAttribute("capture", "environment"); } catch(e){}
-  try { fileInput.setAttribute("accept", "image/*"); } catch(e){}
 
-  fileInput.click();
-};
+  // ===== Camera helpers (避免 openCameraOverlay / closeCameraOverlay 未定義) =====
+  function openCameraOverlay(){
+    // 目前採用 input[type=file] 方案：直接觸發拍照/選圖
+    const fileInput = document.getElementById("ocrFile") || document.getElementById("trOcrFile") || document.getElementById("camInput");
+    if(!fileInput) { console.warn("camera file input not found"); return; }
+    // 優先後鏡頭
+    try { fileInput.setAttribute("accept","image/*"); } catch(e){}
+    try { fileInput.setAttribute("capture","environment"); } catch(e){}
+    fileInput.click();
+  }
 
-window.closeCameraOverlay = window.closeCameraOverlay || function closeCameraOverlay(){
-  // 你目前用的是 <input type="file"> 拍照/選圖流程，其實沒有「overlay」可關
-  // 先做成 no-op，避免報錯；未來若你真的做 overlay 再補內容
-};
-</script>
+  function closeCameraOverlay(){
+    // input[type=file] 方案沒有 overlay 可關，先保留空函式避免報錯
+  }
 
-	<script>
   function bindTranslateUI(){
     const page = $("translate-page");
     if(!page) return;
@@ -8916,24 +8909,12 @@ window.closeCameraOverlay = window.closeCameraOverlay || function closeCameraOve
     $("trMicBtn")?.addEventListener("click", startMic);
 
     // Camera/OCR
-    $("trCameraBtn")?.addEventListener("click", openCameraOverlay);
+    $("trCameraBtn")?.addEventListener("click", ()=> $("trOcrFile")?.click());
     $("trOcrFile")?.addEventListener("change", (e)=>{
       const file = e.target.files && e.target.files[0];
       if(file) runOCR(file);
       e.target.value = "";
     });
-
-    // Camera overlay controls
-    $("trCamCloseBtn")?.addEventListener("click", closeCameraOverlay);
-    $("trCamShotBtn")?.addEventListener("click", captureCameraFrameToOCR);
-    $("trCamUseAlbumBtn")?.addEventListener("click", ()=>{ closeCameraOverlay(); $("trOcrFile")?.click(); });
-
-    // Tap outside to close
-    $("trCamOverlay")?.addEventListener("click", (e)=>{
-      if(e.target && e.target.id === "trCamOverlay") closeCameraOverlay();
-    });
-
-
 
     // default
     setLang(fromLang, toLang);
@@ -9120,41 +9101,7 @@ window.closeCameraOverlay = window.closeCameraOverlay || function closeCameraOve
   // init
   if(dstLabel) dstLabel.textContent = "日文";
 })();
-	/* =========================
-   Camera Overlay (拍照 → OCR → 翻譯)
-========================= */
-
-function openCameraOverlay() {
-  // 如果你是用 <input type="file"> 方案（最穩）
-  const camInput = document.getElementById("camInput");
-  if (camInput) {
-    camInput.click();
-    return;
-  }
-
-  // 如果未來你改成 getUserMedia overlay
-  console.warn("camInput not found");
-}
-
 </script>
-
-
-<!-- === Translate Camera Overlay (open camera instead of album) === -->
-<div id="trCamOverlay" class="tr-cam-overlay" hidden aria-hidden="true">
-  <div class="tr-cam-sheet" role="dialog" aria-label="相機拍照翻譯">
-    <div class="tr-cam-top">
-      <div class="tr-cam-title">拍照翻譯</div>
-      <button type="button" id="trCamCloseBtn" class="tr-cam-close" aria-label="關閉相機">×</button>
-    </div>
-    <video id="trCamVideo" class="tr-cam-video" autoplay playsinline muted></video>
-    <div class="tr-cam-actions">
-      <button type="button" id="trCamShotBtn" class="tr-cam-shot" aria-label="拍照">拍照</button>
-      <button type="button" id="trCamUseAlbumBtn" class="tr-cam-alt" aria-label="改用相簿選圖">相簿</button>
-    </div>
-    <div class="tr-cam-hint" id="trCamHint">對準文字後按「拍照」，會自動 OCR 並翻譯。</div>
-  </div>
-</div>
-<canvas id="trCamCanvas" width="1280" height="720" hidden></canvas>
 
 </body>
 </html>

@@ -3312,6 +3312,39 @@ color: #d95380;
   color:#b0b0b5;
   opacity:1;
 }
+/* 下面翻譯卡：強制直向堆疊 */
+.tr-card-two{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 日文 + 喇叭：同一列左右對齊 */
+.tr-card-two .tr-card-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 翻譯框：整行在下面、不要框線 */
+#trOutputOne{
+  width: 100%;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  resize: none;
+  padding: 0;
+  margin: 0;
+  font-size: 28px;   /* 你可調 */
+  line-height: 1.4;
+}
+
+/* placeholder 顏色 */
+#trOutputOne::placeholder{
+  color: #b0b0b5;
+  opacity: 1;
+}
 
 </style>
 
@@ -4219,23 +4252,26 @@ color: #d95380;
 <input accept="image/*" capture="environment" hidden="" id="trOcrFile" type="file"/>
 </div>
 </div>
-<div class="tr-result-one">
-<div class="tr-result-top">
-  <div class="tr-card-label" id="trToLabel">日文</div>
-  <textarea
-  id="trOutputOne"
-  class="tr-output-one"
-  placeholder="翻譯"
-  readonly
-></textarea>
+<div class="tr-card tr-card-two">
+  <div class="tr-card-head">
+    <div class="tr-card-label">日文</div>
 
-  <button aria-label="播放翻譯" class="tr-icon-btn" id="trSpeakOutBtn" type="button">
-   <span class="icon-volume-medium"></span>
-  </button>
+    <button id="trSpeakBtn" class="tr-speak-btn" type="button" aria-label="播放翻譯語音">
+      <span class="icon-volume-high"></span>
+    </button>
+  </div>
+
+  <textarea
+    id="trOutputOne"
+    class="tr-output-one"
+    placeholder="翻譯"
+    readonly
+  ></textarea>
+
+  <div id="trRomanDst" class="tr-roman"></div>
 </div>
-<div class="tr-output-one" id="trOutputOne"></div>
-<div class="tr-roman-one" id="trRomanDst"></div>
-</div>
+
+	
 </div>
 </div>
 

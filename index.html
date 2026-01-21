@@ -8997,10 +8997,20 @@ inputEl.addEventListener("input", () => {
     return { translated, detected };
   }
 
-  function romaji(text){
-      if(!text || !window.wanakana) return "";
-      return window.wanakana.toRomaji(text);
-    }
+ function romaji(text){
+  if(!text || !window.wanakana) return "";
+
+  let r = window.wanakana.toRomaji(text);
+
+  // ⭐ 把長音轉成 macron，幫助知道怎麼唸
+  return r
+    .replace(/aa/g, "ā")
+    .replace(/ii/g, "ī")
+    .replace(/uu/g, "ū")
+    .replace(/ee/g, "ē")
+    .replace(/ou/g, "ō");
+}
+
 
   function pinyin(text){
     try{

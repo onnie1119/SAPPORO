@@ -4225,7 +4225,7 @@ color: #d95380;
 
     <div class="tr-select-wrap">
       <select id="trFromSelect" aria-label="來源語言">
-        <option value="auto" selected>偵測語言</option>
+        <option value="auto" selected>偵測</option>
         <option value="ja">日文</option>
         <option value="zh-TW">中文</option>
         <option value="en">英文</option>
@@ -8435,7 +8435,7 @@ function saveLocal(items){
   const $ = (id) => document.getElementById(id);
 
   const LANG_META = {
-    "auto": { label: "偵測語言",        stt: "zh-TW", tts: "en-US" }, // stt 會依偵測/來源調整
+    "auto": { label: "偵測",        stt: "zh-TW", tts: "en-US" }, // stt 會依偵測/來源調整
     "zh-TW": { label: "中文（繁體）", stt: "zh-TW", tts: "zh-TW" },
     "ja":   { label: "日文",        stt: "ja-JP", tts: "ja-JP" },
     "en":   { label: "英文",        stt: "en-US", tts: "en-US" }
@@ -8470,7 +8470,7 @@ function saveLocal(items){
     if(fromLabel){
       if(fromLang === "auto" && lastDetected){
         const det = simplifyDetectedLang(lastDetected) || (LANG_META[lastDetected]?.label || "");
-        fromLabel.textContent = det ? `偵測語言（${det}）` : "偵測語言";
+        fromLabel.textContent = det ? `偵測（${det}）` : "偵測";
       }else{
         fromLabel.textContent = LANG_META[fromLang]?.label || fromLang;
       }
@@ -8997,20 +8997,10 @@ inputEl.addEventListener("input", () => {
     return { translated, detected };
   }
 
- function romaji(text){
-  if(!text || !window.wanakana) return "";
-
-  let r = window.wanakana.toRomaji(text);
-
-  // ⭐ 把長音轉成 macron，幫助知道怎麼唸
-  return r
-    .replace(/aa/g, "ā")
-    .replace(/ii/g, "ī")
-    .replace(/uu/g, "ū")
-    .replace(/ee/g, "ē")
-    .replace(/ou/g, "ō");
-}
-
+  function romaji(text){
+      if(!text || !window.wanakana) return "";
+      return window.wanakana.toRomaji(text);
+    }
 
   function pinyin(text){
     try{
@@ -9117,7 +9107,7 @@ inputEl.addEventListener("input", () => {
 
 
 <script>
-/* ===== Romanization helpers (FIXED) ===== */
+/* ===== Romanization helpers (BUGFIXED) ===== */
 function toChinesePinyin(text){
   if(!text || !window.pinyinPro) return "";
   return window.pinyinPro.pinyin(text, {
@@ -9129,12 +9119,18 @@ function toChinesePinyin(text){
 function toJapaneseRomajiReadable(text){
   if(!text || !window.wanakana) return "";
   let r = window.wanakana.toRomaji(text);
-  return r
+  // Long vowels to macron for readability
+  r = r
     .replace(/aa/g, "ā")
     .replace(/ii/g, "ī")
     .replace(/uu/g, "ū")
     .replace(/ee/g, "ē")
     .replace(/ou/g, "ō");
+  // ★ BUGFIX: remove any non-romaji leftovers (e.g., Kanji mixed in)
+  r = r.replace(/[^a-zA-Zāīūēō\s'-]/g, "");
+  // normalize spaces
+  r = r.replace(/\s+/g, " ").trim();
+  return r;
 }
 
 function renderRoman(text, lang){

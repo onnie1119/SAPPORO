@@ -1,22 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>北海道の旅</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&display=swap" as="style">
-  <link rel="apple-touch-icon" href="images/MeowTrip.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&display=swap">
-
-
-
-
-  <meta name="apple-mobile-web-app-title" content="北海道の旅">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>北海道の旅</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/>
+<link as="style" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&amp;display=swap" rel="preload"/>
+<link href="images/MeowTrip.png" rel="apple-touch-icon"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<meta content="北海道の旅" name="apple-mobile-web-app-title"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<style>
 	
 
 	html {
@@ -2809,1158 +2806,1298 @@ color: #d95380;
 
 /* 隱藏照片下方資訊（photo-meta） */
 #photo-page .photo-meta{display:none !important;}
+
 .translate-page{
   display:none;
   padding: 20px;
-  padding-top: 90px;
-  padding-bottom: 120px;
+  /* ✅ 避免被 top-bar 蓋住（跟其他頁一致的上方留白） */
+  padding-top: calc(var(--topbar-h) + env(safe-area-inset-top) + 14px);
+  padding-bottom: calc(var(--bottom-nav-h) + 24px);
   background: #F6F9FC;
+  animation: fadeIn 0.35s ease;
 }
 
-.translate-title{
-  font-weight: 800;
-  font-size: 20px;
-  color:#333;
-}
-
-.translate-row{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  margin: 10px 0 14px;
-}
-
-.tr-select{
-  flex: 1;
-  padding: 10px 10px;
-  border: 1px solid #e6e6e6;
-  border-radius: 10px;
-  background:#fff;
-  font-size: 16px;
-}
-
-.tr-arrow{ color:#8e8e93; font-weight:700; }
-
-.tr-card{
-  background:#fff;
-  border-radius: 12px;
-  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
-  padding: 14px;
-  margin-top: 12px;
-}
-
-.tr-card-head{
+.tr-head{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap:12px;
+  margin-bottom: 12px;
 }
 
-.tr-card-title{ font-weight: 800; color:#333; }
-.tr-actions{ display:flex; gap:8px; align-items:center; }
+.tr-head-title{
+  font-size: 22px;
+  font-weight: 800;
+  color:#333;
+}
 
-.tr-btn{
-  border: 1px solid #cfd8e3;
-  background: #fff;
+.tr-head-swap{
+  border: 1px solid #dfe8f6;
+  background: rgba(255,255,255,.9);
   border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.tr-primary{
-  border: 1px solid #007aff;
-  background: rgba(0, 122, 255, .12);
-  color:#007aff;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 15px;
-  cursor:pointer;
-}
-
-.tr-btn.danger{
-  border-color:#d95380;
-  color:#d95380;
-}
-
-.tr-file{ display:inline-flex; align-items:center; justify-content:center; }
-
-.tr-textarea{
-  width: 100%;
-  border: 1px solid #e6e6e6;
-  border-radius: 12px;
-  padding: 12px;
+  padding: 8px 12px;
   font-size: 16px;
-  box-sizing: border-box;
-  resize: vertical;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.tr-bottom-actions{
+.tr-head-swap:active{ transform: scale(.99); }
+
+.tr-langbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom: 14px;
+}
+
+
+/* ✅ Translate: cards vertical stack (input above output) */
+#translate-page .tr-stack{
+  display:flex;
+  flex-direction: column;
+  gap: 14px;
+}
+#translate-page .tr-card-one,
+#translate-page .tr-result-one{
+  width: 100%;
+  max-width: 100%;
+}
+.tr-lang-select{
+  flex:1;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.tr-lang-select select{
+  flex:1;
+  padding:10px 12px;
+  font-size:15px;
+  border-radius:12px;
+  border:1px solid #e6e9f0;
+  background:#fff;
+  color:#111;
+  outline:none;
+}
+.tr-lang-select select:focus{
+  border-color:#3A7AFE;
+  box-shadow: 0 0 0 2px rgba(58,122,254,0.15);
+}
+
+.tr-lang-arrow{
+  color:#8e8e93;
+  font-weight: 700;
+}
+
+.tr-seg{
+  flex: 1;
+  display:flex;
+  background: #fff;
+  border: 1px solid #dfe8f6;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+}
+
+.tr-seg-btn{
+  flex:1;
+  border:0;
+  background: transparent;
+  padding: 10px 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color:#333;
+  cursor:pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tr-seg-btn.active{
+  background: rgba(58,122,254,0.14);
+  color: #2b63d6;
+}
+
+.tr-card-one{
+  background: #2f3033;
+  border-radius: 16px;
+  padding: 14px 14px 10px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.10);
+  color: #fff;
+}
+
+.tr-card-label{
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.85);
+  margin-bottom: 8px;
+}
+
+.tr-input-one{
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.35;
+  min-height: 96px;
+}
+
+.tr-input-one::placeholder{ color: rgba(255,255,255,.55); }
+
+.tr-card-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding-top: 10px;
+}
+
+.tr-actions-right{
   display:flex;
   gap:10px;
-  margin-top: 10px;
+  align-items:center;
 }
 
-.tr-hint{
-  font-size: 12px;
+.tr-icon-btn{
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tr-icon-btn.is-blue{
+  background: rgba(58,122,254,0.95);
+  color:#fff;
+}
+
+.tr-icon-btn:active{ transform: scale(.98); }
+
+.tr-result-one{
+  margin-top: 14px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+}
+
+.tr-result-one .tr-card-label{
+  color:#333;
+  margin-bottom: 8px;
+}
+
+.tr-output-one{
+  font-size: 18px;
+  line-height: 1.45;
+  color:#222;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 70px;
+}
+
+.tr-roman-one{
+  margin-top: 10px;
+  font-size: 14px;
   color:#8e8e93;
-}
-
-.tr-preview{
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  background: #F6F9FC;
-  border: 1px solid #e6eef9;
   white-space: pre-wrap;
   word-break: break-word;
-  min-height: 40px;
 }
-
-.tr-output{
-  padding: 10px;
-  border-radius: 10px;
-  background: #F6F9FC;
-  border: 1px solid #e6eef9;
-  white-space: pre-wrap;
-  word-break: break-word;
-  min-height: 80px;
-}
-
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.20.4/dist/index.js"></script>
+
+<style>
+/* ===== Translate (Detect <-> JA/EN) ===== */
+#translate-page{
+  background:#F6F9FC;
+  padding-top: calc(var(--topbar-h, 72px) + env(safe-area-inset-top) + 12px);
+  padding-bottom: calc(var(--bottom-nav-h, 72px) + env(safe-area-inset-bottom) + 24px);
+}
+
+/* hide any old language option bars if present */
+#translate-page .tr-lang-bar,
+#translate-page .lang-bar,
+#translate-page .translate-lang-bar{ display:none !important; }
+
+#translate-page .tr-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin: 6px 12px 0;
+}
+#translate-page .tr-title{
+  font-size: 22px;
+  font-weight: 800;
+  color:#111;
+}
+#translate-page .tr-target-toggle{
+  display:flex;
+  background:#fff;
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+}
+#translate-page .tr-pill{
+  border:0;
+  background: transparent;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  color:#666;
+  cursor:pointer;
+}
+#translate-page .tr-pill.active{
+  background:#e9f0ff;
+  color:#3A7AFE;
+  font-weight: 800;
+}
+
+#translate-page .tr-card{
+  margin: 12px;
+  background:#2c2c2e;
+  border-radius:16px;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+#translate-page .tr-section{ padding:14px; position:relative; }
+#translate-page .tr-divider{ height:1px; background:rgba(255,255,255,.12); }
+
+#translate-page .tr-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:6px;
+}
+#translate-page .tr-lang{ font-size:14px; color:#b0b0b5; }
+
+#translate-page .tr-input{
+  width:100%;
+  background:none;
+  border:0;
+  outline:none;
+  resize:none;
+  color:#fff;
+  font-size:18px;
+  min-height:72px;
+  padding-right: 96px; /* space for camera/mic */
+  box-sizing:border-box;
+}
+
+#translate-page .tr-output{
+  font-size:20px;
+  color:#4da3ff;
+  min-height:48px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+#translate-page .tr-roman{
+  margin-top:6px;
+  font-size:14px;
+  color:#9a9aa0;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+#translate-page .tr-icon-btn{
+  background:none;
+  border:0;
+  padding:4px;
+}
+#translate-page .tr-icon-btn span{
+  font-size:18px;
+  color:#4da3ff;
+}
+
+#translate-page .tr-tools{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  display:flex;
+  gap:12px;
+}
+</style>
+
+
+<style>
+/* === FORCE HIDE OLD TRANSLATE LANGUAGE BARS === */
+.translate-lang-bar,
+.lang-bar,
+.translate-bar,
+.language-switch,
+.language-pair,
+.lang-switch,
+#translate-page .lang-select,
+#translate-page .lang-bar,
+#translate-page .translate-lang-bar{
+  display:none !important;
+}
+</style>
+
+
+<style>
+/* === FORCE SHOW ROMAN / PINYIN === */
+#translate-page .tr-roman{
+  display:block !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+</style>
+
 </head>
 <body>
-	<div class="topbar" id="topbar">
-  		<button class="menu-btn" id="menuBtn" aria-label="menu">
-    		<div></div> <!-- 這是中間的線 -->
-			<span class="icon-arrow-left"></span>
-  		</button>
-		
-	</div>
-	<nav class="bottom-nav">
-		<button data-page="home-page" class="active">
-		    <span class="icon-clipboard"></span>
-		    <span class="label">行程</span>
-		</button>
-		<button data-page="flight-page">
-		    <span class="icon-airplane"></span>
-		    <span class="label">航班</span>
-		</button>
-		<button data-page="ticket-page">
-		    <span class="icon-ticket"></span>
-		    <span class="label">票據</span>
-		</button>
-		<button data-page="exchange-page">
-		    <span class="icon-calculator"></span>
-		    <span class="label">匯率</span>
-		</button>
-		<button data-page="translate-page">
-		    <span class="icon-earth"></span>
-		    <span class="label">翻譯</span>
-		</button>
-	</nav>
-
-	<!-- iOS Full-Screen Menu -->
-	<div class="ios-full-menu" id="iosFullMenu">
-		<div class="menu-content">
-			<ul>
-              
-              <li data-target="packing-page">行李清單</li>
-			  <li data-target="shopping-page">購物清單</li>
-              <li data-target="ticket-page">電子票據</li>
-              <li data-target="photo-page">出片參數</li>
-              
-			  <li data-target="weather-page">天氣預報</li>
-	    	</ul>
-	  	</div>
-		<button class="menu-close" id="menuClose">✕</button>
-	</div>
-
-	<!-- ✈️ App 啟動畫面 -->
-	<div id="app-splash">
-		<div class="runway"></div>
- 		<img src="images/flight.png" class="plane">
-		<div class="splash-text">白い季節に、恋をする</div>
-	</div>
-
-	<!-- 原本整個網站包起來 -->
-
-	<div id="app-root">
-		<button id="scrollToTop" class="scroll-top-button" aria-label="回到頂部">
-			<span class="icon-arrow-thin-up"></span>
-		</button>
-		<div class="content-pages">
-			<div id="home-page" class="container">
-				<div class="day-tabs-wrapper">
-					<div class="day-tabs-arrow left" id="arrow-left"><span class="icon-arrow-left"></span></div>
-					<div class="day-tabs-scroll" id="dayTabsScroll">
-                        <div class="day-tabs">
-                            <button class="day-tab active" onclick="showDay(1)">第 1 天</button>
-                            <button class="day-tab" onclick="showDay(2)">第 2 天</button>
-                            <button class="day-tab" onclick="showDay(3)">第 3 天</button>
-                            <button class="day-tab" onclick="showDay(4)">第 4 天</button>
-                            <button class="day-tab" onclick="showDay(5)">第 5 天</button>
-                            <button class="day-tab" onclick="showDay(6)">第 6 天</button>
-                            <button class="day-tab" onclick="showDay(7)">第 7 天</button>
-                        </div>
-                    </div>
-					<div class="day-tabs-arrow right" id="arrow-right"><span class="icon-arrow-right"></span></div>
-				</div>
-
-    
-    
-                <!-- Day 1 -->
-                <div class="day-section" id="day-1" style="display:block;">
-                    <div class="day-label">2026.02.09（一）</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=桃園機場&travelmode=driving" target="_blank">
-						<div class="activity-card">
-                            <img src="images/1.png">
-                            <div class="info">
-                                <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;00:10</div>
-                                <div class="title">桃園機場T1</div>
-                                <div class="note">22:10&nbsp;&nbsp;報到託運</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-airplane"></span> 2  小時  30  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=羽田機場&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/2.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;04:00</div>
-                              <div class="title">羽田機場T3</div>
-                              <div class="note">06:15&nbsp;&nbsp;報到託運</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-airplane"></span> 1  小時  30  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/3.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:45</div>
-                              <div class="title">新千歲機場</div>
-                              <div class="note">預留1小時入境</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=一幻拉麵 新千歲機場店, 日本〒066-0012 Hokkaido, Chitose, Bibi, ターミナルビル Domestic Terminal New Chitose Airport, 3F&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/4.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;11:00</div>
-                              <div class="title">一幻拉麵</div>
-                              <div class="note">停留1小時用餐</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Kinotoya New Chitose Airport Factory, 2F Bibi, Chitose City, Hokkaido 066-0012&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/5.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;12:00</div>
-                              <div class="title">Kinotoya冰淇淋</div>
-                              <div class="note">步行至2F購買</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-bus"></span> 1  小時  20  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/6.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;13:30</div>
-                              <div class="title">由緣溫泉旅館</div>
-                              <div class="note">Checkin&寄放行李</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-train"></span> 20  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=北海道大學&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/7.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;14:30</div>
-                              <div class="title">北海道大學</div>
-                              <div class="note">雪中校園散步及拍照</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-train"></span> 15  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=湯咖喱 奥芝商店 站前創成寺 日本〒060-0004 Hokkaido, Sapporo, Chuo Ward, Kita 4 Jonishi, 1 Chome ホクレンビル B1F パールタウン&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/8.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;17:00</div>
-                              <div class="title">奧芝咖哩</div>
-                              <div class="note">停留1小時用餐</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-bus"></span> 15  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/9.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;18:30</div>
-                              <div class="title">由緣溫泉旅館</div>
-                              <div class="note">回旅館泡溫泉休息</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                </div> 
-                
-                
-                <!-- Day 2 -->
-                <div class="day-section" id="day-2" style="display:none;">
-					<div class="day-label">2026.02.10（二）</div>
-                    <div class="activity-card">
-                    	<img src="images/10.png">
-                    	<div class="info">
-                    		<div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;08:00</div>
-                            <div class="title">旅館早餐</div>
-                            <div class="note">需提前加購￥3300</div>
-                        </div>
-                    </div>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 5  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌市中央區北一條西1丁目6號 Sapporo Sosei Square 地下2樓&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/11-1.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:00</div>
-                              <div class="title">Times租車</div>
-                              <div class="note">攜帶租車相關文件及駕照</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 40  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=國營瀧野鈴蘭丘陵公園 日本〒005-0862 Hokkaido, Sapporo, Minami Ward, Takino, 247&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/12.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;10:00</div>
-                              <div class="title">瀧野鈴蘭丘陵公園</div>
-                              <div class="note">停留4小時遊玩</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 35  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌電視塔 日本〒060-0042 Hokkaido, Sapporo, Chuo Ward, Odorinishi, 1 Chome&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/13.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;15:00</div>
-                              <div class="title">札幌電視塔</div>
-                              <div class="note">停留半小時拍照打卡</div>
-                            </div>
-                        </div>
-                    </a>
-                     <div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌市時計台 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 2 Chome&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/14.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;15:30</div>
-                              <div class="title">札幌計時台</div>
-                              <div class="note">停留半小時拍照打卡</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=大通公園 日本〒060-0042 Hokkaido, Sapporo, Chuo Ward, Odorinishi, １〜１２丁目&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/15.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;16:00</div>
-                              <div class="title">大通公園(札幌雪祭)</div>
-                              <div class="note">停留1小時拍照打卡</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 5  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=牛しゃぶ 牛すき 禅, 日本〒060-0062 Hokkaido, Sapporo, Chuo Ward, Minami 2 Jonishi, 1 Chome, 山口中央ビル地下&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/16.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;17:00</div>
-                              <div class="title">牛しゃぶ禪</div>
-                              <div class="note">和牛放題/單點壽喜燒</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 6  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=狸小路商店街 日本〒060-0062 Hokkaido, Sapporo, Chuo Ward, 南2・3条西1～7丁目&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/17.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;19:00</div>
-                              <div class="title">狸小路商店街</div>
-                              <div class="note">停留2小時逛街採購</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-walk"></span> 6  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Parfaiteria Pal, 南４西２ビル 6F 2 Chome-10-1 Minami 4 Jonishi, Chuo Ward, Sapporo, Hokkaido 064-0804日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/61.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;21:00</div>
-                              <div class="title">夜パフェ</div>
-                              <div class="note">佐藤健去過的深夜甜點店</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/18.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;22:00</div>
-                              <div class="title">由緣溫泉旅館</div>
-                              <div class="note">回旅館休息</div>
-                            </div>
-                        </div>
-                    </a>
-                   
-                </div>
-                <!-- Day 3 -->
-                <div class="day-section" id="day-3" style="display:none;">
-                	<div class="day-label">2026.02.11（三）</div>
-                    <div class="activity-card">
-                    	<img src="images/19.png">
-                        <div class="info">
-                        	<div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;07:00</div>
-                            <div class="title">由緣溫泉旅館</div>
-                            <div class="note">可提前準備超商早餐</div>
-                        </div>
-                    </div>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 3  小時</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=美瑛神社 日本〒071-0213 Hokkaido, Kamikawa District, Biei, Higashimachi, 4 Chome−1−1&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/20.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;10:00</div>
-                              <div class="title">美瑛神社</div>
-                              <div class="note">停留1小時參拜拍照</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-car"></span> 5  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Biei 2 go, 日本〒071-0203 Hokkaido, Kamikawa District, Biei, Nishimachi, 1 Chome−2−10&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/22.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;11:30</div>
-                              <div class="title">Biei2GO輕食</div>
-                              <div class="note">推豬排三明治跟焗烤麵！</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Christmas tree, Bibaushi, Biei, Kamikawa District, Hokkaido, 日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/23.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;13:00</div>
-                              <div class="title">美瑛聖誕樹</div>
-                              <div class="note">停留1小時拍照打卡</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 30  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=白鬚瀑布 日本〒071-0235 Hokkaido, Kamikawa District, Biei, Shirogane&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/24.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;15:00</div>
-                              <div class="title">白鬚瀑布</div>
-                              <div class="note">停留半小時拍照打卡</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-car"></span> 3  小時</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=旭川成吉思汗大黑屋 札幌1號店 日本〒064-0804 Hokkaido, Sapporo, Chuo Ward, Minami 4 Jonishi, 2 Chome−10−1 南４西２ビル 2階&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/26.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;20:00</div>
-                              <div class="title">成吉思汗大黑屋</div>
-                              <div class="note">札幌著名烤羊肉</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 8  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/27.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;21:30</div>
-                              <div class="title">由緣溫泉旅館</div>
-                              <div class="note">回旅館休息</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                </div>
-            
-                <!-- Day 4 -->
-				 <div class="day-section" id="day-4" style="display:none;">
-                	<div class="day-label">2026.02.12（四）</div>
-                    <div class="activity-card">
-                    	<img src="images/28.png">
-                        <div class="info">
-                        	<div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;10:00</div>
-                            <div class="title">由緣溫泉旅館</div>
-            				<div class="note">Checkout</div>
-                        </div>
-                    </div>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/29.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;10:30</div>
-                              <div class="title">Vessel Hotel</div>
-                              <div class="note">寄放行李</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-car"></span> 18  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=北海道神宮 日本〒064-0959 Hokkaido, Sapporo, Chuo Ward, Miyagaoka, 474&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/42.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;11:00</div>
-                              <div class="title">北海道神宮</div>
-                              <div class="note">停留1小時拍照打卡</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-car"></span> 8  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=迴轉壽司 Toriton 圓山店 日本〒064-0824 Hokkaido, Sapporo, Chuo Ward, Kita 4 Jonishi, 23 Chome−2−17&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/72.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;13:00</div>
-                              <div class="title">Toriton 圓山店</div>
-                              <div class="note">吃吃迴轉壽司</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-car"></span> 13  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=旭山紀念公園 日本〒064-0943 Hokkaido, Sapporo, Chuo Ward, Sakaigawa, 4 Chome−1−3&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/71.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;14:30</div>
-                              <div class="title">旭山紀念公園</div>
-                              <div class="note">蘇先生指定景點</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-					<div class="transport-info"><span class="icon-travel-car"></span> 20  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=白色戀人公園 日本〒063-0052 Hokkaido, Sapporo, Nishi Ward, Miyanosawa 2 Jo, 2 Chome−11−36&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/70.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;17:00</div>
-                              <div class="title">白色戀人公園</div>
-                              <div class="note">園區拍拍照買紀念品</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-car"></span> 30  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/45.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;20:00</div>
-                              <div class="title">Vessel Hotel</div>
-                              <div class="note">回旅館休息</div>
-                            </div>
-                        </div>
-                   </a>
-                   <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=炸豬排 檍 札幌薄野店 日本〒060-0063 Hokkaido, Sapporo, Chuo Ward, Minami 3 Jonishi, 2 Chome−7-1&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/73.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;20:00</div>
-                              <div class="title">炸豬排檍</div>
-                              <div class="note">晚餐吃吃豬排讚啦</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                    
-                    
-                </div>
-               
-                 
-                <!-- Day 5 -->
-	            <div class="day-section" id="day-5" style="display:none;">
-                	<div class="day-label">2026.02.13（五）</div>
-                    <div class="activity-card">
-                    	<img src="images/39.png">
-                        <div class="info">
-                            <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;08:30</div>
-                            <div class="title">Vessel Hotel</div>
-                            <div class="note">新的一天又開始了！</div>
-                        </div>
-                    </div>
-					<div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌市中央區北一條西1丁目6號 Sapporo Sosei Square 地下2樓&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/11-1.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:00</div>
-                              <div class="title">Times租車</div>
-                              <div class="note">需提前加好油再還車</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-bus"></span> 1  小時</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=日本北海道小樽市 Asari, 1 Chome−5, 朝里駅&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/30.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;10:00</div>
-                              <div class="title">小樽朝里站</div>
-                              <div class="note">札幌車站搭JR</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 50  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=民宿 青塚食堂 3 Chome-210 Shukutsu, Otaru, Hokkaido 047-0047日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/31.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;12:00</div>
-                              <div class="title">青塚食堂</div>
-                              <div class="note">家庭式居酒屋吃午餐</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=小樽水族館 日本〒047-0047 Hokkaido, Otaru, Shukutsu, 3 Chome−303&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/32.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;13:00</div>
-                              <div class="title">小樽水族館</div>
-                              <div class="note">企鵝散步13:30/14:40場次</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <div class="transport-info"><span class="icon-travel-bus"></span> 25  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Sakaimachi Street, 6-11 Sakaimachi, Otaru, Hokkaido 047-0027日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/34.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;16:30</div>
-                              <div class="title">小樽商店街</div>
-                              <div class="note">附近有音樂盒堂逛逛</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=小樽運河, 日本北海道小樽市&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/36.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;18:00</div>
-                              <div class="title">小樽運河</div>
-                              <div class="note">限定雪燈之路祭典</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-car"></span> 70  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/37.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;20:30</div>
-                              <div class="title">Vessel Hotel</div>
-                              <div class="note">回旅館休息</div>
-                            </div>
-                        </div>
-                    </a>
-                   <div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=VESSEL HOTEL CAMPANA SUSUKINO, 6 Chome-16番地1 Minami 5 Jōnishi, 中央區札幌市北海道日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/69.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;21:00</div>
-                              <div class="title">餃子の山岡家</div>
-                              <div class="note">出門覓食宵夜</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                 </div>
-                <!-- Day 6 -->
-                <div class="day-section" id="day-6" style="display:none;">
-                	<div class="day-label">2026.02.14（六）</div>
-                    <div class="activity-card">
-                    	<img src="images/56.png">
-                        <div class="info">
-                            <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;09:00</div>
-                            <div class="title">Vessel Hotel</div>
-                            <div class="note">飯店自助早餐(￥2300)</div>
-                    	</div>
-                    </div>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 2  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Jozankei Daiichi Hotel Suizantei, 定山渓第一寶亭留翠山亭 内1階 3 Chome-105 Jozankeionsennishi, Minami Ward, Sapporo, Hokkaido 061-2303日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/62.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;10:38</div>
-                              <div class="title">薄野站</div>
-                              <div class="note">直達第一飯店前</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-bus"></span> 60  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=Jozankei Daiichi Hotel Suizantei, 定山渓第一寶亭留翠山亭 内1階 3 Chome-105 Jozankeionsennishi, Minami Ward, Sapporo, Hokkaido 061-2303日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/63.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;12:00</div>
-                              <div class="title">Jozankei Daiichi</div>
-                              <div class="note">預約制私湯(￥8800)</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-travel-walk"></span> 2  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=ふる川 果日 J.glacée, 日本〒061-2303 Hokkaido, Sapporo, Minami Ward, Jōzankei, 西4丁目356番地&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/64.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;14:30</div>
-                              <div class="title">J.glacée</div>
-                              <div class="note">有名的蘋果派甜點店</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-walk"></span> 3  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=定山溪二見公園 日本〒061-2303 Hokkaido, Sapporo, Minami Ward, Jozankeionsennishi, 4 Chome&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/62.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;15:00</div>
-                              <div class="title">二見公園</div>
-                              <div class="note">沿途散步到吊橋</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-walk"></span> 0  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=定山渓大橋 2 Chome Jozankeionsenhigashi, Minami Ward, Sapporo, Hokkaido 061-2303日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/65.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;16:08</div>
-                              <div class="title">定山溪大橋</div>
-                              <div class="note">提前十分鐘等接駁巴士</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-bus"></span> 60  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=札幌車站 4 Chome Kita 6 Jonishi, Kita Ward, Sapporo, Hokkaido 060-0806日本&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/66.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;17:30</div>
-                              <div class="title">札幌車站</div>
-                              <div class="note">逛逛+吃點心</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-train"></span> 15  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/45.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;19:30</div>
-                              <div class="title">Vessel Hotel</div>
-                              <div class="note">回旅館休息</div>
-                            </div>
-                        </div>
-                    </a>
-					<div class="transport-info"><span class="icon-travel-walk"></span> 1  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=RAZAN Charcoal-Grilled Wagyu Yakiniku Susukino Branch&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/46.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;20:00</div>
-                              <div class="title">RAZAN 炭火燒肉</div>
-                              <div class="note">尚未訂位</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <!-- Day 7 -->
-                <div class="day-section" id="day-7" style="display:none;">
-                	<div class="day-label">2026.02.15（日）</div>
-                    <div class="activity-card">
-                    	<img src="images/47.png">
-                        <div class="info">
-                        	<div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;07:30</div>
-                            <div class="title">Vessel Hotel</div>
-                            <div class="note">準備收拾行李回家啦</div>
-                        </div>
-                    </div>
-                    <div class="transport-info"><span class="icon-travel-bus"></span> 1  小時 20 分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=新千歲機場&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/3.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;08:00</div>
-                              <div class="title">新千歲機場</div>
-                              <div class="note">提前至機場最後採購</div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="transport-info"><span class="icon-airplane"></span> 4  小時 55  分</div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=臺灣桃園國際機場&travelmode=driving" target="_blank">
-                        <div class="activity-card">
-                            <img src="images/1.png">
-                            <div class="info">
-                              <div class="time"><span class="icon-watch"></span>&nbsp;&nbsp;16:05</div>
-                              <div class="title">桃園機場T2</div>
-                              <div class="note">歡迎歸國，快樂迎接過年！</div>
-                            </div>
-                        </div>
-                    </a>
-                    
-                </div>
-				
-            </div>
-	
-            <!-- ================================
+<div class="topbar" id="topbar">
+<button aria-label="menu" class="menu-btn" id="menuBtn">
+<div></div> <!-- 這是中間的線 -->
+<span class="icon-arrow-left"></span>
+</button>
+</div>
+<nav class="bottom-nav">
+<button class="active" data-page="home-page">
+<span class="icon-clipboard"></span>
+<span class="label">行程</span>
+</button>
+<button data-page="flight-page">
+<span class="icon-airplane"></span>
+<span class="label">航班</span>
+</button>
+<button data-page="ticket-page">
+<span class="icon-ticket"></span>
+<span class="label">票據</span>
+</button>
+<button data-page="exchange-page">
+<span class="icon-calculator"></span>
+<span class="label">匯率</span>
+</button>
+<button data-page="translate-page">
+<span class="icon-earth"></span>
+<span class="label">翻譯</span>
+</button>
+</nav>
+<!-- iOS Full-Screen Menu -->
+<div class="ios-full-menu" id="iosFullMenu">
+<div class="menu-content">
+<ul>
+<li data-target="packing-page">行李清單</li>
+<li data-target="shopping-page">購物清單</li>
+<li data-target="ticket-page">電子票據</li>
+<li data-target="photo-page">出片參數</li>
+<li data-target="weather-page">天氣預報</li>
+</ul>
+</div>
+<button class="menu-close" id="menuClose">✕</button>
+</div>
+<!-- ✈️ App 啟動畫面 -->
+<div id="app-splash">
+<div class="runway"></div>
+<img class="plane" src="images/flight.png"/>
+<div class="splash-text">白い季節に、恋をする</div>
+</div>
+<!-- 原本整個網站包起來 -->
+<div id="app-root">
+<button aria-label="回到頂部" class="scroll-top-button" id="scrollToTop">
+<span class="icon-arrow-thin-up"></span>
+</button>
+<div class="content-pages">
+<div class="container" id="home-page">
+<div class="day-tabs-wrapper">
+<div class="day-tabs-arrow left" id="arrow-left"><span class="icon-arrow-left"></span></div>
+<div class="day-tabs-scroll" id="dayTabsScroll">
+<div class="day-tabs">
+<button class="day-tab active" onclick="showDay(1)">第 1 天</button>
+<button class="day-tab" onclick="showDay(2)">第 2 天</button>
+<button class="day-tab" onclick="showDay(3)">第 3 天</button>
+<button class="day-tab" onclick="showDay(4)">第 4 天</button>
+<button class="day-tab" onclick="showDay(5)">第 5 天</button>
+<button class="day-tab" onclick="showDay(6)">第 6 天</button>
+<button class="day-tab" onclick="showDay(7)">第 7 天</button>
+</div>
+</div>
+<div class="day-tabs-arrow right" id="arrow-right"><span class="icon-arrow-right"></span></div>
+</div>
+<!-- Day 1 -->
+<div class="day-section" id="day-1" style="display:block;">
+<div class="day-label">2026.02.09（一）</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=桃園機場&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/1.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  00:10</div>
+<div class="title">桃園機場T1</div>
+<div class="note">22:10  報到託運</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-airplane"></span> 2  小時  30  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=羽田機場&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/2.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  04:00</div>
+<div class="title">羽田機場T3</div>
+<div class="note">06:15  報到託運</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-airplane"></span> 1  小時  30  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=新千歲機場&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/3.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  09:45</div>
+<div class="title">新千歲機場</div>
+<div class="note">預留1小時入境</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=一幻拉麵 新千歲機場店, 日本〒066-0012 Hokkaido, Chitose, Bibi, ターミナルビル Domestic Terminal New Chitose Airport, 3F&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/4.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  11:00</div>
+<div class="title">一幻拉麵</div>
+<div class="note">停留1小時用餐</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=Kinotoya New Chitose Airport Factory, 2F Bibi, Chitose City, Hokkaido 066-0012&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/5.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  12:00</div>
+<div class="title">Kinotoya冰淇淋</div>
+<div class="note">步行至2F購買</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-bus"></span> 1  小時  20  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/6.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  13:30</div>
+<div class="title">由緣溫泉旅館</div>
+<div class="note">Checkin&amp;寄放行李</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-train"></span> 20  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=北海道大學&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/7.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  14:30</div>
+<div class="title">北海道大學</div>
+<div class="note">雪中校園散步及拍照</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-train"></span> 15  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=湯咖喱 奥芝商店 站前創成寺 日本〒060-0004 Hokkaido, Sapporo, Chuo Ward, Kita 4 Jonishi, 1 Chome ホクレンビル B1F パールタウン&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/8.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  17:00</div>
+<div class="title">奧芝咖哩</div>
+<div class="note">停留1小時用餐</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-bus"></span> 15  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/9.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  18:30</div>
+<div class="title">由緣溫泉旅館</div>
+<div class="note">回旅館泡溫泉休息</div>
+</div>
+</div>
+</a>
+</div>
+<!-- Day 2 -->
+<div class="day-section" id="day-2" style="display:none;">
+<div class="day-label">2026.02.10（二）</div>
+<div class="activity-card">
+<img src="images/10.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  08:00</div>
+<div class="title">旅館早餐</div>
+<div class="note">需提前加購￥3300</div>
+</div>
+</div>
+<div class="transport-info"><span class="icon-travel-car"></span> 5  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌市中央區北一條西1丁目6號 Sapporo Sosei Square 地下2樓&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/11-1.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  09:00</div>
+<div class="title">Times租車</div>
+<div class="note">攜帶租車相關文件及駕照</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 40  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=國營瀧野鈴蘭丘陵公園 日本〒005-0862 Hokkaido, Sapporo, Minami Ward, Takino, 247&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/12.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  10:00</div>
+<div class="title">瀧野鈴蘭丘陵公園</div>
+<div class="note">停留4小時遊玩</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 35  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌電視塔 日本〒060-0042 Hokkaido, Sapporo, Chuo Ward, Odorinishi, 1 Chome&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/13.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  15:00</div>
+<div class="title">札幌電視塔</div>
+<div class="note">停留半小時拍照打卡</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌市時計台 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 2 Chome&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/14.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  15:30</div>
+<div class="title">札幌計時台</div>
+<div class="note">停留半小時拍照打卡</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=大通公園 日本〒060-0042 Hokkaido, Sapporo, Chuo Ward, Odorinishi, １〜１２丁目&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/15.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  16:00</div>
+<div class="title">大通公園(札幌雪祭)</div>
+<div class="note">停留1小時拍照打卡</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 5  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=牛しゃぶ 牛すき 禅, 日本〒060-0062 Hokkaido, Sapporo, Chuo Ward, Minami 2 Jonishi, 1 Chome, 山口中央ビル地下&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/16.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  17:00</div>
+<div class="title">牛しゃぶ禪</div>
+<div class="note">和牛放題/單點壽喜燒</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 6  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=狸小路商店街 日本〒060-0062 Hokkaido, Sapporo, Chuo Ward, 南2・3条西1～7丁目&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/17.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  19:00</div>
+<div class="title">狸小路商店街</div>
+<div class="note">停留2小時逛街採購</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 6  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=Parfaiteria Pal, 南４西２ビル 6F 2 Chome-10-1 Minami 4 Jonishi, Chuo Ward, Sapporo, Hokkaido 064-0804日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/61.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  21:00</div>
+<div class="title">夜パフェ</div>
+<div class="note">佐藤健去過的深夜甜點店</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/18.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  22:00</div>
+<div class="title">由緣溫泉旅館</div>
+<div class="note">回旅館休息</div>
+</div>
+</div>
+</a>
+</div>
+<!-- Day 3 -->
+<div class="day-section" id="day-3" style="display:none;">
+<div class="day-label">2026.02.11（三）</div>
+<div class="activity-card">
+<img src="images/19.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  07:00</div>
+<div class="title">由緣溫泉旅館</div>
+<div class="note">可提前準備超商早餐</div>
+</div>
+</div>
+<div class="transport-info"><span class="icon-travel-car"></span> 3  小時</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=美瑛神社 日本〒071-0213 Hokkaido, Kamikawa District, Biei, Higashimachi, 4 Chome−1−1&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/20.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  10:00</div>
+<div class="title">美瑛神社</div>
+<div class="note">停留1小時參拜拍照</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 5  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=Biei 2 go, 日本〒071-0203 Hokkaido, Kamikawa District, Biei, Nishimachi, 1 Chome−2−10&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/22.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  11:30</div>
+<div class="title">Biei2GO輕食</div>
+<div class="note">推豬排三明治跟焗烤麵！</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=Christmas tree, Bibaushi, Biei, Kamikawa District, Hokkaido, 日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/23.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  13:00</div>
+<div class="title">美瑛聖誕樹</div>
+<div class="note">停留1小時拍照打卡</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 30  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=白鬚瀑布 日本〒071-0235 Hokkaido, Kamikawa District, Biei, Shirogane&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/24.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  15:00</div>
+<div class="title">白鬚瀑布</div>
+<div class="note">停留半小時拍照打卡</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 3  小時</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=旭川成吉思汗大黑屋 札幌1號店 日本〒064-0804 Hokkaido, Sapporo, Chuo Ward, Minami 4 Jonishi, 2 Chome−10−1 南４西２ビル 2階&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/26.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  20:00</div>
+<div class="title">成吉思汗大黑屋</div>
+<div class="note">札幌著名烤羊肉</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 8  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌由緣溫泉旅館 日本〒060-0001 Hokkaido, Sapporo, Chuo Ward, Kita 1 Jonishi, 7 Chome−６&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/27.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  21:30</div>
+<div class="title">由緣溫泉旅館</div>
+<div class="note">回旅館休息</div>
+</div>
+</div>
+</a>
+</div>
+<!-- Day 4 -->
+<div class="day-section" id="day-4" style="display:none;">
+<div class="day-label">2026.02.12（四）</div>
+<div class="activity-card">
+<img src="images/28.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  10:00</div>
+<div class="title">由緣溫泉旅館</div>
+<div class="note">Checkout</div>
+</div>
+</div>
+<div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/29.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  10:30</div>
+<div class="title">Vessel Hotel</div>
+<div class="note">寄放行李</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 18  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=北海道神宮 日本〒064-0959 Hokkaido, Sapporo, Chuo Ward, Miyagaoka, 474&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/42.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  11:00</div>
+<div class="title">北海道神宮</div>
+<div class="note">停留1小時拍照打卡</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 8  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=迴轉壽司 Toriton 圓山店 日本〒064-0824 Hokkaido, Sapporo, Chuo Ward, Kita 4 Jonishi, 23 Chome−2−17&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/72.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  13:00</div>
+<div class="title">Toriton 圓山店</div>
+<div class="note">吃吃迴轉壽司</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 13  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=旭山紀念公園 日本〒064-0943 Hokkaido, Sapporo, Chuo Ward, Sakaigawa, 4 Chome−1−3&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/71.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  14:30</div>
+<div class="title">旭山紀念公園</div>
+<div class="note">蘇先生指定景點</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 20  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=白色戀人公園 日本〒063-0052 Hokkaido, Sapporo, Nishi Ward, Miyanosawa 2 Jo, 2 Chome−11−36&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/70.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  17:00</div>
+<div class="title">白色戀人公園</div>
+<div class="note">園區拍拍照買紀念品</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 30  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/45.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  20:00</div>
+<div class="title">Vessel Hotel</div>
+<div class="note">回旅館休息</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=炸豬排 檍 札幌薄野店 日本〒060-0063 Hokkaido, Sapporo, Chuo Ward, Minami 3 Jonishi, 2 Chome−7-1&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/73.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  20:00</div>
+<div class="title">炸豬排檍</div>
+<div class="note">晚餐吃吃豬排讚啦</div>
+</div>
+</div>
+</a>
+</div>
+<!-- Day 5 -->
+<div class="day-section" id="day-5" style="display:none;">
+<div class="day-label">2026.02.13（五）</div>
+<div class="activity-card">
+<img src="images/39.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  08:30</div>
+<div class="title">Vessel Hotel</div>
+<div class="note">新的一天又開始了！</div>
+</div>
+</div>
+<div class="transport-info"><span class="icon-travel-car"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌市中央區北一條西1丁目6號 Sapporo Sosei Square 地下2樓&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/11-1.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  09:00</div>
+<div class="title">Times租車</div>
+<div class="note">需提前加好油再還車</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-bus"></span> 1  小時</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=日本北海道小樽市 Asari, 1 Chome−5, 朝里駅&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/30.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  10:00</div>
+<div class="title">小樽朝里站</div>
+<div class="note">札幌車站搭JR</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 50  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=民宿 青塚食堂 3 Chome-210 Shukutsu, Otaru, Hokkaido 047-0047日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/31.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  12:00</div>
+<div class="title">青塚食堂</div>
+<div class="note">家庭式居酒屋吃午餐</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=小樽水族館 日本〒047-0047 Hokkaido, Otaru, Shukutsu, 3 Chome−303&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/32.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  13:00</div>
+<div class="title">小樽水族館</div>
+<div class="note">企鵝散步13:30/14:40場次</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-bus"></span> 25  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=Sakaimachi Street, 6-11 Sakaimachi, Otaru, Hokkaido 047-0027日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/34.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  16:30</div>
+<div class="title">小樽商店街</div>
+<div class="note">附近有音樂盒堂逛逛</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 10  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=小樽運河, 日本北海道小樽市&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/36.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  18:00</div>
+<div class="title">小樽運河</div>
+<div class="note">限定雪燈之路祭典</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-car"></span> 70  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/37.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  20:30</div>
+<div class="title">Vessel Hotel</div>
+<div class="note">回旅館休息</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 5  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=VESSEL HOTEL CAMPANA SUSUKINO, 6 Chome-16番地1 Minami 5 Jōnishi, 中央區札幌市北海道日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/69.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  21:00</div>
+<div class="title">餃子の山岡家</div>
+<div class="note">出門覓食宵夜</div>
+</div>
+</div>
+</a>
+</div>
+<!-- Day 6 -->
+<div class="day-section" id="day-6" style="display:none;">
+<div class="day-label">2026.02.14（六）</div>
+<div class="activity-card">
+<img src="images/56.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  09:00</div>
+<div class="title">Vessel Hotel</div>
+<div class="note">飯店自助早餐(￥2300)</div>
+</div>
+</div>
+<div class="transport-info"><span class="icon-travel-walk"></span> 2  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jozankei Daiichi Hotel Suizantei, 定山渓第一寶亭留翠山亭 内1階 3 Chome-105 Jozankeionsennishi, Minami Ward, Sapporo, Hokkaido 061-2303日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/62.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  10:38</div>
+<div class="title">薄野站</div>
+<div class="note">直達第一飯店前</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-bus"></span> 60  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=Jozankei Daiichi Hotel Suizantei, 定山渓第一寶亭留翠山亭 内1階 3 Chome-105 Jozankeionsennishi, Minami Ward, Sapporo, Hokkaido 061-2303日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/63.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  12:00</div>
+<div class="title">Jozankei Daiichi</div>
+<div class="note">預約制私湯(￥8800)</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 2  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=ふる川 果日 J.glacée, 日本〒061-2303 Hokkaido, Sapporo, Minami Ward, Jōzankei, 西4丁目356番地&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/64.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  14:30</div>
+<div class="title">J.glacée</div>
+<div class="note">有名的蘋果派甜點店</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 3  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=定山溪二見公園 日本〒061-2303 Hokkaido, Sapporo, Minami Ward, Jozankeionsennishi, 4 Chome&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/62.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  15:00</div>
+<div class="title">二見公園</div>
+<div class="note">沿途散步到吊橋</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 0  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=定山渓大橋 2 Chome Jozankeionsenhigashi, Minami Ward, Sapporo, Hokkaido 061-2303日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/65.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  16:08</div>
+<div class="title">定山溪大橋</div>
+<div class="note">提前十分鐘等接駁巴士</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-bus"></span> 60  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=札幌車站 4 Chome Kita 6 Jonishi, Kita Ward, Sapporo, Hokkaido 060-0806日本&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/66.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  17:30</div>
+<div class="title">札幌車站</div>
+<div class="note">逛逛+吃點心</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-train"></span> 15  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=ベッセルホテルカンパーナすすきの 日本〒064-0805 Hokkaido, Sapporo, Chuo Ward, Minami 5 Jonishi, 6 Chome−16番地1&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/45.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  19:30</div>
+<div class="title">Vessel Hotel</div>
+<div class="note">回旅館休息</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-travel-walk"></span> 1  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=RAZAN Charcoal-Grilled Wagyu Yakiniku Susukino Branch&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/46.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  20:00</div>
+<div class="title">RAZAN 炭火燒肉</div>
+<div class="note">尚未訂位</div>
+</div>
+</div>
+</a>
+</div>
+<!-- Day 7 -->
+<div class="day-section" id="day-7" style="display:none;">
+<div class="day-label">2026.02.15（日）</div>
+<div class="activity-card">
+<img src="images/47.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  07:30</div>
+<div class="title">Vessel Hotel</div>
+<div class="note">準備收拾行李回家啦</div>
+</div>
+</div>
+<div class="transport-info"><span class="icon-travel-bus"></span> 1  小時 20 分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=新千歲機場&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/3.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  08:00</div>
+<div class="title">新千歲機場</div>
+<div class="note">提前至機場最後採購</div>
+</div>
+</div>
+</a>
+<div class="transport-info"><span class="icon-airplane"></span> 4  小時 55  分</div>
+<a href="https://www.google.com/maps/dir/?api=1&amp;destination=臺灣桃園國際機場&amp;travelmode=driving" target="_blank">
+<div class="activity-card">
+<img src="images/1.png"/>
+<div class="info">
+<div class="time"><span class="icon-watch"></span>  16:05</div>
+<div class="title">桃園機場T2</div>
+<div class="note">歡迎歸國，快樂迎接過年！</div>
+</div>
+</div>
+</a>
+</div>
+</div>
+<!-- ================================
                    匯率換算頁面（整理後）
             ================================ -->
-            <div id="exchange-page" class="exchange-page">
-            	<div class="exchange-inner">
-          			<div class="converter">
-						<!-- ⭐ 幣別切換開關 -->
-                        <div class="toggle-switch" id="currencyToggle">
- 							<div class="toggle-track">
-								<div class="toggle-thumb"></div>
-							</div>
-							<span class="toggle-label" id="toggle-label">JPY</span>
-						</div>
-	
-						<!-- ⭐ 輸入金額（已修正） -->
-                        <div class="input-group">
-							<div class="input-wrapper">
-								<input type="text" id="input-amount" placeholder="輸入金額" inputmode="numeric" autocomplete="off">
-								<span class="currency-label" id="input-label">｜ 日圓</span>
-							</div>
-                        </div>
-	
-                        <!-- ⭐ 換算結果（已修正） -->
-                        <div class="input-group">
-							<div class="input-wrapper">
-								<input type="text" id="output-amount" placeholder="換算結果" readonly>
-                            	<span class="currency-label" id="output-label">｜ 台幣</span>
-							</div>
-                        </div>
-					</div>
-	
-					<!-- ⭐ 數字鍵盤 -->
-					<div class="num-pad">
-						<button class="key">1</button>
-                        <button class="key">2</button>
-                        <button class="key">3</button>
-                    
-                        <button class="key">4</button>
-                        <button class="key">5</button>
-                        <button class="key">6</button>
-                    
-                        <button class="key">7</button>
-                        <button class="key">8</button>
-                        <button class="key">9</button>
-                    
-                        <button class="key gray">0</button>
-                        <button class="key orange">C</button>
-                        <button class="key orange">←</button>
-					</div>
-				</div>
-			</div>
-            
-            <!-- ================================
+<div class="exchange-page" id="exchange-page">
+<div class="exchange-inner">
+<div class="converter">
+<!-- ⭐ 幣別切換開關 -->
+<div class="toggle-switch" id="currencyToggle">
+<div class="toggle-track">
+<div class="toggle-thumb"></div>
+</div>
+<span class="toggle-label" id="toggle-label">JPY</span>
+</div>
+<!-- ⭐ 輸入金額（已修正） -->
+<div class="input-group">
+<div class="input-wrapper">
+<input autocomplete="off" id="input-amount" inputmode="numeric" placeholder="輸入金額" type="text"/>
+<span class="currency-label" id="input-label">｜ 日圓</span>
+</div>
+</div>
+<!-- ⭐ 換算結果（已修正） -->
+<div class="input-group">
+<div class="input-wrapper">
+<input id="output-amount" placeholder="換算結果" readonly type="text"/>
+<span class="currency-label" id="output-label">｜ 台幣</span>
+</div>
+</div>
+</div>
+<!-- ⭐ 數字鍵盤 -->
+<div class="num-pad">
+<button class="key">1</button>
+<button class="key">2</button>
+<button class="key">3</button>
+<button class="key">4</button>
+<button class="key">5</button>
+<button class="key">6</button>
+<button class="key">7</button>
+<button class="key">8</button>
+<button class="key">9</button>
+<button class="key gray">0</button>
+<button class="key orange">C</button>
+<button class="key orange">←</button>
+</div>
+</div>
+</div>
+<!-- ================================
                   行李清單頁面
             ================================ -->
-            <div id="packing-page" class="packing-page" ></div>
-            <div id="packing-edit-bar" style="display:flex;justify-content:flex-end;margin-bottom: 5px;margin-top: 5px;"></div>
-            
-            <!-- === 行李清單通用 Modal（請務必放在 body 最底部） === -->
-            <div id="itemModal" class="modal-overlay" style="display:flex; display:none;">
-				<div class="modal-box">
-                    <h3 id="modalTitle">新增項目</h3>
-                    <input id="modalInput" type="text" placeholder="輸入名稱…" />
-                    <div class="modal-buttons">
-						<button id="modalCancel">取消</button>
-						<button id="modalOK">確定</button>
-  					</div>
-				</div>
-            </div>
+<div class="packing-page" id="packing-page"></div>
+<div id="packing-edit-bar" style="display:flex;justify-content:flex-end;margin-bottom: 5px;margin-top: 5px;"></div>
+<!-- === 行李清單通用 Modal（請務必放在 body 最底部） === -->
+<div class="modal-overlay" id="itemModal" style="display:flex; display:none;">
+<div class="modal-box">
+<h3 id="modalTitle">新增項目</h3>
+<input id="modalInput" placeholder="輸入名稱…" type="text">
+<div class="modal-buttons">
+<button id="modalCancel">取消</button>
+<button id="modalOK">確定</button>
+</div>
+</input></div>
+</div>
+<!-- === 電子憑證（請務必放在 body 最底部） === -->
+<div class="ticket-page" id="ticket-page">
+<div class="ticket-category-list">
+<div class="ticket-category bg-blue" data-target="hotel" id="hotel">
+<div class="icon">
+<img alt="folder" src="images/57.png"/>
+</div>
+<div class="text">
+<span class="title">飯店住宿</span>
+</div>
+<div class="more">⋮</div>
+</div>
+<div class="ticket-category bg-red" data-target="schedule">
+<div class="icon">
+<img alt="folder" src="images/59.png"/>
+</div>
+<div class="text">
+<span class="title">一日行程</span>
+</div>
+<div class="more">⋮</div>
+</div>
+<div class="ticket-category bg-green" data-target="rentcar">
+<div class="icon">
+<img alt="folder" src="images/60.png"/>
+</div>
+<div class="text">
+<span class="title">租車預訂</span>
+</div>
+<div class="more">⋮</div>
+</div>
+<div class="ticket-category bg-purple" data-target="entry">
+<div class="icon">
+<img alt="folder" src="images/67.png"/>
+</div>
+<div class="text">
+<span class="title">入境審查</span>
+</div>
+<div class="more">⋮</div>
+</div>
+<div class="ticket-category bg-yellow" data-target="restaurant">
+<div class="icon">
+<img alt="folder" src="images/58.png"/>
+</div>
+<div class="text">
+<span class="title">餐廳預訂</span>
+</div>
+<div class="more">⋮</div>
+</div>
+</div>
+<!-- 內容頁 -->
+<div class="ticket-content hidden" id="ticketContent">
+<h3 id="ticketContentTitle"></h3>
+<div id="ticketContentBody"></div>
+</div>
+</div>
+<div class="ticket-page" id="flight-page" style="display:none;">
+<div class="ticket-category-list" id="flightStandalone"></div>
+</div>
+<!-- Photo Page (出片參數) -->
+<div class="photo-page" id="photo-page" style="display:none;">
+<div class="section-head">
+<div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
+<div class="photo-section-actions">
+<button class="btn-add-photo" data-add-album="1" type="button">＋ 新增</button>
+<button class="btn-remove-photo" data-remove-album="1" type="button">移除</button>
+</div>
+</div>
+<div aria-label="相片瀏覽器" class="photo-swiper" id="photoSwiper"> </div>
+<div aria-label="頁面指示" class="photo-dots" id="photoDots"></div>
+<!-- Photo Viewer (full screen) -->
+<div aria-hidden="true" class="photo-viewer" id="photoViewer">
+<div class="photo-viewer-bg" data-close="1"></div>
+<div class="photo-viewer-content">
+<img alt="" class="photo-viewer-img" id="photoViewerImg" src=""/>
+<button aria-label="關閉" class="photo-viewer-close" data-close="1" type="button">×</button>
+</div>
+</div>
+<!-- 第二個相簿（新增） -->
+<div class="photo-section">
+<div class="section-head">
+<div class="photo-section-title">構圖參考</div>
+<div class="photo-section-actions">
+<button class="btn-add-photo" data-add-album="2" style="margin-top: 1.4rem;" type="button">＋ 新增</button>
+<button class="btn-remove-photo" data-remove-album="2" style="margin-top: 1.4rem;" type="button">移除</button>
+</div>
+</div>
+<div class="photo-swiper" id="photoSwiper2"></div>
+<div class="photo-dots" id="photoDots2"></div>
+</div>
+<!-- 影片相簿（新增） -->
+<div class="section-head">
+<div class="photo-section-title">短影音參考</div>
+<div class="video-section-actions">
+<button class="photo-btn-action btn-add-video" style="margin-top: 1.7rem;" type="button">＋ 新增</button>
+<button class="photo-btn-action danger btn-remove-video" style="margin-top: 1.7rem;" type="button">移除</button>
+</div>
+</div>
+<ul class="video-link-list" id="videoLinkList"></ul>
+<!-- 長按更換圖片用（隱藏選圖） -->
+<input accept="image/*" hidden="" id="photoReplaceInput" type="file"/>
+<!-- 新增圖片用（隱藏選圖，可多選） -->
+<input accept="image/*" hidden="" id="photoAddInput" multiple type="file"/>
+</div>
+<!-- Translate Page (即時翻譯) -->
 
-
-			<!-- === 電子憑證（請務必放在 body 最底部） === -->
-            <div id="ticket-page" class="ticket-page">
-				<div class="ticket-category-list">
-					
-						<div class="ticket-category bg-blue" data-target="hotel" id="hotel">
-							<div class="icon">
-								<img src="images/57.png" alt="folder">
-							</div>
-							<div class="text">
-								<span class="title">飯店住宿</span>
-							</div>
-							<div class="more">⋮</div>
-						</div>
-					
-					
-					<div class="ticket-category bg-red" data-target="schedule">
-						<div class="icon">
-							<img src="images/59.png" alt="folder">
-						</div>
-						<div class="text">
-							<span class="title">一日行程</span>
-						</div>
-						<div class="more">⋮</div>
-					</div>
-					<div class="ticket-category bg-green" data-target="rentcar">
-						<div class="icon">
-							<img src="images/60.png" alt="folder">
-						</div>
-						<div class="text">
-							<span class="title">租車預訂</span>
-						</div>
-						<div class="more">⋮</div>
-                    </div>
-					<div class="ticket-category bg-purple" data-target="entry">
-						<div class="icon">
-							<img src="images/67.png" alt="folder">
-						</div>
-						<div class="text">
-							<span class="title">入境審查</span>
-						</div>
-						<div class="more">⋮</div>
-					</div>
-					<div class="ticket-category bg-yellow" data-target="restaurant">
-						<div class="icon">
-							<img src="images/58.png" alt="folder">
-						</div>
-						<div class="text">
-							<span class="title">餐廳預訂</span>
-						</div>
-						<div class="more">⋮</div>
-					</div>
-				</div>
-				<!-- 內容頁 -->
-				<div id="ticketContent" class="ticket-content hidden">
-					<h3 id="ticketContentTitle"></h3>
-					<div id="ticketContentBody"></div>
-				</div>
-            </div>
-			<div id="flight-page" class="ticket-page" style="display:none;">
-				<div class="ticket-category-list" id="flightStandalone"></div>
-			</div>
-			
-            <!-- Photo Page (出片參數) -->
-            <div id="photo-page" class="photo-page" style="display:none;">
-				<div class="section-head">
-					<div class="photo-section-title" style="margin: 0.5rem 0 0.2rem 0;">Dazz濾鏡</div>
-					<div class="photo-section-actions">
-						<button class="btn-add-photo" type="button" data-add-album="1">＋ 新增</button>
-						<button class="btn-remove-photo" type="button" data-remove-album="1">移除</button>
-					</div>
-				</div>
-				<div id="photoSwiper" class="photo-swiper" aria-label="相片瀏覽器"> </div>
-                <div id="photoDots" class="photo-dots" aria-label="頁面指示"></div>
-				<!-- Photo Viewer (full screen) -->
-            	<div id="photoViewer" class="photo-viewer" aria-hidden="true">
-              		<div class="photo-viewer-bg" data-close="1"></div>
-              		<div class="photo-viewer-content">
-                		<img id="photoViewerImg" class="photo-viewer-img" src="" alt="">
-                		<button class="photo-viewer-close" type="button" aria-label="關閉" data-close="1">×</button>
-              		</div>
-            	</div>
-				<!-- 第二個相簿（新增） -->
-				<div class="photo-section">
-					<div class="section-head">
-						<div class="photo-section-title">構圖參考</div>
-						<div class="photo-section-actions">
-							<button class="btn-add-photo" type="button" data-add-album="2" style="margin-top: 1.4rem;">＋ 新增</button>
-							<button class="btn-remove-photo" type="button" data-remove-album="2" style="margin-top: 1.4rem;">移除</button>
-						</div>
-					</div>
-					<div id="photoSwiper2" class="photo-swiper"></div>
-					<div id="photoDots2" class="photo-dots"></div>
-				</div>
-				<!-- 影片相簿（新增） -->
-				<div class="section-head">
-					<div class="photo-section-title">短影音參考</div>
-					<div class="video-section-actions">
-  						<button class="photo-btn-action btn-add-video" type="button" style="margin-top: 1.7rem;">＋ 新增</button>
-  						<button class="photo-btn-action danger btn-remove-video" type="button" style="margin-top: 1.7rem;">移除</button>
-					</div>
-				</div>
-				<ul id="videoLinkList" class="video-link-list"></ul>
-				<!-- 長按更換圖片用（隱藏選圖） -->
-				<input id="photoReplaceInput" type="file" accept="image/*" hidden>
-				<!-- 新增圖片用（隱藏選圖，可多選） -->
-				<input id="photoAddInput" type="file" accept="image/*" multiple hidden>
-			</div>
-			<!-- Translate Page (即時翻譯) -->
-<div id="translate-page" class="translate-page" style="display:none;">
-
-  <div class="section-head">
-    <div class="translate-title">即時翻譯</div>
-  </div>
-
-  <!-- 語言選擇 -->
-  <div class="translate-row">
-    <select id="trFrom" class="tr-select">
-      <option value="auto">自動偵測</option>
-      <option value="zh">中文</option>
+<div class="translate-page" id="translate-page" style="display:none;">
+<div class="tr-head">
+<div class="tr-head-title">即時翻譯</div>
+<button aria-label="交換語言" class="tr-head-swap" id="trSwapBtn" type="button">↔︎</button>
+</div>
+<div aria-label="語言選擇" class="tr-langbar" role="group">
+  <div class="tr-lang-select">
+    <select id="trFromSelect" aria-label="來源語言">
+      <option value="auto" selected>偵測</option>
       <option value="ja">日文</option>
+      <option value="zh-TW">中文</option>
       <option value="en">英文</option>
     </select>
-
-    <span class="tr-arrow">→</span>
-
-    <select id="trTo" class="tr-select">
-      <option value="ja">日文</option>
-      <option value="zh">中文</option>
+    <span class="tr-lang-arrow">→</span>
+    <select id="trToSelect" aria-label="翻譯語言">
+      <option value="ja" selected>日文</option>
+      <option value="zh-TW">中文</option>
       <option value="en">英文</option>
     </select>
   </div>
-
-  <!-- 文字輸入 -->
-  <div class="tr-card">
-    <div class="tr-card-head">
-      <div class="tr-card-title">輸入文字</div>
-      <div class="tr-actions">
-        <button id="btnTrPaste" class="tr-btn">貼上</button>
-        <button id="btnTrClear" class="tr-btn danger">清空</button>
-      </div>
-    </div>
-
-    <textarea id="trInput" class="tr-textarea" rows="5" placeholder="輸入要翻譯的文字…"></textarea>
-
-    <div class="tr-bottom-actions">
-      <button id="btnTranslate" class="tr-primary">翻譯</button>
-      <button id="btnSwapLang" class="tr-btn">交換語言</button>
-    </div>
-  </div>
-
-  <!-- 語音輸入 -->
-  <div class="tr-card">
-    <div class="tr-card-head">
-      <div class="tr-card-title">麥克風語音轉文字</div>
-      <div class="tr-hint" id="speechHint">（部分 iPhone 可能不支援）</div>
-    </div>
-
-    <div class="tr-bottom-actions">
-      <button id="btnMicStart" class="tr-primary">開始錄音</button>
-      <button id="btnMicStop" class="tr-btn danger" disabled>停止</button>
-    </div>
-
-    <div id="micResult" class="tr-preview"></div>
-  </div>
-
-  <!-- 拍照 / 圖片 OCR -->
-  <div class="tr-card">
-    <div class="tr-card-head">
-      <div class="tr-card-title">拍照掃描（OCR）</div>
-      <div class="tr-actions">
-        <label class="tr-primary tr-file">
-          選擇照片
-          <input id="ocrFile" type="file" accept="image/*" capture="environment" hidden>
-        </label>
-      </div>
-    </div>
-
-    <div id="ocrStatus" class="tr-hint">選擇圖片後會自動辨識文字</div>
-    <div id="ocrText" class="tr-preview"></div>
-
-    <div class="tr-bottom-actions">
-      <button id="btnOcrToInput" class="tr-btn">套用到輸入框</button>
-    </div>
-  </div>
-
-  <!-- 翻譯結果 -->
-  <div class="tr-card">
-    <div class="tr-card-head">
-      <div class="tr-card-title">翻譯結果</div>
-      <div class="tr-actions">
-        <button id="btnCopyOut" class="tr-btn">複製</button>
-      </div>
-    </div>
-    <div id="trOutput" class="tr-output"></div>
-  </div>
-
+</div>
+<div class="tr-stack">
+<div class="tr-card-one">
+<div class="tr-card-label" id="trFromLabel">中文（繁體）</div>
+<textarea class="tr-input-one" id="trInputOne" placeholder="輸入您的文字" rows="4"></textarea>
+<div class="tr-roman-one" id="trRomanSrc"></div>
+<div class="tr-card-actions">
+<button aria-label="播放翻譯" class="tr-icon-btn" id="trSpeakOutBtn" type="button">
+<span class="icon-volume-down"></span>
+</button>
+<div class="tr-actions-right">
+<button aria-label="拍照/選擇圖片翻譯" class="tr-icon-btn is-blue" id="trCameraBtn" type="button">
+<span class="icon-camera1"></span>
+</button>
+<button aria-label="麥克風語音輸入" class="tr-icon-btn is-blue" id="trMicBtn" type="button">
+<span class="icon-mic"></span>
+</button>
+</div>
+<input accept="image/*" capture="environment" hidden="" id="trOcrFile" type="file"/>
+</div>
+</div>
+<div class="tr-result-one">
+<div class="tr-card-label" id="trToLabel">日文</div>
+<div class="tr-output-one" id="trOutputOne"></div>
+<div class="tr-roman-one" id="trRomanDst"></div>
+</div>
+</div>
 </div>
 
-			<!-- Shopping Page -->
-	      	<div id="shopping-page" class="content-page shopping-page">
-				<div id="shoppingRoot" style="    margin-top: 5rem;"></div>
-			</div>
-			
-			<!-- Weather Page -->
-			<div id="weather-page" class="weather-page" style="display:none;">
-				<div id="wxLoading" class="wx-loading">
-					<div class="wx-loading-box">
-						<div class="wx-loading-spinner"></div>
-						<div class="wx-loading-text">天氣載入中…</div>
-					</div>
-				</div>
-				<div class="wx-content">
-				  	<div class="wx-wrap">
-						<div class="wx-dots" id="wxDots" aria-label="切換地區"></div>
-						<div class="wx-hero">
-					    	<div class="wx-city" id="wxCity">札幌市</div>
-							<div class="wx-temp-center">
-					        	<span id="wxTemp">--</span>
-							</div>
-							<div class="wx-desc" id="wxDesc">--</div>
-							<div class="wx-hilo" id="wxHiLo">最高 --° / 最低 --°</div>
-						</div>
-						<div class="wx-card">
-							<div class="wx-hourly-note" id="wxHourlyNote">載入中…</div>
-							<div class="wx-hourly" id="wxHourly"></div>
-						</div>
-						<div class="wx-card">
-							<div class="wx-card-title"><span class="icon-calendar1"></span> 本週天氣預報</div>
-							<div class="wx-week" id="wxWeek"></div>
-						</div>
-						<div style="height:18px;"></div>
-					</div>
-				</div>
-			</div>
-	
-			
-		</div>
-		
-        
-</div>	
+<!-- Shopping Page -->
+<div class="content-page shopping-page" id="shopping-page">
+<div id="shoppingRoot" style="    margin-top: 5rem;"></div>
+</div>
+<!-- Weather Page -->
+<div class="weather-page" id="weather-page" style="display:none;">
+<div class="wx-loading" id="wxLoading">
+<div class="wx-loading-box">
+<div class="wx-loading-spinner"></div>
+<div class="wx-loading-text">天氣載入中…</div>
+</div>
+</div>
+<div class="wx-content">
+<div class="wx-wrap">
+<div aria-label="切換地區" class="wx-dots" id="wxDots"></div>
+<div class="wx-hero">
+<div class="wx-city" id="wxCity">札幌市</div>
+<div class="wx-temp-center">
+<span id="wxTemp">--</span>
+</div>
+<div class="wx-desc" id="wxDesc">--</div>
+<div class="wx-hilo" id="wxHiLo">最高 --° / 最低 --°</div>
+</div>
+<div class="wx-card">
+<div class="wx-hourly-note" id="wxHourlyNote">載入中…</div>
+<div class="wx-hourly" id="wxHourly"></div>
+</div>
+<div class="wx-card">
+<div class="wx-card-title"><span class="icon-calendar1"></span> 本週天氣預報</div>
+<div class="wx-week" id="wxWeek"></div>
+</div>
+<div style="height:18px;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <!-- Firebase compat (NON-module) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
-
-
- 
 <script>
 		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
@@ -4854,7 +4991,7 @@ color: #d95380;
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page","packing-page","ticket-page","flight-page","photo-page","exchange-page","weather-page","shopping-page"];
+const PAGES = ["home-page","packing-page","ticket-page","flight-page","photo-page","exchange-page","weather-page","translate-page","shopping-page"];
 
 
 let currentPageId = "home-page";
@@ -4927,6 +5064,11 @@ if (targetId === "shopping-page") {
   // ✅ 天氣頁：只進入一次入口
   if (targetId === "weather-page") {
     safeCall(window.WX_EnterWeatherPage);
+  }
+
+  // ✅ 翻譯頁：進入時初始化（只綁一次）
+  if (targetId === "translate-page") {
+    safeCall(window.TR_EnterTranslatePage);
   }
 
 
@@ -5799,7 +5941,6 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
   });
 });
 </script>
-
 <script>
 /* =========================================================
    Weather Page – FULL JS (Timezone-correct, no redeclare)
@@ -6899,12 +7040,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 })();
 </script>
-
-
-
-
-
-
 <script>
 /* =========================================================
    Shopping – FINAL (Google Sheet Sync via Apps Script JSONP)
@@ -7723,10 +7858,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 })();
 </script>
-
-
-
-	<script>
+<script>
   function syncBarsHeight(){
     const topbar = document.getElementById("topbar");
     const bottom = document.querySelector(".bottom-nav");
@@ -8051,184 +8183,508 @@ function saveLocal(items){
 }
 
 </script>
-	<script>/* =========================================================
-   REALTIME TRANSLATE - FULL JS (ONE FILE)
-   Features:
-   - Text input translate
-   - Speech to text (Web Speech API)
-   - OCR (Tesseract.js)
-   - Clipboard / swap language
+<script>/* =========================================================
+   REALTIME TRANSLATE - SINGLE CARD (Dropdown + Detect)
+   - 來源：偵測 / 日文 / 中文 / 英文（下拉）
+   - 目標：日文 / 中文 / 英文（下拉）
+   - 即時翻譯（輸入時自動）
+   - 麥克風語音轉文字（Web Speech API）
+   - 拍照/選圖 OCR（Tesseract.js）
+   - 朗讀翻譯（SpeechSynthesis）
+   - Romaji / Pinyin 顯示（來源 + 結果）
 ========================================================= */
-
 (() => {
-
-  /* ---------- utils ---------- */
   const $ = (id) => document.getElementById(id);
 
-  /* ---------- translate API (ONLY PLACE YOU NEED TO CHANGE) ---------- */
-  async function translateViaAPI(text, from, to){
-    /*
-      TODO:
-      Replace with your real translation service
-      Recommended:
-      - Google Apps Script proxy
-      - DeepL API
-      - LibreTranslate
-    */
+  const LANG_META = {
+    "auto": { label: "偵測",        stt: "zh-TW", tts: "en-US" }, // stt 會依偵測/來源調整
+    "zh-TW": { label: "中文（繁體）", stt: "zh-TW", tts: "zh-TW" },
+    "ja":   { label: "日文",        stt: "ja-JP", tts: "ja-JP" },
+    "en":   { label: "英文",        stt: "en-US", tts: "en-US" }
+  };
 
-    // fake response for UI testing
-    await new Promise(r => setTimeout(r, 400));
-    return `[${from} → ${to}]\n${text}`;
-  }
+  // normalize for phonetic
+  const NORM = (lang) => {
+    const l = String(lang || "").toLowerCase();
+    if(l.startsWith("zh")) return "zh";
+    if(l.startsWith("ja")) return "ja";
+    if(l.startsWith("en")) return "en";
+    return l || "";
+  };
 
-  /* ---------- text translate ---------- */
-  async function doTranslate(){
-    const input  = $("trInput");
-    const output = $("trOutput");
-    if(!input || !output) return;
+  let fromLang = "auto";
+  let toLang   = "ja";
+  let debounceTimer = null;
+  let lastReqId = 0;
+  let lastDetected = ""; // e.g. "ja", "zh-TW", "en"
 
-    const text = input.value.trim();
-    if(!text){
-      output.textContent = "";
-      return;
-    }
-
-    const from = $("trFrom")?.value || "auto";
-    const to   = $("trTo")?.value || "ja";
-
-    output.textContent = "翻譯中…";
-
-    try{
-      const result = await translateViaAPI(text, from, to);
-      output.textContent = result || "";
-    }catch(err){
-      console.error(err);
-      output.textContent = "翻譯失敗，請檢查網路或服務設定";
-    }
-  }
-
-  $("btnTranslate")?.addEventListener("click", doTranslate);
-
-  $("btnTrClear")?.addEventListener("click", ()=>{
-    if($("trInput"))  $("trInput").value = "";
-    if($("trOutput")) $("trOutput").textContent = "";
-  });
-
-  $("btnTrPaste")?.addEventListener("click", async ()=>{
-    try{
-      const t = await navigator.clipboard.readText();
-      if($("trInput")) $("trInput").value = t;
-    }catch(e){}
-  });
-
-  $("btnCopyOut")?.addEventListener("click", async ()=>{
-    try{
-      await navigator.clipboard.writeText($("trOutput")?.textContent || "");
-    }catch(e){}
-  });
-
-  $("btnSwapLang")?.addEventListener("click", ()=>{
-    const from = $("trFrom");
-    const to   = $("trTo");
-    if(!from || !to) return;
-
-    const a = from.value;
-    from.value = to.value === "auto" ? a : to.value;
-    to.value   = a;
-  });
-
-  /* ---------- speech to text ---------- */
-  let speechRec = null;
-
-  function setupSpeech(){
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if(!SpeechRecognition){
-      if($("speechHint")) $("speechHint").textContent = "（此瀏覽器不支援語音轉文字）";
-      if($("btnMicStart")) $("btnMicStart").disabled = true;
-      return;
-    }
-
-    speechRec = new SpeechRecognition();
-    speechRec.lang = "ja-JP";
-    speechRec.continuous = true;
-    speechRec.interimResults = true;
-
-    speechRec.onresult = (ev)=>{
-      let text = "";
-      for(let i = ev.resultIndex; i < ev.results.length; i++){
-        text += ev.results[i][0].transcript;
+  function updateLabels(){
+    const fromLabel = $("trFromLabel");
+    const toLabel   = $("trToLabel");
+    if(fromLabel){
+      if(fromLang === "auto" && lastDetected){
+        const det = LANG_META[lastDetected]?.label || lastDetected;
+        fromLabel.textContent = `偵測（${det}）`;
+      }else{
+        fromLabel.textContent = LANG_META[fromLang]?.label || fromLang;
       }
-      if($("micResult")) $("micResult").textContent = text;
-      if($("trInput"))  $("trInput").value = text;
-    };
-
-    speechRec.onend = ()=>{
-      if($("btnMicStart")) $("btnMicStart").disabled = false;
-      if($("btnMicStop"))  $("btnMicStop").disabled = true;
-    };
+    }
+    if(toLabel) toLabel.textContent = LANG_META[toLang]?.label || toLang;
   }
 
-  $("btnMicStart")?.addEventListener("click", ()=>{
-    if(!speechRec) setupSpeech();
-    if(!speechRec) return;
+  function setDropdownUI(){
+    const fromSel = $("trFromSelect");
+    const toSel   = $("trToSelect");
+    if(fromSel) fromSel.value = fromLang;
+    if(toSel)   toSel.value   = toLang;
+  }
 
-    if($("btnMicStart")) $("btnMicStart").disabled = true;
-    if($("btnMicStop"))  $("btnMicStop").disabled = false;
-    if($("micResult"))   $("micResult").textContent = "";
+  function setLang(nextFrom, nextTo){
+    fromLang = nextFrom;
+    toLang   = nextTo;
 
-    try{ speechRec.start(); }catch(e){}
-  });
+    // target 不能是 auto（避免 UI/翻譯歧義）
+    if(toLang === "auto"){
+      toLang = (fromLang === "ja" ? "zh-TW" : "ja");
+    }
+    // 避免同語言
+    if(fromLang !== "auto" && fromLang === toLang){
+      toLang = (fromLang === "en" ? "ja" : "en");
+    }
 
-  $("btnMicStop")?.addEventListener("click", ()=>{
-    try{ speechRec?.stop(); }catch(e){}
-    if($("btnMicStop")) $("btnMicStop").disabled = true;
-  });
+    setDropdownUI();
+    updateLabels();
+    scheduleTranslate();
+  }
 
-  /* ---------- OCR ---------- */
-  $("ocrFile")?.addEventListener("change", async (e)=>{
-    const file = e.target.files?.[0];
-    if(!file || !window.Tesseract) return;
+  function swapLang(){
+    // swap 方向：若交換後 target 變成 auto，幫你自動選一個合理的語言
+    const a = fromLang;
+    const b = toLang;
+    let nextFrom = b;
+    let nextTo   = a;
 
-    if($("ocrStatus")) $("ocrStatus").textContent = "辨識中…";
-    if($("ocrText"))   $("ocrText").textContent = "";
+    if(nextTo === "auto"){
+      nextTo = (nextFrom === "ja" ? "zh-TW" : "ja");
+    }
+    if(nextFrom === nextTo){
+      nextTo = (nextFrom === "en" ? "ja" : "en");
+    }
+    setLang(nextFrom, nextTo);
+
+    // 同時交換文字（更像翻譯 App）
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(input && out){
+      const outText = (out.textContent || "").trim();
+      input.value = outText;
+      out.textContent = "";
+      $("trRomanSrc") && ($("trRomanSrc").textContent = "");
+      $("trRomanDst") && ($("trRomanDst").textContent = "");
+      scheduleTranslate();
+    }
+  }
+
+  /* ---------- phonetic helpers ---------- */
+  function toRomaji(text){
+    if(window.wanakana && typeof window.wanakana.toRomaji === "function"){
+      return window.wanakana.toRomaji(text);
+    }
+    return "";
+  }
+  function toPinyin(text){
+    if(window.pinyinPro && typeof window.pinyinPro.pinyin === "function"){
+      return window.pinyinPro.pinyin(text, { toneType: "none" });
+    }
+    return "";
+  }
+  function phoneticFor(text, lang){
+    const n = NORM(lang);
+    if(!text) return "";
+    if(n === "ja") return toRomaji(text);
+    if(n === "zh") return toPinyin(text);
+    return "";
+  }
+
+  function updatePhonetics(srcText, srcLang, dstText, dstLang){
+    const srcEl = $("trRomanSrc");
+    const dstEl = $("trRomanDst");
+    if(srcEl) srcEl.textContent = phoneticFor(srcText, srcLang);
+    if(dstEl) dstEl.textContent = phoneticFor(dstText, dstLang);
+  }
+
+  /* ---------- translate API (Google free endpoint) ---------- */
+  async function translateViaAPI(text, from, to){
+    const sl = (from === "auto") ? "auto" : from;
+    const url = "https://translate.googleapis.com/translate_a/single"
+      + "?client=gtx"
+      + "&sl=" + encodeURIComponent(sl)
+      + "&tl=" + encodeURIComponent(to)
+      + "&dt=t&dt=ld"
+      + "&q=" + encodeURIComponent(text);
+
+    const res = await fetch(url, { method: "GET" });
+    if(!res.ok) throw new Error("Translate request failed: " + res.status);
+    const data = await res.json();
+
+    const segments = (data && data[0]) ? data[0] : [];
+    const translated = segments.map(s => s && s[0] ? s[0] : "").join("").trim();
+
+    const detected = (data && data[2]) ? String(data[2]) : "";
+    return { translated, detected };
+  }
+
+  async function doTranslate(){
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(!input || !out) return;
+
+    const text = (input.value || "").trim();
+    if(!text){
+      out.textContent = "";
+      lastDetected = "";
+      updateLabels();
+      updatePhonetics("", fromLang, "", toLang);
+      return;
+    }
+
+    const reqId = ++lastReqId;
+    out.textContent = "翻譯中…";
 
     try{
-      const imgURL = URL.createObjectURL(file);
-      const { data } = await Tesseract.recognize(
-        imgURL,
-        "jpn+chi_tra+eng",
-        {
-          logger: m=>{
-            if(m.status === "recognizing text" && m.progress != null){
-              if($("ocrStatus")){
-                $("ocrStatus").textContent =
-                  `辨識中… ${(m.progress * 100).toFixed(0)}%`;
-              }
-            }
-          }
-        }
-      );
+      const { translated, detected } = await translateViaAPI(text, fromLang, toLang);
+      if(reqId !== lastReqId) return;
 
-      URL.revokeObjectURL(imgURL);
+      lastDetected = detected || "";
+      updateLabels();
 
-      const text = (data.text || "").trim();
-      if($("ocrText"))   $("ocrText").textContent = text || "(沒有辨識到文字)";
-      if($("ocrStatus")) $("ocrStatus").textContent = "完成";
-
+      out.textContent = translated || "";
+      const srcLangForPh = (fromLang === "auto" ? lastDetected : fromLang);
+      updatePhonetics(text, srcLangForPh, translated, toLang);
     }catch(err){
       console.error(err);
-      if($("ocrStatus")) $("ocrStatus").textContent = "OCR 失敗，請換一張清楚的照片";
+      if(reqId !== lastReqId) return;
+      out.textContent = "翻譯失敗，請檢查網路或服務設定";
+      updatePhonetics(text, fromLang === "auto" ? "" : fromLang, "", toLang);
+    }
+  }
+
+  function scheduleTranslate(){
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(doTranslate, 350);
+  }
+
+  /* ---------- speech synthesis ---------- */
+  function speakText(text, lang){
+    if(!text) return;
+    if(!("speechSynthesis" in window)) return;
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = LANG_META[lang]?.tts || "en-US";
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  /* ---------- mic (speech to text) ---------- */
+  let rec = null;
+  function startMic(){
+    const input = $("trInputOne");
+    if(!input) return;
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){
+      alert("此瀏覽器不支援語音辨識（SpeechRecognition）");
+      return;
+    }
+
+    if(rec){
+      try{ rec.stop(); }catch(e){}
+      rec = null;
+    }
+
+    // 來源語言若是 auto，就用「上一次偵測」或預設 zh-TW
+    const sttLang = (fromLang === "auto")
+      ? (LANG_META[lastDetected]?.stt || "zh-TW")
+      : (LANG_META[fromLang]?.stt || "zh-TW");
+
+    rec = new SR();
+    rec.lang = sttLang;
+    rec.interimResults = true;
+    rec.continuous = false;
+
+    const btn = $("trMicBtn");
+    if(btn) btn.classList.add("is-recording");
+
+    let finalText = "";
+    rec.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += t;
+        else interim += t;
+      }
+      input.value = (finalText + interim).trim();
+      scheduleTranslate();
+    };
+
+    rec.onerror = () => {};
+    rec.onend = () => {
+      if(btn) btn.classList.remove("is-recording");
+      rec = null;
+    };
+
+    try{ rec.start(); }catch(e){}
+  }
+
+  /* ---------- OCR (Tesseract.js) ---------- */
+  async function runOCR(file){
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(!input || !out) return;
+    if(!file) return;
+
+    if(!window.Tesseract){
+      alert("找不到 Tesseract.js（請確認你頁面有載入）");
+      return;
+    }
+
+    out.textContent = "辨識文字中…";
+    try{
+      // OCR 語言：auto 時用 chi_tra（你也可改成多語模型）
+      const base = (fromLang === "auto") ? "chi_tra" : (fromLang === "ja" ? "jpn" : (fromLang === "en" ? "eng" : "chi_tra"));
+      const { data } = await window.Tesseract.recognize(file, base);
+      const text = (data && data.text ? data.text : "").trim();
+      input.value = text;
+      scheduleTranslate();
+    }catch(err){
+      console.error(err);
+      out.textContent = "OCR 失敗";
+    }
+  }
+
+  function bindTranslateUI(){
+    const page = $("translate-page");
+    if(!page) return;
+
+    // dropdown change
+    $("trFromSelect")?.addEventListener("change", (e)=>{
+      const v = e.target.value || "auto";
+      setLang(v, toLang);
+    });
+    $("trToSelect")?.addEventListener("change", (e)=>{
+      const v = e.target.value || "ja";
+      setLang(fromLang, v);
+    });
+
+    $("trSwapBtn")?.addEventListener("click", swapLang);
+
+    // Input -> realtime translate
+    $("trInputOne")?.addEventListener("input", scheduleTranslate);
+
+    // Speak translated
+    $("trSpeakOutBtn")?.addEventListener("click", ()=>{
+      const text = ($("trOutputOne")?.textContent || "").trim();
+      if(!text) return;
+      const speak = text.replace(/^\[[^\]]+\]\s*/,'');
+      speakText(speak, toLang);
+    });
+
+    // Mic
+    $("trMicBtn")?.addEventListener("click", startMic);
+
+    // Camera/OCR
+    $("trCameraBtn")?.addEventListener("click", ()=> $("trOcrFile")?.click());
+    $("trOcrFile")?.addEventListener("change", (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(file) runOCR(file);
+      e.target.value = "";
+    });
+
+    // default
+    setLang(fromLang, toLang);
+  }
+
+  // Hook for page enter
+  let inited = false;
+  window.TR_EnterTranslatePage = () => {
+    if(inited) return;
+    inited = true;
+    bindTranslateUI();
+  };
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", ()=> window.TR_EnterTranslatePage());
+  }else{
+    window.TR_EnterTranslatePage();
+  }
+})();</script>
+
+
+
+
+
+
+<script>
+/* ===== Translate: Auto Detect -> Japanese/English + Romaji/Pinyin ===== */
+(function(){
+  const LANG_LABEL = {
+    "zh": "中文", "zh-tw": "中文（繁體）", "zh-cn": "中文（簡體）",
+    "ja": "日文", "en": "英文", "ko": "韓文", "fr": "法文", "de": "德文", "es": "西文"
+  };
+
+  const trInput = document.getElementById("trInput");
+  const trOutput = document.getElementById("trOutput");
+  const srcLabel = document.getElementById("srcLabel");
+  const dstLabel = document.getElementById("dstLabel");
+  const srcRoman = document.getElementById("srcRoman");
+  const dstRoman = document.getElementById("dstRoman");
+
+  const btnTargetJa = document.getElementById("btnTargetJa");
+  const btnTargetEn = document.getElementById("btnTargetEn");
+
+  const btnSpeak = document.getElementById("btnSpeakResult");
+  const btnMic = document.getElementById("btnMic");
+  const btnCamera = document.getElementById("btnCamera");
+  const ocrFile = document.getElementById("ocrFile");
+
+  if(!trInput || !trOutput) return;
+
+  let target = "ja";
+
+  function setTarget(t){
+    target = t;
+    btnTargetJa?.classList.toggle("active", t==="ja");
+    btnTargetEn?.classList.toggle("active", t==="en");
+    if(dstLabel) dstLabel.textContent = (t==="ja" ? "日文" : "英文");
+    if(trInput.value.trim()) trInput.dispatchEvent(new Event("input"));
+  }
+  btnTargetJa?.addEventListener("click", ()=>setTarget("ja"));
+  btnTargetEn?.addEventListener("click", ()=>setTarget("en"));
+
+  function labelFor(code){
+    if(!code) return "偵測語言";
+    const c = String(code).toLowerCase();
+    return LANG_LABEL[c] || LANG_LABEL[c.split("-")[0]] || c;
+  }
+
+  async function translateAuto(text){
+    const url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="
+      + encodeURIComponent(target) + "&dt=t&dt=ld&q=" + encodeURIComponent(text);
+    const r = await fetch(url);
+    const j = await r.json();
+    const translated = (j[0]||[]).map(x=>x[0]).join("");
+    const detected = (j[2] || "auto");
+    return { translated, detected };
+  }
+
+  function romaji(text){
+      if(!text || !window.wanakana) return "";
+      return window.wanakana.toRomaji(text);
+    }
+
+  function pinyin(text){
+    try{
+      if(!text || !window.pinyinPro) return "";
+      // tone marks like "Zǎo ān"
+      return window.pinyinPro.pinyin(text, { toneType: "symbol", type: "array" }).join(" ");
+    }catch(e){
+      return "";
+    }
+  }
+
+  let timer = null;
+  trInput.addEventListener("input", ()=>{
+    clearTimeout(timer);
+    const v = trInput.value.trim();
+
+    if(!v){
+      trOutput.textContent = "";
+      srcRoman.textContent = "";
+      dstRoman.textContent = "";
+      if(srcLabel) srcLabel.textContent = "偵測語言";
+      return;
+    }
+
+    timer = setTimeout(async ()=>{
+      trOutput.textContent = "翻譯中…";
+      srcRoman.textContent = "";
+      dstRoman.textContent = "";
+
+      try{
+        const { translated, detected } = await translateAuto(v);
+        trOutput.textContent = translated || "";
+        if(srcLabel) srcLabel.textContent = labelFor(detected);
+
+        const det = String(detected||"").toLowerCase();
+
+        // source romanization
+        if(det.startsWith("ja")){
+          srcRoman.textContent = romaji(v);
+        }else if(det.startsWith("zh")){
+          srcRoman.textContent = pinyin(v);
+        }else{
+          srcRoman.textContent = "";
+        }
+
+        // result romanization
+        if(target === "ja"){
+          dstRoman.textContent = romaji(translated);
+        }else{
+          dstRoman.textContent = "";
+        }
+      }catch(err){
+        console.error(err);
+        trOutput.textContent = "翻譯失敗，請檢查網路";
+      }
+    }, 300);
+  });
+
+  // Speak translated result
+  btnSpeak?.addEventListener("click", ()=>{
+    const text = (trOutput.textContent || "").trim();
+    if(!text) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = (target==="ja" ? "ja-JP" : "en-US");
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  });
+
+  // Speech-to-text (best effort default zh-TW)
+  btnMic?.addEventListener("click", ()=>{
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ alert("此裝置不支援語音輸入"); return; }
+    const r = new SR();
+    r.lang = "zh-TW";
+    r.onresult = (e)=>{
+      trInput.value = e.results[0][0].transcript;
+      trInput.dispatchEvent(new Event("input"));
+    };
+    r.start();
+  });
+
+  // OCR -> input
+  btnCamera?.addEventListener("click", ()=> ocrFile?.click());
+  ocrFile?.addEventListener("change", async (e)=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    trOutput.textContent = "辨識中…";
+    try{
+      const imgURL = URL.createObjectURL(f);
+      const { data } = await Tesseract.recognize(imgURL, "chi_tra+jpn+eng");
+      URL.revokeObjectURL(imgURL);
+      trInput.value = (data.text || "").trim();
+      trInput.dispatchEvent(new Event("input"));
+    }catch(err){
+      console.error(err);
+      trOutput.textContent = "OCR 失敗，請換清晰照片";
     }
   });
 
-  $("btnOcrToInput")?.addEventListener("click", ()=>{
-    const t = ($("ocrText")?.textContent || "").trim();
-    if(t && $("trInput")) $("trInput").value = t;
-  });
-
+  // init
+  if(dstLabel) dstLabel.textContent = "日文";
 })();
 </script>
+
 </body>
 </html>

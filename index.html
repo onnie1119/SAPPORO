@@ -3102,15 +3102,17 @@ color: #d95380;
 .ld-sub{ margin-top:4px; font-size:14px; color:#7b869b; }
 
 .ld-card{
-  background:#fff;
-  overflow:hidden;
-  border-radius:14px;
-  padding:12px;
-  box-shadow: 0 6px 18px rgba(31,42,68,.08);
-  margin-bottom:12px;
+         background: #fff;
+        overflow: hidden;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 0px 3px rgba(0, 0, 0, .1);
+        margin-bottom: 12px;
  
 }
-.ld-card-title{ font-weight:700; font-size:14px; margin-bottom:10px; color:#1f2a44; }
+.ld-card-title{         font-size: 16px;
+        margin-bottom: 10px;
+        color: #333; }
 
 .ld-members{ display:flex; flex-wrap:wrap; gap:8px; }
 .ld-chip{
@@ -4353,10 +4355,12 @@ color: #d95380;
     <div class="ld-sub">先記帳，最後一鍵結算</div>
   </div>
 
-  <div class="ld-card">
-    <div class="ld-card-title">成員</div>
+  <div class="ld-card" style="background: none;
+    box-shadow: none;
+    padding: 0 0.2rem;">
+   
     <div class="ld-members" id="ldMembers"></div>
-    <div class="ld-hint">點成員右側✕可刪除；點右側＋可新增。</div>
+    
   </div>
 
   <div class="ld-card">

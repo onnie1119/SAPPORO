@@ -3107,38 +3107,28 @@ color: #d95380;
 
 .ld-members{ display:flex; flex-wrap:wrap; gap:8px; }
 .ld-chip{
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 15px;
-        border-radius: 999px;
-        background: #ffffff;
-        color: #007aff;
-        font-weight: 600;
-        font-size: 16px;
-        border: 1px solid #007aff;
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 10px;
+  border-radius:999px;
+  background:#f1f5ff;
+  color:#2d4aa8;
+  font-weight:600;
+  font-size:13px;
+  border:1px solid rgba(58,122,254,.22);
 }
-
+.ld-chip .x{ font-weight:800; opacity:.7; }
+.ld-chip--plus{ background:#fff; color:#2d4aa8; border:1px dashed rgba(58,122,254,.45); }
+.ld-chip--plus .x{ display:none; }
 
 .ld-member-add{ display:flex; gap:8px; margin-top:10px; }
 #ldMemberName{
-          flex: 1;
-        height: 40px;
-        border-radius: 8px;
-        border: 1px solid #e6eaf2;
-        color: #333;
-        font-size: 18px;
-        padding: 5px 12px;
-        outline: none;
+  flex:1; height:40px; border-radius:12px; border:1px solid #e6eaf2;
+  padding:0 12px; outline:none;
 }
 #ldAddMemberBtn{
- height: 40px;
-        padding: 5px 12px;
-        border-radius: 8px;
-        border: 1px solid #007aff;
-        background: #fff;
-        font-size: 18px;
-        color: #007aff;
+  height:40px; padding:0 14px; border-radius:12px;
+  border:1px solid rgba(58,122,254,.35);
+  background:#fff; font-weight:700; color:#2d4aa8;
 }
 
 .ld-form{ display:flex; flex-direction:column; gap:10px; }
@@ -3477,7 +3467,7 @@ color: #d95380;
   color: #b0b0b5;
   opacity: 1;
 }
-.ledger-page{        animation: fadeIn 0.4s ease;}
+
 </style>
 
 </head>
@@ -3506,7 +3496,7 @@ color: #d95380;
 <span class="label">匯率</span>
 </button>
 <button data-page="ledger-page">
-<span class="icon-credit-card"></span>
+<span class="icon-coin-yen"></span>
 <span class="label">記帳</span>
 </button>
 </nav>
@@ -4339,11 +4329,9 @@ color: #d95380;
   </div>
 
   <div class="ld-card">
+    <div class="ld-card-title">成員</div>
     <div class="ld-members" id="ldMembers"></div>
-    <div class="ld-member-add">
-      <input id="ldMemberName" type="text" placeholder="新增成員名稱" maxlength="12">
-      <button id="ldAddMemberBtn" type="button">新增</button>
-    </div>
+    <div class="ld-hint">提示：點成員右側 ✕ 可刪除（至少保留 2 人）；點右側 ＋ 可新增。</div>
   </div>
 
   <div class="ld-card">
@@ -5462,7 +5450,7 @@ function setBottomNavActive(pageId) {
   const $ = (id)=>document.getElementById(id);
 
   let state = {
-    members: ["Jerry","同伴"],
+    members: ["JERRY","ROSIE"],
     expenses: [] // {id, ts, amount, payer, splitTo:[names], category, note}
   };
 
@@ -5544,6 +5532,27 @@ function setBottomNavActive(pageId) {
     });
 
     // default payer first
+    
+    // plus chip
+    const plus = document.createElement("button");
+    plus.type = "button";
+    plus.className = "ld-chip ld-chip--plus";
+    plus.innerHTML = `<span>＋</span>`;
+    plus.addEventListener("click", ()=>{
+      const name = prompt("新增成員名稱");
+      if(!name) return;
+      const n = name.trim();
+      if(!n) return;
+      if(state.members.includes(n)){
+        alert("已存在相同成員名稱");
+        return;
+      }
+      state.members.push(n);
+      save();
+      renderAll();
+    });
+    wrap.appendChild(plus);
+
     if(payerSel.options.length) payerSel.value = payerSel.options[0].value;
   }
 
@@ -5561,20 +5570,7 @@ function setBottomNavActive(pageId) {
     wrap.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked = !!flag);
   }
 
-  function addMember(){
-    const inp = $("ldMemberName");
-    const name = (inp?.value || "").trim();
-    if(!name) return;
-    if(state.members.includes(name)){
-      alert("這個成員已存在");
-      return;
-    }
-    state.members.push(name);
-    inp.value = "";
-    save();
-    renderAll();
-  }
-
+  
   function addExpense(){
     const amt = Number(($("ldAmount")?.value || "").trim());
     const payer = $("ldPayer")?.value || "";
@@ -5770,9 +5766,7 @@ function setBottomNavActive(pageId) {
     load();
     renderAll();
 
-    $("ldAddMemberBtn")?.addEventListener("click", addMember);
-    $("ldMemberName")?.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addMember(); });
-
+    
     $("ldSplitAll")?.addEventListener("click", ()=>setSplitAll(true));
     $("ldSplitNone")?.addEventListener("click", ()=>setSplitAll(false));
 

@@ -3162,23 +3162,76 @@ color: #d95380;
         box-sizing: border-box;
 }
 
-.ld-split{ display:flex; flex-wrap:wrap; gap:8px; width:100%; }
-.ld-check{
+.ld-split{ display:flex; flex-wrap:wrap; gap:12px; width:100%; }
+
+/* 分攤給：每一格「□ 名字」(兩欄、水平置中、不亂跑) */
+#ledger-page .ld-check{
+  position: relative;
   display:flex;
   align-items:center;
   justify-content:flex-start;
-  gap:8px;
-  padding:10px 12px;
-  border-radius:12px;
+  gap:12px;
+  padding:16px 14px;
+  border-radius:18px;
   background:#f7f9ff;
   border:1px solid #e6eaf2;
-  font-size:13px;
-  flex:1 1 calc(50% - 8px); /* two columns on mobile */
-  min-width: 0;
-  pointer-events: auto; /* override global label rules */
+  font-size:18px;
+  color:#3b3b3b;
+  flex:1 1 calc(50% - 12px); /* two columns */
+  min-width:0;
+  box-sizing:border-box;
+  user-select:none;
+  -webkit-tap-highlight-color: transparent;
 }
-.ld-check input{ margin:0; flex:0 0 auto; }
-.ld-check span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* 隱藏原生 checkbox，改用自繪方塊（避免 iOS/Android 樣式亂跑） */
+#ledger-page .ld-check input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+/* 自繪方塊 */
+#ledger-page .ld-check span{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#ledger-page .ld-check span::before{
+  content:"";
+  width:22px;
+  height:22px;
+  border-radius:6px;
+  border:2px solid #cfd8e3;
+  background:#fff;
+  box-sizing:border-box;
+  flex:0 0 22px;
+}
+
+/* checked 狀態 */
+#ledger-page .ld-check input:checked + span::before{
+  border-color:#2a8fa0;
+  background:#2a8fa0;
+}
+#ledger-page .ld-check input:checked + span::after{
+  content:"✓";
+  position:absolute;
+  left:14px;                /* 對應 padding-left */
+  top:50%;
+  transform: translateY(-50%);
+  font-weight:800;
+  font-size:18px;
+  color:#fff;
+  line-height:1;
+}
+
+/* 點按 feedback */
+#ledger-page .ld-check:active{
+  transform: scale(0.99);
+}
 .ld-split-actions{ display:flex; gap:8px; margin-top:8px; }
 .ld-split-actions button{
   height:34px; padding:0 12px; border-radius:10px;
@@ -3509,32 +3562,32 @@ color: #d95380;
 
 #ledger-page .fake-select{
   position: relative;
-    height: 50px;
-    width: 100%;
-    border-radius: 8px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    cursor: pointer;
-    box-sizing: border-box;
+  height: 48px;
+  width: 100%;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 #ledger-page .fake-select.open{
   border-color: #5fa6b1;
-  
+  box-shadow: 0 0 0 3px rgba(95,166,177,.15);
 }
 
 #ledger-page .fake-select-value{
   flex: 1;
-  font-size: 18px;
-  color: #333;
+  font-size: 15px;
+  color: #111;
 }
 
 #ledger-page .fake-select-arrow{
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-right: 2px solid #6b7280;
   border-bottom: 2px solid #6b7280;
   transform: rotate(45deg);
@@ -3542,16 +3595,16 @@ color: #d95380;
 }
 
 #ledger-page .fake-select-list{
-     position: absolute;
-    top: calc(100% + 3px);
-    left: 0;
-    right: 0;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0px 3px rgba(0, 0, 0, .1);
-    padding: 6px;
-    display: none;
-    z-index: 50;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 24px rgba(0,0,0,.08);
+  padding: 6px;
+  display: none;
+  z-index: 50;
 }
 
 #ledger-page .fake-select.open .fake-select-list{
@@ -3559,11 +3612,11 @@ color: #d95380;
 }
 
 #ledger-page .fake-select-list li{
-     position: relative;
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 18px;
-    color: #333;
+  position: relative;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #111;
 }
 
 #ledger-page .fake-select-list li:hover{
@@ -3585,67 +3638,7 @@ color: #d95380;
 }
 
 
-/* 記帳頁：付款人下拉選單，移除項目符號 */
-#ledger-page .fake-select-list {
-  list-style: none;
-  padding-left: 6px;   /* 保留內距，避免太貼邊 */
-  margin: 0;
-}
 
-#ledger-page .fake-select-list li {
-  list-style: none;
-}
-
-/* 記帳頁：分攤給（水平排列，不亂跑） */
-#ledger-page .split-users{
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex-wrap: nowrap;         /* 不要自動換行（螢幕太小才要改 wrap） */
-}
-
-/* 每個「□ 名字」 */
-#ledger-page .split-item{
-  display: inline-flex;
-  align-items: center;       /* 垂直置中 */
-  gap: 8px;
-  white-space: nowrap;       /* 防止「□」跟名字分家 */
-  margin: 0;                 /* 清掉可能被套到的 margin */
-  padding: 0;                /* 清掉可能被套到的 padding */
-  width: auto;               /* 避免 100% 造成換行 */
-}
-
-/* checkbox 尺寸固定，避免跳動 */
-#ledger-page .split-item input[type="checkbox"]{
-  flex: 0 0 18px;
-  width: 18px;
-  height: 18px;
-  margin: 0;                 /* 很多瀏覽器預設 margin 會讓它歪 */
-  vertical-align: middle;
-}
-/* 記帳頁－分攤給 卡片：橫向對齊 */
-#ledger-page .split-card {
-  display: flex;
-  align-items: center;        /* 勾勾與文字垂直置中 */
-  gap: 12px;                  /* 勾勾與文字距離 */
-  text-align: left;           /* ❗取消置中 */
-  padding: 18px;
-}
-
-/* 勾選圖示（固定大小，不要撐高卡片） */
-#ledger-page .split-card .check-icon {
-  flex: 0 0 28px;             /* 固定寬度 */
-  width: 28px;
-  height: 28px;
-}
-
-/* 名字文字 */
-#ledger-page .split-card .name {
-  margin: 0;                  /* ❗清掉原本的 margin */
-  font-size: 15px;
-  line-height: 1;             /* 避免上下跑位 */
-  white-space: nowrap;
-}
 
 </style>
 

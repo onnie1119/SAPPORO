@@ -8467,9 +8467,7 @@ function saveLocal(items){
     if(fromLabel) fromLabel.textContent = (LANG_META[fromLang]?.label || fromLang);
     if(toLabel)   toLabel.textContent   = (LANG_META[toLang]?.label   || toLang);
   }
-    if(toLabel) toLabel.textContent = LANG_META[toLang]?.label || toLang;
-  }
-
+   
   function setDropdownUI(){
     const fromSel = $("trFromSelect");
     const toSel   = $("trToSelect");

@@ -9262,40 +9262,9 @@ function saveLocal(items){
       out.value = "OCR 失敗"; autoResizeTextarea(out);
     }
   }
-const inputEl = document.getElementById("trInputOne");
-
-const MIN_H = 56;                 // 要跟 CSS 一致
-const MAX_H = window.innerHeight * 0.40;
-
-function autoGrow(el){
-  // ⭐ 關鍵：先回到最小高度
-  el.style.height = MIN_H + "px";
-
-  // 再依內容撐高（逐行增加）
-  const next = Math.min(MAX_H, el.scrollHeight);
-  el.style.height = next + "px";
-
-  // 超過最大高度才出現捲動
-  el.style.overflowY = (el.scrollHeight > MAX_H) ? "auto" : "hidden";
-}
-
-// 初始化（頁面載入時）
-autoGrow(inputEl);
-
-// 每次輸入才調整高度
-inputEl.addEventListener("input", () => autoGrow(inputEl));
 
 
-/* 初始化（頁面進來時） */
-autoGrow(inputEl);
-
-/* 每次輸入時自動調整 */
-inputEl.addEventListener("input", () => {
-  autoGrow(inputEl);
-});
-
-
-  // ===== Camera helpers (避免 openCameraOverlay / closeCameraOverlay 未定義) =====
+// ===== Camera helpers (避免 openCameraOverlay / closeCameraOverlay 未定義) =====
   function openCameraOverlay(){
     // 目前採用 input[type=file] 方案：直接觸發拍照/選圖
     const fileInput = document.getElementById("ocrFile") || document.getElementById("trOcrFile") || document.getElementById("camInput");

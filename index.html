@@ -3087,6 +3087,108 @@ color: #d95380;
   .tr-lang-select{ gap: 8px; }
 }
 
+
+/* =========================
+   Ledger Page (旅遊記帳分帳)
+========================= */
+.ledger-page{ padding: 14px 14px 88px; }
+.ld-header{ margin: 6px 2px 12px; }
+.ld-title{ font-size: 18px; font-weight: 700; color:#1f2a44; }
+.ld-sub{ margin-top:4px; font-size:12px; color:#7b869b; }
+
+.ld-card{
+  background:#fff;
+  border-radius:14px;
+  padding:12px;
+  box-shadow: 0 6px 18px rgba(31,42,68,.08);
+  margin-bottom:12px;
+}
+.ld-card-title{ font-weight:700; font-size:14px; margin-bottom:10px; color:#1f2a44; }
+
+.ld-members{ display:flex; flex-wrap:wrap; gap:8px; }
+.ld-chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 10px;
+  border-radius:999px;
+  background:#f1f5ff;
+  color:#2d4aa8;
+  font-weight:600;
+  font-size:13px;
+  border:1px solid rgba(58,122,254,.22);
+}
+.ld-chip .x{ font-weight:800; opacity:.7; }
+
+.ld-member-add{ display:flex; gap:8px; margin-top:10px; }
+#ldMemberName{
+  flex:1; height:40px; border-radius:12px; border:1px solid #e6eaf2;
+  padding:0 12px; outline:none;
+}
+#ldAddMemberBtn{
+  height:40px; padding:0 14px; border-radius:12px;
+  border:1px solid rgba(58,122,254,.35);
+  background:#fff; font-weight:700; color:#2d4aa8;
+}
+
+.ld-form{ display:flex; flex-direction:column; gap:10px; }
+.ld-row label{ display:block; font-size:12px; color:#6c788f; margin-bottom:6px; }
+.ld-row input, .ld-row select{
+  width:100%; height:42px; border-radius:12px;
+  border:1px solid #e6eaf2; padding:0 12px; outline:none;
+  background:#fff;
+}
+.ld-split{ display:flex; flex-wrap:wrap; gap:8px; }
+.ld-check{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 10px; border-radius:12px;
+  background:#f7f9ff; border:1px solid #e6eaf2;
+  font-size:13px;
+}
+.ld-split-actions{ display:flex; gap:8px; margin-top:8px; }
+.ld-split-actions button{
+  height:34px; padding:0 12px; border-radius:10px;
+  border:1px solid #e6eaf2; background:#fff; font-weight:600;
+}
+
+.ld-primary{
+  height:44px; border-radius:12px; border:none;
+  background:#3A7AFE; color:#fff; font-weight:800;
+}
+
+.ld-list{ display:flex; flex-direction:column; gap:10px; }
+.ld-item{
+  border:1px solid #eef1f7; border-radius:14px;
+  padding:10px;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.ld-item-main{ flex:1; }
+.ld-item-top{ display:flex; justify-content:space-between; gap:8px; }
+.ld-item-title{ font-weight:800; color:#1f2a44; font-size:14px; }
+.ld-item-amt{ font-weight:900; color:#1f2a44; }
+.ld-item-sub{ margin-top:4px; font-size:12px; color:#7b869b; line-height:1.35; }
+.ld-item-actions button{
+  border:1px solid #e6eaf2; background:#fff;
+  border-radius:10px; padding:6px 10px; font-weight:700; font-size:12px;
+}
+
+.ld-summary{ display:flex; flex-direction:column; gap:8px; }
+.ld-sum-row{
+  display:flex; justify-content:space-between; gap:10px;
+  padding:10px; border-radius:12px; background:#f7f9ff;
+  border:1px solid #e9edff;
+}
+.ld-sum-name{ font-weight:800; color:#1f2a44; }
+.ld-sum-meta{ font-size:12px; color:#6c788f; margin-top:2px; }
+.ld-sum-net{ font-weight:900; }
+
+.ld-settle-title{ margin:10px 0 6px; font-weight:800; color:#1f2a44; }
+.ld-settle{ display:flex; flex-direction:column; gap:8px; }
+.ld-pay-row{
+  padding:10px; border-radius:12px; border:1px dashed rgba(58,122,254,.35);
+  background:#fff;
+  font-size:13px; color:#1f2a44; font-weight:700;
+}
+.ld-hint{ margin-top:8px; font-size:12px; color:#8a95aa; }
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
@@ -3391,9 +3493,9 @@ color: #d95380;
 <span class="icon-calculator"></span>
 <span class="label">匯率</span>
 </button>
-<button data-page="translate-page">
-<span class="icon-earth"></span>
-<span class="label">翻譯</span>
+<button data-page="ledger-page">
+<span class="icon-coin-yen"></span>
+<span class="label">記帳</span>
 </button>
 </nav>
 <!-- iOS Full-Screen Menu -->
@@ -4216,83 +4318,84 @@ color: #d95380;
 <!-- 新增圖片用（隱藏選圖，可多選） -->
 <input accept="image/*" hidden="" id="photoAddInput" multiple type="file"/>
 </div>
-<!-- Translate Page (即時翻譯) -->
+<!-- Ledger Page (旅遊記帳分帳) -->
+<div class="ledger-page" id="ledger-page" style="display:none;">
 
-<div class="translate-page" id="translate-page" style="display:none;">
-
-<div aria-label="語言選擇" class="tr-langbar" role="group">
-  <div class="tr-lang-select">
-
-    <div class="tr-select-wrap">
-      <select id="trFromSelect" aria-label="來源語言">
-        <option value="zh-TW" selected>中文</option>
-        <option value="ja">日文</option>
-      </select>
-      <span class="icon-cheveron-down"></span>
-    </div>
-
-    <span class="tr-lang-arrow">→</span>
-
-    <div class="tr-select-wrap">
-      <select id="trToSelect" aria-label="翻譯語言">
-        <option value="ja" selected>日文</option>
-        <option value="zh-TW">中文</option>
-      </select>
-      <span class="icon-cheveron-down"></span>
-    </div>
-
-  </div>
-</div>
-
-<div class="tr-stack">
-<div class="tr-card tr-card-one">
-<div class="tr-card-label" id="trFromLabel">中文（繁體）</div>
-<textarea
-  id="trInputOne"
-  class="tr-input-one"
-  placeholder="輸入文字"
-></textarea>
-
-	
-<div class="tr-roman-one" id="trRomanSrc"></div>
-<div class="tr-card-actions">
-<div class="tr-actions-right">
-<button aria-label="拍照/選擇圖片翻譯" class="tr-icon-btn is-blue" id="trCameraBtn" type="button">
-<span class="icon-camera1"></span>
-</button>
-<button aria-label="麥克風語音輸入" class="tr-icon-btn is-blue" id="trMicBtn" type="button">
-<span class="icon-mic"></span>
-</button>
-</div>
-<input accept="image/*" capture="environment" hidden="" id="trOcrFile" type="file"/>
-</div>
-</div>
-<div class="tr-card tr-card-two">
-  <div class="tr-card-head">
-    <div class="tr-card-label">日文</div>
-
-    <button id="trSpeakBtn" class="tr-speak-btn" type="button" aria-label="播放翻譯語音" style="color: #3A7AFE;
-    background: none;
-    border: none;    font-size: 25px;">
-     <span class="icon-volume-medium"></span>
-    </button>
+  <div class="ld-header">
+    <div class="ld-title">旅遊記帳</div>
+    <div class="ld-sub">先記帳，最後一鍵結算</div>
   </div>
 
-  <textarea
-    id="trOutputOne"
-    class="tr-output-one"
-    placeholder="翻譯"
-    readonly
-  ></textarea>
+  <div class="ld-card">
+    <div class="ld-card-title">成員</div>
+    <div class="ld-members" id="ldMembers"></div>
+    <div class="ld-member-add">
+      <input id="ldMemberName" type="text" placeholder="新增成員名稱（例如：Jerry）" maxlength="12">
+      <button id="ldAddMemberBtn" type="button">新增</button>
+    </div>
+    <div class="ld-hint">提示：點成員可刪除（至少保留 2 人）。</div>
+  </div>
 
-  <div id="trRomanDst" class="tr-roman"></div>
+  <div class="ld-card">
+    <div class="ld-card-title">新增支出</div>
+    <div class="ld-form">
+      <div class="ld-row">
+        <label>金額（JPY）</label>
+        <input id="ldAmount" type="number" inputmode="numeric" placeholder="例如：3200" min="0" step="1">
+      </div>
+
+      <div class="ld-row">
+        <label>付款人</label>
+        <select id="ldPayer"></select>
+      </div>
+
+      <div class="ld-row">
+        <label>分攤給</label>
+        <div id="ldSplitTo" class="ld-split"></div>
+        <div class="ld-split-actions">
+          <button id="ldSplitAll" type="button">全選</button>
+          <button id="ldSplitNone" type="button">全不選</button>
+        </div>
+      </div>
+
+      <div class="ld-row">
+        <label>分類</label>
+        <select id="ldCategory">
+          <option value="餐飲">餐飲</option>
+          <option value="交通">交通</option>
+          <option value="住宿">住宿</option>
+          <option value="門票">門票</option>
+          <option value="購物">購物</option>
+          <option value="停車/油費">停車/油費</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="ld-row">
+        <label>備註</label>
+        <input id="ldNote" type="text" placeholder="例如：成吉思汗大黑屋" maxlength="40">
+      </div>
+
+      <button id="ldAddExpenseBtn" class="ld-primary" type="button">＋ 新增一筆</button>
+      <div class="ld-hint">預設平均分攤；你也可以取消勾選某些成員。</div>
+    </div>
+  </div>
+
+  <div class="ld-card">
+    <div class="ld-card-title">支出明細</div>
+    <div id="ldExpenseList" class="ld-list"></div>
+    <div class="ld-hint">提示：向左滑或按「刪除」可移除（依你的手機/瀏覽器支援）。</div>
+  </div>
+
+  <div class="ld-card">
+    <div class="ld-card-title">結算</div>
+    <div id="ldSummary" class="ld-summary"></div>
+    <div class="ld-settle-title">建議轉帳</div>
+    <div id="ldSettle" class="ld-settle"></div>
+  </div>
+
 </div>
 
-	
-</div>
-</div>
-
-<!-- Shopping Page -->
 <div class="content-page shopping-page" id="shopping-page">
 <div id="shoppingRoot" style="    margin-top: 5rem;"></div>
 </div>
@@ -4333,8 +4436,6 @@ color: #d95380;
 <!-- Firebase compat (NON-module) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
-<script src="libs/tesseract.min.js"></script>
-
 <script>
 		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
@@ -5228,7 +5329,7 @@ color: #d95380;
 /* =========================
    Pages / Navigation
 ========================= */
-const PAGES = ["home-page","packing-page","ticket-page","flight-page","photo-page","exchange-page","weather-page","translate-page","shopping-page"];
+const PAGES = ["home-page","packing-page","ticket-page","flight-page","photo-page","exchange-page","weather-page","ledger-page","shopping-page"];
 
 
 let currentPageId = "home-page";
@@ -5304,8 +5405,8 @@ if (targetId === "shopping-page") {
   }
 
   // ✅ 翻譯頁：進入時初始化（只綁一次）
-  if (targetId === "translate-page") {
-    safeCall(window.TR_EnterTranslatePage);
+  if (targetId === "ledger-page") {
+    safeCall(window.LD_EnterLedgerPage);
   }
 
 
@@ -5341,6 +5442,335 @@ function setBottomNavActive(pageId) {
   });
 }
 
+
+/* =========================
+   Ledger (旅遊記帳分帳)
+========================= */
+(function(){
+  const LS_KEY = "LD_LEDGER_V1";
+
+  const $ = (id)=>document.getElementById(id);
+
+  let state = {
+    members: ["Jerry","同伴"],
+    expenses: [] // {id, ts, amount, payer, splitTo:[names], category, note}
+  };
+
+  function uid(){ return "e" + Math.random().toString(16).slice(2) + Date.now().toString(16); }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(raw){
+        const obj = JSON.parse(raw);
+        if(obj && Array.isArray(obj.members) && Array.isArray(obj.expenses)){
+          state = obj;
+        }
+      }
+    }catch(e){}
+    // 至少 2 人
+    if(!Array.isArray(state.members) || state.members.length < 2){
+      state.members = ["Jerry","同伴"];
+    }
+    if(!Array.isArray(state.expenses)) state.expenses = [];
+  }
+
+  function save(){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  function fmt(n){
+    const v = Math.round(Number(n)||0);
+    return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function renderMembers(){
+    const wrap = $("ldMembers");
+    const payerSel = $("ldPayer");
+    const splitWrap = $("ldSplitTo");
+    if(!wrap || !payerSel || !splitWrap) return;
+
+    wrap.innerHTML = "";
+    payerSel.innerHTML = "";
+    splitWrap.innerHTML = "";
+
+    state.members.forEach(name=>{
+      // chip
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "ld-chip";
+      chip.innerHTML = `<span>${escapeHtml(name)}</span><span class="x">✕</span>`;
+      chip.addEventListener("click", ()=>{
+        if(state.members.length <= 2){
+          alert("至少保留 2 位成員");
+          return;
+        }
+        if(!confirm(`刪除成員「${name}」？\n（會同時移除相關支出分攤）`)) return;
+        // remove member
+        state.members = state.members.filter(m=>m!==name);
+        // cleanup expenses
+        state.expenses = state.expenses
+          .map(e=>({
+            ...e,
+            payer: (e.payer===name ? (state.members[0]||"") : e.payer),
+            splitTo: (Array.isArray(e.splitTo) ? e.splitTo.filter(x=>x!==name) : [])
+          }))
+          .filter(e=>e.payer && Array.isArray(e.splitTo) && e.splitTo.length>0);
+        save();
+        renderAll();
+      });
+      wrap.appendChild(chip);
+
+      // payer select
+      const opt = document.createElement("option");
+      opt.value = name; opt.textContent = name;
+      payerSel.appendChild(opt);
+
+      // split checkbox
+      const lab = document.createElement("label");
+      lab.className = "ld-check";
+      lab.innerHTML = `<input type="checkbox" checked value="${escapeAttr(name)}"><span>${escapeHtml(name)}</span>`;
+      splitWrap.appendChild(lab);
+    });
+
+    // default payer first
+    if(payerSel.options.length) payerSel.value = payerSel.options[0].value;
+  }
+
+  function getSplitSelected(){
+    const wrap = $("ldSplitTo");
+    if(!wrap) return [];
+    return Array.from(wrap.querySelectorAll('input[type="checkbox"]'))
+      .filter(cb=>cb.checked)
+      .map(cb=>cb.value);
+  }
+
+  function setSplitAll(flag){
+    const wrap = $("ldSplitTo");
+    if(!wrap) return;
+    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked = !!flag);
+  }
+
+  function addMember(){
+    const inp = $("ldMemberName");
+    const name = (inp?.value || "").trim();
+    if(!name) return;
+    if(state.members.includes(name)){
+      alert("這個成員已存在");
+      return;
+    }
+    state.members.push(name);
+    inp.value = "";
+    save();
+    renderAll();
+  }
+
+  function addExpense(){
+    const amt = Number(($("ldAmount")?.value || "").trim());
+    const payer = $("ldPayer")?.value || "";
+    const splitTo = getSplitSelected();
+    const cat = $("ldCategory")?.value || "其他";
+    const note = ($("ldNote")?.value || "").trim();
+
+    if(!amt || amt <= 0){
+      alert("請輸入正確金額");
+      return;
+    }
+    if(!payer){
+      alert("請選擇付款人");
+      return;
+    }
+    if(!splitTo.length){
+      alert("至少勾選 1 位分攤成員");
+      return;
+    }
+
+    state.expenses.unshift({
+      id: uid(),
+      ts: Date.now(),
+      amount: Math.round(amt),
+      payer,
+      splitTo,
+      category: cat,
+      note
+    });
+
+    // reset inputs
+    if($("ldAmount")) $("ldAmount").value = "";
+    if($("ldNote")) $("ldNote").value = "";
+    setSplitAll(true);
+
+    save();
+    renderAll();
+  }
+
+  function removeExpense(id){
+    state.expenses = state.expenses.filter(e=>e.id!==id);
+    save();
+    renderAll();
+  }
+
+  function calc(){
+    const paid = Object.fromEntries(state.members.map(m=>[m,0]));
+    const share= Object.fromEntries(state.members.map(m=>[m,0]));
+
+    state.expenses.forEach(e=>{
+      const amt = Number(e.amount)||0;
+      const payer = e.payer;
+      if(paid[payer] != null) paid[payer] += amt;
+
+      const people = Array.isArray(e.splitTo) ? e.splitTo.filter(m=>share[m]!=null) : [];
+      if(!people.length) return;
+      const per = amt / people.length;
+
+      people.forEach(m=>{ share[m] += per; });
+    });
+
+    const net = {};
+    state.members.forEach(m=>{
+      // net >0 = 應收；net <0 = 應付
+      net[m] = (paid[m] - share[m]);
+    });
+
+    return { paid, share, net };
+  }
+
+  function settle(net){
+    const creditors = [];
+    const debtors = [];
+    Object.entries(net).forEach(([name, v])=>{
+      const val = Math.round(v);
+      if(val > 0) creditors.push([name, val]);
+      else if(val < 0) debtors.push([name, -val]);
+    });
+
+    // sort larger first for fewer transfers
+    creditors.sort((a,b)=>b[1]-a[1]);
+    debtors.sort((a,b)=>b[1]-a[1]);
+
+    const res = [];
+    let i=0,j=0;
+    while(i<debtors.length && j<creditors.length){
+      const [dName, dAmt] = debtors[i];
+      const [cName, cAmt] = creditors[j];
+      const pay = Math.min(dAmt, cAmt);
+
+      res.push({ from:dName, to:cName, amount: pay });
+
+      debtors[i][1] -= pay;
+      creditors[j][1] -= pay;
+
+      if(debtors[i][1] === 0) i++;
+      if(creditors[j][1] === 0) j++;
+    }
+    return res;
+  }
+
+  function renderExpenses(){
+    const list = $("ldExpenseList");
+    if(!list) return;
+    list.innerHTML = "";
+
+    if(!state.expenses.length){
+      list.innerHTML = `<div class="ld-hint">尚無支出，先新增一筆吧。</div>`;
+      return;
+    }
+
+    state.expenses.forEach(e=>{
+      const item = document.createElement("div");
+      item.className = "ld-item";
+
+      const title = `${e.category || "其他"}${e.note ? "｜"+escapeHtml(e.note) : ""}`;
+      const sub = `付款人：${escapeHtml(e.payer)}　分攤：${(e.splitTo||[]).map(escapeHtml).join("、")}`;
+      item.innerHTML = `
+        <div class="ld-item-main">
+          <div class="ld-item-top">
+            <div class="ld-item-title">${title}</div>
+            <div class="ld-item-amt">¥ ${fmt(e.amount)}</div>
+          </div>
+          <div class="ld-item-sub">${sub}</div>
+        </div>
+        <div class="ld-item-actions">
+          <button type="button" data-del="${escapeAttr(e.id)}">刪除</button>
+        </div>
+      `;
+      item.querySelector('[data-del]')?.addEventListener("click", ()=>{
+        if(confirm("刪除這筆支出？")) removeExpense(e.id);
+      });
+      list.appendChild(item);
+    });
+  }
+
+  function renderSummary(){
+    const sum = $("ldSummary");
+    const settleWrap = $("ldSettle");
+    if(!sum || !settleWrap) return;
+
+    const { paid, share, net } = calc();
+    sum.innerHTML = "";
+
+    state.members.forEach(name=>{
+      const n = net[name] || 0;
+      const row = document.createElement("div");
+      row.className = "ld-sum-row";
+      const netText = (n>=0) ? `應收 ¥ ${fmt(n)}` : `應付 ¥ ${fmt(-n)}`;
+      row.innerHTML = `
+        <div>
+          <div class="ld-sum-name">${escapeHtml(name)}</div>
+          <div class="ld-sum-meta">已付 ¥ ${fmt(paid[name]||0)}　｜　應分攤 ¥ ${fmt(share[name]||0)}</div>
+        </div>
+        <div class="ld-sum-net">${netText}</div>
+      `;
+      sum.appendChild(row);
+    });
+
+    const tx = settle(net);
+    settleWrap.innerHTML = "";
+    if(!tx.length){
+      settleWrap.innerHTML = `<div class="ld-hint">目前已結清（不需要轉帳）。</div>`;
+      return;
+    }
+    tx.forEach(t=>{
+      const d = document.createElement("div");
+      d.className = "ld-pay-row";
+      d.textContent = `${t.from} → ${t.to}　¥ ${fmt(t.amount)}`;
+      settleWrap.appendChild(d);
+    });
+  }
+
+  function renderAll(){
+    renderMembers();
+    renderExpenses();
+    renderSummary();
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  }
+  function escapeAttr(s){
+    return String(s).replace(/"/g, "&quot;");
+  }
+
+  // 對外：進入頁面時呼叫（showPage 會 safeCall 這個）
+  window.LD_EnterLedgerPage = function(){
+    // 只綁一次
+    if(window.__LD_BOUND) return;
+    window.__LD_BOUND = true;
+
+    load();
+    renderAll();
+
+    $("ldAddMemberBtn")?.addEventListener("click", addMember);
+    $("ldMemberName")?.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addMember(); });
+
+    $("ldSplitAll")?.addEventListener("click", ()=>setSplitAll(true));
+    $("ldSplitNone")?.addEventListener("click", ()=>setSplitAll(false));
+
+    $("ldAddExpenseBtn")?.addEventListener("click", addExpense);
+  };
+
+})();
+
 /* 對外可呼叫 */
 window.showPage = showPage;
 window.setBottomNavActive = setBottomNavActive;
@@ -5359,7 +5789,7 @@ const PHOTO_ITEMS_1 = [
 
 // 相簿 2（新增這組，換你的照片）
 const PHOTO_ITEMS_2 = [
-  { src: "images/photo5.jpg", name: "拍照取景參考_1", desc: "點圖片可全螢幕放大，左右滑動切換" }
+  { src: "images/photo3.jpg", name: "拍照取景參考_1", desc: "點圖片可全螢幕放大，左右滑動切換" }
   
 ];
 
@@ -8469,7 +8899,9 @@ function saveLocal(items){
     if(fromLabel) fromLabel.textContent = (LANG_META[fromLang]?.label || fromLang);
     if(toLabel)   toLabel.textContent   = (LANG_META[toLang]?.label   || toLang);
   }
-   
+    if(toLabel) toLabel.textContent = LANG_META[toLang]?.label || toLang;
+  }
+
   function setDropdownUI(){
     const fromSel = $("trFromSelect");
     const toSel   = $("trToSelect");
@@ -8488,7 +8920,7 @@ function saveLocal(items){
     setDropdownUI();
     updateLabels();
     scheduleTranslate();
- 
+  }
     // 避免同語言
     if(fromLang !== "auto" && fromLang === toLang){
       toLang = (fromLang === "en" ? "ja" : "en");
@@ -8815,48 +9247,30 @@ function saveLocal(items){
   }
 
   /* ---------- OCR (Tesseract.js) ---------- */
- async function runOCR(file){
-  const input = $("trInputOne");
-  const out   = $("trOutputOne");
-  if(!input || !out || !file) return;
+  async function runOCR(file){
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(!input || !out) return;
+    if(!file) return;
 
-  if(!window.Tesseract){
-    alert("找不到 Tesseract.js（請確認你頁面有載入 ./libs/tesseract.min.js）");
-    return;
+    if(!window.Tesseract){
+      alert("找不到 Tesseract.js（請確認你頁面有載入）");
+      return;
+    }
+
+    out.value = "辨識文字中…"; autoResizeTextarea(out);
+    try{
+      // OCR 語言：auto 時用 chi_tra（你也可改成多語模型）
+      const base = (fromLang === "auto") ? "jpn+chi_tra+eng" : (fromLang === "ja" ? "jpn" : (fromLang === "en" ? "eng" : "chi_tra"));
+      const { data } = await window.Tesseract.recognize(file, base);
+      const text = (data && data.text ? data.text : "").trim();
+      input.value = text;
+      scheduleTranslate();
+    }catch(err){
+      console.error(err);
+      out.value = "OCR 失敗"; autoResizeTextarea(out);
+    }
   }
-
-  out.value = "辨識文字中…";
-  autoResizeTextarea(out);
-
-  try{
-    // 只做 中⇄日：依目前翻譯方向決定 OCR 主語言
-    // 假設你頁面有 fromLang/toLang 變數，且值為 "zh" / "ja"
-    // - 中→日：通常是拍到中文居多
-    // - 日→中：通常是拍到日文居多
-    const ocrLang =
-      (fromLang === "ja") ? "jpn+eng+chi_tra" : "chi_tra+eng+jpn";
-
-    const worker = await window.Tesseract.createWorker(ocrLang, 1, {
-      workerPath: "libs/worker.min.js",
-      corePath: "libs/tesseract-core.wasm.js"
-    });
-
-    const { data: { text } } = await worker.recognize(file);
-    await worker.terminate();
-
-    const cleaned = (text || "").trim();
-    input.value = cleaned;
-
-    // OCR 完自動翻譯
-    scheduleTranslate();
-
-  }catch(err){
-    console.error(err);
-    out.value = "OCR 失敗";
-    autoResizeTextarea(out);
-  }
-}
-
 const inputEl = document.getElementById("trInputOne");
 
 const MIN_H = 56;                 // 要跟 CSS 一致
@@ -8906,7 +9320,7 @@ inputEl.addEventListener("input", () => {
   }
 
   function bindTranslateUI(){
-    const page = $("translate-page");
+    const page = $("ledger-page");
     if(!page) return;
 
     // dropdown change

@@ -8915,11 +8915,9 @@ function saveLocal(items){
     toLang   = ok(nextTo)   ? nextTo   : (fromLang==="zh-TW" ? "ja" : "zh-TW");
     if(fromLang === toLang){
       toLang = (fromLang==="zh-TW" ? "ja" : "zh-TW");
-    }
-    setDropdownUI();
-    updateLabels();
-    scheduleTranslate();
-  }
+    
+  
+  
     // 避免同語言
     if(fromLang !== "auto" && fromLang === toLang){
       toLang = (fromLang === "en" ? "ja" : "en");

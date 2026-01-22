@@ -3364,6 +3364,65 @@ color: #d95380;
   opacity: 1;
 }
 
+
+/* =========================
+   OCR Crop Modal
+========================= */
+.ocr-crop-modal{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.ocr-crop-card{
+  width: min(92vw, 520px);
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+.ocr-crop-title{
+  font-weight: 600;
+  margin: 6px 6px 10px;
+  font-size: 16px;
+}
+.ocr-crop-stage{
+  position: relative;
+  width: 100%;
+}
+#ocrCropCanvas{
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+}
+.ocr-crop-rect{
+  position: absolute;
+  border: 2px solid #2b7cff;
+  background: rgba(43,124,255,.12);
+  border-radius: 8px;
+  touch-action: none;
+}
+.ocr-crop-actions{
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 10px;
+}
+.ocr-crop-actions button{
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 14px;
+}
+.ocr-crop-actions #ocrCropApply{
+  border-color: #2b7cff;
+}
+
 </style>
 
 </head>
@@ -4333,7 +4392,9 @@ color: #d95380;
 <!-- Firebase compat (NON-module) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
-<script src="libs/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>window.TESSERACT_CDN_OK=true;</script>
+<!-- 如果你想離線用，可改回本地：<script src="libs/tesseract.min.js"></script> -->
 
 <script>
 		let isFirstHomeRender = true;
@@ -8815,13 +8876,141 @@ function saveLocal(items){
   }
 
   /* ---------- OCR (Tesseract.js) ---------- */
+  // ✅ OCR 前先裁切（框住文字區，辨識更準）
+  function cropImageBeforeOCR(fileOrBlob){
+    return new Promise((resolve) => {
+      const modal  = document.getElementById("ocrCropModal");
+      const canvas = document.getElementById("ocrCropCanvas");
+      const rectEl = document.getElementById("ocrCropRect");
+      const btnCancel = document.getElementById("ocrCropCancel");
+      const btnApply  = document.getElementById("ocrCropApply");
+
+      // 沒有裁切 UI 就直接原圖
+      if(!modal || !canvas || !rectEl || !btnCancel || !btnApply){
+        resolve(fileOrBlob);
+        return;
+      }
+
+      modal.hidden = false;
+
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      const img = new Image();
+      const url = URL.createObjectURL(fileOrBlob);
+
+      let rect = { x: 0, y: 0, w: 100, h: 100 };
+      let dragging = false;
+      let start = { x:0, y:0 };
+      let startRect = null;
+
+      const cleanup = ()=>{
+        try{ URL.revokeObjectURL(url); }catch(e){}
+        modal.hidden = true;
+        rectEl.onpointerdown = null;
+        window.onpointermove = null;
+        window.onpointerup = null;
+        btnCancel.onclick = null;
+        btnApply.onclick = null;
+      };
+
+      const setRect = (x,y,w,h)=>{
+        const minSize = 40;
+        w = Math.max(w, minSize);
+        h = Math.max(h, minSize);
+        x = Math.max(0, Math.min(x, canvas.width - w));
+        y = Math.max(0, Math.min(y, canvas.height - h));
+        rect = { x,y,w,h };
+
+        // 把原始像素座標映射到畫面顯示尺寸
+        const display = canvas.getBoundingClientRect();
+        const sx = display.width / canvas.width;
+        const sy = display.height / canvas.height;
+
+        rectEl.style.left = (rect.x * sx) + "px";
+        rectEl.style.top  = (rect.y * sy) + "px";
+        rectEl.style.width  = (rect.w * sx) + "px";
+        rectEl.style.height = (rect.h * sy) + "px";
+      };
+
+      const bindDrag = ()=>{
+        rectEl.onpointerdown = (e)=>{
+          dragging = true;
+          rectEl.setPointerCapture(e.pointerId);
+          start = { x: e.clientX, y: e.clientY };
+          startRect = { ...rect };
+        };
+        window.onpointermove = (e)=>{
+          if(!dragging) return;
+          const dx = e.clientX - start.x;
+          const dy = e.clientY - start.y;
+
+          const display = canvas.getBoundingClientRect();
+          const sx = canvas.width / display.width;
+          const sy = canvas.height / display.height;
+
+          setRect(startRect.x + dx*sx, startRect.y + dy*sy, startRect.w, startRect.h);
+        };
+        window.onpointerup = ()=> dragging = false;
+      };
+
+      img.onload = ()=>{
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        ctx.drawImage(img, 0, 0);
+
+        // ✅ 預設框：上方約 30%（最適合你測的「文字在上方」圖片）
+        const w = canvas.width * 0.86;
+        const h = canvas.height * 0.28;
+        const x = (canvas.width - w) / 2;
+        const y = canvas.height * 0.08;
+
+        setRect(x, y, w, h);
+        bindDrag();
+      };
+      img.onerror = ()=>{
+        cleanup();
+        resolve(fileOrBlob);
+      };
+      img.src = url;
+
+      btnCancel.onclick = ()=>{
+        cleanup();
+        resolve(fileOrBlob);
+      };
+
+      btnApply.onclick = ()=>{
+        try{
+          const cropC = document.createElement("canvas");
+          cropC.width  = Math.round(rect.w);
+          cropC.height = Math.round(rect.h);
+          cropC.getContext("2d").drawImage(
+            canvas,
+            rect.x, rect.y, rect.w, rect.h,
+            0, 0, rect.w, rect.h
+          );
+
+          cropC.toBlob((b)=>{
+            cleanup();
+            resolve(b || fileOrBlob);
+          }, "image/png");
+        }catch(e){
+          cleanup();
+          resolve(fileOrBlob);
+        }
+      };
+    });
+  }
+
+
  async function runOCR(file){
+   // ✅ 先裁切：只辨識文字區（大幅提高準確率）
+   file = await cropImageBeforeOCR(file);
+
   const input = $("trInputOne");
   const out   = $("trOutputOne");
   if(!input || !out || !file) return;
 
   if(!window.Tesseract){
-    alert("找不到 Tesseract.js（請確認你頁面有載入 ./libs/tesseract.min.js）");
+    alert("找不到 Tesseract.js（OCR 套件未載入）。請確認已載入 tesseract.min.js（CDN 或本地 libs/）。");
     return;
   }
 
@@ -8837,8 +9026,9 @@ function saveLocal(items){
       (fromLang === "ja") ? "jpn+eng+chi_tra" : "chi_tra+eng+jpn";
 
     const worker = await window.Tesseract.createWorker(ocrLang, 1, {
-      workerPath: "libs/worker.min.js",
-      corePath: "libs/tesseract-core.wasm.js"
+      workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js",
+      corePath: "https://unpkg.com/tesseract.js-core@5.1.1/tesseract-core.wasm.js",
+       langPath: "https://tessdata.projectnaptha.com/4.0.0"
     });
 
     const { data: { text } } = await worker.recognize(file);
@@ -9015,6 +9205,22 @@ function renderRoman(text, lang){
   return "";
 }
 </script>
+
+
+<!-- OCR 裁切視窗 -->
+<div id="ocrCropModal" class="ocr-crop-modal" hidden>
+  <div class="ocr-crop-card">
+    <div class="ocr-crop-title">請框選要辨識的文字範圍</div>
+    <div class="ocr-crop-stage">
+      <canvas id="ocrCropCanvas"></canvas>
+      <div id="ocrCropRect" class="ocr-crop-rect"></div>
+    </div>
+    <div class="ocr-crop-actions">
+      <button id="ocrCropCancel" type="button">取消</button>
+      <button id="ocrCropApply" type="button">套用裁切</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

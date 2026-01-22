@@ -9316,74 +9316,72 @@ inputEl.addEventListener("input", () => {
     // input[type=file] 方案沒有 overlay 可關，先保留空函式避免報錯
   }
 
-  function bindTranslateUI(){
-    const page = $("ledger-page");
-    if(!page) return;
+  /* ===============================
+   翻譯頁 UI 綁定
+================================ */
+function bindTranslateUI(){
+  const page = $("ledger-page"); // 若未進翻譯/記帳頁，直接略過
+  if(!page) return;
 
-    // dropdown change
-    $("trFromSelect")?.addEventListener("change", (e)=>{
-      const v = e.target.value || "auto";
-      setLang(v, toLang);
-    });
-    $("trToSelect")?.addEventListener("change", (e)=>{
-      const v = e.target.value || "ja";
-      setLang(fromLang, v);
-    });
+  /* ---------- 語言選擇 ---------- */
+  $("trFromSelect")?.addEventListener("change", e => {
+    const v = e.target.value || "auto";
+    setLang(v, toLang);
+  });
 
-    $("trSwapBtn")?.addEventListener("click", swapLang);
+  $("trToSelect")?.addEventListener("change", e => {
+    const v = e.target.value || "ja";
+    setLang(fromLang, v);
+  });
 
-    // Input -> realtime translate
-    $("trInputOne")?.addEventListener("input", ()=>{
-      const input = $("trInputOne");
-      const out   = $("trOutputOne");
-      autoResizeTextarea(input);
+  $("trSwapBtn")?.addEventListener("click", swapLang);
 
-      const srcText = (input?.value || "");
-      const dstTextRaw = (out?.value || "");
-      const dstText = (/^翻譯中/.test(dstTextRaw) || /^翻譯失敗/.test(dstTextRaw)) ? "" : dstTextRaw;
+  /* ---------- 文字輸入 → 即時翻譯 ---------- */
+  $("trInputOne")?.addEventListener("input", () => {
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(!input || !out) return;
 
-      const srcLangForPh = (fromLang === "auto") ? guessLang(srcText) : fromLang;
-      updatePhonetics(srcText, srcLangForPh, dstText, toLang);
-      scheduleTranslate();
-    });
+    autoResizeTextarea(input);
 
-    // Speak translated
-    ($("trSpeakBtn") || $("trSpeakOutBtn"))?.addEventListener("click", ()=>{
-      const text = ($("trOutputOne")?.value || "").trim();
-      if(!text) return;
-      const speak = text.replace(/^\[[^\]]+\]\s*/,'');
-      speakText(speak, toLang);
-    });
+    const srcText = input.value || "";
+    const outVal  = out.value || "";
+    const dstText = (/^翻譯中|^翻譯失敗/.test(outVal)) ? "" : outVal;
 
-    // Mic
-    $("trMicBtn")?.addEventListener("click", startMic);
+    const srcLang = (fromLang === "auto")
+      ? guessLang(srcText)
+      : fromLang;
 
-    // Camera/OCR
-    $("trCameraBtn")?.addEventListener("click", ()=> $("trOcrFile")?.click());
-    $("trOcrFile")?.addEventListener("change", (e)=>{
-      const file = e.target.files && e.target.files[0];
-      if(file) runOCR(file);
-      e.target.value = "";
-    });
+    updatePhonetics(srcText, srcLang, dstText, toLang);
+    scheduleTranslate();
+  });
 
-    // default
-    setLang(fromLang, toLang);
-  
+  /* ---------- 翻譯語音播放 ---------- */
+  const speakBtn = $("trSpeakBtn") || $("trSpeakOutBtn");
+  speakBtn?.addEventListener("click", () => {
+    const text = ($("trOutputOne")?.value || "").trim();
+    if(!text) return;
+    speakText(text.replace(/^\[[^\]]+\]\s*/, ""), toLang);
+  });
 
-  // Hook for page enter
-  let inited = false;
-  window.TR_EnterTranslatePage = () => {
-    if(inited) return;
-    inited = true;
-    bindTranslateUI();
-  };
+  /* ---------- 麥克風 ---------- */
+  $("trMicBtn")?.addEventListener("click", startMic);
 
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", ()=> window.TR_EnterTranslatePage());
-  }else{
-    window.TR_EnterTranslatePage();
-  }
-})();
+  /* ---------- 拍照 / OCR ---------- */
+  $("trCameraBtn")?.addEventListener("click", () => {
+    $("trOcrFile")?.click();
+  });
+
+  $("trOcrFile")?.addEventListener("change", e => {
+    const file = e.target.files?.[0];
+    if(file) runOCR(file);
+    e.target.value = ""; // 允許重選同一張
+  });
+
+  /* ---------- 初始化 ---------- */
+  setLang(fromLang, toLang);
+}
+
 
 </script>
 

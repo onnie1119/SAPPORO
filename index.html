@@ -3559,11 +3559,11 @@ color: #d95380;
 }
 
 #ledger-page .fake-select-list li{
-  position: relative;
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-size: 15px;
-  color: #111;
+     position: relative;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 18px;
+    color: #333;
 }
 
 #ledger-page .fake-select-list li:hover{
@@ -3596,6 +3596,33 @@ color: #d95380;
   list-style: none;
 }
 
+/* 記帳頁：分攤給（水平排列，不亂跑） */
+#ledger-page .split-users{
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: nowrap;         /* 不要自動換行（螢幕太小才要改 wrap） */
+}
+
+/* 每個「□ 名字」 */
+#ledger-page .split-item{
+  display: inline-flex;
+  align-items: center;       /* 垂直置中 */
+  gap: 8px;
+  white-space: nowrap;       /* 防止「□」跟名字分家 */
+  margin: 0;                 /* 清掉可能被套到的 margin */
+  padding: 0;                /* 清掉可能被套到的 padding */
+  width: auto;               /* 避免 100% 造成換行 */
+}
+
+/* checkbox 尺寸固定，避免跳動 */
+#ledger-page .split-item input[type="checkbox"]{
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 0;                 /* 很多瀏覽器預設 margin 會讓它歪 */
+  vertical-align: middle;
+}
 
 </style>
 

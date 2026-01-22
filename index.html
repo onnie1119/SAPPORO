@@ -4333,6 +4333,8 @@ color: #d95380;
 <!-- Firebase compat (NON-module) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+<script src="libs/tesseract.min.js"></script>
+
 <script>
 		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
@@ -8813,30 +8815,48 @@ function saveLocal(items){
   }
 
   /* ---------- OCR (Tesseract.js) ---------- */
-  async function runOCR(file){
-    const input = $("trInputOne");
-    const out   = $("trOutputOne");
-    if(!input || !out) return;
-    if(!file) return;
+ async function runOCR(file){
+  const input = $("trInputOne");
+  const out   = $("trOutputOne");
+  if(!input || !out || !file) return;
 
-    if(!window.Tesseract){
-      alert("找不到 Tesseract.js（請確認你頁面有載入）");
-      return;
-    }
-
-    out.value = "辨識文字中…"; autoResizeTextarea(out);
-    try{
-      // OCR 語言：auto 時用 chi_tra（你也可改成多語模型）
-      const base = (fromLang === "auto") ? "jpn+chi_tra+eng" : (fromLang === "ja" ? "jpn" : (fromLang === "en" ? "eng" : "chi_tra"));
-      const { data } = await window.Tesseract.recognize(file, base);
-      const text = (data && data.text ? data.text : "").trim();
-      input.value = text;
-      scheduleTranslate();
-    }catch(err){
-      console.error(err);
-      out.value = "OCR 失敗"; autoResizeTextarea(out);
-    }
+  if(!window.Tesseract){
+    alert("找不到 Tesseract.js（請確認你頁面有載入 ./libs/tesseract.min.js）");
+    return;
   }
+
+  out.value = "辨識文字中…";
+  autoResizeTextarea(out);
+
+  try{
+    // 只做 中⇄日：依目前翻譯方向決定 OCR 主語言
+    // 假設你頁面有 fromLang/toLang 變數，且值為 "zh" / "ja"
+    // - 中→日：通常是拍到中文居多
+    // - 日→中：通常是拍到日文居多
+    const ocrLang =
+      (fromLang === "ja") ? "jpn+eng+chi_tra" : "chi_tra+eng+jpn";
+
+    const worker = await window.Tesseract.createWorker(ocrLang, 1, {
+      workerPath: "libs/worker.min.js",
+      corePath: "libs/tesseract-core.wasm.js"
+    });
+
+    const { data: { text } } = await worker.recognize(file);
+    await worker.terminate();
+
+    const cleaned = (text || "").trim();
+    input.value = cleaned;
+
+    // OCR 完自動翻譯
+    scheduleTranslate();
+
+  }catch(err){
+    console.error(err);
+    out.value = "OCR 失敗";
+    autoResizeTextarea(out);
+  }
+}
+
 const inputEl = document.getElementById("trInputOne");
 
 const MIN_H = 56;                 // 要跟 CSS 一致

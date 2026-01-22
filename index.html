@@ -3623,6 +3623,29 @@ color: #d95380;
   margin: 0;                 /* 很多瀏覽器預設 margin 會讓它歪 */
   vertical-align: middle;
 }
+/* 記帳頁－分攤給 卡片：橫向對齊 */
+#ledger-page .split-card {
+  display: flex;
+  align-items: center;        /* 勾勾與文字垂直置中 */
+  gap: 12px;                  /* 勾勾與文字距離 */
+  text-align: left;           /* ❗取消置中 */
+  padding: 18px;
+}
+
+/* 勾選圖示（固定大小，不要撐高卡片） */
+#ledger-page .split-card .check-icon {
+  flex: 0 0 28px;             /* 固定寬度 */
+  width: 28px;
+  height: 28px;
+}
+
+/* 名字文字 */
+#ledger-page .split-card .name {
+  margin: 0;                  /* ❗清掉原本的 margin */
+  font-size: 15px;
+  line-height: 1;             /* 避免上下跑位 */
+  white-space: nowrap;
+}
 
 </style>
 

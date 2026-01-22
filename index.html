@@ -3107,26 +3107,38 @@ color: #d95380;
 
 .ld-members{ display:flex; flex-wrap:wrap; gap:8px; }
 .ld-chip{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:8px 10px;
-  border-radius:999px;
-  background:#f1f5ff;
-  color:#2d4aa8;
-  font-weight:600;
-  font-size:13px;
-  border:1px solid rgba(58,122,254,.22);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 15px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #007aff;
+        font-weight: 600;
+        font-size: 16px;
+        border: 1px solid #007aff;
 }
-.ld-chip .x{ font-weight:800; opacity:.7; }
+
 
 .ld-member-add{ display:flex; gap:8px; margin-top:10px; }
 #ldMemberName{
-  flex:1; height:40px; border-radius:12px; border:1px solid #e6eaf2;
-  padding:0 12px; outline:none;
+          flex: 1;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #e6eaf2;
+        color: #333;
+        font-size: 18px;
+        padding: 5px 12px;
+        outline: none;
 }
 #ldAddMemberBtn{
-  height:40px; padding:0 14px; border-radius:12px;
-  border:1px solid rgba(58,122,254,.35);
-  background:#fff; font-weight:700; color:#2d4aa8;
+ height: 40px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        border: 1px solid #007aff;
+        background: #fff;
+        font-size: 18px;
+        color: #007aff;
 }
 
 .ld-form{ display:flex; flex-direction:column; gap:10px; }
@@ -4327,13 +4339,11 @@ color: #d95380;
   </div>
 
   <div class="ld-card">
-    <div class="ld-card-title">成員</div>
     <div class="ld-members" id="ldMembers"></div>
     <div class="ld-member-add">
-      <input id="ldMemberName" type="text" placeholder="新增成員名稱（例如：Jerry）" maxlength="12">
+      <input id="ldMemberName" type="text" placeholder="新增成員名稱" maxlength="12">
       <button id="ldAddMemberBtn" type="button">新增</button>
     </div>
-    <div class="ld-hint">提示：點成員可刪除（至少保留 2 人）。</div>
   </div>
 
   <div class="ld-card">

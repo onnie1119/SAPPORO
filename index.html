@@ -3091,42 +3091,37 @@ color: #d95380;
 /* =========================
    Ledger Page (旅遊記帳分帳)
 ========================= */
-.ledger-page{ padding: 14px 14px 88px; }
+.ledger-page{
+  padding: calc(var(--topbar-h) + env(safe-area-inset-top) + 14px) 14px calc(var(--bottom-nav-h) + 24px);
+  background: #F6F9FC;
+}
 .ld-header{ margin: 6px 2px 12px; }
 .ld-title{ font-size: 18px; font-weight: 700; color:#1f2a44; }
 .ld-sub{ margin-top:4px; font-size:12px; color:#7b869b; }
 
 .ld-card{
   background:#fff;
+  overflow:hidden;
   border-radius:14px;
   padding:12px;
-  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
-  
+  box-shadow: 0 6px 18px rgba(31,42,68,.08);
+  margin-bottom:12px;
 }
-.ld-card-title{ font-weight: 700;
-        font-size: 16px;
-        margin-bottom: 10px;
-        color: #333; }
+.ld-card-title{ font-weight:700; font-size:14px; margin-bottom:10px; color:#1f2a44; }
 
 .ld-members{ display:flex; flex-wrap:wrap; gap:8px; }
 .ld-chip{
- display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 7px 15px;
-        border-radius: 999px;
-        background: #ffffff;
-        color: #007aff;
-        font-weight: 600;
-        font-size: 16px;
-        border: 1px solid #007aff;
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 10px;
+  border-radius:999px;
+  background:#f1f5ff;
+  color:#2d4aa8;
+  font-weight:600;
+  font-size:13px;
+  border:1px solid rgba(58,122,254,.22);
 }
 .ld-chip .x{ font-weight:800; opacity:.7; }
-.ld-chip--plus{ background: #fff;
-        color: #007aff;
-        font-size: 20px;
-        padding: 0 8px;
-        border: 1px dashed #007aff;}
+.ld-chip--plus{ background:#fff; color:#2d4aa8; border:1px dashed rgba(58,122,254,.45); }
 .ld-chip--plus .x{ display:none; }
 
 .ld-member-add{ display:flex; gap:8px; margin-top:10px; }
@@ -3141,19 +3136,37 @@ color: #d95380;
 }
 
 .ld-form{ display:flex; flex-direction:column; gap:10px; }
-.ld-row label{ display:block; font-size:16px; color:#6c788f; margin-bottom:6px; }
-.ld-row input, .ld-row select{
-   height:50px; border-radius:8px;color: #333;
+
+/* ledger: prevent overflow & normalize sizing (scoped) */
+#ledger-page, #ledger-page * , #ledger-page *::before, #ledger-page *::after{
+  box-sizing: border-box;
+}
+
+.ld-row label{ display:block; font-size:12px; color:#6c788f; margin-bottom:6px; }
+.ld-row input, .ld-row select, .ld-row textarea{
+  width:100%; height:42px; border-radius:12px;
   border:1px solid #e6eaf2; padding:0 12px; outline:none;
-  background:#fff;
+  background:#fff;  max-width:100%;
+  box-sizing:border-box;
 }
-.ld-split{ display:flex; flex-wrap:wrap; gap:8px; }
+
+.ld-split{ display:flex; flex-wrap:wrap; gap:8px; width:100%; }
 .ld-check{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:8px 10px; border-radius:12px;
-  background:#f7f9ff; border:1px solid #e6eaf2;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#f7f9ff;
+  border:1px solid #e6eaf2;
   font-size:13px;
+  flex:1 1 calc(50% - 8px); /* two columns on mobile */
+  min-width: 0;
+  pointer-events: auto; /* override global label rules */
 }
+.ld-check input{ margin:0; flex:0 0 auto; }
+.ld-check span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ld-split-actions{ display:flex; gap:8px; margin-top:8px; }
 .ld-split-actions button{
   height:34px; padding:0 12px; border-radius:10px;
@@ -3476,19 +3489,6 @@ color: #d95380;
   color: #b0b0b5;
   opacity: 1;
 }
-/* Fix: 卡片第一行超出（margin collapse / line-height） */
-.ledger-card{
-  display: flow-root;
-  padding: 16px;
-}
-
-.ledger-card h1,
-.ledger-card h2,
-.ledger-card h3,
-.ledger-card .card-title{
-  margin: 0 0 12px 0;
-  line-height: 1.25;
-}
 
 </style>
 
@@ -3518,7 +3518,7 @@ color: #d95380;
 <span class="label">匯率</span>
 </button>
 <button data-page="ledger-page">
-<span class="icon-credit-card"></span>
+<span class="icon-coin-yen"></span>
 <span class="label">記帳</span>
 </button>
 </nav>
@@ -4345,13 +4345,15 @@ color: #d95380;
 <!-- Ledger Page (旅遊記帳分帳) -->
 <div class="ledger-page" id="ledger-page" style="display:none;">
 
- 
+  <div class="ld-header">
+    <div class="ld-title">旅遊記帳</div>
+    <div class="ld-sub">先記帳，最後一鍵結算</div>
+  </div>
 
-  <div class="ld-card" style="background: none;
-    box-shadow: none;        margin-top: 4rem;padding-left: 0.5rem;">
+  <div class="ld-card">
     <div class="ld-card-title">成員</div>
     <div class="ld-members" id="ldMembers"></div>
-   
+    <div class="ld-hint">提示：點成員右側 ✕ 可刪除（至少保留 2 人）；點右側 ＋ 可新增。</div>
   </div>
 
   <div class="ld-card">
@@ -4370,10 +4372,6 @@ color: #d95380;
       <div class="ld-row">
         <label>分攤給</label>
         <div id="ldSplitTo" class="ld-split"></div>
-        <div class="ld-split-actions">
-          <button id="ldSplitAll" type="button">全選</button>
-          <button id="ldSplitNone" type="button">全不選</button>
-        </div>
       </div>
 
       <div class="ld-row">
@@ -5785,10 +5783,6 @@ function setBottomNavActive(pageId) {
 
     load();
     renderAll();
-
-    
-    $("ldSplitAll")?.addEventListener("click", ()=>setSplitAll(true));
-    $("ldSplitNone")?.addEventListener("click", ()=>setSplitAll(false));
 
     $("ldAddExpenseBtn")?.addEventListener("click", addExpense);
   };

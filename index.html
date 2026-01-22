@@ -4237,8 +4237,8 @@ color: #d95380;
 
     <div class="tr-select-wrap">
       <select id="trToSelect" aria-label="翻譯語言">
-        <option value="ja" selected>日文</option>
-        <option value="zh-TW">中文</option>
+        <option value="ja">日文</option>
+        <option value="zh-TW" selected>中文</option>
         <option value="en">英文</option>
       </select>
       <span class="icon-cheveron-down"></span>
@@ -8451,7 +8451,7 @@ function saveLocal(items){
   };
 
   let fromLang = "auto";
-  let toLang   = "ja";
+  let toLang   = "zh-TW";
   let debounceTimer = null;
   let lastReqId = 0;
   let lastDetected = ""; // e.g. "ja", "zh-TW", "en"
@@ -8761,10 +8761,18 @@ function saveLocal(items){
       rec = null;
     }
 
-    // 來源語言若是 auto，就用「上一次偵測」或預設 zh-TW
-    const sttLang = (fromLang === "auto")
-      ? (LANG_META[lastDetected]?.stt || "zh-TW")
-      : (LANG_META[fromLang]?.stt || "zh-TW");
+    // 來源語言（語音辨識 STT）
+    // ⚠️ SpeechRecognition 本身幾乎「不會自動偵測語言」，一定要指定 lang 才準。
+    // 你的需求多半是「講日文 → 翻成中文」，所以 from=auto 時，優先用目標語言推斷（to=zh-* → ja-JP）。
+    const sttLang = (()=>{
+      if(fromLang === "ja") return LANG_META.ja?.stt || "ja-JP";
+      if((fromLang || "").startsWith("zh")) return LANG_META["zh-TW"]?.stt || "zh-TW";
+      if(fromLang === "en") return LANG_META.en?.stt || "en-US";
+      // auto:
+      if((toLang || "").startsWith("zh")) return "ja-JP";
+      if(lastDetected && LANG_META[lastDetected]?.stt) return LANG_META[lastDetected].stt;
+      return "ja-JP";
+    })();
 
     rec = new SR();
     rec.lang = sttLang;
@@ -8807,17 +8815,17 @@ function saveLocal(items){
       return;
     }
 
-    out.textContent = "辨識文字中…";
+    out.value = "辨識文字中…"; autoResizeTextarea(out);
     try{
       // OCR 語言：auto 時用 chi_tra（你也可改成多語模型）
-      const base = (fromLang === "auto") ? "chi_tra" : (fromLang === "ja" ? "jpn" : (fromLang === "en" ? "eng" : "chi_tra"));
+      const base = (fromLang === "auto") ? "jpn+chi_tra+eng" : (fromLang === "ja" ? "jpn" : (fromLang === "en" ? "eng" : "chi_tra"));
       const { data } = await window.Tesseract.recognize(file, base);
       const text = (data && data.text ? data.text : "").trim();
       input.value = text;
       scheduleTranslate();
     }catch(err){
       console.error(err);
-      out.textContent = "OCR 失敗";
+      out.value = "OCR 失敗"; autoResizeTextarea(out);
     }
   }
 const inputEl = document.getElementById("trInputOne");
@@ -8900,8 +8908,8 @@ inputEl.addEventListener("input", () => {
     });
 
     // Speak translated
-    $("trSpeakOutBtn")?.addEventListener("click", ()=>{
-      const text = ($("trOutputOne")?.textContent || "").trim();
+    ($("trSpeakBtn") || $("trSpeakOutBtn"))?.addEventListener("click", ()=>{
+      const text = ($("trOutputOne")?.value || "").trim();
       if(!text) return;
       const speak = text.replace(/^\[[^\]]+\]\s*/,'');
       speakText(speak, toLang);
@@ -8942,168 +8950,6 @@ inputEl.addEventListener("input", () => {
 
 
 
-
-
-<script>
-/* ===== Translate: Auto Detect -> Japanese/English + Romaji/Pinyin ===== */
-(function(){
-  const LANG_LABEL = {
-    "zh": "中文", "zh-tw": "中文（繁體）", "zh-cn": "中文（簡體）",
-    "ja": "日文", "en": "英文", "ko": "韓文", "fr": "法文", "de": "德文", "es": "西文"
-  };
-
-  const trInput = document.getElementById("trInput");
-  const trOutput = document.getElementById("trOutput");
-  const srcLabel = document.getElementById("srcLabel");
-  const dstLabel = document.getElementById("dstLabel");
-  const srcRoman = document.getElementById("srcRoman");
-  const dstRoman = document.getElementById("dstRoman");
-
-  const btnTargetJa = document.getElementById("btnTargetJa");
-  const btnTargetEn = document.getElementById("btnTargetEn");
-
-  const btnSpeak = document.getElementById("btnSpeakResult");
-  const btnMic = document.getElementById("btnMic");
-  const btnCamera = document.getElementById("btnCamera");
-  const ocrFile = document.getElementById("ocrFile");
-
-  if(!trInput || !trOutput) return;
-
-  let target = "ja";
-
-  function setTarget(t){
-    target = t;
-    btnTargetJa?.classList.toggle("active", t==="ja");
-    btnTargetEn?.classList.toggle("active", t==="en");
-    if(dstLabel) dstLabel.textContent = (t==="ja" ? "日文" : "英文");
-    if(trInput.value.trim()) trInput.dispatchEvent(new Event("input"));
-  }
-  btnTargetJa?.addEventListener("click", ()=>setTarget("ja"));
-  btnTargetEn?.addEventListener("click", ()=>setTarget("en"));
-
-  function labelFor(code){
-    if(!code) return "偵測語言";
-    const c = String(code).toLowerCase();
-    return LANG_LABEL[c] || LANG_LABEL[c.split("-")[0]] || c;
-  }
-
-  async function translateAuto(text){
-    const url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="
-      + encodeURIComponent(target) + "&dt=t&dt=ld&q=" + encodeURIComponent(text);
-    const r = await fetch(url);
-    const j = await r.json();
-    const translated = (j[0]||[]).map(x=>x[0]).join("");
-    const detected = (j[2] || "auto");
-    return { translated, detected };
-  }
-
-  function romaji(text){
-      if(!text || !window.wanakana) return "";
-      return window.wanakana.toRomaji(text);
-    }
-
-  function pinyin(text){
-    try{
-      if(!text || !window.pinyinPro) return "";
-      // tone marks like "Zǎo ān"
-      return window.pinyinPro.pinyin(text, { toneType: "symbol", type: "array" }).join(" ");
-    }catch(e){
-      return "";
-    }
-  }
-
-  let timer = null;
-  trInput.addEventListener("input", ()=>{
-    clearTimeout(timer);
-    const v = trInput.value.trim();
-
-    if(!v){
-      trOutput.textContent = "";
-      srcRoman.textContent = "";
-      dstRoman.textContent = "";
-      if(srcLabel) srcLabel.textContent = "偵測語言";
-      return;
-    }
-
-    timer = setTimeout(async ()=>{
-      trOutput.textContent = "翻譯中…";
-      srcRoman.textContent = "";
-      dstRoman.textContent = "";
-
-      try{
-        const { translated, detected } = await translateAuto(v);
-        trOutput.textContent = translated || "";
-        if(srcLabel) srcLabel.textContent = labelFor(detected);
-
-        const det = String(detected||"").toLowerCase();
-
-        // source romanization
-        if(det.startsWith("ja")){
-          srcRoman.textContent = romaji(v);
-        }else if(det.startsWith("zh")){
-          srcRoman.textContent = pinyin(v);
-        }else{
-          srcRoman.textContent = "";
-        }
-
-        // result romanization
-        if(target === "ja"){
-          dstRoman.textContent = romaji(translated);
-        }else{
-          dstRoman.textContent = "";
-        }
-      }catch(err){
-        console.error(err);
-        trOutput.textContent = "翻譯失敗，請檢查網路";
-      }
-    }, 300);
-  });
-
-  // Speak translated result
-  btnSpeak?.addEventListener("click", ()=>{
-    const text = (trOutput.textContent || "").trim();
-    if(!text) return;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = (target==="ja" ? "ja-JP" : "en-US");
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  });
-
-  // Speech-to-text (best effort default zh-TW)
-  btnMic?.addEventListener("click", ()=>{
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR){ alert("此裝置不支援語音輸入"); return; }
-    const r = new SR();
-    r.lang = "zh-TW";
-    r.onresult = (e)=>{
-      trInput.value = e.results[0][0].transcript;
-      trInput.dispatchEvent(new Event("input"));
-    };
-    r.start();
-  });
-
-  // OCR -> input
-  btnCamera?.addEventListener("click", ()=> ocrFile?.click());
-  ocrFile?.addEventListener("change", async (e)=>{
-    const f = e.target.files?.[0];
-    if(!f) return;
-    trOutput.textContent = "辨識中…";
-    try{
-      const imgURL = URL.createObjectURL(f);
-      const { data } = await Tesseract.recognize(imgURL, "chi_tra+jpn+eng");
-      URL.revokeObjectURL(imgURL);
-      trInput.value = (data.text || "").trim();
-      trInput.dispatchEvent(new Event("input"));
-    }catch(err){
-      console.error(err);
-      trOutput.textContent = "OCR 失敗，請換清晰照片";
-    }
-  });
-
-  // init
-  if(dstLabel) dstLabel.textContent = "日文";
-})();
-</script>
 
 
 <script>

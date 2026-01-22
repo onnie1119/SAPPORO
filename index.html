@@ -3501,38 +3501,64 @@ color: #d95380;
   color: #b0b0b5;
   opacity: 1;
 }
-/* 你的 select */
-#ldPayer{
-  width: 100%;
-  padding: 12px 44px 12px 14px; /* 右邊留空給箭頭 */
-  border-radius: 12px;
+.fake-select {
+  position: relative;
+  height: 48px;
+  border-radius: 14px;
+  background: #fff;
   border: 1px solid #e5e7eb;
-  background-color: #fff;
-  color: #111;
-  font-size: 15px;
-
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  /* 自己畫箭頭（SVG 當背景） */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath fill='%236b7280' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-
-  /* 箭頭位置：往左就改這個數字 */
-  background-position: right 16px center;
-
-  /* 箭頭大小 */
-  background-size: 16px 16px;
-
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
   cursor: pointer;
 }
 
-#ldPayer:focus{
-  outline: none;
+.fake-select.open {
   border-color: #5fa6b1;
-  box-shadow: 0 0 0 3px rgba(95,166,177,0.15);
+  box-shadow: 0 0 0 3px rgba(95,166,177,.15);
 }
+
+.fake-select-value {
+  flex: 1;
+  font-size: 15px;
+  color: #111;
+}
+
+.fake-select-arrow {
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid #6b7280;
+  border-bottom: 2px solid #6b7280;
+  transform: rotate(45deg);
+}
+
+.fake-select-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 24px rgba(0,0,0,.08);
+  padding: 6px;
+  display: none;
+  z-index: 50;
+}
+
+.fake-select.open .fake-select-list {
+  display: block;
+}
+
+.fake-select-list li {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.fake-select-list li:hover {
+  background: #f2f8fa;
+}
+
 
 </style>
 
@@ -4412,9 +4438,13 @@ color: #d95380;
       </div>
 
       <div class="ld-row">
-        <label>付款人</label>
-        <select id="ldPayer"></select>
-      </div>
+  <label>付款人</label>
+
+  <select id="ldPayer" hidden></select>
+
+  <div id="payerUI"></div>
+</div>
+
 
       <div class="ld-row">
         <label>分攤給</label>
@@ -9452,6 +9482,51 @@ function renderRoman(text, lang){
   if(lang && lang.startsWith("zh")) return toChinesePinyin(text);
   if(lang === "ja") return toJapaneseRomajiReadable(text);
   return "";
+}
+</script>
+<script>
+function buildPayerUI(){
+  const select = document.getElementById('ldPayer');
+  const mount = document.getElementById('payerUI');
+  mount.innerHTML = '';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'fake-select';
+
+  const value = document.createElement('div');
+  value.className = 'fake-select-value';
+  value.textContent = select.value || select.options[0]?.text || '';
+
+  const arrow = document.createElement('div');
+  arrow.className = 'fake-select-arrow';
+
+  const list = document.createElement('ul');
+  list.className = 'fake-select-list';
+
+  [...select.options].forEach(opt=>{
+    const li = document.createElement('li');
+    li.textContent = opt.text;
+
+    li.onclick = e=>{
+      e.stopPropagation();
+      value.textContent = opt.text;
+      select.value = opt.value;   // ⭐ 同步回原 select
+      wrap.classList.remove('open');
+      select.dispatchEvent(new Event('change'));
+    };
+
+    list.appendChild(li);
+  });
+
+  wrap.onclick = e=>{
+    e.stopPropagation();
+    wrap.classList.toggle('open');
+  };
+
+  document.addEventListener('click', ()=>wrap.classList.remove('open'));
+
+  wrap.append(value, arrow, list);
+  mount.appendChild(wrap);
 }
 </script>
 

@@ -4225,10 +4225,8 @@ color: #d95380;
 
     <div class="tr-select-wrap">
       <select id="trFromSelect" aria-label="來源語言">
-        <option value="auto" selected>偵測</option>
+        <option value="zh-TW" selected>中文</option>
         <option value="ja">日文</option>
-        <option value="zh-TW">中文</option>
-        <option value="en">英文</option>
       </select>
       <span class="icon-cheveron-down"></span>
     </div>
@@ -4237,9 +4235,8 @@ color: #d95380;
 
     <div class="tr-select-wrap">
       <select id="trToSelect" aria-label="翻譯語言">
-        <option value="ja">日文</option>
-        <option value="zh-TW" selected>中文</option>
-        <option value="en">英文</option>
+        <option value="ja" selected>日文</option>
+        <option value="zh-TW">中文</option>
       </select>
       <span class="icon-cheveron-down"></span>
     </div>
@@ -8450,8 +8447,8 @@ function saveLocal(items){
     return l || "";
   };
 
-  let fromLang = "auto";
-  let toLang   = "zh-TW";
+  let fromLang = "zh-TW";
+  let toLang   = "ja";
   let debounceTimer = null;
   let lastReqId = 0;
   let lastDetected = ""; // e.g. "ja", "zh-TW", "en"
@@ -8467,14 +8464,9 @@ function saveLocal(items){
   function updateLabels(){
     const fromLabel = $("trFromLabel");
     const toLabel   = $("trToLabel");
-    if(fromLabel){
-      if(fromLang === "auto" && lastDetected){
-        const det = simplifyDetectedLang(lastDetected) || (LANG_META[lastDetected]?.label || "");
-        fromLabel.textContent = det ? `偵測（${det}）` : "偵測";
-      }else{
-        fromLabel.textContent = LANG_META[fromLang]?.label || fromLang;
-      }
-    }
+    if(fromLabel) fromLabel.textContent = (LANG_META[fromLang]?.label || fromLang);
+    if(toLabel)   toLabel.textContent   = (LANG_META[toLang]?.label   || toLang);
+  }
     if(toLabel) toLabel.textContent = LANG_META[toLang]?.label || toLang;
   }
 
@@ -8486,13 +8478,17 @@ function saveLocal(items){
   }
 
   function setLang(nextFrom, nextTo){
-    fromLang = nextFrom;
-    toLang   = nextTo;
-
-    // target 不能是 auto（避免 UI/翻譯歧義）
-    if(toLang === "auto"){
-      toLang = (fromLang === "ja" ? "zh-TW" : "ja");
+    // 只支援：中文 <=> 日文
+    const ok = (v)=> (v==="zh-TW" || v==="ja");
+    fromLang = ok(nextFrom) ? nextFrom : "zh-TW";
+    toLang   = ok(nextTo)   ? nextTo   : (fromLang==="zh-TW" ? "ja" : "zh-TW");
+    if(fromLang === toLang){
+      toLang = (fromLang==="zh-TW" ? "ja" : "zh-TW");
     }
+    setDropdownUI();
+    updateLabels();
+    scheduleTranslate();
+  }
     // 避免同語言
     if(fromLang !== "auto" && fromLang === toLang){
       toLang = (fromLang === "en" ? "ja" : "en");
@@ -8504,34 +8500,30 @@ function saveLocal(items){
   }
 
   function swapLang(){
-    // swap 方向：若交換後 target 變成 auto，幫你自動選一個合理的語言
+    // 只在「中↔日」之間交換
     const a = fromLang;
     const b = toLang;
-    let nextFrom = b;
-    let nextTo   = a;
-
-    if(nextTo === "auto"){
-      nextTo = (nextFrom === "ja" ? "zh-TW" : "ja");
-    }
-    if(nextFrom === nextTo){
-      nextTo = (nextFrom === "en" ? "ja" : "en");
-    }
+    const nextFrom = b;
+    const nextTo   = a;
     setLang(nextFrom, nextTo);
 
     // 同時交換文字（更像翻譯 App）
     const input = $("trInputOne");
     const out   = $("trOutputOne");
     if(input && out){
-      const outText = (out.value || "").trim();
-      input.value = outText;
-      out.value = "";
-      $("trRomanSrc") && ($("trRomanSrc").textContent = "");
-      $("trRomanDst") && ($("trRomanDst").textContent = "");
-      scheduleTranslate();
+      const inText  = (input.value||"").trim();
+      const outText = (out.value||"").trim();
+      if(outText){
+        input.value = outText;
+        out.value = "";
+        $("trRomanSrc") && ($("trRomanSrc").textContent = "");
+        $("trRomanDst") && ($("trRomanDst").textContent = "");
+        scheduleTranslate();
+      }else if(inText){
+        // 只交換方向，不動文字
+      }
     }
-  }
-
-  
+  }  
   /* ---------- textarea auto-resize (by lines) ---------- */
   function autoResizeTextarea(el, minPx=70, maxPx=280){
     if(!el) return;
@@ -8548,6 +8540,31 @@ function saveLocal(items){
     if(/[A-Za-z]/.test(t)) return "en";
     return "auto";
   }
+
+  // ===== 中文 <=> 日文（不走外部偵測）=====
+  // 規則：只用「是否包含假名」判斷是否為日文；否則當作中文。
+  // （純漢字日文無法 100% 分辨，但你要的「簡單」模式就用這個規則。）
+  function inferDirectionFromText(text){
+    const t = String(text||"");
+    const isJa = /[\u3040-\u30ff]/.test(t); // Hiragana / Katakana
+    return isJa
+      ? { from:"ja", to:"zh-TW" }   // 日 -> 中
+      : { from:"zh-TW", to:"ja" };  // 中 -> 日（預設）
+  }
+
+  function syncDirectionByText(text){
+    const t = String(text||"").trim();
+    if(!t) return;
+    const dir = inferDirectionFromText(t);
+    if(dir.from !== fromLang || dir.to !== toLang){
+      fromLang = dir.from;
+      toLang   = dir.to;
+      setDropdownUI();
+      updateLabels();
+    }
+  }
+
+
 
   
   // -------- kana → romaji fallback (when CDN not available) --------
@@ -8695,6 +8712,9 @@ function saveLocal(items){
     if(!input || !out) return;
 
     const text = (input.value || "").trim();
+
+    // 依輸入內容自動決定方向（中↔日）
+    syncDirectionByText(text);
     if(!text){
       out.value = "";
       autoResizeTextarea(out);
@@ -8762,17 +8782,8 @@ function saveLocal(items){
     }
 
     // 來源語言（語音辨識 STT）
-    // ⚠️ SpeechRecognition 本身幾乎「不會自動偵測語言」，一定要指定 lang 才準。
-    // 你的需求多半是「講日文 → 翻成中文」，所以 from=auto 時，優先用目標語言推斷（to=zh-* → ja-JP）。
-    const sttLang = (()=>{
-      if(fromLang === "ja") return LANG_META.ja?.stt || "ja-JP";
-      if((fromLang || "").startsWith("zh")) return LANG_META["zh-TW"]?.stt || "zh-TW";
-      if(fromLang === "en") return LANG_META.en?.stt || "en-US";
-      // auto:
-      if((toLang || "").startsWith("zh")) return "ja-JP";
-      if(lastDetected && LANG_META[lastDetected]?.stt) return LANG_META[lastDetected].stt;
-      return "ja-JP";
-    })();
+    // Web Speech API 需要指定語言；此頁只做「中文/日文」兩種
+    const sttLang = (fromLang === "ja") ? "ja-JP" : "zh-TW";
 
     rec = new SR();
     rec.lang = sttLang;

@@ -3166,22 +3166,22 @@ color: #d95380;
 
 /* 分攤給：每一格「□ 名字」(兩欄、水平置中、不亂跑) */
 #ledger-page .ld-check{
-  position: relative;
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap:12px;
-  padding:16px 14px;
-  border-radius:18px;
-  background:#f7f9ff;
-  border:1px solid #e6eaf2;
-  font-size:18px;
-  color:#3b3b3b;
-  flex:1 1 calc(50% - 12px); /* two columns */
-  min-width:0;
-  box-sizing:border-box;
-  user-select:none;
-  -webkit-tap-highlight-color: transparent;
+          position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e6eaf2;
+        font-size: 18px;
+        color: #3b3b3b;
+        flex: 1 1 calc(50% - 12px);
+        min-width: 0;
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
 }
 
 /* 隱藏原生 checkbox，改用自繪方塊（避免 iOS/Android 樣式亂跑） */
@@ -3213,13 +3213,13 @@ color: #d95380;
 
 /* checked 狀態 */
 #ledger-page .ld-check input:checked + span::before{
-  border-color:#2a8fa0;
-  background:#2a8fa0;
+  border-color:#007aff;
+  background:#007aff;
 }
 #ledger-page .ld-check input:checked + span::after{
   content:"✓";
   position:absolute;
-  left:14px;                /* 對應 padding-left */
+  left:18px;                /* 對應 padding-left */
   top:50%;
   transform: translateY(-50%);
   font-weight:800;

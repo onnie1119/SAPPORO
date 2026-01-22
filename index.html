@@ -3501,9 +3501,16 @@ color: #d95380;
   color: #b0b0b5;
   opacity: 1;
 }
-.fake-select {
+/* =========================
+   Ledger – 高質感付款人下拉（只影響記帳頁）
+   ✅ 原生 select 的下拉清單無法美化，所以改用自製 UI
+========================= */
+#ledger-page #payerUI{ width: 100%; }
+
+#ledger-page .fake-select{
   position: relative;
   height: 48px;
+  width: 100%;
   border-radius: 14px;
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -3511,30 +3518,32 @@ color: #d95380;
   align-items: center;
   padding: 0 16px;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
-.fake-select.open {
+#ledger-page .fake-select.open{
   border-color: #5fa6b1;
   box-shadow: 0 0 0 3px rgba(95,166,177,.15);
 }
 
-.fake-select-value {
+#ledger-page .fake-select-value{
   flex: 1;
   font-size: 15px;
   color: #111;
 }
 
-.fake-select-arrow {
+#ledger-page .fake-select-arrow{
   width: 6px;
   height: 6px;
   border-right: 2px solid #6b7280;
   border-bottom: 2px solid #6b7280;
   transform: rotate(45deg);
+  margin-left: 8px;
 }
 
-.fake-select-list {
+#ledger-page .fake-select-list{
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
   background: #fff;
@@ -3545,19 +3554,37 @@ color: #d95380;
   z-index: 50;
 }
 
-.fake-select.open .fake-select-list {
+#ledger-page .fake-select.open .fake-select-list{
   display: block;
 }
 
-.fake-select-list li {
+#ledger-page .fake-select-list li{
+  position: relative;
   padding: 12px 14px;
   border-radius: 10px;
   font-size: 15px;
+  color: #111;
 }
 
-.fake-select-list li:hover {
+#ledger-page .fake-select-list li:hover{
   background: #f2f8fa;
 }
+
+#ledger-page .fake-select-list li.active{
+  background: #eef7f8;
+}
+
+#ledger-page .fake-select-list li.active::after{
+  content: "✓";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 700;
+  color: #2a8fa0;
+}
+
+
 
 
 </style>
@@ -5649,7 +5676,11 @@ function setBottomNavActive(pageId) {
     wrap.appendChild(plus);
 
     if(payerSel.options.length) payerSel.value = payerSel.options[0].value;
-  }
+  
+
+    // ✅ 高質感付款人選單（同步原生 select）
+    try{ buildPayerUI(); }catch(e){}
+}
 
   function getSplitSelected(){
     const wrap = $("ldSplitTo");
@@ -9487,45 +9518,88 @@ function renderRoman(text, lang){
 <script>
 function buildPayerUI(){
   const select = document.getElementById('ldPayer');
-  const mount = document.getElementById('payerUI');
+  const mount  = document.getElementById('payerUI');
+  if(!select || !mount) return;
+
+  // 清空 UI
   mount.innerHTML = '';
+
+  // 若沒有選中值，預設第一個
+  if(!select.value && select.options.length){
+    select.value = select.options[0].value;
+  }
 
   const wrap = document.createElement('div');
   wrap.className = 'fake-select';
+  wrap.setAttribute('role','button');
+  wrap.setAttribute('aria-haspopup','listbox');
+  wrap.setAttribute('aria-expanded','false');
 
-  const value = document.createElement('div');
-  value.className = 'fake-select-value';
-  value.textContent = select.value || select.options[0]?.text || '';
+  const valueEl = document.createElement('div');
+  valueEl.className = 'fake-select-value';
+  valueEl.textContent = select.selectedOptions[0]?.text || '';
 
   const arrow = document.createElement('div');
   arrow.className = 'fake-select-arrow';
 
   const list = document.createElement('ul');
   list.className = 'fake-select-list';
+  list.setAttribute('role','listbox');
 
-  [...select.options].forEach(opt=>{
+  const currentVal = select.value;
+
+  Array.from(select.options).forEach(opt=>{
     const li = document.createElement('li');
     li.textContent = opt.text;
+    li.dataset.value = opt.value;
+    li.setAttribute('role','option');
+    li.setAttribute('aria-selected', opt.value === currentVal ? 'true' : 'false');
+    if(opt.value === currentVal) li.classList.add('active');
 
-    li.onclick = e=>{
+    li.addEventListener('click', (e)=>{
       e.stopPropagation();
-      value.textContent = opt.text;
-      select.value = opt.value;   // ⭐ 同步回原 select
+
+      // 更新 UI
+      valueEl.textContent = opt.text;
+      list.querySelectorAll('li').forEach(x=>{
+        x.classList.remove('active');
+        x.setAttribute('aria-selected','false');
+      });
+      li.classList.add('active');
+      li.setAttribute('aria-selected','true');
+
+      // 同步回原生 select（保持你原本邏輯不必改）
+      select.value = opt.value;
+      select.dispatchEvent(new Event('change', { bubbles:true }));
+
       wrap.classList.remove('open');
-      select.dispatchEvent(new Event('change'));
-    };
+      wrap.setAttribute('aria-expanded','false');
+    });
 
     list.appendChild(li);
   });
 
-  wrap.onclick = e=>{
+  // 點選開關
+  wrap.addEventListener('click', (e)=>{
     e.stopPropagation();
-    wrap.classList.toggle('open');
-  };
+    const open = !wrap.classList.contains('open');
+    wrap.classList.toggle('open', open);
+    wrap.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
 
-  document.addEventListener('click', ()=>wrap.classList.remove('open'));
+  // 全站只綁一次：點外面關閉
+  if(!document.__ldPayerCloseBound){
+    document.__ldPayerCloseBound = true;
+    document.addEventListener('click', (e)=>{
+      const w = document.querySelector('#ledger-page #payerUI .fake-select');
+      if(w && !w.contains(e.target)){
+        w.classList.remove('open');
+        w.setAttribute('aria-expanded','false');
+      }
+    });
+  }
 
-  wrap.append(value, arrow, list);
+  wrap.append(valueEl, arrow, list);
   mount.appendChild(wrap);
 }
 </script>

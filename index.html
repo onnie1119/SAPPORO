@@ -3100,24 +3100,33 @@ color: #d95380;
   background:#fff;
   border-radius:14px;
   padding:12px;
-  box-shadow: 0 6px 18px rgba(31,42,68,.08);
-  margin-bottom:12px;
+  box-shadow: 0 0px 3px rgb(0 0 0 / 10%);
+  
 }
-.ld-card-title{ font-weight:700; font-size:14px; margin-bottom:10px; color:#1f2a44; }
+.ld-card-title{ font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: #333; }
 
 .ld-members{ display:flex; flex-wrap:wrap; gap:8px; }
 .ld-chip{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:8px 10px;
-  border-radius:999px;
-  background:#f1f5ff;
-  color:#2d4aa8;
-  font-weight:600;
-  font-size:13px;
-  border:1px solid rgba(58,122,254,.22);
+ display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 15px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #007aff;
+        font-weight: 600;
+        font-size: 16px;
+        border: 1px solid #007aff;
 }
 .ld-chip .x{ font-weight:800; opacity:.7; }
-.ld-chip--plus{ background:#fff; color:#2d4aa8; border:1px dashed rgba(58,122,254,.45); }
+.ld-chip--plus{ background: #fff;
+        color: #007aff;
+        font-size: 20px;
+        padding: 0 8px;
+        border: 1px dashed #007aff;}
 .ld-chip--plus .x{ display:none; }
 
 .ld-member-add{ display:flex; gap:8px; margin-top:10px; }
@@ -4326,7 +4335,7 @@ color: #d95380;
  
 
   <div class="ld-card" style="background: none;
-    box-shadow: none;        margin-top: 4rem;">
+    box-shadow: none;        margin-top: 4rem;padding-left: 0.5rem;">
     <div class="ld-card-title">成員</div>
     <div class="ld-members" id="ldMembers"></div>
    

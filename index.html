@@ -9320,9 +9320,11 @@ inputEl.addEventListener("input", () => {
    翻譯頁 UI 綁定
 ================================ */
 function bindTranslateUI(){
-  const page = $("ledger-page"); // 若未進翻譯/記帳頁，直接略過
+  const page = $("translate-page"); // ❗不要用 ledger-page
   if(!page) return;
 
+  // 如果翻譯 UI 不存在，直接 return（避免綁到空）
+  if(!$("trInputOne") || !$("trOutputOne")) return;
   /* ---------- 語言選擇 ---------- */
   $("trFromSelect")?.addEventListener("change", e => {
     const v = e.target.value || "auto";

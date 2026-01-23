@@ -3664,6 +3664,50 @@ color: #d95380;
   max-height: 240px;
   overflow-y: auto;
 }
+/* ✅ list 被 append 到 body 後，仍然要吃到樣式 */
+.fake-select-list{
+  list-style: none;          /* 移除圓點 */
+  margin: 0;
+  padding: 8px 0;
+
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  border: 1px solid rgba(0,0,0,0.06);
+
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  display: none;             /* 預設不顯示，改由 JS 控制 */
+}
+
+/* 選項樣式（維持你付款人那套的感覺） */
+.fake-select-list li{
+  padding: 14px 16px;
+  font-size: 18px;
+  color: #222;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fake-select-list li.active{
+  background: #eef6f9;
+  border-radius: 10px;
+}
+
+.fake-select-list li.active::after{
+  content: "✓";
+  font-size: 18px;
+  color: #3A7AFE;
+}
+
+/* 浮層層級一定要高於 topbar / bottom-nav */
+.fake-select-list.is-float{
+  position: fixed;
+  z-index: 4000;
+  display: block;
+}
 
 
 </style>
@@ -9204,29 +9248,59 @@ function buildPayerUI(){
   }
 
   function open() {
-  const rect = wrap.getBoundingClientRect();
-
-  listEl.style.position = 'fixed';
-  listEl.style.left = rect.left + 'px';
-  listEl.style.top  = (rect.bottom + 6) + 'px';
-  listEl.style.width = rect.width + 'px';
-
+  // 先讓它可以量尺寸
+  listEl.classList.add('is-float');
   document.body.appendChild(listEl);
 
-  wrap.classList.add('open');
+  // 目標位置（跟 select 本體對齊）
+  const rect = wrap.getBoundingClientRect();
+
+  // 寬度跟 x 對齊，並做左右邊界保護
+  const pad = 12;
+  const width = Math.min(rect.width, window.innerWidth - pad * 2);
+  let left = rect.left;
+  left = Math.max(pad, Math.min(left, window.innerWidth - pad - width));
+
+  listEl.style.width = width + 'px';
+  listEl.style.left = left + 'px';
+
+  // 取得 bottom-nav 高度，避免被擋住
+  const bottomNav = document.querySelector('.bottom-nav');
+  const bottomNavH = bottomNav ? bottomNav.getBoundingClientRect().height : 0;
+
+  // 先假設往下展開
+  const gap = 6;
+  const maxDown = window.innerHeight - bottomNavH - pad - (rect.bottom + gap);
+
+  // 設最大高度（避免太長）
+  const maxH = Math.max(120, Math.min(260, maxDown)); // 120~260 之間
+  listEl.style.maxHeight = maxH + 'px';
+
+  // 量實際高度（受 maxHeight 影響）
+  const listH = listEl.getBoundingClientRect().height;
+
+  // 如果下面空間不夠 → 往上展開
+  const canDown = (rect.bottom + gap + listH) <= (window.innerHeight - bottomNavH - pad);
+  const top = canDown
+    ? (rect.bottom + gap)
+    : Math.max(pad, rect.top - gap - listH);
+
+  listEl.style.top = top + 'px';
+
   wrap.setAttribute('aria-expanded', 'true');
 }
 
-
 function close() {
-  wrap.classList.remove('open');
   wrap.setAttribute('aria-expanded', 'false');
 
-  if (listEl.parentNode === document.body) {
-    wrap.appendChild(listEl);
+  // 把 list 放回原本結構（可選，但建議）
+  if (listEl.classList.contains('is-float')) {
+    listEl.classList.remove('is-float');
     listEl.removeAttribute('style');
+    wrap.appendChild(listEl);
   }
 }
+
 
 
   // 初始顯示值

@@ -3638,79 +3638,95 @@ color: #d95380;
   color: #2a8fa0;
 }
 
-/* 讓 fake-select 的下拉清單「浮」在最上面，不被裁切 */
-.ld-row { 
-  position: relative; 
-  overflow: visible; 
-}
 
+
+
+</style>
+
+
+<style id="fake-select-unify-css">
+/* =========================
+   統一下拉選單：全部比照「付款人」假下拉（不動其他既有 CSS）
+   ========================= */
 .fake-select{
   position: relative;
-  z-index: 50;          /* 本體層級 */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 40px 12px 12px; /* 右邊預留箭頭 */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color:#222;
+  font-size:16px;
+  line-height: 1.2;
+  cursor: pointer;
+  user-select: none;
 }
-
+.fake-select:focus,
+.fake-select.fake-open{
+  outline: none;
+  border-color: #3A7AFE;
+  box-shadow: 0 0 0 2px rgba(58,122,254,0.15);
+}
+.fake-select-value{
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fake-select-arrow{
+  position:absolute;
+  right: 14px;   /* 箭頭往左一點 */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 8px;
+  pointer-events: none;
+}
+.fake-select-arrow::before{
+  content:"";
+  display:block;
+  width: 12px;
+  height: 8px;
+  background-repeat:no-repeat;
+  background-size: 12px 8px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23888' d='M1.41 0L6 4.58 10.59 0 12 1.41 6 7.41 0 1.41z'/></svg>");
+}
 .fake-select-list{
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(100% + 6px);
-  z-index: 9999;        /* 清單一定要最高 */
-}
-
-.ledger-page{        animation: fadeIn 0.4s ease;}
-/* fake-select 下拉清單浮層 */
-.fake-select-list {
-  position: fixed;          /* 🔥 關鍵 */
-  z-index: 3000;            /* 高於 topbar / bottom-nav */
-  max-height: 240px;
-  overflow-y: auto;
-}
-/* ✅ list 被 append 到 body 後，仍然要吃到樣式 */
-.fake-select-list{
-  list-style: none;          /* 移除圓點 */
+  top: calc(100% + 8px);
+  list-style: none;
   margin: 0;
-  padding: 8px 0;
-
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-  border: 1px solid rgba(0,0,0,0.06);
-
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-
-  display: none;             /* 預設不顯示，改由 JS 控制 */
-}
-
-/* 選項樣式（維持你付款人那套的感覺） */
-.fake-select-list li{
-  padding: 14px 16px;
-  font-size: 18px;
-  color: #222;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.fake-select-list li.active{
-  background: #eef6f9;
+  padding: 6px 0;
+  border: 1px solid #e6e6e6;
   border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 9999;
+  display: none;
+  max-height: 260px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
-
-.fake-select-list li.active::after{
-  content: "✓";
-  font-size: 18px;
-  color: #3A7AFE;
+.fake-select.fake-open .fake-select-list{
+  display:block;
 }
-
-/* 浮層層級一定要高於 topbar / bottom-nav */
-.fake-select-list.is-float{
-  position: fixed;
-  z-index: 4000;
-  display: block;
+.fake-select-list li{
+  padding: 10px 12px;
+  font-size: 16px;
+  color:#222;
+  cursor:pointer;
 }
-
-
+.fake-select-list li:hover{
+  background: #f3f6ff;
+}
+.fake-select-list li.active{
+  background: #eef3ff;
+  color:#1f5fe6;
+  font-weight: 600;
+}
 </style>
 
 </head>
@@ -4588,13 +4604,13 @@ color: #d95380;
     text-align: left;">
       </div>
 
-		<div class="ld-row">
-	  		<label>付款人</label>
-	
-	  		<select id="ldPayer" hidden></select>
-	
-	  		<div id="payerUI"></div>
-		</div>
+      <div class="ld-row">
+  <label>付款人</label>
+
+  <select id="ldPayer" hidden></select>
+
+  <div id="payerUI"></div>
+</div>
 
 
       <div class="ld-row">
@@ -4603,21 +4619,17 @@ color: #d95380;
       </div>
 
       <div class="ld-row">
-  <label>分類</label>
-
-  <select id="ldCategory" hidden>
-    <option value="餐飲">餐飲</option>
-    <option value="交通">交通</option>
-    <option value="住宿">住宿</option>
-    <option value="門票">門票</option>
-    <option value="購物">購物</option>
-    <option value="停車/油費">停車/油費</option>
-    <option value="其他">其他</option>
-  </select>
-
-  <div id="categoryUI"></div>
-</div>
-
+        <label>分類</label>
+        <select id="ldCategory">
+          <option value="餐飲">餐飲</option>
+          <option value="交通">交通</option>
+          <option value="住宿">住宿</option>
+          <option value="門票">門票</option>
+          <option value="購物">購物</option>
+          <option value="停車/油費">停車/油費</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
 
       <div class="ld-row">
         <label>備註</label>
@@ -9104,7 +9116,505 @@ function saveLocal(items){
 }
 
 </script>
+<script>/* =========================================================
+   REALTIME TRANSLATE - SINGLE CARD (Dropdown + Detect)
+   - 來源：偵測 / 日文 / 中文 / 英文（下拉）
+   - 目標：日文 / 中文 / 英文（下拉）
+   - 即時翻譯（輸入時自動）
+   - 麥克風語音轉文字（Web Speech API）
+   - 拍照/選圖 OCR（Tesseract.js）
+   - 朗讀翻譯（SpeechSynthesis）
+   - Romaji / Pinyin 顯示（來源 + 結果）
+========================================================= */
+(() => {
+  const $ = (id) => document.getElementById(id);
 
+  const LANG_META = {
+    "auto": { label: "偵測",        stt: "zh-TW", tts: "en-US" }, // stt 會依偵測/來源調整
+    "zh-TW": { label: "中文（繁體）", stt: "zh-TW", tts: "zh-TW" },
+    "ja":   { label: "日文",        stt: "ja-JP", tts: "ja-JP" },
+    "en":   { label: "英文",        stt: "en-US", tts: "en-US" }
+  };
+
+  // normalize for phonetic
+  const NORM = (lang) => {
+    const l = String(lang || "").toLowerCase();
+    if(l.startsWith("zh")) return "zh";
+    if(l.startsWith("ja")) return "ja";
+    if(l.startsWith("en")) return "en";
+    return l || "";
+  };
+
+  let fromLang = "zh-TW";
+  let toLang   = "ja";
+  let debounceTimer = null;
+  let lastReqId = 0;
+  let lastDetected = ""; // e.g. "ja", "zh-TW", "en"
+
+  function simplifyDetectedLang(code){
+    const c = String(code||"").toLowerCase();
+    if(c.startsWith("zh")) return "中文";
+    if(c.startsWith("ja")) return "日文";
+    if(c.startsWith("en")) return "英文";
+    return "";
+  }
+
+  function updateLabels(){
+    const fromLabel = $("trFromLabel");
+    const toLabel   = $("trToLabel");
+    if(fromLabel) fromLabel.textContent = (LANG_META[fromLang]?.label || fromLang);
+    if(toLabel)   toLabel.textContent   = (LANG_META[toLang]?.label   || toLang);
+  }
+    function setDropdownUI(){
+    const fromSel = $("trFromSelect");
+    const toSel   = $("trToSelect");
+    if(fromSel) fromSel.value = fromLang;
+    if(toSel)   toSel.value   = toLang;
+  }
+
+  function setLang(nextFrom, nextTo){
+    // 只支援：中文 <=> 日文
+    const ok = (v)=> (v==="zh-TW" || v==="ja");
+    fromLang = ok(nextFrom) ? nextFrom : "zh-TW";
+    toLang   = ok(nextTo)   ? nextTo   : (fromLang==="zh-TW" ? "ja" : "zh-TW");
+
+    // 避免同語言
+    if(fromLang === toLang){
+      toLang = (fromLang==="zh-TW" ? "ja" : "zh-TW");
+    }
+
+    setDropdownUI();
+    updateLabels();
+    scheduleTranslate();
+  }
+
+  function swapLang(){
+    // 只在「中↔日」之間交換
+    const a = fromLang;
+    const b = toLang;
+    const nextFrom = b;
+    const nextTo   = a;
+    setLang(nextFrom, nextTo);
+
+    // 同時交換文字（更像翻譯 App）
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(input && out){
+      const inText  = (input.value||"").trim();
+      const outText = (out.value||"").trim();
+      if(outText){
+        input.value = outText;
+        out.value = "";
+        $("trRomanSrc") && ($("trRomanSrc").textContent = "");
+        $("trRomanDst") && ($("trRomanDst").textContent = "");
+        scheduleTranslate();
+      }else if(inText){
+        // 只交換方向，不動文字
+      }
+    }
+  }  
+  /* ---------- textarea auto-resize (by lines) ---------- */
+  function autoResizeTextarea(el, minPx=70, maxPx=280){
+    if(!el) return;
+    el.style.height = minPx + "px";
+    const next = Math.min(maxPx, el.scrollHeight);
+    el.style.height = next + "px";
+  }
+/* ---------- phonetic helpers ---------- */
+  // 用於「來源語言=偵測」時，先用字元做快速猜測，讓輸入框下方也能即時顯示拼音/羅馬字
+  function guessLang(text){
+    const t = String(text||"");
+    if(/[\u3040-\u30ff]/.test(t)) return "ja";      // Hiragana/Katakana
+    if(/[\u4e00-\u9fff]/.test(t)) return "zh-TW";  // CJK Unified Ideographs
+    if(/[A-Za-z]/.test(t)) return "en";
+    return "auto";
+  }
+
+  // ===== 中文 <=> 日文（不走外部偵測）=====
+  // 規則：只用「是否包含假名」判斷是否為日文；否則當作中文。
+  // （純漢字日文無法 100% 分辨，但你要的「簡單」模式就用這個規則。）
+  function inferDirectionFromText(text){
+    const t = String(text||"");
+    const isJa = /[\u3040-\u30ff]/.test(t); // Hiragana / Katakana
+    return isJa
+      ? { from:"ja", to:"zh-TW" }   // 日 -> 中
+      : { from:"zh-TW", to:"ja" };  // 中 -> 日（預設）
+  }
+
+  function syncDirectionByText(text){
+    const t = String(text||"").trim();
+    if(!t) return;
+    const dir = inferDirectionFromText(t);
+    if(dir.from !== fromLang || dir.to !== toLang){
+      fromLang = dir.from;
+      toLang   = dir.to;
+      setDropdownUI();
+      updateLabels();
+    }
+  }
+
+
+
+  
+  // -------- kana → romaji fallback (when CDN not available) --------
+  function kanaRomajiFallback(input){
+    const s = String(input || "");
+    if(!s) return "";
+
+    // basic tables (Hepburn-ish)
+    const base = {
+      "あ":"a","い":"i","う":"u","え":"e","お":"o",
+      "か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko",
+      "さ":"sa","し":"shi","す":"su","せ":"se","そ":"so",
+      "た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to",
+      "な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no",
+      "は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho",
+      "ま":"ma","み":"mi","む":"mu","め":"me","も":"mo",
+      "や":"ya","ゆ":"yu","よ":"yo",
+      "ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro",
+      "わ":"wa","を":"o","ん":"n",
+      "が":"ga","ぎ":"gi","ぐ":"gu","げ":"ge","ご":"go",
+      "ざ":"za","じ":"ji","ず":"zu","ぜ":"ze","ぞ":"zo",
+      "だ":"da","ぢ":"ji","づ":"zu","で":"de","ど":"do",
+      "ば":"ba","び":"bi","ぶ":"bu","べ":"be","ぼ":"bo",
+      "ぱ":"pa","ぴ":"pi","ぷ":"pu","ぺ":"pe","ぽ":"po",
+      "ぁ":"a","ぃ":"i","ぅ":"u","ぇ":"e","ぉ":"o",
+      "ゔ":"vu"
+    };
+    const dig = {
+      "きゃ":"kya","きゅ":"kyu","きょ":"kyo",
+      "しゃ":"sha","しゅ":"shu","しょ":"sho",
+      "ちゃ":"cha","ちゅ":"chu","ちょ":"cho",
+      "にゃ":"nya","にゅ":"nyu","にょ":"nyo",
+      "ひゃ":"hya","ひゅ":"hyu","ひょ":"hyo",
+      "みゃ":"mya","みゅ":"myu","みょ":"myo",
+      "りゃ":"rya","りゅ":"ryu","りょ":"ryo",
+      "ぎゃ":"gya","ぎゅ":"gyu","ぎょ":"gyo",
+      "じゃ":"ja","じゅ":"ju","じょ":"jo",
+      "びゃ":"bya","びゅ":"byu","びょ":"byo",
+      "ぴゃ":"pya","ぴゅ":"pyu","ぴょ":"pyo",
+      "ゔぁ":"va","ゔぃ":"vi","ゔぇ":"ve","ゔぉ":"vo","ゔゅ":"vyu",
+      "てゃ":"tha","てぃ":"ti","てゅ":"thu","でぃ":"di","でゅ":"dhu",
+      "とぅ":"tu","どぅ":"du",
+      "ふぁ":"fa","ふぃ":"fi","ふぇ":"fe","ふぉ":"fo","ふゅ":"fyu"
+    };
+
+    // convert katakana → hiragana for mapping
+    const hira = s.replace(/[\u30A1-\u30F6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+
+    let out = "";
+    for(let i=0;i<hira.length;i++){
+      const c = hira[i];
+      const next = hira[i+1] || "";
+
+      // small tsu っ : double next consonant
+      if(c === "っ"){
+        const pair = hira.slice(i+1, i+3);
+        const r2 = dig[pair] || base[hira[i+1]] || "";
+        if(r2){
+          out += r2[0]; // first consonant
+        }
+        continue;
+      }
+
+      // long sound mark (katakana ー) handled before hira conversion; but just in case:
+      if(c === "ー"){
+        const last = out[out.length-1] || "";
+        if("aeiou".includes(last)) out += last;
+        continue;
+      }
+
+      // digraph first
+      const pair = c + next;
+      if(dig[pair]){
+        out += dig[pair];
+        i++;
+        continue;
+      }
+
+      // normal
+      out += (base[c] !== undefined) ? base[c] : c;
+    }
+
+    // simple "n" rule before vowels/y
+    out = out.replace(/n([aiueoy])/g, "n'$1");
+
+    // common reading: こんにちは is usually written konnichiwa (not konnichiha)
+    out = out.replace(/^konnichiha$/, "konnichiwa");
+
+    return out;
+  }
+
+
+  function toRomaji(text){
+    if(window.wanakana && typeof window.wanakana.toRomaji === "function"){
+      return window.wanakana.toRomaji(text);
+    }
+    // ✅ fallback：沒有外部 CDN 也能把假名轉羅馬字
+    return kanaRomajiFallback(text);
+  }
+  function toPinyin(text){
+    if(window.pinyinPro && typeof window.pinyinPro.pinyin === "function"){
+      return window.pinyinPro.pinyin(text, { toneType: "none" });
+    }
+    return "";
+  }
+  function phoneticFor(text, lang){
+    const n = NORM(lang);
+    if(!text) return "";
+    if(n === "ja") return toRomaji(text);
+    if(n === "zh") return toPinyin(text);
+    return "";
+  }
+
+  function updatePhonetics(srcText, srcLang, dstText, dstLang){
+    const srcEl = $("trRomanSrc");
+    const dstEl = $("trRomanDst");
+    if(srcEl) srcEl.textContent = phoneticFor(srcText, srcLang);
+    if(dstEl) dstEl.textContent = phoneticFor(dstText, dstLang);
+  }
+
+  /* ---------- translate API (Google free endpoint) ---------- */
+  async function translateViaAPI(text, from, to){
+    const sl = (from === "auto") ? "auto" : from;
+    const url = "https://translate.googleapis.com/translate_a/single"
+      + "?client=gtx"
+      + "&sl=" + encodeURIComponent(sl)
+      + "&tl=" + encodeURIComponent(to)
+      + "&dt=t&dt=ld"
+      + "&q=" + encodeURIComponent(text);
+
+    const res = await fetch(url, { method: "GET" });
+    if(!res.ok) throw new Error("Translate request failed: " + res.status);
+    const data = await res.json();
+
+    const segments = (data && data[0]) ? data[0] : [];
+    const translated = segments.map(s => s && s[0] ? s[0] : "").join("").trim();
+
+    const detected = (data && data[2]) ? String(data[2]) : "";
+    return { translated, detected };
+  }
+
+  async function doTranslate(){
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(!input || !out) return;
+
+    const text = (input.value || "").trim();
+
+    // 依輸入內容自動決定方向（中↔日）
+    syncDirectionByText(text);
+    if(!text){
+      out.value = "";
+      autoResizeTextarea(out);
+      lastDetected = "";
+      updateLabels();
+      updatePhonetics("", fromLang, "", toLang);
+      return;
+    }
+
+    const reqId = ++lastReqId;
+    out.value = "翻譯中…";
+    autoResizeTextarea(out);
+
+    try{
+      const { translated, detected } = await translateViaAPI(text, fromLang, toLang);
+      if(reqId !== lastReqId) return;
+
+      lastDetected = detected || "";
+      updateLabels();
+
+      out.value = translated || "";
+      autoResizeTextarea(out);
+      const srcLangForPh = (fromLang === "auto" ? lastDetected : fromLang);
+      updatePhonetics(text, srcLangForPh, translated, toLang);
+    }catch(err){
+      console.error(err);
+      if(reqId !== lastReqId) return;
+      out.textContent = "翻譯失敗，請檢查網路或服務設定";
+      updatePhonetics(text, fromLang === "auto" ? "" : fromLang, "", toLang);
+    }
+  }
+
+  function scheduleTranslate(){
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(doTranslate, 350);
+  }
+
+  /* ---------- speech synthesis ---------- */
+  function speakText(text, lang){
+    if(!text) return;
+    if(!("speechSynthesis" in window)) return;
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = LANG_META[lang]?.tts || "en-US";
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  /* ---------- mic (speech to text) ---------- */
+  let rec = null;
+  function startMic(){
+    const input = $("trInputOne");
+    if(!input) return;
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){
+      alert("此瀏覽器不支援語音辨識（SpeechRecognition）");
+      return;
+    }
+
+    if(rec){
+      try{ rec.stop(); }catch(e){}
+      rec = null;
+    }
+
+    // 來源語言（語音辨識 STT）
+    // Web Speech API 需要指定語言；此頁只做「中文/日文」兩種
+    const sttLang = (fromLang === "ja") ? "ja-JP" : "zh-TW";
+
+    rec = new SR();
+    rec.lang = sttLang;
+    rec.interimResults = true;
+    rec.continuous = false;
+
+    const btn = $("trMicBtn");
+    if(btn) btn.classList.add("is-recording");
+
+    let finalText = "";
+    rec.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += t;
+        else interim += t;
+      }
+      input.value = (finalText + interim).trim();
+      scheduleTranslate();
+    };
+
+    rec.onerror = () => {};
+    rec.onend = () => {
+      if(btn) btn.classList.remove("is-recording");
+      rec = null;
+    };
+
+    try{ rec.start(); }catch(e){}
+  }
+
+  /* ---------- OCR (Tesseract.js) ---------- */
+  async function runOCR(file){
+    const input = $("trInputOne");
+    const out   = $("trOutputOne");
+    if(!input || !out) return;
+    if(!file) return;
+
+    if(!window.Tesseract){
+      alert("找不到 Tesseract.js（請確認你頁面有載入）");
+      return;
+    }
+
+    out.value = "辨識文字中…"; autoResizeTextarea(out);
+    try{
+      // OCR 語言：auto 時用 chi_tra（你也可改成多語模型）
+      const base = (fromLang === "auto") ? "jpn+chi_tra+eng" : (fromLang === "ja" ? "jpn" : (fromLang === "en" ? "eng" : "chi_tra"));
+      const { data } = await window.Tesseract.recognize(file, base);
+      const text = (data && data.text ? data.text : "").trim();
+      input.value = text;
+      scheduleTranslate();
+    }catch(err){
+      console.error(err);
+      out.value = "OCR 失敗"; autoResizeTextarea(out);
+    }
+  }
+
+
+// ===== Camera helpers (避免 openCameraOverlay / closeCameraOverlay 未定義) =====
+  function openCameraOverlay(){
+    // 目前採用 input[type=file] 方案：直接觸發拍照/選圖
+    const fileInput = document.getElementById("ocrFile") || document.getElementById("trOcrFile") || document.getElementById("camInput");
+    if(!fileInput) { console.warn("camera file input not found"); return; }
+    // 優先後鏡頭
+    try { fileInput.setAttribute("accept","image/*"); } catch(e){}
+    try { fileInput.setAttribute("capture","environment"); } catch(e){}
+    fileInput.click();
+  }
+
+  function closeCameraOverlay(){
+    // input[type=file] 方案沒有 overlay 可關，先保留空函式避免報錯
+  }
+
+  function bindTranslateUI(){
+    const page = $("ledger-page");
+    if(!page) return;
+
+    // dropdown change
+    $("trFromSelect")?.addEventListener("change", (e)=>{
+      const v = e.target.value || "auto";
+      setLang(v, toLang);
+    });
+    $("trToSelect")?.addEventListener("change", (e)=>{
+      const v = e.target.value || "ja";
+      setLang(fromLang, v);
+    });
+
+    $("trSwapBtn")?.addEventListener("click", swapLang);
+
+    // Input -> realtime translate
+    $("trInputOne")?.addEventListener("input", ()=>{
+      const input = $("trInputOne");
+      const out   = $("trOutputOne");
+      autoResizeTextarea(input);
+
+      const srcText = (input?.value || "");
+      const dstTextRaw = (out?.value || "");
+      const dstText = (/^翻譯中/.test(dstTextRaw) || /^翻譯失敗/.test(dstTextRaw)) ? "" : dstTextRaw;
+
+      const srcLangForPh = (fromLang === "auto") ? guessLang(srcText) : fromLang;
+      updatePhonetics(srcText, srcLangForPh, dstText, toLang);
+      scheduleTranslate();
+    });
+
+    // Speak translated
+    ($("trSpeakBtn") || $("trSpeakOutBtn"))?.addEventListener("click", ()=>{
+      const text = ($("trOutputOne")?.value || "").trim();
+      if(!text) return;
+      const speak = text.replace(/^\[[^\]]+\]\s*/,'');
+      speakText(speak, toLang);
+    });
+
+    // Mic
+    $("trMicBtn")?.addEventListener("click", startMic);
+
+    // Camera/OCR
+    $("trCameraBtn")?.addEventListener("click", ()=> $("trOcrFile")?.click());
+    $("trOcrFile")?.addEventListener("change", (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(file) runOCR(file);
+      e.target.value = "";
+    });
+
+    // default
+    setLang(fromLang, toLang);
+  }
+
+  // Hook for page enter
+  let inited = false;
+  window.TR_EnterTranslatePage = () => {
+    if(inited) return;
+    inited = true;
+    bindTranslateUI();
+  };
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", ()=> window.TR_EnterTranslatePage());
+  }else{
+    window.TR_EnterTranslatePage();
+  }
+})();
+
+</script>
 
 
 
@@ -9112,9 +9622,204 @@ function saveLocal(items){
 
 
 <script>
+/* ===== Romanization helpers (BUGFIXED) ===== */
+function toChinesePinyin(text){
+  if(!text || !window.pinyinPro) return "";
+  return window.pinyinPro.pinyin(text, {
+    toneType: "symbol",
+    type: "array"
+  }).join(" ");
+}
+
+function toJapaneseRomajiReadable(text){
+  if(!text || !window.wanakana) return "";
+  let r = window.wanakana.toRomaji(text);
+  // Long vowels to macron for readability
+  r = r
+    .replace(/aa/g, "ā")
+    .replace(/ii/g, "ī")
+    .replace(/uu/g, "ū")
+    .replace(/ee/g, "ē")
+    .replace(/ou/g, "ō");
+  // ★ BUGFIX: remove any non-romaji leftovers (e.g., Kanji mixed in)
+  r = r.replace(/[^a-zA-Zāīūēō\s'-]/g, "");
+  // normalize spaces
+  r = r.replace(/\s+/g, " ").trim();
+  return r;
+}
+
+function renderRoman(text, lang){
+  if(!text) return "";
+  if(lang && lang.startsWith("zh")) return toChinesePinyin(text);
+  if(lang === "ja") return toJapaneseRomajiReadable(text);
+  return "";
+}
+</script>
+<script>
 function buildPayerUI(){
   const select = document.getElementById('ldPayer');
   const mount  = document.getElementById('payerUI');
+  if(!select || !mount) return;
+
+  // 清空 UI
+  mount.innerHTML = '';
+
+  // 若沒有選中值，預設第一個
+  if(!select.value && select.options.length){
+    select.value = select.options[0].value;
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'fake-select';
+  wrap.setAttribute('role','button');
+  wrap.setAttribute('aria-haspopup','listbox');
+  wrap.setAttribute('aria-expanded','false');
+
+  const valueEl = document.createElement('div');
+  valueEl.className = 'fake-select-value';
+  valueEl.textContent = select.selectedOptions[0]?.text || 
+
+/* =========================
+   ✅ 套用付款人同款假下拉到所有 <select>
+   - 不改你既有 CSS，只新增 fake-select 的 CSS（在 head 已加）
+   - 原生 select 仍保留（hidden + 同步 value）
+   ========================= */
+function buildFakeSelectFor(selectEl, mountEl){
+  if(!selectEl || selectEl.dataset.fakeBuilt === "1") return;
+  // 已經有 payerUI 專用的就跳過（避免重複）
+  if(selectEl.id === "ldPayer") return;
+
+  // 避免重複建立
+  selectEl.dataset.fakeBuilt = "1";
+
+  // 隱藏原生 select（仍保留同步）
+  selectEl.style.display = "none";
+  selectEl.setAttribute("aria-hidden","true");
+
+  // mount
+  const mount = mountEl || document.createElement("div");
+  if(!mountEl){
+    selectEl.insertAdjacentElement("afterend", mount);
+  }
+
+  // 建立 fake-select
+  const wrap = document.createElement("div");
+  wrap.className = "fake-select";
+  wrap.setAttribute("role","button");
+  wrap.setAttribute("tabindex","0");
+  wrap.setAttribute("aria-haspopup","listbox");
+  wrap.setAttribute("aria-expanded","false");
+
+  const valueEl = document.createElement("div");
+  valueEl.className = "fake-select-value";
+  valueEl.textContent = selectEl.selectedOptions[0]?.text || "";
+
+  const arrow = document.createElement("div");
+  arrow.className = "fake-select-arrow";
+
+  const list = document.createElement("ul");
+  list.className = "fake-select-list";
+  list.setAttribute("role","listbox");
+
+  function rebuildList(){
+    list.innerHTML = "";
+    const cur = selectEl.value;
+    Array.from(selectEl.options).forEach(opt=>{
+      const li = document.createElement("li");
+      li.textContent = opt.text;
+      li.dataset.value = opt.value;
+      li.setAttribute("role","option");
+      li.setAttribute("aria-selected", opt.value === cur ? "true" : "false");
+      if(opt.value === cur) li.classList.add("active");
+
+      li.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        // 更新 select
+        selectEl.value = opt.value;
+        // 觸發 change（讓既有邏輯照跑）
+        selectEl.dispatchEvent(new Event("change", { bubbles:true }));
+
+        // 更新 UI
+        valueEl.textContent = opt.text;
+        list.querySelectorAll("li").forEach(x=>{
+          x.classList.toggle("active", x.dataset.value === opt.value);
+          x.setAttribute("aria-selected", x.dataset.value === opt.value ? "true" : "false");
+        });
+        close();
+      });
+      list.appendChild(li);
+    });
+  }
+
+  function open(){
+    wrap.classList.add("fake-open");
+    wrap.setAttribute("aria-expanded","true");
+    rebuildList();
+    // 滾到目前選中
+    const active = list.querySelector("li.active");
+    if(active) active.scrollIntoView({ block:"nearest" });
+  }
+  function close(){
+    wrap.classList.remove("fake-open");
+    wrap.setAttribute("aria-expanded","false");
+  }
+  function toggle(){
+    wrap.classList.contains("fake-open") ? close() : open();
+  }
+
+  wrap.appendChild(valueEl);
+  wrap.appendChild(arrow);
+  wrap.appendChild(list);
+
+  // 點擊展開/收合
+  wrap.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    toggle();
+  });
+
+  // 鍵盤操作（Enter/Space 開關，Esc 關閉）
+  wrap.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      toggle();
+    }else if(e.key === "Escape"){
+      close();
+    }
+  });
+
+  // 外部點擊關閉
+  document.addEventListener("click", ()=> close(), { passive:true });
+
+  // 當原生 select 被程式改值時，同步 UI
+  selectEl.addEventListener("change", ()=>{
+    valueEl.textContent = selectEl.selectedOptions[0]?.text || "";
+    // 若是開著，順便更新列表 active
+    if(wrap.classList.contains("fake-open")){
+      list.querySelectorAll("li").forEach(x=>{
+        x.classList.toggle("active", x.dataset.value === selectEl.value);
+        x.setAttribute("aria-selected", x.dataset.value === selectEl.value ? "true" : "false");
+      });
+    }
+  });
+
+  // 掛上去
+  mount.innerHTML = "";
+  mount.appendChild(wrap);
+}
+
+
+function closeOtherFakeSelects(currentWrap){
+  document.querySelectorAll('#ledger-page .fake-select.open').forEach(w=>{
+    if(w !== currentWrap){
+      w.classList.remove('open');
+      w.setAttribute('aria-expanded','false');
+    }
+  });
+}
+
+function buildCategoryUI(){
+  const select = document.getElementById('ldCategory');
+  const mount  = document.getElementById('categoryUI');
   if(!select || !mount) return;
 
   // 清空 UI
@@ -9168,6 +9873,7 @@ function buildPayerUI(){
       select.value = opt.value;
       select.dispatchEvent(new Event('change', { bubbles:true }));
 
+      // 關閉
       wrap.classList.remove('open');
       wrap.setAttribute('aria-expanded','false');
     });
@@ -9179,169 +9885,110 @@ function buildPayerUI(){
   wrap.addEventListener('click', (e)=>{
     e.stopPropagation();
     const open = !wrap.classList.contains('open');
+    if(open) closeOtherFakeSelects(wrap);
+    wrap.classList.toggle('open', open);
+    wrap.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+
+  // 全站只綁一次：點外面關閉（付款人/分類）
+  if(!document.__ldLedgerSelectCloseBound){
+    document.__ldLedgerSelectCloseBound = true;
+    document.addEventListener('click', (e)=>{
+      document.querySelectorAll('#ledger-page .fake-select.open').forEach(w=>{
+        if(!w.contains(e.target)){
+          w.classList.remove('open');
+          w.setAttribute('aria-expanded','false');
+        }
+      });
+    });
+  }
+
+  // select 被程式改值時（例如你其他地方 set value）
+  select.addEventListener('change', ()=>{
+    valueEl.textContent = select.selectedOptions[0]?.text || '';
+    // 重建 active
+    list.querySelectorAll('li').forEach(li=>{
+      const isActive = li.dataset.value === select.value;
+      li.classList.toggle('active', isActive);
+      li.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+  });
+
+  wrap.append(valueEl, arrow, list);
+  mount.appendChild(wrap);
+}
+
+function enhanceAllSelectsLikePayer(){
+  // 只修「付款人」與「分類」兩個下拉，其他頁面/其他 select 一律不動
+  try{ buildPayerUI(); }catch(e){}
+  try{ buildCategoryUI(); }catch(e){}
+}
+
+// ✅ 全頁載入後一次套用
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", ()=> {
+    try{ enhanceAllSelectsLikePayer(); }catch(e){}
+  });
+}else{
+  try{ enhanceAllSelectsLikePayer(); }catch(e){}
+}
+
+'';
+
+  const arrow = document.createElement('div');
+  arrow.className = 'fake-select-arrow';
+
+  const list = document.createElement('ul');
+  list.className = 'fake-select-list';
+  list.setAttribute('role','listbox');
+
+  const currentVal = select.value;
+
+  Array.from(select.options).forEach(opt=>{
+    const li = document.createElement('li');
+    li.textContent = opt.text;
+    li.dataset.value = opt.value;
+    li.setAttribute('role','option');
+    li.setAttribute('aria-selected', opt.value === currentVal ? 'true' : 'false');
+    if(opt.value === currentVal) li.classList.add('active');
+
+    li.addEventListener('click', (e)=>{
+      e.stopPropagation();
+
+      // 更新 UI
+      valueEl.textContent = opt.text;
+      list.querySelectorAll('li').forEach(x=>{
+        x.classList.remove('active');
+        x.setAttribute('aria-selected','false');
+      });
+      li.classList.add('active');
+      li.setAttribute('aria-selected','true');
+
+      // 同步回原生 select（保持你原本邏輯不必改）
+      select.value = opt.value;
+      select.dispatchEvent(new Event('change', { bubbles:true }));
+
+      wrap.classList.remove('open');
+      wrap.setAttribute('aria-expanded','false');
+    });
+
+    list.appendChild(li);
+  });
+
+  // 點選開關
+  wrap.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const open = !wrap.classList.contains('open');
+    if(open) closeOtherFakeSelects(wrap);
     wrap.classList.toggle('open', open);
     wrap.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
 
   // 全站只綁一次：點外面關閉
-  if(!document.__ldPayerCloseBound){
-    document.__ldPayerCloseBound = true;
-    document.addEventListener('click', (e)=>{
-      const w = document.querySelector('#ledger-page #payerUI .fake-select');
-      if(w && !w.contains(e.target)){
-        w.classList.remove('open');
-        w.setAttribute('aria-expanded','false');
-      }
-    });
-  }
-
   wrap.append(valueEl, arrow, list);
   mount.appendChild(wrap);
 }
-	function buildFakeSelect(selectEl, mountEl) {
-  // 讀取 options
-  const getLabelByValue = (v) => {
-    const opt = [...selectEl.options].find(o => o.value === v);
-    return opt ? opt.textContent : '';
-  };
-
-  // 建立 DOM
-  const wrap = document.createElement('div');
-  wrap.className = 'fake-select';
-  wrap.setAttribute('role', 'button');
-  wrap.setAttribute('aria-haspopup', 'listbox');
-  wrap.setAttribute('aria-expanded', 'false');
-
-  const valueEl = document.createElement('div');
-  valueEl.className = 'fake-select-value';
-
-  const arrowEl = document.createElement('div');
-  arrowEl.className = 'fake-select-arrow';
-
-  const listEl = document.createElement('ul');
-  listEl.className = 'fake-select-list';
-  listEl.setAttribute('role', 'listbox');
-
-  function renderList() {
-    listEl.innerHTML = '';
-    const current = selectEl.value;
-
-    [...selectEl.options].forEach(opt => {
-      const li = document.createElement('li');
-      li.textContent = opt.textContent;
-      li.dataset.value = opt.value;
-      li.setAttribute('role', 'option');
-      li.setAttribute('aria-selected', opt.value === current ? 'true' : 'false');
-      if (opt.value === current) li.classList.add('active');
-
-      li.addEventListener('click', () => {
-        // 同步回原生 select（你的舊邏輯都吃得到）
-        selectEl.value = opt.value;
-        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-
-        valueEl.textContent = getLabelByValue(selectEl.value);
-        close();
-        renderList();
-      });
-
-      listEl.appendChild(li);
-    });
-  }
-
-  function open() {
-  // 先讓它可以量尺寸
-  listEl.classList.add('is-float');
-  document.body.appendChild(listEl);
-
-  // 目標位置（跟 select 本體對齊）
-  const rect = wrap.getBoundingClientRect();
-
-  // 寬度跟 x 對齊，並做左右邊界保護
-  const pad = 12;
-  const width = Math.min(rect.width, window.innerWidth - pad * 2);
-  let left = rect.left;
-  left = Math.max(pad, Math.min(left, window.innerWidth - pad - width));
-
-  listEl.style.width = width + 'px';
-  listEl.style.left = left + 'px';
-
-  // 取得 bottom-nav 高度，避免被擋住
-  const bottomNav = document.querySelector('.bottom-nav');
-  const bottomNavH = bottomNav ? bottomNav.getBoundingClientRect().height : 0;
-
-  // 先假設往下展開
-  const gap = 6;
-  const maxDown = window.innerHeight - bottomNavH - pad - (rect.bottom + gap);
-
-  // 設最大高度（避免太長）
-  const maxH = Math.max(120, Math.min(260, maxDown)); // 120~260 之間
-  listEl.style.maxHeight = maxH + 'px';
-
-  // 量實際高度（受 maxHeight 影響）
-  const listH = listEl.getBoundingClientRect().height;
-
-  // 如果下面空間不夠 → 往上展開
-  const canDown = (rect.bottom + gap + listH) <= (window.innerHeight - bottomNavH - pad);
-  const top = canDown
-    ? (rect.bottom + gap)
-    : Math.max(pad, rect.top - gap - listH);
-
-  listEl.style.top = top + 'px';
-
-  wrap.setAttribute('aria-expanded', 'true');
-}
-
-function close() {
-  wrap.setAttribute('aria-expanded', 'false');
-
-  // 把 list 放回原本結構（可選，但建議）
-  if (listEl.classList.contains('is-float')) {
-    listEl.classList.remove('is-float');
-    listEl.removeAttribute('style');
-    wrap.appendChild(listEl);
-  }
-}
-
-
-
-  // 初始顯示值
-  if (!selectEl.value && selectEl.options.length) {
-    selectEl.value = selectEl.options[0].value;
-  }
-  valueEl.textContent = getLabelByValue(selectEl.value);
-
-  // 點擊開關
-  wrap.addEventListener('click', (e) => {
-    e.stopPropagation();
-    wrap.classList.contains('open') ? close() : open();
-  });
-
-  // 點外面關閉
-  document.addEventListener('click', close);
-
-  // select 被程式改值時（例如你其他地方 set value）
-  selectEl.addEventListener('change', () => {
-    valueEl.textContent = getLabelByValue(selectEl.value);
-    renderList();
-  });
-
-  wrap.appendChild(valueEl);
-  wrap.appendChild(arrowEl);
-  wrap.appendChild(listEl);
-
-  mountEl.innerHTML = '';
-  mountEl.appendChild(wrap);
-
-  renderList();
-}
-
-// ✅ 套用到「分類」
-document.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('ldCategory');
-  const ui  = document.getElementById('categoryUI');
-  if (sel && ui) buildFakeSelect(sel, ui);
-});
-
 </script>
 
 </body>

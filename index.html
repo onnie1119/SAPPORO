@@ -3643,6 +3643,92 @@ color: #d95380;
 
 </style>
 
+
+<style id="fake-select-unify-css">
+/* =========================
+   統一下拉選單：全部比照「付款人」假下拉（不動其他既有 CSS）
+   ========================= */
+.fake-select{
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 40px 12px 12px; /* 右邊預留箭頭 */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color:#222;
+  font-size:16px;
+  line-height: 1.2;
+  cursor: pointer;
+  user-select: none;
+}
+.fake-select:focus,
+.fake-select.fake-open{
+  outline: none;
+  border-color: #3A7AFE;
+  box-shadow: 0 0 0 2px rgba(58,122,254,0.15);
+}
+.fake-select-value{
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fake-select-arrow{
+  position:absolute;
+  right: 14px;   /* 箭頭往左一點 */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 8px;
+  pointer-events: none;
+}
+.fake-select-arrow::before{
+  content:"";
+  display:block;
+  width: 12px;
+  height: 8px;
+  background-repeat:no-repeat;
+  background-size: 12px 8px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23888' d='M1.41 0L6 4.58 10.59 0 12 1.41 6 7.41 0 1.41z'/></svg>");
+}
+.fake-select-list{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 9999;
+  display: none;
+  max-height: 260px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.fake-select.fake-open .fake-select-list{
+  display:block;
+}
+.fake-select-list li{
+  padding: 10px 12px;
+  font-size: 16px;
+  color:#222;
+  cursor:pointer;
+}
+.fake-select-list li:hover{
+  background: #f3f6ff;
+}
+.fake-select-list li.active{
+  background: #eef3ff;
+  color:#1f5fe6;
+  font-weight: 600;
+}
+</style>
+
 </head>
 <body>
 <div class="topbar" id="topbar">
@@ -9591,7 +9677,167 @@ function buildPayerUI(){
 
   const valueEl = document.createElement('div');
   valueEl.className = 'fake-select-value';
-  valueEl.textContent = select.selectedOptions[0]?.text || '';
+  valueEl.textContent = select.selectedOptions[0]?.text || 
+
+/* =========================
+   ✅ 套用付款人同款假下拉到所有 <select>
+   - 不改你既有 CSS，只新增 fake-select 的 CSS（在 head 已加）
+   - 原生 select 仍保留（hidden + 同步 value）
+   ========================= */
+function buildFakeSelectFor(selectEl, mountEl){
+  if(!selectEl || selectEl.dataset.fakeBuilt === "1") return;
+  // 已經有 payerUI 專用的就跳過（避免重複）
+  if(selectEl.id === "ldPayer") return;
+
+  // 避免重複建立
+  selectEl.dataset.fakeBuilt = "1";
+
+  // 隱藏原生 select（仍保留同步）
+  selectEl.style.display = "none";
+  selectEl.setAttribute("aria-hidden","true");
+
+  // mount
+  const mount = mountEl || document.createElement("div");
+  if(!mountEl){
+    selectEl.insertAdjacentElement("afterend", mount);
+  }
+
+  // 建立 fake-select
+  const wrap = document.createElement("div");
+  wrap.className = "fake-select";
+  wrap.setAttribute("role","button");
+  wrap.setAttribute("tabindex","0");
+  wrap.setAttribute("aria-haspopup","listbox");
+  wrap.setAttribute("aria-expanded","false");
+
+  const valueEl = document.createElement("div");
+  valueEl.className = "fake-select-value";
+  valueEl.textContent = selectEl.selectedOptions[0]?.text || "";
+
+  const arrow = document.createElement("div");
+  arrow.className = "fake-select-arrow";
+
+  const list = document.createElement("ul");
+  list.className = "fake-select-list";
+  list.setAttribute("role","listbox");
+
+  function rebuildList(){
+    list.innerHTML = "";
+    const cur = selectEl.value;
+    Array.from(selectEl.options).forEach(opt=>{
+      const li = document.createElement("li");
+      li.textContent = opt.text;
+      li.dataset.value = opt.value;
+      li.setAttribute("role","option");
+      li.setAttribute("aria-selected", opt.value === cur ? "true" : "false");
+      if(opt.value === cur) li.classList.add("active");
+
+      li.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        // 更新 select
+        selectEl.value = opt.value;
+        // 觸發 change（讓既有邏輯照跑）
+        selectEl.dispatchEvent(new Event("change", { bubbles:true }));
+
+        // 更新 UI
+        valueEl.textContent = opt.text;
+        list.querySelectorAll("li").forEach(x=>{
+          x.classList.toggle("active", x.dataset.value === opt.value);
+          x.setAttribute("aria-selected", x.dataset.value === opt.value ? "true" : "false");
+        });
+        close();
+      });
+      list.appendChild(li);
+    });
+  }
+
+  function open(){
+    wrap.classList.add("fake-open");
+    wrap.setAttribute("aria-expanded","true");
+    rebuildList();
+    // 滾到目前選中
+    const active = list.querySelector("li.active");
+    if(active) active.scrollIntoView({ block:"nearest" });
+  }
+  function close(){
+    wrap.classList.remove("fake-open");
+    wrap.setAttribute("aria-expanded","false");
+  }
+  function toggle(){
+    wrap.classList.contains("fake-open") ? close() : open();
+  }
+
+  wrap.appendChild(valueEl);
+  wrap.appendChild(arrow);
+  wrap.appendChild(list);
+
+  // 點擊展開/收合
+  wrap.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    toggle();
+  });
+
+  // 鍵盤操作（Enter/Space 開關，Esc 關閉）
+  wrap.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      toggle();
+    }else if(e.key === "Escape"){
+      close();
+    }
+  });
+
+  // 外部點擊關閉
+  document.addEventListener("click", ()=> close(), { passive:true });
+
+  // 當原生 select 被程式改值時，同步 UI
+  selectEl.addEventListener("change", ()=>{
+    valueEl.textContent = selectEl.selectedOptions[0]?.text || "";
+    // 若是開著，順便更新列表 active
+    if(wrap.classList.contains("fake-open")){
+      list.querySelectorAll("li").forEach(x=>{
+        x.classList.toggle("active", x.dataset.value === selectEl.value);
+        x.setAttribute("aria-selected", x.dataset.value === selectEl.value ? "true" : "false");
+      });
+    }
+  });
+
+  // 掛上去
+  mount.innerHTML = "";
+  mount.appendChild(wrap);
+}
+
+function enhanceAllSelectsLikePayer(){
+  // 先確保付款人 UI 已建立（你原本就有）
+  try{ buildPayerUI(); }catch(e){}
+
+  // 其餘 select 全部轉成 fake-select
+  document.querySelectorAll("select").forEach(sel=>{
+    if(sel.id === "ldPayer") return;
+    if(sel.dataset.noFake === "1") return;
+    if(sel.dataset.fakeBuilt === "1") return;
+
+    // 已經在 payerUI 裡面的不用處理
+    if(sel.closest("#payerUI")) return;
+
+    // 如果後面已經有 fake-select（避免重複）
+    const next = sel.nextElementSibling;
+    if(next && next.classList && (next.classList.contains("fake-select") || next.querySelector?.(".fake-select"))) return;
+
+    buildFakeSelectFor(sel);
+  });
+}
+
+// ✅ 全頁載入後一次套用
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", ()=> {
+    try{ enhanceAllSelectsLikePayer(); }catch(e){}
+  });
+}else{
+  try{ enhanceAllSelectsLikePayer(); }catch(e){}
+}
+
+'';
 
   const arrow = document.createElement('div');
   arrow.className = 'fake-select-arrow';

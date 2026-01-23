@@ -3709,6 +3709,23 @@ color: #d95380;
   z-index: 4000;
   display: block;
 }
+#fundChoiceOverlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;          /* 🔥 關鍵：固定用視窗高度 */
+  background: rgba(0,0,0,0.35);
+  display: block;         /* 不用 flex */
+  z-index: 5000;
+}
+
+#fundChoiceBox{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);  /* 🔥 永遠以視窗中心 */
+}
 
 
 </style>

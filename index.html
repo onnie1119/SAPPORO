@@ -3720,6 +3720,10 @@ color: #d95380;
 .form-card {
   overflow: visible;
 }
+/* 下拉展開時，讓該欄位多出空間（只靠 class，不會影響其他） */
+.ld-row.select-open-pad {
+  padding-bottom: 5rem !important;
+}
 
 </style>
 
@@ -9290,6 +9294,8 @@ function buildCategoryUI(){
 }
 
 	function buildFakeSelect(selectEl, mountEl) {
+		const rowEl = mountEl.closest('.ld-row');  // 只會抓到這個 select 所在那一行
+
   // 讀取 options
   const getLabelByValue = (v) => {
     const opt = [...selectEl.options].find(o => o.value === v);
@@ -9341,6 +9347,8 @@ function buildCategoryUI(){
 
   function open() {
   // 先讓它可以量尺寸
+	  if (rowEl) rowEl.classList.add('select-open-pad');
+
   listEl.classList.add('is-float');
   document.body.appendChild(listEl);
 
@@ -9383,6 +9391,7 @@ function buildCategoryUI(){
 }
 
 function close() {
+	
   wrap.setAttribute('aria-expanded', 'false');
 
   // 把 list 放回原本結構（可選，但建議）
@@ -9393,6 +9402,7 @@ function close() {
   }
 }
 
+if (rowEl) rowEl.classList.remove('select-open-pad');
 
 
   // 初始顯示值

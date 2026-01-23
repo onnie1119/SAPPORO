@@ -3709,6 +3709,10 @@ color: #d95380;
   z-index: 4000;
   display: block;
 }
+/* ✅ 只讓 ld-row 允許下拉選單超出，不影響其他地方 */
+.ld-row {
+  overflow: visible;
+}
 
 
 </style>
@@ -9198,6 +9202,87 @@ function buildPayerUI(){
   wrap.append(valueEl, arrow, list);
   mount.appendChild(wrap);
 }
+
+function buildCategoryUI(){
+  const select = document.getElementById('ldCategory');
+  const mount  = document.getElementById('categoryUI');
+  if(!select || !mount) return;
+
+  mount.innerHTML = '';
+
+  if(!select.value && select.options.length){
+    select.value = select.options[0].value;
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'fake-select';
+  wrap.setAttribute('role','button');
+  wrap.setAttribute('aria-haspopup','listbox');
+  wrap.setAttribute('aria-expanded','false');
+
+  const valueEl = document.createElement('div');
+  valueEl.className = 'fake-select-value';
+  valueEl.textContent = select.selectedOptions[0]?.text || '';
+
+  const arrow = document.createElement('div');
+  arrow.className = 'fake-select-arrow';
+
+  const list = document.createElement('ul');
+  list.className = 'fake-select-list';
+  list.setAttribute('role','listbox');
+
+  [...select.options].forEach(opt=>{
+    const li = document.createElement('li');
+    li.dataset.value = opt.value;
+    li.setAttribute('role','option');
+    const isActive = (opt.value === select.value);
+    li.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    if(isActive) li.classList.add('active');
+    li.textContent = opt.textContent;
+
+    li.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      select.value = opt.value;
+      select.dispatchEvent(new Event('change', { bubbles:true }));
+      valueEl.textContent = opt.textContent;
+
+      // 更新 active 樣式
+      [...list.querySelectorAll('li')].forEach(x=>{
+        x.classList.remove('active');
+        x.setAttribute('aria-selected','false');
+      });
+      li.classList.add('active');
+      li.setAttribute('aria-selected','true');
+
+      wrap.classList.remove('open');
+      wrap.setAttribute('aria-expanded','false');
+    });
+
+    list.appendChild(li);
+  });
+
+  // 展開 / 收合（跟付款人一致：清單就在這個 wrap 裡面）
+  wrap.addEventListener('click', ()=>{
+    const isOpen = wrap.classList.toggle('open');
+    wrap.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // 點外面關閉
+  if(!document.__ldCategoryCloseBound){
+    document.__ldCategoryCloseBound = true;
+    document.addEventListener('click', (e)=>{
+      const w = document.querySelector('#ledger-page #categoryUI .fake-select');
+      if(w && !w.contains(e.target)){
+        w.classList.remove('open');
+        w.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+
+  wrap.append(valueEl, arrow, list);
+  mount.appendChild(wrap);
+}
+
 	function buildFakeSelect(selectEl, mountEl) {
   // 讀取 options
   const getLabelByValue = (v) => {
@@ -9337,11 +9422,8 @@ function close() {
 
 // ✅ 套用到「分類」
 document.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('ldCategory');
-  const ui  = document.getElementById('categoryUI');
-  if (sel && ui) buildFakeSelect(sel, ui);
+  buildCategoryUI();
 });
-
 </script>
 
 </body>

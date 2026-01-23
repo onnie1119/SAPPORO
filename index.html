@@ -3638,6 +3638,24 @@ color: #d95380;
   color: #2a8fa0;
 }
 
+/* 讓 fake-select 的下拉清單「浮」在最上面，不被裁切 */
+.ld-row { 
+  position: relative; 
+  overflow: visible; 
+}
+
+.fake-select{
+  position: relative;
+  z-index: 50;          /* 本體層級 */
+}
+
+.fake-select-list{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 9999;        /* 清單一定要最高 */
+}
 
 
 

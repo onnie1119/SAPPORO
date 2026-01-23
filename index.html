@@ -3657,6 +3657,13 @@ color: #d95380;
   z-index: 9999;        /* 清單一定要最高 */
 }
 
+/* fake-select 下拉清單浮層 */
+.fake-select-list {
+  position: fixed;          /* 🔥 關鍵 */
+  z-index: 3000;            /* 高於 topbar / bottom-nav */
+  max-height: 240px;
+  overflow-y: auto;
+}
 
 
 </style>
@@ -9197,14 +9204,30 @@ function buildPayerUI(){
   }
 
   function open() {
-    wrap.classList.add('open');
-    wrap.setAttribute('aria-expanded', 'true');
-  }
+  const rect = wrap.getBoundingClientRect();
 
-  function close() {
-    wrap.classList.remove('open');
-    wrap.setAttribute('aria-expanded', 'false');
+  listEl.style.position = 'fixed';
+  listEl.style.left = rect.left + 'px';
+  listEl.style.top  = (rect.bottom + 6) + 'px';
+  listEl.style.width = rect.width + 'px';
+
+  document.body.appendChild(listEl);
+
+  wrap.classList.add('open');
+  wrap.setAttribute('aria-expanded', 'true');
+}
+
+
+function close() {
+  wrap.classList.remove('open');
+  wrap.setAttribute('aria-expanded', 'false');
+
+  if (listEl.parentNode === document.body) {
+    wrap.appendChild(listEl);
+    listEl.removeAttribute('style');
   }
+}
+
 
   // 初始顯示值
   if (!selectEl.value && selectEl.options.length) {

@@ -3709,23 +3709,6 @@ color: #d95380;
   z-index: 4000;
   display: block;
 }
-#fundChoiceOverlay{
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;          /* 🔥 關鍵：固定用視窗高度 */
-  background: rgba(0,0,0,0.35);
-  display: block;         /* 不用 flex */
-  z-index: 5000;
-}
-
-#fundChoiceBox{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);  /* 🔥 永遠以視窗中心 */
-}
 
 
 </style>
@@ -5888,63 +5871,30 @@ function setBottomNavActive(pageId) {
 
           editBtn.addEventListener("click", ()=>{
             const v = Math.max(0, Math.round(Number(state.fundInitial)||0));
-            
-// ✅ 自訂彈窗：兩個選項（不使用系統 prompt）
-openFundChoiceModal().then((choice)=>{
-  if(!choice) return;
+            // 用原生視窗：簡單、穩、跨裝置
+            const choice = window.prompt("公費設定：輸入 1=修改金額 / 2=增加公費（取消請按取消）", "1");
+            if(choice === null) return;
 
-  if(choice === "edit"){
-    const v0 = Math.max(0, Math.round(Number(state.fundInitial)||0));
-    if (typeof openSingleInputModal === "function") {
-      openSingleInputModal({ title:"修改公費起始金額（JPY）", placeholder:"例如：140000", defaultValue:String(v0||"") })
-        .then(val=>{
-          if(!val) return;
-          const n = Math.max(0, Math.round(Number(String(val).replace(/,/g,""))||0));
-          state.fundInitial = n;
-          state.fundLocked = n > 0;
-          save();
-          fundInput.value = String(n);
-          renderSummary();
-          applyFundLockUI();
-        });
-    } else {
-      const n = askNumber("修改公費起始金額（JPY）", v0);
-      if(n === null) return;
-      state.fundInitial = n;
-      state.fundLocked = n > 0;
-      save();
-      fundInput.value = String(n);
-      renderSummary();
-      applyFundLockUI();
-    }
-  }
-
-  if(choice === "add"){
-    if (typeof openSingleInputModal === "function") {
-      openSingleInputModal({ title:"要增加多少公費（JPY）？", placeholder:"例如：20000", defaultValue:"" })
-        .then(val=>{
-          if(!val) return;
-          const add = Math.max(0, Math.round(Number(String(val).replace(/,/g,""))||0));
-          state.fundInitial = Math.max(0, Math.round((Number(state.fundInitial)||0) + add));
-          state.fundLocked = state.fundInitial > 0;
-          save();
-          fundInput.value = String(state.fundInitial);
-          renderSummary();
-          applyFundLockUI();
-        });
-    } else {
-      const add = askNumber("要增加多少公費（JPY）？", "");
-      if(add === null) return;
-      state.fundInitial = Math.max(0, Math.round((Number(state.fundInitial)||0) + add));
-      state.fundLocked = state.fundInitial > 0;
-      save();
-      fundInput.value = String(state.fundInitial);
-      renderSummary();
-      applyFundLockUI();
-    }
-  }
-});
-});
+            if(String(choice).trim() === "1"){
+              const n = askNumber("修改公費起始金額（JPY）", v);
+              if(n === null) return;
+              state.fundInitial = n;
+              state.fundLocked = n > 0;
+              save();
+              fundInput.value = String(n);
+              renderSummary();
+              applyFundLockUI();
+            }else if(String(choice).trim() === "2"){
+              const add = askNumber("要增加多少公費（JPY）？", "");
+              if(add === null) return;
+              state.fundInitial = Math.max(0, Math.round((Number(state.fundInitial)||0) + add));
+              state.fundLocked = state.fundInitial > 0;
+              save();
+              fundInput.value = String(state.fundInitial);
+              renderSummary();
+              applyFundLockUI();
+            }
+          });
         }
       }
 
@@ -9786,106 +9736,6 @@ document.addEventListener('DOMContentLoaded', () => {
   amountInput.addEventListener('input', applyDefaultSplit);
   document.addEventListener('DOMContentLoaded', applyDefaultSplit);
 })();
-</script>
-
-
-<style>
-/* ===== 公費設定：自訂彈窗（不影響既有排版） ===== */
-#fundChoiceOverlay{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 5000;
-}
-#fundChoiceBox{
-  width: 82%;
-  max-width: 340px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 18px 16px 14px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-}
-#fundChoiceTitle{
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  margin: 4px 0 14px;
-}
-#fundChoiceBtns{
-  display: flex;
-  gap: 10px;
-}
-#fundChoiceBtns button{
-  flex: 1;
-  border: 0;
-  border-radius: 10px;
-  padding: 12px 0;
-  font-size: 15px;
-  cursor: pointer;
-}
-#fundChoiceEdit{ background:#ddd; }
-#fundChoiceAdd{ background:#3A7AFE; color:#fff; }
-#fundChoiceCancel{
-  width: 100%;
-  margin-top: 10px;
-  border: 0;
-  background: transparent;
-  font-size: 14px;
-  color: #666;
-  padding: 10px 0 2px;
-  cursor: pointer;
-}
-</style>
-
-<div id="fundChoiceOverlay" role="dialog" aria-modal="true" aria-labelledby="fundChoiceTitle">
-  <div id="fundChoiceBox">
-    <div id="fundChoiceTitle">公費設定</div>
-    <div id="fundChoiceBtns">
-      <button id="fundChoiceEdit" type="button">修改金額</button>
-      <button id="fundChoiceAdd" type="button">增加公費</button>
-    </div>
-    <button id="fundChoiceCancel" type="button">取消</button>
-  </div>
-</div>
-
-<script>
-/* ===== 公費設定：選項彈窗（回傳 'edit' | 'add' | ''）===== */
-function openFundChoiceModal(){
-  const ov = document.getElementById('fundChoiceOverlay');
-  const btnEdit = document.getElementById('fundChoiceEdit');
-  const btnAdd  = document.getElementById('fundChoiceAdd');
-  const btnCancel = document.getElementById('fundChoiceCancel');
-  if(!ov || !btnEdit || !btnAdd || !btnCancel){
-    // fallback (shouldn't happen)
-    return Promise.resolve('');
-  }
-  ov.style.display = 'flex';
-
-  return new Promise((resolve)=>{
-    const close = (v)=>{
-      ov.style.display = 'none';
-      cleanup();
-      resolve(v || '');
-    };
-    const onBg = (e)=>{ if(e.target === ov) close(''); };
-    const onEsc = (e)=>{ if(e.key === 'Escape') close(''); };
-    function cleanup(){
-      ov.removeEventListener('click', onBg);
-      document.removeEventListener('keydown', onEsc);
-      btnEdit.onclick = null;
-      btnAdd.onclick = null;
-      btnCancel.onclick = null;
-    }
-    ov.addEventListener('click', onBg);
-    document.addEventListener('keydown', onEsc);
-    btnCancel.onclick = ()=>close('');
-    btnEdit.onclick = ()=>close('edit');
-    btnAdd.onclick  = ()=>close('add');
-  });
-}
 </script>
 
 </body>

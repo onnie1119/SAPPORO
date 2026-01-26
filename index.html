@@ -3092,7 +3092,7 @@ color: #d95380;
    Ledger Page (旅遊記帳分帳)
 ========================= */
 .ledger-page{
-  padding: calc(var(--topbar-h) + env(safe-area-inset-top) + 14px) 14px calc(var(--bottom-nav-h) + 24px);
+  padding: calc(var(--topbar-h) + env(safe-area-inset-top) + 5px) 20px calc(var(--bottom-nav-h) + 24px);
   background: #F6F9FC;
 }
 .ld-header{ margin: 6px 2px 12px; }
@@ -10135,18 +10135,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <!-- Step 1: choose -->
     <div class="fund-step" id="fundStepChoose">
-      <div class="fund-desc">請選擇要進行的操作</div>
+     
       <div class="fund-actions">
         <button type="button" class="fund-btn" id="fundBtnSet">修改金額</button>
         <button type="button" class="fund-btn" id="fundBtnAdd">新增公費</button>
       </div>
-      <button type="button" class="fund-btn fund-cancel" id="fundBtnCancel1">取消</button>
     </div>
 
     <!-- Step 2: input -->
     <div class="fund-step hidden" id="fundStepInput">
       <div class="fund-desc" id="fundInputDesc">請輸入金額（JPY）</div>
-      <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" placeholder="例如：140000">
+      <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" >
       <div class="fund-actions">
         <button type="button" class="fund-btn" id="fundBtnOk">確定</button>
         <button type="button" class="fund-btn fund-cancel" id="fundBtnBack">返回</button>

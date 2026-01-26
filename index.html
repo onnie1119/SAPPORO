@@ -3291,27 +3291,164 @@ color: #d95380;
 .ld-item-amt{ font-weight: 900;
         font-size: 20px;
         color: #333; }
-.ld-item-sub{         font-size: 14px;
+.ld-item-sub{         font-size: 13px;
         margin-top: 0.5rem;
         color: #b0b0b5;}
 .ld-item-actions button, .ld-item-del{
-                border: 1px solid #e6eaf2;
-        background: #fff;
+               border: none;
+        background: #007aff;
         border-radius: 6px;
-        padding: 4px 10px;
-        font-weight: 700;
-        color: #007aff;
-        font-size: 18px;}
+        padding: 2px 8px;
+        /* font-weight: 700; */
+        color: #ffffff;
+        font-size: 16px;}
 
 .ld-summary{ display:flex; flex-direction:column; gap:8px; }
-.ld-sum-row{
-  display:flex; justify-content:space-between; gap:10px;
-  padding:10px; border-radius:12px; background:#f7f9ff;
-  border:1px solid #e9edff;
+.ld-fund-box{
+  border: 1px solid #e9edff;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
 }
+.ld-fund-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 14px;
+	padding-bottom: 0;
+  background:#f7f9ff;
+}
+.ld-fund-name{
+  font-weight: 600;
+        color: #333;
+        font-size: 18px;
+}
+.ld-fund-balance{
+  font-weight: 600;
+        font-size: 20px;
+        color: #333;
+        white-space: nowrap;
+}
+.ld-fund-meta{
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #8e8e93;
+ padding-top: 5px;
+  background: #f7f9ff;
+}
+.ld-sum-row{
+  border: 1px solid #e9edff;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  padding: 0;
+  display: block;
+}
+.ld-sum-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 14px;
+  padding-bottom: 0;
+  background:#f7f9ff;
+}
+.ld-sum-namebox{
+  flex: 1 1 auto;
+  display:flex;
+  align-items:center;
+  
+}
+.ld-sum-netbox{
+  flex: 0 0 auto;
+  min-width: 150px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+ 
+  white-space: nowrap;
+}
+.ld-sum-net-inline{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  font-weight: 900;
+}
+.ld-net-label-inline{
+  font-size: 18px;
+  font-weight: 900;
+  color:#333;
+}
+.ld-net-currency{
+  font-size: 18px;
+  font-weight: 900;
+  color:#333;
+}
+.ld-net-amt-inline{
+  font-size: 22px;
+  font-weight: 900;
+  color:#333;
+  line-height: 1;
+}
+
 .ld-sum-name{ font-weight:800; color:#1f2a44; }
-.ld-sum-meta{ font-size:12px; color:#6c788f; margin-top:2px; }
-.ld-sum-net{ font-weight:900; }
+.ld-sum-meta{
+  padding: 10px 14px;
+  padding-top: 5px;
+  font-size: 14px;
+  color: #8e8e93;
+  background: #f7f9ff;
+}
+.ld-sum-net{ 
+  font-weight:900;
+  display:flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+.ld-net-label{
+  font-size: 14px;
+  font-weight: 700;
+  color: #6c788f;
+}
+.ld-net-amt{
+  font-size: 22px;
+  font-weight: 900;
+  color: #333;
+  line-height: 1;
+}
+
+/* 結算卡片：右側「應收/應付」兩行顯示（僅結算區用，不動其他 UI） */
+#ledger-page .ld-sum-net{
+  display:flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+#ledger-page .ld-net-label{
+  font-size: 14px;
+  font-weight: 700;
+  color: #6c788f;
+}
+#ledger-page .ld-net-amt{
+  font-size: 22px;
+  font-weight: 900;
+  color: #333;
+  line-height: 1;
+}
+
+.ld-pay-row--big{
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(58,122,254,.35);
+  background: #fff;
+  font-size: 20px;
+  color:#1f2a44;
+  font-weight: 800;
+}
 
 .ld-settle-title{ margin:10px 0 6px; font-weight:800; color:#1f2a44; }
 .ld-settle{ display:flex; flex-direction:column; gap:8px; }
@@ -6303,31 +6440,43 @@ function settle(net){
     const { paid, share, net, fundInitial, fundSpent, fundBalance, persons } = calc();
     sum.innerHTML = "";
 
-    // ===== 公費總覽 =====
-    const fundRow = document.createElement("div");
-    fundRow.className = "ld-sum-row";
-    const balText = (fundBalance>=0) ? `餘額 ¥ ${fmt(fundBalance)}` : `超支 ¥ ${fmt(-fundBalance)}`;
-    fundRow.innerHTML = `
-      <div>
-        <div class="ld-sum-name">公費</div>
-        <div class="ld-sum-meta">起始 ¥ ${fmt(fundInitial)}　｜　已花 ¥ ${fmt(fundSpent)}</div>
+    // ===== 公費總覽（依照你提供的結構） =====
+    const fundBox = document.createElement("div");
+    fundBox.className = "ld-fund-box";
+
+    const balLabel = (fundBalance>=0) ? "餘額" : "超支";
+    const balAmt   = (fundBalance>=0) ? fundBalance : Math.abs(fundBalance);
+
+    fundBox.innerHTML = `
+      <div class="ld-fund-top">
+        <div class="ld-fund-name">公費</div>
+        <div class="ld-fund-balance">${balLabel} ¥ ${fmt(balAmt)}</div>
       </div>
-      <div class="ld-sum-net">${balText}</div>
+      <div class="ld-fund-meta">起始 ¥ ${fmt(fundInitial)}　｜　已花 ¥ ${fmt(fundSpent)}</div>
     `;
-    sum.appendChild(fundRow);
+    sum.appendChild(fundBox);
 
     // ===== 個人結算（不含公費支出） =====
     persons.forEach(name=>{
       const n = net[name] || 0;
       const row = document.createElement("div");
       row.className = "ld-sum-row";
-      const netText = (n>=0) ? `應收 ¥ ${fmt(n)}` : `應付 ¥ ${fmt(-n)}`;
+      const netLabel = (n>=0) ? "應收" : "應付";
+      const netAmt   = (n>=0) ? n : Math.abs(n);
       row.innerHTML = `
-        <div>
-          <div class="ld-sum-name">${escapeHtml(name)}</div>
-          <div class="ld-sum-meta">個人付款 ¥ ${fmt(paid[name]||0)}　｜　應分攤 ¥ ${fmt(share[name]||0)}</div>
+        <div class="ld-sum-top">
+          <div class="ld-sum-namebox">
+            <div class="ld-sum-name">${escapeHtml(name)}</div>
+          </div>
+          <div class="ld-sum-netbox">
+            <div class="ld-sum-net-inline">
+              <span class="ld-net-label-inline">${netLabel}</span>
+              <span class="ld-net-currency">¥</span>
+              <span class="ld-net-amt-inline">${fmt(netAmt)}</span>
+            </div>
+          </div>
         </div>
-        <div class="ld-sum-net">${netText}</div>
+        <div class="ld-sum-meta-row ld-sum-meta">個人付款 ¥ ${fmt(paid[name]||0)}　｜　應分攤 ¥ ${fmt(share[name]||0)}</div>
       `;
       sum.appendChild(row);
     });
@@ -6341,7 +6490,7 @@ function settle(net){
     }
     tx.forEach(t=>{
       const d = document.createElement("div");
-      d.className = "ld-pay-row";
+      d.className = "ld-pay-row--big";
       d.textContent = `${t.from} → ${t.to}　¥ ${fmt(t.amount)}`;
       settleWrap.appendChild(d);
     });
@@ -9835,6 +9984,8 @@ function buildCategoryUI(){
 
       wrap.classList.remove('open');
       wrap.setAttribute('aria-expanded','false');
+      // ✅ 修正：選擇後要把 spacer 收回，避免下方項目距離被永久撐開
+      spacer.style.height = '0px';
     });
 
     list.appendChild(li);

@@ -3306,6 +3306,99 @@ color: #d95380;
 .ld-chip-plus{font-size: 28px;
     padding-bottom: 5px;
     font-weight: 400;}
+
+/* ===== Ledger 公費編輯按鈕（鉛筆） ===== */
+.ld-fund-edit-btn{
+  width:44px;
+  height:44px;
+  border:none;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  cursor:pointer;
+}
+.ld-fund-edit-btn:active{ transform: scale(0.96); }
+.ld-fund-edit-ico{ width:24px; height:24px; fill:#b0b0b5; }
+.ld-fund-edit-btn.is-save .ld-fund-edit-ico{ fill:#3A7AFE; }
+
+
+/* ===== Fund UI (公費起始編輯) ===== */
+.ld-fund-locked{
+  background: #f3f4f6 !important;
+  color: #9aa0a6 !important;
+}
+#ldFundEditBtn{
+  width:44px;height:44px;border:none;background:transparent;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  cursor:pointer;
+}
+#ldFundEditBtn.is-hidden{ opacity:0; pointer-events:none; }
+#ldFundEditBtn.is-show{ opacity:1; pointer-events:auto; }
+
+.fund-mask{
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.25);
+  z-index: 9999;
+  padding: 16px;
+}
+.fund-mask.show{ display:flex; }
+.fund-modal{
+  width: min(360px, 92vw);
+  background:#fff;
+  border-radius: 16px;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.2);
+  overflow:hidden;
+}
+.fund-modal-hd{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.fund-modal-title{ font-weight: 700; font-size: 16px; }
+.fund-close{
+  border:none;background:transparent;
+  font-size: 22px; line-height: 1;
+  padding: 4px 8px;
+  cursor:pointer;
+  color:#777;
+}
+.fund-step{ padding: 14px; }
+.fund-desc{ color:#666; font-size: 13px; margin-bottom: 10px; }
+.fund-actions{ display:flex; gap:10px; }
+.fund-btn{
+  flex:1;
+  border: 1px solid rgba(0,0,0,0.12);
+  background:#fff;
+  border-radius: 12px;
+  padding: 12px 10px;
+  font-weight: 600;
+  cursor:pointer;
+}
+.fund-btn:active{ transform: scale(0.98); }
+.fund-cancel{
+  margin-top: 10px;
+  width:100%;
+  background:#f7f7f8;
+}
+.fund-input{
+  width:100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  font-size: 18px;
+  outline:none;
+  margin-bottom: 12px;
+}
+.hidden{ display:none !important; }
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
@@ -4612,8 +4705,7 @@ color: #d95380;
       <label>公費起始金額（JPY）</label>
       <div style="display:flex;align-items:center;gap:10px;">
         <input id="ldFundInitial" type="number" inputmode="numeric" placeholder="例如：140000" min="0" step="1" style="flex:1;">
-        <button id="ldFundEditBtn" type="button" aria-label="編輯公費"
-          style="width:44px;height:44px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;pointer-events:none;cursor:pointer;">
+        <button id="ldFundEditBtn" type="button" aria-label="編輯公費" class="ld-fund-edit-btn">
           <span class="icon-pencil" style="font-size:25px;color:#b0b0b5;"></span>
         </button>
       </div>
@@ -5743,6 +5835,7 @@ function setBottomNavActive(pageId) {
 
   let state = {
     members: [],
+    fundInitial: 0,
     fundLocked: false,
     expenses: [] // {id, ts, amount, payer, splitTo:[names], category, note}
   };
@@ -5765,6 +5858,8 @@ if(!Array.isArray(state.members)) state.members = [];
 // 清理：去空白、去重、移除「公費」（公費不算成員，只是付款人/基金）
 state.members = Array.from(new Set(state.members.map(s=>String(s||"").trim()).filter(Boolean).filter(n=>n!=="公費")));
 if(!Array.isArray(state.expenses)) state.expenses = [];
+    if(typeof state.fundInitial !== "number") state.fundInitial = Number(state.fundInitial)||0;
+    state.fundInitial = Math.max(0, Math.round(state.fundInitial));
     if(typeof state.fundLocked !== "boolean") state.fundLocked = false;
 
   }
@@ -6198,7 +6293,93 @@ function settle(net){
     });
   }
 
+
+  function renderFundUI(){
+    const input = $("ldFundInitial");
+    const btn = $("ldFundEditBtn");
+    if(!input || !btn) return;
+
+    // 初次顯示
+    if(input.value === "" || input.value == null){
+      input.value = state.fundInitial ? String(state.fundInitial) : "";
+    }
+    input.readOnly = true;
+
+    const PATH_PENCIL = "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l8.06-8.06.92.92L5.92 20.08zM20.71 7.04a1.003 1.003 0 000-1.42L18.37 3.29a1.003 1.003 0 00-1.42 0L15.13 5.11l3.75 3.75 1.83-1.82z";
+    const PATH_CHECK  = "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z";
+
+    const pathEl = btn.querySelector("path");
+    const setMode = (mode)=>{
+      if(mode === "save"){
+        btn.classList.add("is-save");
+        btn.setAttribute("aria-label","儲存公費");
+        if(pathEl) pathEl.setAttribute("d", PATH_CHECK);
+      }else{
+        btn.classList.remove("is-save");
+        btn.setAttribute("aria-label","編輯公費");
+        if(pathEl) pathEl.setAttribute("d", PATH_PENCIL);
+      }
+    };
+
+    // 綁一次
+    if(btn.__bound) return;
+    btn.__bound = true;
+
+    let editing = false;
+    let prev = "";
+
+    const saveFund = ()=>{
+      const v = Math.max(0, Math.round(Number(input.value)||0));
+      state.fundInitial = v;
+      state.fundLocked = true;
+      save();
+      editing = false;
+      input.readOnly = true;
+      setMode("edit");
+      // 更新結算區塊等
+      try{ renderSummary(); }catch(e){}
+    };
+
+    const cancelFund = ()=>{
+      input.value = prev;
+      editing = false;
+      input.readOnly = true;
+      setMode("edit");
+    };
+
+    btn.addEventListener("click", ()=>{
+      if(!editing){
+        prev = input.value || (state.fundInitial ? String(state.fundInitial) : "");
+        input.readOnly = false;
+        input.focus();
+        try{ input.select(); }catch(e){}
+        editing = true;
+        setMode("save");
+      }else{
+        saveFund();
+      }
+    });
+
+    input.addEventListener("keydown", (e)=>{
+      if(!editing) return;
+      if(e.key === "Enter"){
+        e.preventDefault();
+        saveFund();
+      }else if(e.key === "Escape"){
+        e.preventDefault();
+        cancelFund();
+      }
+    });
+
+    input.addEventListener("blur", ()=>{
+      if(editing) saveFund();
+    });
+
+    setMode("edit");
+  }
+
 function renderAll(){
+    renderFundUI();
     renderMembers();
     renderExpenses();
     renderSummary();
@@ -6221,6 +6402,145 @@ function renderAll(){
     renderAll();
 
     $("ldAddExpenseBtn")?.addEventListener("click", addExpense);
+    // ===== 公費起始金額：輸入後鎖定（灰階）＋ 點筆彈窗（修改/新增） =====
+    (function initFundUI(){
+      const fundInput = $("ldFundInitial");
+      const editBtn = $("ldFundEditBtn");
+      if(!fundInput || !editBtn) return;
+
+      // icon: 改用內建 SVG（避免 icon font 缺失）
+      if(!editBtn.__svgInjected){
+        editBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M15 5l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        `;
+        editBtn.__svgInjected = true;
+      }
+
+      // ---- modal elements ----
+      const mask = document.getElementById("fundModalMask");
+      const btnClose = document.getElementById("fundModalClose");
+      const stepChoose = document.getElementById("fundStepChoose");
+      const stepInput = document.getElementById("fundStepInput");
+      const desc = document.getElementById("fundInputDesc");
+      const num = document.getElementById("fundInputNumber");
+      const btnSet = document.getElementById("fundBtnSet");
+      const btnAdd = document.getElementById("fundBtnAdd");
+      const btnCancel1 = document.getElementById("fundBtnCancel1");
+      const btnBack = document.getElementById("fundBtnBack");
+      const btnOk = document.getElementById("fundBtnOk");
+
+      let mode = "set"; // "set" | "add"
+
+      function showBtn(){
+        const has = (Number(state.fundInitial)||0) > 0;
+        editBtn.classList.toggle("is-hidden", !has);
+        editBtn.classList.toggle("is-show", has);
+      }
+
+      function applyLockUI(){
+        const locked = !!state.fundLocked && (Number(state.fundInitial)||0) > 0;
+        fundInput.readOnly = locked;
+        fundInput.classList.toggle("ld-fund-locked", locked);
+        showBtn();
+      }
+
+      function lockFromInput(){
+        const v = Math.max(0, Math.round(Number(fundInput.value)||0));
+        state.fundInitial = v;
+        state.fundLocked = v > 0;   // ✅ 初次輸入後鎖定
+        save();
+        fundInput.value = v ? String(v) : "";
+        renderSummary();
+        applyLockUI();
+      }
+
+      function openModal(){
+        if(!mask) return;
+        stepChoose.classList.remove("hidden");
+        stepInput.classList.add("hidden");
+        mask.classList.add("show");
+        mask.setAttribute("aria-hidden","false");
+      }
+      function closeModal(){
+        if(!mask) return;
+        mask.classList.remove("show");
+        mask.setAttribute("aria-hidden","true");
+      }
+      function toInputStep(nextMode){
+        mode = nextMode;
+        stepChoose.classList.add("hidden");
+        stepInput.classList.remove("hidden");
+        if(mode === "set"){
+          desc.textContent = "修改公費起始金額（JPY）";
+          num.value = String(Number(state.fundInitial)||0);
+        }else{
+          desc.textContent = "要增加多少公費（JPY）？";
+          num.value = "";
+        }
+        setTimeout(()=>{ num.focus(); num.select?.(); }, 0);
+      }
+
+      function commit(){
+        const v = Math.max(0, Math.round(Number(num.value)||0));
+        if(mode === "set"){
+          state.fundInitial = v;
+        }else{
+          state.fundInitial = Math.max(0, Math.round((Number(state.fundInitial)||0) + v));
+        }
+        state.fundLocked = (Number(state.fundInitial)||0) > 0;
+        save();
+        fundInput.value = state.fundInitial ? String(state.fundInitial) : "";
+        renderSummary();
+        applyLockUI();
+        closeModal();
+      }
+
+      // ---- events ----
+      if(!editBtn.__boundFund){
+        editBtn.addEventListener("click", (e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+          openModal();
+        });
+        editBtn.__boundFund = true;
+      }
+
+      btnClose?.addEventListener("click", closeModal);
+      btnCancel1?.addEventListener("click", closeModal);
+      mask?.addEventListener("click", (e)=>{ if(e.target === mask) closeModal(); });
+
+      btnSet?.addEventListener("click", ()=>toInputStep("set"));
+      btnAdd?.addEventListener("click", ()=>toInputStep("add"));
+      btnBack?.addEventListener("click", ()=>{
+        stepInput.classList.add("hidden");
+        stepChoose.classList.remove("hidden");
+      });
+      btnOk?.addEventListener("click", commit);
+      num?.addEventListener("keydown", (e)=>{
+        if(e.key === "Enter"){ e.preventDefault(); commit(); }
+      });
+
+      // 初始：載入值、決定是否鎖定
+      fundInput.value = (Number(state.fundInitial)||0) ? String(Number(state.fundInitial)||0) : "";
+      applyLockUI();
+
+      // 初始輸入完成後鎖定（blur / Enter）
+      fundInput.addEventListener("blur", ()=>{
+        if(state.fundLocked) return;
+        lockFromInput();
+      });
+      fundInput.addEventListener("keydown", (e)=>{
+        if(e.key === "Enter"){
+          e.preventDefault();
+          fundInput.blur();
+        }
+      });
+    })();
+
   };
 /* 對外可呼叫 */
 window.showPage = showPage;
@@ -9765,6 +10085,37 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 </script>
+
+
+<!-- Fund Edit Modal (獨立，不共用其他彈窗) -->
+<div id="fundModalMask" class="fund-mask" aria-hidden="true">
+  <div class="fund-modal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">
+    <div class="fund-modal-hd">
+      <div id="fundModalTitle" class="fund-modal-title">編輯公費</div>
+      <button type="button" class="fund-close" aria-label="關閉" id="fundModalClose">×</button>
+    </div>
+
+    <!-- Step 1: choose -->
+    <div class="fund-step" id="fundStepChoose">
+      <div class="fund-desc">請選擇要進行的操作</div>
+      <div class="fund-actions">
+        <button type="button" class="fund-btn" id="fundBtnSet">修改金額</button>
+        <button type="button" class="fund-btn" id="fundBtnAdd">新增公費</button>
+      </div>
+      <button type="button" class="fund-btn fund-cancel" id="fundBtnCancel1">取消</button>
+    </div>
+
+    <!-- Step 2: input -->
+    <div class="fund-step hidden" id="fundStepInput">
+      <div class="fund-desc" id="fundInputDesc">請輸入金額（JPY）</div>
+      <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" placeholder="例如：140000">
+      <div class="fund-actions">
+        <button type="button" class="fund-btn" id="fundBtnOk">確定</button>
+        <button type="button" class="fund-btn fund-cancel" id="fundBtnBack">返回</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

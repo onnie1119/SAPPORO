@@ -3103,6 +3103,7 @@ color: #d95380;
 
 .ld-card{
          background: #fff;
+	    padding-bottom: 4rem;
         overflow: hidden;
         border-radius: 8px;
         padding: 1rem;
@@ -3173,6 +3174,7 @@ color: #d95380;
         border: 1px solid #e6eaf2;
         padding: 0 12px;
         outline: none;
+	           font-size: 18px;
         background: #fff;
         max-width: 100%;
         box-sizing: border-box;
@@ -3255,8 +3257,12 @@ color: #d95380;
 }
 
 .ld-primary{
-  height:44px; border-radius:12px; border:none;
-  background:#3A7AFE; color:#fff; font-weight:800;
+         height: 50px;
+        border-radius: 8px;
+        border: none;
+        font-size: 18px;
+        background: #3A7AFE;
+        color: #fff;
 }
 
 .ld-list{ display:flex; flex-direction:column; gap:10px; }
@@ -4718,7 +4724,7 @@ color: #d95380;
     <div class="ld-form">
       <div class="ld-row">
         <label>金額（JPY）</label>
-        <input id="ldAmount" type="number" inputmode="numeric" placeholder="例如：3200" min="0" step="1" style="    font-size: 18px;
+        <input id="ldAmount" type="number" inputmode="numeric" min="0" step="1" style="    font-size: 18px;
     text-align: left;">
       </div>
 
@@ -4742,9 +4748,7 @@ color: #d95380;
   <select id="ldCategory" hidden>
     <option value="餐飲">餐飲</option>
     <option value="交通">交通</option>
-    <option value="住宿">住宿</option>
-    <option value="門票">門票</option>
-    <option value="購物">購物</option>
+	<option value="購物">購物</option>
     <option value="停車/油費">停車/油費</option>
     <option value="其他">其他</option>
   </select>
@@ -4755,10 +4759,10 @@ color: #d95380;
 
       <div class="ld-row">
         <label>備註</label>
-        <input id="ldNote" type="text" placeholder="例如：成吉思汗大黑屋" maxlength="40">
+        <input id="ldNote" type="text"  maxlength="40">
       </div>
 
-      <button id="ldAddExpenseBtn" class="ld-primary" type="button">＋ 新增一筆</button>
+      <button id="ldAddExpenseBtn" class="ld-primary" type="button">新增</button>
       <div class="ld-hint">預設平均分攤；你也可以取消勾選某些成員。</div>
     </div>
   </div>

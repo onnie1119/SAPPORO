@@ -4582,11 +4582,7 @@ color: #d95380;
         <input id="ldFundInitial" type="number" inputmode="numeric" placeholder="例如：140000" min="0" step="1" style="flex:1;">
         <button id="ldFundEditBtn" type="button" aria-label="編輯公費"
           style="width:44px;height:44px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;pointer-events:none;cursor:pointer;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M15 5l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+          <span class="icon-pencil"></span>
         </button>
       </div>
     </div>
@@ -5757,6 +5753,37 @@ function setBottomNavActive(pageId) {
     return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
+  function addMemberFlow(){
+    const FUND = "公費";
+    let name = prompt("新增成員名稱（例如：TOM）");
+    if(name == null) return;
+    name = String(name).trim();
+    if(!name) return;
+
+    if(name === FUND){
+      alert("「公費」為固定項目，不需要新增。");
+      return;
+    }
+
+    // 避免重複（大小寫完全一致才算重複，若你想忽略大小寫可再調整）
+    if((state.members||[]).includes(name)){
+      alert("此成員已存在。");
+      return;
+    }
+
+    state.members = Array.from(new Set([...(state.members||[]), name]));
+    save();
+    renderMembers();
+    // 重新渲染清單/結算（若你的頁面有依賴 members 的其他區塊）
+    if (typeof renderExpenses === "function") {
+      try{ renderExpenses(); }catch(e){}
+    }
+    if (typeof renderSettlement === "function") {
+      try{ renderSettlement(); }catch(e){}
+    }
+  }
+
+
   function renderMembers(){
     const wrap = $("ldMembers");
     const payerSel = $("ldPayer");
@@ -5776,15 +5803,23 @@ function setBottomNavActive(pageId) {
     payerSel.innerHTML = "";
     splitWrap.innerHTML = "";
 
-    // chips（不提供刪除/新增：避免公費與結算邏輯混亂）
-    state.members.forEach(name=>{
+    // chips（上方只顯示「人員」，不顯示固定的「公費」）
+    state.members.filter(n=>n!==FUND).forEach(name=>{
       const chip = document.createElement("button");
       chip.type = "button";
       chip.className = "ld-chip";
       chip.textContent = name;
-      chip.disabled = true;
+      chip.disabled = true; // 只顯示，不在這裡編輯/刪除（避免影響既有結算邏輯）
       wrap.appendChild(chip);
     });
+
+    // ＋ 新增成員（只新增，不改動其他排版結構）
+    const plus = document.createElement("button");
+    plus.type = "button";
+    plus.className = "ld-chip ld-chip--plus";
+    plus.textContent = "＋";
+    plus.addEventListener("click", addMemberFlow);
+    wrap.appendChild(plus);
 
     // payer options（包含公費）
     state.members.forEach(name=>{

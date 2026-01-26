@@ -3441,16 +3441,19 @@ color: #d95380;
 }
 
 .ld-pay-row--big{
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px dashed rgba(58,122,254,.35);
-  background: #fff;
-  font-size: 20px;
-  color:#1f2a44;
-  font-weight: 800;
+ padding: 14px;
+        border-radius: 8px;
+        border: 1px dashed rgba(58, 122, 254, .35);
+        background: #fff;
+        font-size: 18px;
+        color: #444;
+        margin: 0.2rem 0 1rem 0;
 }
 
-.ld-settle-title{ margin:10px 0 6px; font-weight:800; color:#1f2a44; }
+.ld-settle-title{ font-size: 14px;
+        color: #6c788f;
+        margin-top: 1.5rem;
+        margin-bottom: 3px;}
 .ld-settle{ display:flex; flex-direction:column; gap:8px; }
 .ld-pay-row{
   padding:10px; border-radius:12px; border:1px dashed rgba(58,122,254,.35);
@@ -6476,7 +6479,7 @@ function settle(net){
             </div>
           </div>
         </div>
-        <div class="ld-sum-meta-row ld-sum-meta">個人付款 ¥ ${fmt(paid[name]||0)}　｜　應分攤 ¥ ${fmt(share[name]||0)}</div>
+        <div class="ld-sum-meta-row ld-sum-meta">個人付款 ¥ ${fmt(paid[name]||0)}</div>
       `;
       sum.appendChild(row);
     });

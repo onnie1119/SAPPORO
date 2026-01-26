@@ -3687,6 +3687,13 @@ color: #d95380;
 ========================= */
 #ledger-page #payerUI{ width: 100%; }
 
+/* ✅ 修正：下拉展開時避免被後續欄位遮住（僅調整層級，不改外觀） */
+#ledger-page .fake-select-list{ z-index: 5000; }
+
+/* ✅ 修正：用 spacer 撐開下方間距，讓選單完整顯示（不改其他 UI） */
+#ledger-page .dropdown-spacer{ height: 0; }
+
+
 #ledger-page .fake-select{
   position: relative;
   height: 50px;
@@ -4763,14 +4770,13 @@ color: #d95380;
       </div>
 
       <button id="ldAddExpenseBtn" class="ld-primary" type="button">新增</button>
-      <div class="ld-hint">預設平均分攤；你也可以取消勾選某些成員。</div>
     </div>
   </div>
 
   <div class="ld-card">
     <div class="ld-card-title">支出明細</div>
     <div id="ldExpenseList" class="ld-list"></div>
-    <div class="ld-hint">提示：向左滑或按「刪除」可移除（依你的手機/瀏覽器支援）。</div>
+    
   </div>
 
   <div class="ld-card">
@@ -6058,6 +6064,10 @@ function renderMembers(){
     payerUI.style.pointerEvents = hasMembers ? "" : "none";
     payerUI.style.opacity = hasMembers ? "" : "0.6";
   }
+
+
+  // ✅ 付款人下拉（自製 UI）重建：避免成員更新後欄位消失
+  buildPayerUI();
 }
 
 function getSplitSelected(){
@@ -9631,6 +9641,10 @@ function buildPayerUI(){
   // 清空 UI
   mount.innerHTML = '';
 
+
+  // spacer：展開時撐開下方間距，避免下拉被裁切/遮住
+  const spacer = document.createElement('div');
+  spacer.className = 'dropdown-spacer';
   // 若沒有選中值，預設第一個
   if(!select.value && select.options.length){
     select.value = select.options[0].value;
@@ -9681,7 +9695,9 @@ function buildPayerUI(){
 
       wrap.classList.remove('open');
       wrap.setAttribute('aria-expanded','false');
-    });
+                spacer.style.height = '0px';
+spacer.style.height = '0px';
+});
 
     list.appendChild(li);
   });
@@ -9692,6 +9708,15 @@ function buildPayerUI(){
     const open = !wrap.classList.contains('open');
     wrap.classList.toggle('open', open);
     wrap.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // 展開時量測清單高度，撐開下方空間（不改外觀，只改間距）
+    if(open){
+      requestAnimationFrame(()=>{
+        const h = (list.scrollHeight || list.getBoundingClientRect().height);
+        spacer.style.height = (h ? (h + 16) : 0) + 'px';
+      });
+    }else{
+      spacer.style.height = '0px';
+    }
   });
 
   // 全站只綁一次：點外面關閉
@@ -9702,12 +9727,15 @@ function buildPayerUI(){
       if(w && !w.contains(e.target)){
         w.classList.remove('open');
         w.setAttribute('aria-expanded','false');
+        const sp = w.parentElement.querySelector('.dropdown-spacer');
+        if(sp) sp.style.height = '0px';
       }
     });
   }
 
   wrap.append(valueEl, arrow, list);
   mount.appendChild(wrap);
+  mount.appendChild(spacer);
 }
 
 function buildCategoryUI(){
@@ -9716,6 +9744,10 @@ function buildCategoryUI(){
   if(!select || !mount) return;
 
   mount.innerHTML = '';
+
+  // spacer：展開時撐開下方間距，避免下拉被裁切/遮住
+  const spacer = document.createElement('div');
+  spacer.className = 'dropdown-spacer';
 
   if(!select.value && select.options.length){
     select.value = select.options[0].value;
@@ -9772,6 +9804,14 @@ function buildCategoryUI(){
   wrap.addEventListener('click', ()=>{
     const isOpen = wrap.classList.toggle('open');
     wrap.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if(isOpen){
+      requestAnimationFrame(()=>{
+        const h = (list.scrollHeight || list.getBoundingClientRect().height);
+        spacer.style.height = (h ? (h + 16) : 0) + 'px';
+      });
+    }else{
+      spacer.style.height = '0px';
+    }
   });
 
   // 點外面關閉
@@ -9782,12 +9822,15 @@ function buildCategoryUI(){
       if(w && !w.contains(e.target)){
         w.classList.remove('open');
         w.setAttribute('aria-expanded','false');
+        const sp = w.parentElement.querySelector('.dropdown-spacer');
+        if(sp) sp.style.height = '0px';
       }
     });
   }
 
   wrap.append(valueEl, arrow, list);
   mount.appendChild(wrap);
+  mount.appendChild(spacer);
 }
 
 	function buildFakeSelect(selectEl, mountEl) {
@@ -9930,6 +9973,7 @@ function close() {
 // ✅ 套用到「分類」
 document.addEventListener('DOMContentLoaded', () => {
   buildCategoryUI();
+  buildPayerUI();
 });
 </script>
 

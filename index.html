@@ -3131,6 +3131,21 @@ color: #d95380;
 .ld-chip--plus{ background:#fff; color:#007aff; border:1px dashed #007aff6e; }
 .ld-chip--plus .x{ display:none; }
 
+/* 移除成員用的 ×（不改整體排版，只在 chip 內加小按鈕） */
+.ld-chip{ position: relative; }
+.ld-chip-remove{
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 2px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.75;
+}
+.ld-chip-remove:active{ transform: scale(0.92); opacity: 1; }
+
 .ld-member-add{ display:flex; gap:8px; margin-top:10px; }
 #ldMemberName{
   flex:1; height:40px; border-radius:12px; border:1px solid #e6eaf2;
@@ -4582,7 +4597,7 @@ color: #d95380;
         <input id="ldFundInitial" type="number" inputmode="numeric" placeholder="例如：140000" min="0" step="1" style="flex:1;">
         <button id="ldFundEditBtn" type="button" aria-label="編輯公費"
           style="width:44px;height:44px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;opacity:0;pointer-events:none;cursor:pointer;">
-          <span class="icon-pencil"></span>
+          <span class="icon-pencil" style="font-size:25px;color:#333;"></span>
         </button>
       </div>
     </div>
@@ -5584,6 +5599,7 @@ color: #d95380;
 		});
 	</script>
 <script>
+
 /* =========================
    Pages / Navigation
 ========================= */
@@ -5704,13 +5720,12 @@ function setBottomNavActive(pageId) {
 /* =========================
    Ledger (旅遊記帳分帳)
 ========================= */
-(function(){
   const LS_KEY = "LD_LEDGER_V1";
 
   const $ = (id)=>document.getElementById(id);
 
   let state = {
-    members: ["JERRY","ROSIE"],
+    members: [],
     fundLocked: false,
     expenses: [] // {id, ts, amount, payer, splitTo:[names], category, note}
   };
@@ -5727,19 +5742,12 @@ function setBottomNavActive(pageId) {
         }
       }
     }catch(e){}
-    // 至少 2 人
-    // 固定三個成員：JERRY / ROSIE / 公費（公共基金）
-    const DEFAULT_MEMBERS = ["JERRY","ROSIE","公費"];
-    if(!Array.isArray(state.members) || state.members.length === 0){
-      state.members = DEFAULT_MEMBERS.slice();
-    }else{
-      const normalized = state.members.map(s=>String(s||"").trim()).filter(Boolean);
-      const looksOld = (normalized.length===2 && normalized.includes("Jerry") && normalized.includes("同伴"));
-      if(looksOld) state.members = DEFAULT_MEMBERS.slice();
-      if(!state.members.includes("公費")) state.members.push("公費");
-      if(state.members.length < 2) state.members = DEFAULT_MEMBERS.slice();
-    }
-    if(!Array.isArray(state.expenses)) state.expenses = [];
+    
+// 成員名單：允許為空（沒有預設成員）
+if(!Array.isArray(state.members)) state.members = [];
+// 清理：去空白、去重、移除「公費」（公費不算成員，只是付款人/基金）
+state.members = Array.from(new Set(state.members.map(s=>String(s||"").trim()).filter(Boolean).filter(n=>n!=="公費")));
+if(!Array.isArray(state.expenses)) state.expenses = [];
     if(typeof state.fundLocked !== "boolean") state.fundLocked = false;
 
   }
@@ -5784,161 +5792,156 @@ function setBottomNavActive(pageId) {
   }
 
 
-  function renderMembers(){
-    const wrap = $("ldMembers");
-    const payerSel = $("ldPayer");
-    const splitWrap = $("ldSplitTo");
-    const fundInput = $("ldFundInitial");
-    if(!wrap || !payerSel || !splitWrap) return;
-
-    const FUND = "公費";
-
-    // 固定顯示順序：JERRY / ROSIE / 公費（若未來加人，會在最後）
-    const order = ["JERRY","ROSIE","公費"];
-    const members = Array.from(new Set((state.members||[]).map(s=>String(s||"").trim()).filter(Boolean)));
-    order.forEach(n=>{ if(!members.includes(n)) members.push(n); });
-    state.members = members;
-
-    wrap.innerHTML = "";
-    payerSel.innerHTML = "";
-    splitWrap.innerHTML = "";
-
-    // chips（上方只顯示「人員」，不顯示固定的「公費」）
-    state.members.filter(n=>n!==FUND).forEach(name=>{
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "ld-chip";
-      chip.textContent = name;
-      chip.disabled = true; // 只顯示，不在這裡編輯/刪除（避免影響既有結算邏輯）
-      wrap.appendChild(chip);
+  function memberIsUsed(name){
+    const list = (state.expenses || []);
+    return list.some(e=>{
+      if(!e) return false;
+      if(e.payer === name) return true;
+      const a = Array.isArray(e.splitTo) ? e.splitTo : [];
+      const b = Array.isArray(e.fundTo)  ? e.fundTo  : [];
+      return a.includes(name) || b.includes(name);
     });
+  }
 
-    // ＋ 新增成員（只新增，不改動其他排版結構）
-    const plus = document.createElement("button");
-    plus.type = "button";
-    plus.className = "ld-chip ld-chip--plus";
-    plus.textContent = "＋";
-    plus.addEventListener("click", addMemberFlow);
-    wrap.appendChild(plus);
+  
+function removeMemberFlow(name){
+  const FUND = "公費";
+  name = String(name || "").trim();
+  if(!name) return;
 
-    // payer options（包含公費）
-    state.members.forEach(name=>{
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      payerSel.appendChild(opt);
+  if(!confirm(`確定要移除成員「${name}」？`)) return;
+
+  // 1) 從成員名單移除（允許移除到 0 人）
+  state.members = (state.members || [])
+    .map(s=>String(s||"").trim())
+    .filter(Boolean)
+    .filter(m => m !== name && m !== FUND);
+
+  // 2) 修正既有紀錄：付款人若是被移除者 → 改成公費；splitTo / fundTo 移除該人
+  (state.expenses || []).forEach(e=>{
+    if(!e) return;
+    if(e.payer === name) e.payer = FUND;
+    if(Array.isArray(e.splitTo)) e.splitTo = e.splitTo.filter(n=>n!==name);
+    if(Array.isArray(e.fundTo))  e.fundTo  = e.fundTo.filter(n=>n!==name);
+  });
+
+  save();
+  renderAll();
+}
+function renderMembers(){
+  const wrap = $("ldMembers");
+  const payerSel = $("ldPayer");
+  const splitWrap = $("ldSplitTo");
+  const payerUI = document.getElementById("payerUI");
+  const amountInput = $("ldAmount");
+  const noteInput = $("ldNote");
+  const addBtn = $("ldAddExpenseBtn");
+  if(!wrap || !payerSel || !splitWrap) return;
+
+  const FUND = "公費";
+
+  // members：去空白、去重、移除公費
+  const members = Array.from(new Set(
+    (state.members||[]).map(s=>String(s||"").trim()).filter(Boolean).filter(n=>n!==FUND)
+  ));
+  state.members = members;
+
+  wrap.innerHTML = "";
+  payerSel.innerHTML = "";
+  splitWrap.innerHTML = "";
+
+  // ----- 顯示提示（當沒有成員時） -----
+  const hasMembers = members.length > 0;
+  if(!hasMembers){
+    const hint = document.createElement("div");
+    hint.className = "ld-members-empty";
+    hint.textContent = "請先新增成員才能繼續記帳";
+    wrap.appendChild(hint);
+  }
+
+  // ----- 成員 chips（每個人都有 ×） -----
+  members.forEach(name=>{
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "ld-chip";
+    chip.style.cursor = "default";
+    chip.setAttribute("aria-label", name);
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "ld-chip-name";
+    nameSpan.textContent = name;
+    chip.appendChild(nameSpan);
+
+    const x = document.createElement("button");
+    x.type = "button";
+    x.className = "ld-chip-x";
+    x.textContent = "×";
+    x.setAttribute("aria-label", `移除 ${name}`);
+    x.addEventListener("click", (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      removeMemberFlow(name);
     });
+    chip.appendChild(x);
 
-    // split checkboxes（不顯示公費）
-    state.members.filter(n=>n!==FUND).forEach(name=>{
+    wrap.appendChild(chip);
+  });
+
+  // ----- ＋ 新增成員 -----
+  const plus = document.createElement("button");
+  plus.type = "button";
+  plus.className = "ld-chip ld-chip-plus";
+  plus.textContent = "+";
+  plus.setAttribute("aria-label","新增成員");
+  plus.addEventListener("click", addMemberFlow);
+  wrap.appendChild(plus);
+
+  // ----- payer options：永遠包含「公費」 + members -----
+  const optFund = document.createElement("option");
+  optFund.value = FUND;
+  optFund.textContent = FUND;
+  payerSel.appendChild(optFund);
+
+  members.forEach(name=>{
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    payerSel.appendChild(opt);
+  });
+
+  // 若目前選到不存在的人 → 回到公費
+  if(![FUND, ...members].includes(payerSel.value)){
+    payerSel.value = FUND;
+  }
+
+  // ----- split checkboxes -----
+  if(!hasMembers){
+    const msg = document.createElement("div");
+    msg.className = "ld-empty-msg";
+    msg.textContent = "請先新增成員才能選擇分攤對象";
+    splitWrap.appendChild(msg);
+  }else{
+    members.forEach(name=>{
       const item = document.createElement("label");
       item.className = "ld-check";
       item.innerHTML = `
         <input type="checkbox" value="${escapeAttr(name)}" checked>
-        <span><i></i><b>${escapeHtml(name)}</b></span>
+        <span>${escapeHtml(name)}</span>
       `;
       splitWrap.appendChild(item);
     });
+  }
 
-    // 預設付款人 = 公費
-    if(state.members.includes(FUND)) payerSel.value = FUND;
+  // ----- 表單可用性 -----
+  if(amountInput) amountInput.disabled = !hasMembers;
+  if(noteInput) noteInput.disabled = !hasMembers;
+  if(addBtn) addBtn.disabled = !hasMembers;
 
-    // 公費起始金額（持久化 + 鎖定/編輯）
-    if(fundInput){
-      const editBtn = $("ldFundEditBtn");
-
-      const applyFundLockUI = ()=>{
-        const v = Math.max(0, Math.round(Number(state.fundInitial)||0));
-        const locked = !!state.fundLocked && v > 0;
-
-        fundInput.disabled = locked;
-        // 不動你原本樣式：只在鎖定時降低透明度
-        fundInput.style.opacity = locked ? "0.55" : "1";
-
-        if(editBtn){
-          editBtn.style.opacity = locked ? "0.75" : "0.0";
-          editBtn.style.pointerEvents = locked ? "auto" : "none";
-        }
-      };
-
-      fundInput.value = String(Math.max(0, Math.round(Number(state.fundInitial)||0)));
-
-      if(!fundInput.__bound){
-        fundInput.__bound = true;
-
-        // 使用者輸入時只更新數字；不立即鎖，避免不好改
-        fundInput.addEventListener("input", ()=>{
-          const v = Math.max(0, Math.round(Number(fundInput.value)||0));
-          state.fundInitial = v;
-          // 如果歸零，就解除鎖
-          if(v === 0) state.fundLocked = false;
-          save();
-          renderSummary();
-          applyFundLockUI();
-        });
-
-        // 輸入完（離開欄位或按 Enter）就鎖定
-        fundInput.addEventListener("blur", ()=>{
-          const v = Math.max(0, Math.round(Number(fundInput.value)||0));
-          if(v > 0){
-            state.fundLocked = true;
-            save();
-            applyFundLockUI();
-          }
-        });
-
-        fundInput.addEventListener("keydown", (e)=>{
-          if(e.key === "Enter"){
-            fundInput.blur();
-          }
-        });
-
-        // 筆 icon：修改 / 增加 公費
-        if(editBtn && !editBtn.__bound){
-          editBtn.__bound = true;
-
-          const askNumber = (title, defaultValue)=>{
-            const raw = window.prompt(title, String(defaultValue ?? ""));
-            if(raw === null) return null;
-            const num = Math.max(0, Math.round(Number(String(raw).replace(/,/g,""))||0));
-            return num;
-          };
-
-          editBtn.addEventListener("click", ()=>{
-            const v = Math.max(0, Math.round(Number(state.fundInitial)||0));
-            // 用原生視窗：簡單、穩、跨裝置
-            const choice = window.prompt("公費設定：輸入 1=修改金額 / 2=增加公費（取消請按取消）", "1");
-            if(choice === null) return;
-
-            if(String(choice).trim() === "1"){
-              const n = askNumber("修改公費起始金額（JPY）", v);
-              if(n === null) return;
-              state.fundInitial = n;
-              state.fundLocked = n > 0;
-              save();
-              fundInput.value = String(n);
-              renderSummary();
-              applyFundLockUI();
-            }else if(String(choice).trim() === "2"){
-              const add = askNumber("要增加多少公費（JPY）？", "");
-              if(add === null) return;
-              state.fundInitial = Math.max(0, Math.round((Number(state.fundInitial)||0) + add));
-              state.fundLocked = state.fundInitial > 0;
-              save();
-              fundInput.value = String(state.fundInitial);
-              renderSummary();
-              applyFundLockUI();
-            }
-          });
-        }
-      }
-
-      applyFundLockUI();
-    }
-
-    // ✅ 高質感付款人/分類選單（同步原生 select）
-    try{ buildPayerUI(); }catch(e){}
-    try{ buildCategoryUI(); }catch(e){}
+  // 讓自製 payer UI 不可點
+  if(payerUI){
+    payerUI.style.pointerEvents = hasMembers ? "" : "none";
+    payerUI.style.opacity = hasMembers ? "" : "0.6";
+  }
 }
 
 function getSplitSelected(){
@@ -6202,9 +6205,6 @@ function renderAll(){
 
     $("ldAddExpenseBtn")?.addEventListener("click", addExpense);
   };
-
-})();
-
 /* 對外可呼叫 */
 window.showPage = showPage;
 window.setBottomNavActive = setBottomNavActive;
@@ -9604,72 +9604,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <script>
-/* ===== LOGIC PATCH: 公費 / 個人代付 / 個人消費（不動 CSS） =====
+/* ===== LOGIC PATCH: 公費 / 個人代付 / 個人消費（動態成員，不動 CSS） =====
    規則：
-   - 付款人=公費：一定顯示分攤（只顯示 ROSIE/JERRY）
+   - 付款人=公費：一定顯示分攤（顯示目前所有成員）
    - 付款人=個人：
        * 若勾選任何分攤對象(非本人) → 個人代付（顯示分攤）
        * 若未勾選或只剩本人 → 個人消費（隱藏分攤）
 */
-
 (function(){
-  // IDs/classes used in your file (keep same names)
   const payerSelect = document.getElementById('ldPayer');
-  const splitWrap   = document.getElementById('splitUI') || document.getElementById('splitWrap') || document.querySelector('.split-wrap');
-  const splitChecks = splitWrap ? splitWrap.querySelectorAll('input[type="checkbox"]') : [];
+  const splitWrap   = document.getElementById('ldSplitTo');
+  if(!payerSelect || !splitWrap) return;
 
-  if (!payerSelect || !splitWrap) return;
-
-  const PERSONS = ['JERRY','ROSIE'];
   const FUND = '公費';
+  const splitRow = splitWrap.closest('.ld-row') || splitWrap.parentElement;
 
-  function getChecked(){
-    return Array.from(splitChecks).filter(c=>c.checked).map(c=>c.value);
+  function getChecks(){
+    return Array.from(splitWrap.querySelectorAll('input[type="checkbox"]'));
   }
-  function setChecked(vals){
-    splitChecks.forEach(c=>c.checked = vals.includes(c.value));
-  }
-
-  function hideSplit(){
-    splitWrap.classList.add('hidden');
-  }
-  function showSplit(){
-    splitWrap.classList.remove('hidden');
-  }
+  function showSplit(){ if(splitRow) splitRow.style.display = ''; }
+  function hideSplit(){ if(splitRow) splitRow.style.display = 'none'; }
 
   function normalize(){
     const payer = payerSelect.value;
 
-    if (payer === FUND){
-      // 公費分攤使用者：一定顯示分攤，且預設兩人都勾
+    // 沒成員：讓 split row 顯示（會由 renderMembers 放提示文字），避免版面跳動
+    const checks = getChecks();
+    if(!checks.length){
       showSplit();
-      const checked = getChecked();
-      if (checked.length === 0){
-        setChecked(PERSONS);
-      }
       return;
     }
 
-    // payer 是個人
-    const checked = getChecked().filter(v=>v!==FUND);
+    if(payer === FUND){
+      showSplit();
+      return;
+    }
 
-    // 若沒有勾，或只勾自己 → 視為個人消費（不分攤）
-    if (checked.length === 0 || (checked.length===1 && checked[0]===payer)){
+    const checked = checks.filter(c=>c.checked).map(c=>c.value);
+    const hasOther = checked.some(n => n !== payer);
+
+    if(!hasOther){
+      // 個人消費：只留自己勾選並隱藏分攤列
+      checks.forEach(c => { c.checked = (c.value === payer); });
       hideSplit();
-      // 內部資料一致性：只保留自己
-      setChecked([payer]);
     }else{
-      // 個人代付（須分攤）
+      // 個人代付：顯示分攤列
       showSplit();
     }
   }
 
-  // 綁定事件
   payerSelect.addEventListener('change', normalize);
-  splitChecks.forEach(c=>c.addEventListener('change', normalize));
+  splitWrap.addEventListener('change', (e)=>{
+    if(e && e.target && e.target.type === 'checkbox') normalize();
+  });
 
-  // 初始化一次
-  normalize();
+  document.addEventListener('DOMContentLoaded', normalize);
 })();
 </script>
 
@@ -9728,48 +9717,35 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<script>
-/* ===== PATCH 3: 公費預設個人付款 = 公費 / 2 =====
+<script>/* ===== PATCH 3: 公費付款時，分攤預設全員勾選（動態成員） =====
    規則：
-   - 當 payer = 公費 且未手動調整分攤時
-   - 自動將 split 設為 JERRY + ROSIE 各 50%
+   - 當 payer = 公費
+   - 且目前分攤未手動調整/或成員變動時
+   → 將分攤預設成「所有成員都勾選」
 */
 (function(){
-  const payerSelect = document.getElementById('ldPayer');
-  const amountInput = document.getElementById('ldAmount');
-  const splitWrap   = document.getElementById('splitUI') || document.querySelector('.split-wrap');
-  if (!payerSelect || !amountInput || !splitWrap) return;
-
   const FUND = '公費';
-  const PERSONS = ['JERRY','ROSIE'];
 
   function applyDefaultSplit(){
-    if (payerSelect.value !== FUND) return;
+    const payerSelect = document.getElementById('ldPayer');
+    const splitWrap   = document.getElementById('ldSplitTo');
+    if(!payerSelect || !splitWrap) return;
+    if(payerSelect.value !== FUND) return;
 
     const checks = splitWrap.querySelectorAll('input[type="checkbox"]');
-    let checked = Array.from(checks).filter(c=>c.checked).map(c=>c.value);
-
-    // 若沒有明確指定或只有一人 → 預設兩人平均
-    if (checked.length !== 2 || !PERSONS.every(p=>checked.includes(p))){
-      checks.forEach(c=>{
-        c.checked = PERSONS.includes(c.value);
-      });
-      checked = PERSONS.slice();
-    }
-
-    // 若你內部有 splitAmount 欄位，這裡可同步數值
-    const amt = Number(amountInput.value || 0);
-    if (amt > 0){
-      const half = Math.round(amt / 2);
-      splitWrap.querySelectorAll('[data-split-amount]').forEach(el=>{
-        el.textContent = half.toLocaleString();
-      });
-    }
+    if(!checks.length) return;
+    checks.forEach(c=>{ c.checked = true; });
   }
 
-  payerSelect.addEventListener('change', applyDefaultSplit);
-  amountInput.addEventListener('input', applyDefaultSplit);
-  document.addEventListener('DOMContentLoaded', applyDefaultSplit);
+  document.addEventListener('change', function(e){
+    if(e && e.target && e.target.id === 'ldPayer'){
+      applyDefaultSplit();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function(){
+    applyDefaultSplit();
+  });
 })();
 </script>
 

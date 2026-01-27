@@ -422,6 +422,7 @@
 	.input-wrapper input {
 	  	width: 100%;
 	  	padding: 30px 16px;
+	  	padding-right: 70px; /* ⭐ 預留右邊空間給「｜幣別」 */
 	  	font-size: 24px;
 	  	border: 1px solid #ddd;
 	  	border-radius: 8px;
@@ -1525,6 +1526,7 @@
   min-height: calc(146dvh - var(--topbar-h) - var(--bottom-nav-h));
   padding-top: 92px; /* topbar 固定高度，自行微調 */
   padding-left: var(--wx-pad-x);
+  padding-right: var(--wx-pad-x);
   padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 18px);
   box-sizing: border-box;
 
@@ -2213,6 +2215,7 @@ body.nav-back #menuBtn > div{
   display:flex;
   align-items:center;
   justify-content:flex-end;
+  padding-right: 16px;
   user-select: none;
 }
 
@@ -3021,7 +3024,7 @@ color: #d95380;
 .translate-page,
 .translate-page *{ box-sizing: border-box; }
 
-.translate-page{ padding-left: 16px;
+.translate-page{ padding-left: 16px; padding-right: 16px; }
 
 .tr-stack{ width:100%; max-width: 520px; margin: 0 auto; }
 
@@ -3081,7 +3084,7 @@ color: #d95380;
 
 /* prevent cards from touching edges on tiny screens */
 @media (max-width: 380px){
-  .translate-page{ padding-left: 12px;
+  .translate-page{ padding-left: 12px; padding-right: 12px; }
   .tr-lang-select{ gap: 8px; }
 }
 
@@ -3268,19 +3271,6 @@ color: #d95380;
 }
 
 .ld-list{ display:flex; flex-direction:column; gap:10px; }
-/* ✅ 記帳頁「支出明細」清單可上下滑動（不影響其他區塊） */
-#ldExpenseList{
-  max-height: min(45vh, 360px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.18) transparent;
-  box-sizing: border-box;
-}
-#ldExpenseList::-webkit-scrollbar{ width: 6px; }
-#ldExpenseList::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.18); border-radius: 99px; }
-
 .ld-item{
           border: 1px solid #eef1f7;
         border-radius: 8px;
@@ -3677,14 +3667,7 @@ color: #d95380;
          margin-top: 1.2rem;
         border: 1px solid #e9edff;
         border-radius: 8px;
-        /* ✅ 只讓「hd 下方的項目」可上下滑動 */
-        max-height: min(55vh, 420px);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        box-sizing: border-box;
-        scrollbar-gutter: auto;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(0,0,0,0.18) transparent;
+        overflow: hidden;
 }
 .member-list .hd{
          padding: 10px 12px;
@@ -3692,14 +3675,7 @@ color: #d95380;
         font-weight: 600;
         color: #333;
         font-size: 18px;
-        /* ✅ 固定在清單頂端 */
-        position: sticky;
-        top: 0;
-        z-index: 2;
 }
-.member-list::-webkit-scrollbar{ width: 6px; }
-.member-list::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.18); border-radius: 99px; }
-
 .member-item{
   padding: 10px 12px;
   border-top: 1px solid #eef1ff;
@@ -3732,6 +3708,45 @@ color: #d95380;
   width: 100% !important;
   flex-basis: 100% !important;
   display: block !important;
+}
+
+
+/* === Scroll Enhancements (added) === */
+/* 記帳頁「支出明細」清單可上下滑動（滾動條在欄位內） */
+#ldExpenseList{
+  max-height: min(45vh, 360px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.22) transparent;
+}
+#ldExpenseList::-webkit-scrollbar{ width: 6px; }
+#ldExpenseList::-webkit-scrollbar-track{ background: transparent; }
+#ldExpenseList::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.22);
+  border-radius: 99px;
+}
+
+/* 個人明細總表：明細欄位自 hd 下方開始捲動，hd 固定 */
+.member-list{
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.22) transparent;
+}
+.member-list::-webkit-scrollbar{ width: 6px; }
+.member-list::-webkit-scrollbar-track{ background: transparent; }
+.member-list::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.22);
+  border-radius: 99px;
+}
+.member-list .hd{
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 </style>
@@ -3821,6 +3836,7 @@ color: #d95380;
   color:#fff;
   font-size:18px;
   min-height:72px;
+  padding-right: 96px; /* space for camera/mic */
   box-sizing:border-box;
 }
 
@@ -3918,6 +3934,8 @@ color: #d95380;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+
+  padding-right: 40px;   /* ⭐ 一定要留空間 */
 }
 
 /* 你的 cheveron icon */
@@ -8999,6 +9017,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
           padding-top: calc(var(--topbar-h) + env(safe-area-inset-top) + 8px);
           padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
           padding-left: 10px;
+          padding-right: 10px;
         ">
           <img id="shopPreviewImg" src="" style="
             max-width: 92vw; max-height: 88vh;
@@ -10381,6 +10400,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
+<script>
 <script>
 /* ===== LOGIC PATCH: 分攤欄位永不消失（只做最小行為修正，不動 CSS） =====
    目標：

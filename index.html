@@ -3271,6 +3271,16 @@ color: #d95380;
 }
 
 .ld-list{ display:flex; flex-direction:column; gap:10px; }
+/* ✅ 記帳頁「支出明細」清單可上下滑動（不影響其他區塊） */
+#ldExpenseList{
+  max-height: min(45vh, 360px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px; /* 讓 scrollbar 不會壓到內容 */
+}
+#ldExpenseList::-webkit-scrollbar{ width: 6px; }
+#ldExpenseList::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.18); border-radius: 99px; }
+
 .ld-item{
           border: 1px solid #eef1f7;
         border-radius: 8px;
@@ -3667,7 +3677,10 @@ color: #d95380;
          margin-top: 1.2rem;
         border: 1px solid #e9edff;
         border-radius: 8px;
-        overflow: hidden;
+        /* ✅ 只讓「hd 下方的項目」可上下滑動 */
+        max-height: min(55vh, 420px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
 }
 .member-list .hd{
          padding: 10px 12px;
@@ -3675,7 +3688,14 @@ color: #d95380;
         font-weight: 600;
         color: #333;
         font-size: 18px;
+        /* ✅ 固定在清單頂端 */
+        position: sticky;
+        top: 0;
+        z-index: 2;
 }
+.member-list::-webkit-scrollbar{ width: 6px; }
+.member-list::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.18); border-radius: 99px; }
+
 .member-item{
   padding: 10px 12px;
   border-top: 1px solid #eef1ff;

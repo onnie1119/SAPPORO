@@ -3292,7 +3292,7 @@ color: #d95380;
 .ld-item-amt{ font-weight: 900;
         font-size: 20px;
         color: #333; }
-.ld-item-sub{         font-size:13px;
+.ld-item-sub{         font-size:14px;
         margin-top: 0.5rem;
         color: #b0b0b5;}
 .ld-item-actions button, .ld-item-del{
@@ -3315,9 +3315,7 @@ color: #d95380;
          display: flex;
         align-items: center;
         justify-content: space-between;
-               padding: 12px 14px;
-        padding-bottom: 0;
-	        border-bottom: 1px solid #eef1ff;
+        padding: 8px 14px;
         background: #f7f9ff;
 }
 .ld-fund-name{
@@ -3333,7 +3331,7 @@ color: #d95380;
 }
 .ld-fund-meta{
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: 14px;
   color: #8e8e93;
  padding-top: 5px;
   background: #f7f9ff;
@@ -3398,7 +3396,7 @@ color: #d95380;
 .ld-sum-meta{
   padding: 10px 14px;
   padding-top: 5px;
-  font-size: 13px;
+  font-size: 14px;
   color: #8e8e93;
   background: #f7f9ff;
 }
@@ -3602,7 +3600,7 @@ color: #d95380;
   border-bottom: 1px solid #eef1ff;
 }
 .member-sheet-title{
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   color: #333;
 }
@@ -3616,7 +3614,7 @@ color: #d95380;
         color: #777;
 }
 .member-sheet-bd{
-  padding: 1rem;
+  padding: 12px 14px 18px;
   overflow:auto;
 }
 .member-mini{
@@ -3630,7 +3628,7 @@ color: #d95380;
         border-radius: 8px;
         padding: 10px 14px;
         background: #fff;
-        min-width: 9.59rem;
+        min-width: 9.7rem;
 }
 .member-pill .k{ font-size:14px; color:#6b7280; }
 .member-pill .v{         font-size: 20px;
@@ -3741,7 +3739,6 @@ color: #d95380;
   position: sticky;
   top: 0;
   z-index: 1;
-	        border-bottom: 1px solid #eef1ff;
 }
 
 </style>
@@ -10663,8 +10660,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bars = catEntries.length ? `
       <div class="ld-fund-box" style="margin-top:8px;">
-        <div class="ld-fund-top" style="border-bottom: none;">
-          <div class="ld-fund-name" style="padding-bottom: 12px;">分類花費</div>
+        <div class="ld-fund-top">
+          <div class="ld-fund-name">分類花費</div>
           <div class="ld-fund-balance">合計 ¥ ${fmt(totalAlloc)}</div>
         </div>
         <div style="padding: 10px 12px;">

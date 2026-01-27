@@ -15,9 +15,7 @@
 <meta content="北海道の旅" name="apple-mobile-web-app-title"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <style>
-	
-
-	html {
+html {
 		margin: 0;
 		padding: 0;
 		height: 100%;}
@@ -3749,15 +3747,6 @@ color: #d95380;
   z-index: 2;
 }
 
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.20.4/dist/index.js"></script>
-
-<style>
 /* ===== Translate (Detect <-> JA/EN) ===== */
 #translate-page{
   background:#F6F9FC;
@@ -3886,10 +3875,6 @@ color: #d95380;
   display: block !important;
 }
 
-</style>
-
-
-<style>
 /* === FORCE HIDE OLD TRANSLATE LANGUAGE BARS === */
 .translate-lang-bar,
 .lang-bar,
@@ -3913,10 +3898,6 @@ color: #d95380;
   display: block !important;
 }
 
-</style>
-
-
-<style>
 /* === FORCE SHOW ROMAN / PINYIN === */
 #translate-page .tr-roman{
   display:block !important;
@@ -4234,8 +4215,21 @@ color: #d95380;
   flex-basis: 100% !important;
   display: block !important;
 }
-
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.20.4/dist/index.js"></script>
+
+
+
+
+
+
+
+
 
 </head>
 <body>
@@ -5214,7 +5208,7 @@ color: #d95380;
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <script>
-		let isFirstHomeRender = true;
+let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
 		let navMode = "menu"; // menu | back
 
@@ -6101,8 +6095,6 @@ color: #d95380;
 			});
 
 		});
-	</script>
-<script>
 
 /* =========================
    Pages / Navigation
@@ -7802,8 +7794,7 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     btn.classList.add("active");
   });
 });
-</script>
-<script>
+
 /* =========================================================
    Weather Page – FULL JS (Timezone-correct, no redeclare)
    ✅ 支援「目前位置」+ 固定城市
@@ -8901,8 +8892,7 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   };
 
 })();
-</script>
-<script>
+
 /* =========================================================
    Shopping – FINAL (Google Sheet Sync via Apps Script JSONP)
    - Works for iOS "Add to Home Screen" (PWA-like)
@@ -9719,9 +9709,8 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 })();
-</script>
-<script>
-  function syncBarsHeight(){
+
+function syncBarsHeight(){
     const topbar = document.getElementById("topbar");
     const bottom = document.querySelector(".bottom-nav");
 
@@ -9924,9 +9913,7 @@ renderHourly24({
   }
 }
 
-</script>
-<script>
-	const SHEET_NAME = "Sheet1";
+const SHEET_NAME = "Sheet1";
 
 function doGet(e) {
   const code = String((e.parameter && e.parameter.code) || "").trim();
@@ -10044,15 +10031,6 @@ function saveLocal(items){
 	
 }
 
-</script>
-
-
-
-
-
-
-
-<script>
 function buildPayerUI(){
   const select = document.getElementById('ldPayer');
   const mount  = document.getElementById('payerUI');
@@ -10397,10 +10375,7 @@ document.addEventListener('DOMContentLoaded', () => {
   buildCategoryUI();
   buildPayerUI();
 });
-</script>
 
-
-<script>
 <script>
 /* ===== LOGIC PATCH: 分攤欄位永不消失（只做最小行為修正，不動 CSS） =====
    目標：
@@ -10446,10 +10421,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('DOMContentLoaded', normalize);
 })();
-</script>
 
-
-<script>
 /* ===== PATCH 2: 成員 + 按鈕恢復 & 結算預設顯示公費 ===== */
 (function(){
   /* --- 1) 恢復成員新增 + 按鈕 --- */
@@ -10500,10 +10472,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 })();
-</script>
 
-
-<script>/* ===== PATCH 3: 公費付款時，分攤預設全員勾選（動態成員） =====
+/* ===== PATCH 3: 公費付款時，分攤預設全員勾選（動態成員） =====
    規則：
    - 當 payer = 公費
    - 且目前分攤未手動調整/或成員變動時
@@ -10533,40 +10503,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyDefaultSplit();
   });
 })();
-</script>
 
-
-<!-- Fund Edit Modal (獨立，不共用其他彈窗) -->
-<div id="fundModalMask" class="fund-mask" aria-hidden="true">
-  <div class="fund-modal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">
-    <div class="fund-modal-hd">
-      <div id="fundModalTitle" class="fund-modal-title">編輯公費</div>
-      <button type="button" class="fund-close" aria-label="關閉" id="fundModalClose">×</button>
-    </div>
-
-    <!-- Step 1: choose -->
-    <div class="fund-step" id="fundStepChoose">
-     
-      <div class="fund-actions">
-        <button type="button" class="fund-btn" id="fundBtnSet">修改金額</button>
-        <button type="button" class="fund-btn" id="fundBtnAdd">新增公費</button>
-      </div>
-    </div>
-
-    <!-- Step 2: input -->
-    <div class="fund-step hidden" id="fundStepInput">
-      <div class="fund-desc" id="fundInputDesc">請輸入金額（JPY）</div>
-      <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" >
-      <div class="fund-actions">
-        <button type="button" class="fund-btn" id="fundBtnOk">確定</button>
-        <button type="button" class="fund-btn fund-cancel" id="fundBtnBack">返回</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<script>
 (function(){
   const KEY = "LD_LEDGER_V1";
   const FUND = "公費";
@@ -10756,6 +10693,61 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Fund Edit Modal (獨立，不共用其他彈窗) -->
+<div id="fundModalMask" class="fund-mask" aria-hidden="true">
+  <div class="fund-modal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">
+    <div class="fund-modal-hd">
+      <div id="fundModalTitle" class="fund-modal-title">編輯公費</div>
+      <button type="button" class="fund-close" aria-label="關閉" id="fundModalClose">×</button>
+    </div>
+
+    <!-- Step 1: choose -->
+    <div class="fund-step" id="fundStepChoose">
+     
+      <div class="fund-actions">
+        <button type="button" class="fund-btn" id="fundBtnSet">修改金額</button>
+        <button type="button" class="fund-btn" id="fundBtnAdd">新增公費</button>
+      </div>
+    </div>
+
+    <!-- Step 2: input -->
+    <div class="fund-step hidden" id="fundStepInput">
+      <div class="fund-desc" id="fundInputDesc">請輸入金額（JPY）</div>
+      <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" >
+      <div class="fund-actions">
+        <button type="button" class="fund-btn" id="fundBtnOk">確定</button>
+        <button type="button" class="fund-btn fund-cancel" id="fundBtnBack">返回</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 
 
 <!-- Member Detail Sheet -->

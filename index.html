@@ -422,7 +422,6 @@
 	.input-wrapper input {
 	  	width: 100%;
 	  	padding: 30px 16px;
-	  	padding-right: 70px; /* ⭐ 預留右邊空間給「｜幣別」 */
 	  	font-size: 24px;
 	  	border: 1px solid #ddd;
 	  	border-radius: 8px;
@@ -1526,7 +1525,6 @@
   min-height: calc(146dvh - var(--topbar-h) - var(--bottom-nav-h));
   padding-top: 92px; /* topbar 固定高度，自行微調 */
   padding-left: var(--wx-pad-x);
-  padding-right: var(--wx-pad-x);
   padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 18px);
   box-sizing: border-box;
 
@@ -2215,7 +2213,6 @@ body.nav-back #menuBtn > div{
   display:flex;
   align-items:center;
   justify-content:flex-end;
-  padding-right: 16px;
   user-select: none;
 }
 
@@ -3024,7 +3021,7 @@ color: #d95380;
 .translate-page,
 .translate-page *{ box-sizing: border-box; }
 
-.translate-page{ padding-left: 16px; padding-right: 16px; }
+.translate-page{ padding-left: 16px;
 
 .tr-stack{ width:100%; max-width: 520px; margin: 0 auto; }
 
@@ -3084,7 +3081,7 @@ color: #d95380;
 
 /* prevent cards from touching edges on tiny screens */
 @media (max-width: 380px){
-  .translate-page{ padding-left: 12px; padding-right: 12px; }
+  .translate-page{ padding-left: 12px;
   .tr-lang-select{ gap: 8px; }
 }
 
@@ -3276,7 +3273,10 @@ color: #d95380;
   max-height: min(45vh, 360px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-right: 2px; /* 讓 scrollbar 不會壓到內容 */
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.18) transparent;
+  box-sizing: border-box;
 }
 #ldExpenseList::-webkit-scrollbar{ width: 6px; }
 #ldExpenseList::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.18); border-radius: 99px; }
@@ -3681,6 +3681,10 @@ color: #d95380;
         max-height: min(55vh, 420px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
+        scrollbar-gutter: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0,0,0,0.18) transparent;
 }
 .member-list .hd{
          padding: 10px 12px;
@@ -3817,7 +3821,6 @@ color: #d95380;
   color:#fff;
   font-size:18px;
   min-height:72px;
-  padding-right: 96px; /* space for camera/mic */
   box-sizing:border-box;
 }
 
@@ -3915,8 +3918,6 @@ color: #d95380;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-
-  padding-right: 40px;   /* ⭐ 一定要留空間 */
 }
 
 /* 你的 cheveron icon */
@@ -8998,7 +8999,6 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
           padding-top: calc(var(--topbar-h) + env(safe-area-inset-top) + 8px);
           padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
           padding-left: 10px;
-          padding-right: 10px;
         ">
           <img id="shopPreviewImg" src="" style="
             max-width: 92vw; max-height: 88vh;
@@ -10381,7 +10381,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<script>
 <script>
 /* ===== LOGIC PATCH: 分攤欄位永不消失（只做最小行為修正，不動 CSS） =====
    目標：

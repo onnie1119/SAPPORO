@@ -15,6 +15,10 @@
 <meta content="北海道の旅" name="apple-mobile-web-app-title"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <style>
+
+
+/* ===== MERGED STYLES (auto) ===== */
+
 html {
 		margin: 0;
 		padding: 0;
@@ -3708,45 +3712,6 @@ color: #d95380;
   display: block !important;
 }
 
-
-/* === Scroll Enhancements (added) === */
-/* 記帳頁「支出明細」清單可上下滑動（滾動條在欄位內） */
-#ldExpenseList{
-  max-height: min(45vh, 360px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.22) transparent;
-}
-#ldExpenseList::-webkit-scrollbar{ width: 6px; }
-#ldExpenseList::-webkit-scrollbar-track{ background: transparent; }
-#ldExpenseList::-webkit-scrollbar-thumb{
-  background: rgba(0,0,0,0.22);
-  border-radius: 99px;
-}
-
-/* 個人明細總表：明細欄位自 hd 下方開始捲動，hd 固定 */
-.member-list{
-  max-height: min(52vh, 420px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.22) transparent;
-}
-.member-list::-webkit-scrollbar{ width: 6px; }
-.member-list::-webkit-scrollbar-track{ background: transparent; }
-.member-list::-webkit-scrollbar-thumb{
-  background: rgba(0,0,0,0.22);
-  border-radius: 99px;
-}
-.member-list .hd{
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
 /* ===== Translate (Detect <-> JA/EN) ===== */
 #translate-page{
   background:#F6F9FC;
@@ -4215,6 +4180,27 @@ color: #d95380;
   flex-basis: 100% !important;
   display: block !important;
 }
+
+/* ===== Scroll fixes (auto) ===== */
+/* 記帳頁：支出明細清單可捲動（欄位內捲動） */
+#ldExpenseList{
+  max-height: 45vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* 個人：花費明細總表 明細欄位（hd 下方捲動，且 scrollbar 不壓到標題） */
+.member-list{
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+.member-list .hd{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
@@ -5208,6 +5194,8 @@ color: #d95380;
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <script>
+/* ===== MERGED SCRIPT 1/11 ===== */
+
 let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
 		let navMode = "menu"; // menu | back
@@ -6095,6 +6083,9 @@ let isFirstHomeRender = true;
 			});
 
 		});
+
+
+/* ===== MERGED SCRIPT 2/11 ===== */
 
 /* =========================
    Pages / Navigation
@@ -7795,6 +7786,9 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
   });
 });
 
+
+/* ===== MERGED SCRIPT 3/11 ===== */
+
 /* =========================================================
    Weather Page – FULL JS (Timezone-correct, no redeclare)
    ✅ 支援「目前位置」+ 固定城市
@@ -8893,6 +8887,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 })();
 
+
+/* ===== MERGED SCRIPT 4/11 ===== */
+
 /* =========================================================
    Shopping – FINAL (Google Sheet Sync via Apps Script JSONP)
    - Works for iOS "Add to Home Screen" (PWA-like)
@@ -9710,6 +9707,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
 
 })();
 
+
+/* ===== MERGED SCRIPT 5/11 ===== */
+
 function syncBarsHeight(){
     const topbar = document.getElementById("topbar");
     const bottom = document.querySelector(".bottom-nav");
@@ -9913,6 +9913,9 @@ renderHourly24({
   }
 }
 
+
+/* ===== MERGED SCRIPT 6/11 ===== */
+
 const SHEET_NAME = "Sheet1";
 
 function doGet(e) {
@@ -10030,6 +10033,9 @@ function saveLocal(items){
   return items;
 	
 }
+
+
+/* ===== MERGED SCRIPT 7/11 ===== */
 
 function buildPayerUI(){
   const select = document.getElementById('ldPayer');
@@ -10376,7 +10382,9 @@ document.addEventListener('DOMContentLoaded', () => {
   buildPayerUI();
 });
 
-<script>
+
+/* ===== MERGED SCRIPT 8/11 ===== */
+
 /* ===== LOGIC PATCH: 分攤欄位永不消失（只做最小行為修正，不動 CSS） =====
    目標：
    - 不論你怎麼勾/取消分攤，分攤欄位都不會被隱藏（避免「整個欄位消失」）
@@ -10421,6 +10429,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('DOMContentLoaded', normalize);
 })();
+
+
+/* ===== MERGED SCRIPT 9/11 ===== */
 
 /* ===== PATCH 2: 成員 + 按鈕恢復 & 結算預設顯示公費 ===== */
 (function(){
@@ -10473,6 +10484,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 
+
+/* ===== MERGED SCRIPT 10/11 ===== */
+
 /* ===== PATCH 3: 公費付款時，分攤預設全員勾選（動態成員） =====
    規則：
    - 當 payer = 公費
@@ -10503,6 +10517,9 @@ document.addEventListener('DOMContentLoaded', () => {
     applyDefaultSplit();
   });
 })();
+
+
+/* ===== MERGED SCRIPT 11/11 ===== */
 
 (function(){
   const KEY = "LD_LEDGER_V1";

@@ -3317,6 +3317,7 @@ color: #d95380;
         align-items: center;
         justify-content: space-between;
         padding: 8px 14px;
+	padding-bottom: 0;
         background: #f7f9ff;
 }
 .ld-fund-name{
@@ -3601,7 +3602,7 @@ color: #d95380;
   border-bottom: 1px solid #eef1ff;
 }
 .member-sheet-title{
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   color: #333;
 }
@@ -3615,7 +3616,7 @@ color: #d95380;
         color: #777;
 }
 .member-sheet-bd{
-  padding: 12px 14px 18px;
+  padding: 1rem;
   overflow:auto;
 }
 .member-mini{
@@ -3629,7 +3630,7 @@ color: #d95380;
         border-radius: 8px;
         padding: 10px 14px;
         background: #fff;
-        min-width: 9.7rem;
+        min-width: 9.59rem;
 }
 .member-pill .k{ font-size:14px; color:#6b7280; }
 .member-pill .v{         font-size: 20px;
@@ -3640,13 +3641,13 @@ color: #d95380;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
+  gap:18px;
   margin: 8px 0;
 }
 .member-bar-name{         font-size: 16px;
         color: #666;
         padding-left: 4px;
-        min-width: 64px; }
+        min-width: 70px; }
 .member-bar{
   flex:1;
   height: 10px;
@@ -10665,7 +10666,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bars = catEntries.length ? `
       <div class="ld-fund-box" style="margin-top:8px;">
-        <div class="ld-fund-top">
+        <div class="ld-fund-top" style="padding-bottom: 8px;
+    border-bottom: 1px solid #eef1ff;">
           <div class="ld-fund-name">分類花費</div>
           <div class="ld-fund-balance">合計 ¥ ${fmt(totalAlloc)}</div>
         </div>

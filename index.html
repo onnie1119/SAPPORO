@@ -3311,21 +3311,20 @@ color: #d95380;
   background: #fff;
 }
 .ld-fund-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding: 12px 14px;
-	padding-bottom: 0;
-  background:#f7f9ff;
+         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 14px;
+        background: #f7f9ff;
 }
 .ld-fund-name{
-  font-weight: 600;
+ font-weight: 600;
         color: #333;
-        font-size: 18px;
+        font-size: 16px;
 }
 .ld-fund-balance{
-  font-weight: 600;
-        font-size: 20px;
+         font-weight: 600;
+        font-size: 18px;
         color: #333;
         white-space: nowrap;
 }
@@ -3569,6 +3568,123 @@ color: #d95380;
         border-radius: 8px;
 }
 .hidden{ display:none !important; }
+
+
+/* ===== Member detail modal + clickable settlement rows ===== */
+.ld-member-click{ cursor: pointer; }
+.ld-member-click:active{ transform: scale(0.998); }
+
+.member-mask{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 9999;
+}
+.member-mask[aria-hidden="false"]{ display:flex; }
+.member-sheet{
+  width: min(520px, 100%);
+  background:#fff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -12px 30px rgba(0,0,0,.15);
+  max-height: 86vh;
+  overflow: hidden;
+}
+.member-sheet-hd{
+  padding: 12px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom: 1px solid #eef1ff;
+}
+.member-sheet-title{
+  font-size: 16px;
+  font-weight: 800;
+  color: #333;
+}
+.member-sheet-close{
+ appearance: none;
+        border: none;
+        background: transparent;
+        font-size: 30px;
+        line-height: 1;
+        padding: 6px 0px;
+        color: #777;
+}
+.member-sheet-bd{
+  padding: 12px 14px 18px;
+  overflow:auto;
+}
+.member-mini{
+  display:flex;
+  gap:10px;
+  flex-wrap: wrap;
+  margin: 6px 0 20px;
+}
+.member-pill{
+         border: 1px solid #e9edff;
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: #fff;
+        min-width: 9.7rem;
+}
+.member-pill .k{ font-size:14px; color:#6b7280; }
+.member-pill .v{         font-size: 20px;
+        color: #333;
+        font-weight: 800;
+        margin-top: 5px; }
+.member-bar-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin: 8px 0;
+}
+.member-bar-name{         font-size: 16px;
+        color: #666;
+        padding-left: 4px;
+        min-width: 64px; }
+.member-bar{
+  flex:1;
+  height: 10px;
+  background:#f1f5ff;
+  border-radius: 999px;
+  overflow:hidden;
+}
+.member-bar > i{
+  display:block;
+  height:100%;
+  background:#007aff;
+  border-radius:999px;
+}
+.member-bar-amt{        font-size: 16px;
+        color: #333;
+        min-width: 86px;
+        text-align: right; }
+.member-list{
+  margin-top: 10px;
+  border: 1px solid #e9edff;
+  border-radius: 10px;
+  overflow:hidden;
+}
+.member-list .hd{
+  padding: 10px 12px;
+  background:#f7f9ff;
+  font-weight:800;
+}
+.member-item{
+  padding: 10px 12px;
+  border-top: 1px solid #eef1ff;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+}
+.member-item .l{ flex: 1; min-width: 0; }
+.member-item .t{ font-weight: 800; }
+.member-item .s{ font-size: 12px; color:#6b7280; margin-top: 2px; }
+.member-item .r{ font-weight: 900; white-space: nowrap; }
 
 </style>
 
@@ -6220,7 +6336,7 @@ function renderMembers(){
       const item = document.createElement("label");
       item.className = "ld-check";
       item.innerHTML = `
-        <input type="checkbox" value="${escapeAttr(name)}" checked>
+        <input type="checkbox" value="${escapeAttr(name)}" >
         <span>${escapeHtml(name)}</span>
       `;
       splitWrap.appendChild(item);
@@ -6274,17 +6390,26 @@ function getSplitSelected(){
       alert("請選擇付款人");
       return;
     }
-    if(!splitToRaw.length){
-      alert("至少勾選 1 位分攤成員");
-      return;
-    }
+    // ✅ 分攤可空：
+    // - 個人付款：不勾分攤視為個人消費（後面會自動 splitTo=[payer]）
+    // - 公費：不勾分攤視為花在所有成員身上（後面會自動 fundTo=所有成員）
 
     // ✅ 公費：不參與結算（只扣公費餘額），但仍記錄「花在哪些人身上」方便追蹤
     const isFund = payer === FUND;
-    const fundTo = isFund ? splitToRaw.slice() : null;
-    const splitTo = isFund ? [] : splitToRaw.slice();
+    let fundTo = isFund ? splitToRaw.slice() : null;
+    let splitTo = isFund ? [] : splitToRaw.slice();
 
-    state.expenses.unshift({
+    // ✅ 分攤預設：都不勾選時
+    // - 個人付款：視為「個人消費」，自動分攤給付款人本人（不需要勾分攤）
+    // - 公費付款：若未勾選任何人，預設視為分攤給所有成員
+    if(!isFund){
+      if(!splitTo.length && payer) splitTo = [payer];
+    }else{
+      const persons = (state.members||[]).filter(m=>m!==FUND);
+      if(!fundTo.length) fundTo = persons.slice();
+    }
+
+state.expenses.unshift({
       id: uid(),
       ts: Date.now(),
       amount: Math.round(amt),
@@ -6406,9 +6531,18 @@ function settle(net){
       item.className = "ld-item";
 
       const title = `${e.category || "其他"}`;
-      const subCore = (e.payer==="公費")
-        ? `付款人：${escapeHtml(e.payer)}　公費使用：${(e.fundTo||[]).map(escapeHtml).join("、")}`
-        : `付款人：${escapeHtml(e.payer)}　分攤：${(e.splitTo||[]).map(escapeHtml).join("、")}`;
+
+      // ✅ 個人消費：若 splitTo 只有付款人本人，支出明細不顯示「分攤」小字
+      let subCore = "";
+      if(e.payer==="公費"){
+        subCore = `付款人：${escapeHtml(e.payer)}　公費使用：${(e.fundTo||[]).map(escapeHtml).join("、")}`;
+      }else{
+        const st = Array.isArray(e.splitTo) ? e.splitTo : [];
+        const showSplit = !(st.length===1 && st[0]===e.payer) && st.length>0;
+        subCore = showSplit
+          ? `付款人：${escapeHtml(e.payer)}　分攤：${st.map(escapeHtml).join("、")}`
+          : `付款人：${escapeHtml(e.payer)}`;
+      }
 
       // 第二排：只放明細說明（付款人/分攤 + 可選備註）
       const sub = e.note
@@ -6460,7 +6594,8 @@ function settle(net){
     persons.forEach(name=>{
       const n = net[name] || 0;
       const row = document.createElement("div");
-      row.className = "ld-sum-row";
+      row.className = "ld-sum-row ld-member-click";
+      row.setAttribute("data-member", name);
       const netLabel = (n>=0) ? "應收" : "應付";
       const netAmt   = (n>=0) ? n : Math.abs(n);
       row.innerHTML = `
@@ -10170,12 +10305,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <script>
-/* ===== LOGIC PATCH: 公費 / 個人代付 / 個人消費（動態成員，不動 CSS） =====
-   規則：
-   - 付款人=公費：一定顯示分攤（顯示目前所有成員）
-   - 付款人=個人：
-       * 若勾選任何分攤對象(非本人) → 個人代付（顯示分攤）
-       * 若未勾選或只剩本人 → 個人消費（隱藏分攤）
+<script>
+/* ===== LOGIC PATCH: 分攤欄位永不消失（只做最小行為修正，不動 CSS） =====
+   目標：
+   - 不論你怎麼勾/取消分攤，分攤欄位都不會被隱藏（避免「整個欄位消失」）
+   - 若付款人=個人且你把分攤全取消，系統會至少保留「付款人本人」為分攤對象（避免無法送出）
+   - 付款人=公費：維持原本顯示分攤（另由 PATCH 3 負責預設全勾）
 */
 (function(){
   const payerSelect = document.getElementById('ldPayer');
@@ -10189,33 +10324,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return Array.from(splitWrap.querySelectorAll('input[type="checkbox"]'));
   }
   function showSplit(){ if(splitRow) splitRow.style.display = ''; }
-  function hideSplit(){ if(splitRow) splitRow.style.display = 'none'; }
 
   function normalize(){
+    showSplit(); // ✅ 永遠顯示，不再隱藏
+
     const payer = payerSelect.value;
-
-    // 沒成員：讓 split row 顯示（會由 renderMembers 放提示文字），避免版面跳動
     const checks = getChecks();
-    if(!checks.length){
-      showSplit();
-      return;
-    }
+    if(!checks.length) return;
 
-    if(payer === FUND){
-      showSplit();
-      return;
-    }
+    // 公費：不做限制（預設全勾由 PATCH 3 處理）
+    if(payer === FUND) return;
 
+    // 個人：若你把所有分攤都取消 → 至少保留付款人本人
     const checked = checks.filter(c=>c.checked).map(c=>c.value);
-    const hasOther = checked.some(n => n !== payer);
-
-    if(!hasOther){
-      // 個人消費：只留自己勾選並隱藏分攤列
-      checks.forEach(c => { c.checked = (c.value === payer); });
-      hideSplit();
-    }else{
-      // 個人代付：顯示分攤列
-      showSplit();
+    if(checked.length === 0){
+      const self = checks.find(c=>c.value === payer);
+      if(self) self.checked = true;
     }
   }
 
@@ -10342,6 +10466,210 @@ document.addEventListener('DOMContentLoaded', () => {
         <button type="button" class="fund-btn fund-cancel" id="fundBtnBack">返回</button>
       </div>
     </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  const KEY = "LD_LEDGER_V1";
+  const FUND = "公費";
+
+  function $(id){ return document.getElementById(id); }
+  function fmt(n){
+    const x = Math.round(Number(n)||0);
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  function esc(s){
+    return String(s??"")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+  function getState(){
+    try{
+      // 以 localStorage 為準，才能跟新增/刪除/結算即時連動
+      const s = JSON.parse(localStorage.getItem(KEY) || "null");
+      if(s && typeof s === "object") return s;
+    }catch(e){}
+    // fallback：若你的程式有 window.state 就用它
+    if(typeof window.state === "object" && window.state) return window.state;
+    return {};
+  }
+
+  function allocForMember(exp, member){
+    const amt = Number(exp.amount)||0;
+    if(!amt) return 0;
+
+    // 公費支出：payer=公費，分攤名單在 fundTo
+    if(exp.payer === FUND){
+      const to = Array.isArray(exp.fundTo) ? exp.fundTo : [];
+      if(!to.includes(member) || to.length===0) return 0;
+      return amt / to.length;
+    }
+
+    // 一般支出：分攤名單在 splitTo
+    const to = Array.isArray(exp.splitTo) ? exp.splitTo : [];
+    if(!to.includes(member) || to.length===0) return 0;
+    return amt / to.length;
+  }
+
+  function buildMemberDetail(member){
+    const state = getState();
+    const expenses = Array.isArray(state.expenses) ? state.expenses : [];
+    const members = Array.isArray(state.members) ? state.members : [];
+
+    // 只算「該成員有分攤到」或「他本人付款(且不是公費)」的項目
+    const rows = [];
+    expenses.forEach(e=>{
+      const a = allocForMember(e, member);
+      const paidBySelf = (e.payer === member); // 個人付款（原始付款總額）
+      if(a>0 || paidBySelf){
+        rows.push({ e, alloc: a, paidBySelf });
+      }
+    });
+
+    const totalAlloc = rows.reduce((s,r)=>s + (r.alloc||0), 0);                 // 該成員實際消費(含公費分攤)
+    const personalPaid = expenses.reduce((s,e)=> s + ((e.payer===member)?(Number(e.amount)||0):0), 0); // 他付款的總額
+    const fundAlloc = rows.reduce((s,r)=> s + ((r.e.payer===FUND)?(r.alloc||0):0), 0);                  // 公費分攤到他
+    const otherAlloc = totalAlloc - fundAlloc;                                                       // 非公費(含自己/他人代付的分攤)
+
+    // 公費餘額計算（涵蓋起始公費金額 + 公費支出；若超支則顯示超支金額）
+    const fundInitial = Math.max(0, Math.round(Number(state.fundInitial)||0));
+    const fundSpent = expenses.reduce((s,e)=> s + ((e && e.payer===FUND)?(Number(e.amount)||0):0), 0);
+    const fundBalanceRaw = fundInitial - fundSpent;
+    const fundBalance = Math.max(0, fundBalanceRaw);
+    const fundOver = Math.max(0, -fundBalanceRaw);
+
+    // 分類統計（以分攤金額為準；含公費）
+    const byCat = {};
+    rows.forEach(r=>{
+      if(!(r.alloc>0)) return;
+      const cat = r.e.category || "其他";
+      byCat[cat] = (byCat[cat]||0) + r.alloc;
+    });
+    const catEntries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+    const maxCat = catEntries.length ? catEntries[0][1] : 0;
+
+    // 明細列表：只列有分攤到的（alloc>0），避免「只是付款人但自己沒分攤」造成誤會
+    const detail = rows
+      .filter(r=>r.alloc>0)
+      .sort((a,b)=>(b.e.ts||0)-(a.e.ts||0));
+
+    const pills = `
+      <div class="member-mini">
+        <div class="member-pill"><div class="k">總金額</div><div class="v">¥ ${fmt(totalAlloc)}</div></div>
+        <div class="member-pill"><div class="k">個人花費</div><div class="v">¥ ${fmt(otherAlloc)}</div></div>
+        <div class="member-pill">
+          <div class="k">公費餘額</div>
+          <div class="v">¥ ${fmt(fundBalance)}${fundOver>0 ? `<span style="color:#ef4444;font-weight:800;">（超支 ¥ ${fmt(fundOver)}）</span>` : ""}</div>
+</div>
+      </div>
+    `;
+
+
+    const bars = catEntries.length ? `
+      <div class="ld-fund-box" style="margin-top:8px;">
+        <div class="ld-fund-top">
+          <div class="ld-fund-name">分類花費</div>
+          <div class="ld-fund-balance">合計 ¥ ${fmt(totalAlloc)}</div>
+        </div>
+        <div style="padding: 10px 12px;">
+          ${catEntries.map(([cat,amt])=>{
+            const pct = totalAlloc>0 ? (amt/totalAlloc*100) : 0;
+            const w = maxCat>0 ? (amt/maxCat*100) : 0;
+            return `
+              <div class="member-bar-row">
+                <div class="member-bar-name">${esc(cat)}</div>
+                <div class="member-bar"><i style="width:${w.toFixed(2)}%"></i></div>
+                <div class="member-bar-amt">¥ ${fmt(amt)} <span style="color:#6b7280;font-weight:700;">(${pct.toFixed(0)}%)</span></div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    ` : `
+      <div class="ld-fund-box" style="margin-top:8px;">
+        <div class="ld-fund-top">
+          <div class="ld-fund-name">分類花費</div>
+          <div class="ld-fund-balance">尚無資料</div>
+        </div>
+      </div>
+    `;
+
+    const list = `
+      <div class="member-list">
+        <div class="hd">花費明細</div>
+        ${detail.length ? detail.map(({e,alloc})=>{
+          const payer = e.payer || "-";
+          const cat = e.category || "其他";
+          const note = (e.note||"").trim();
+          const isFund = payer === FUND;
+          const toList = isFund ? (Array.isArray(e.fundTo)? e.fundTo:[]) : (Array.isArray(e.splitTo)? e.splitTo:[]);
+          const toLabel = toList.length ? toList.join("、") : "-";
+          const ts = e.ts ? new Date(e.ts) : null;
+          const dt = ts ? `${ts.getFullYear()}-${String(ts.getMonth()+1).padStart(2,"0")}-${String(ts.getDate()).padStart(2,"0")}` : "";
+          return `
+            <div class="member-item">
+              <div class="l">
+                <div class="t">${esc(cat)}${note?` · ${esc(note)}`:""}</div>
+                <div class="s">${dt}　付款人：${esc(payer)}　${isFund?"公費":"分攤"}：${esc(toLabel)}</div>
+              </div>
+              <div class="r">¥ ${fmt(alloc)}</div>
+            </div>
+          `;
+        }).join("") : `<div class="member-item"><div class="l"><div class="t">尚無分攤明細</div></div><div class="r"> </div></div>`}
+      </div>
+    `;
+
+    return pills + bars + list;
+  }
+
+  function openMemberSheet(member){
+    const mask = $("memberMask");
+    const body = $("memberSheetBody");
+    const title = $("memberSheetTitle");
+    if(!mask || !body || !title) return;
+
+    title.textContent = `${member} · 花費明細總表`;
+    body.innerHTML = buildMemberDetail(member);
+    mask.setAttribute("aria-hidden","false");
+  }
+  function closeMemberSheet(){
+    const mask = $("memberMask");
+    if(mask) mask.setAttribute("aria-hidden","true");
+  }
+
+  // delegation: 只綁一次，renderSummary 重畫也不怕
+  document.addEventListener("click", (e)=>{
+    const row = e.target.closest(".ld-sum-row[data-member]");
+    if(!row) return;
+    const member = row.getAttribute("data-member");
+    if(!member) return;
+    openMemberSheet(member);
+  });
+
+  document.addEventListener("click", (e)=>{
+    if(e.target && e.target.id === "memberSheetClose") closeMemberSheet();
+    if(e.target && e.target.id === "memberMask") closeMemberSheet();
+  });
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape") closeMemberSheet();
+  });
+})();
+</script>
+
+
+<!-- Member Detail Sheet -->
+<div id="memberMask" class="member-mask" aria-hidden="true">
+  <div class="member-sheet" role="dialog" aria-modal="true" aria-labelledby="memberSheetTitle">
+    <div class="member-sheet-hd">
+      <div id="memberSheetTitle" class="member-sheet-title">成員花費明細</div>
+      <button type="button" class="member-sheet-close" id="memberSheetClose" aria-label="關閉">×</button>
+    </div>
+    <div class="member-sheet-bd" id="memberSheetBody"></div>
   </div>
 </div>
 

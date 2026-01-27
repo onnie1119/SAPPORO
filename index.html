@@ -3313,11 +3313,11 @@ color: #d95380;
   background: #fff;
 }
 .ld-fund-top{
-         display: flex;
+                display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 14px;
-	padding-bottom: 0;
+        padding: 12px 14px;
+        padding-bottom: 4px;
         background: #f7f9ff;
 }
 .ld-fund-name{
@@ -10701,7 +10701,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bars = catEntries.length ? `
       <div class="ld-fund-box" style="margin-top:8px;">
-        <div class="ld-fund-top" style="padding-bottom: 8px;
+        <div class="ld-fund-top" style="    padding-bottom: 10px;
+    padding-top: 10px;
     border-bottom: 1px solid #eef1ff;">
           <div class="ld-fund-name">分類花費</div>
           <div class="ld-fund-balance">合計 ¥ ${fmt(typeof catTotal==="number"?catTotal:totalAlloc)}</div>

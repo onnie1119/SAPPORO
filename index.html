@@ -3291,7 +3291,7 @@ color: #d95380;
 .ld-item-amt{ font-weight: 900;
         font-size: 20px;
         color: #333; }
-.ld-item-sub{         font-size: 13px;
+.ld-item-sub{         font-size:14px;
         margin-top: 0.5rem;
         color: #b0b0b5;}
 .ld-item-actions button, .ld-item-del{
@@ -3320,7 +3320,7 @@ color: #d95380;
 .ld-fund-name{
  font-weight: 600;
         color: #333;
-        font-size: 16px;
+        font-size: 18px;
 }
 .ld-fund-balance{
          font-weight: 600;
@@ -3470,7 +3470,7 @@ color: #d95380;
   font-size: 25px;
   padding: 0;
   padding-bottom: 2px;
-  color: #848484;
+  color: #007aff66;
   cursor: pointer;
   line-height: 1;
 }
@@ -3648,7 +3648,7 @@ color: #d95380;
 .member-bar{
   flex:1;
   height: 10px;
-  background:#f1f5ff;
+  background:#3a7afe17;
   border-radius: 999px;
   overflow:hidden;
 }
@@ -3663,15 +3663,17 @@ color: #d95380;
         min-width: 86px;
         text-align: right; }
 .member-list{
-  margin-top: 10px;
-  border: 1px solid #e9edff;
-  border-radius: 10px;
-  overflow:hidden;
+         margin-top: 1.2rem;
+        border: 1px solid #e9edff;
+        border-radius: 8px;
+        overflow: hidden;
 }
 .member-list .hd{
-  padding: 10px 12px;
-  background:#f7f9ff;
-  font-weight:800;
+         padding: 10px 12px;
+        background: #f7f9ff;
+        font-weight: 600;
+        color: #333;
+        font-size: 18px;
 }
 .member-item{
   padding: 10px 12px;
@@ -3682,9 +3684,30 @@ color: #d95380;
   gap: 10px;
 }
 .member-item .l{ flex: 1; min-width: 0; }
-.member-item .t{ font-weight: 800; }
-.member-item .s{ font-size: 12px; color:#6b7280; margin-top: 2px; }
-.member-item .r{ font-weight: 900; white-space: nowrap; }
+.member-item .t{ font-size: 16px;
+        color: #666;
+        padding-left: 4px;
+        min-width: 64px; }
+.member-item .s{ font-size: 13px;
+        color: #888;
+        padding-left: 4px;
+        font-weight: 400;
+        margin-top: 5px; }
+.member-item .r{         font-weight: 600;
+        font-size: 20px;
+        color: #333;
+        white-space: nowrap;}
+
+
+/* === FIX: 花費明細下排欄位滿版 === */
+.expense-meta,
+.ld-expense-meta,
+.expense-item .meta,
+.expense-item .detail {
+  width: 100% !important;
+  flex-basis: 100% !important;
+  display: block !important;
+}
 
 </style>
 
@@ -3812,6 +3835,17 @@ color: #d95380;
   gap:12px;
 }
 
+
+/* === FIX: 花費明細下排欄位滿版 === */
+.expense-meta,
+.ld-expense-meta,
+.expense-item .meta,
+.expense-item .detail {
+  width: 100% !important;
+  flex-basis: 100% !important;
+  display: block !important;
+}
+
 </style>
 
 
@@ -3828,6 +3862,17 @@ color: #d95380;
 #translate-page .translate-lang-bar{
   display:none !important;
 }
+
+/* === FIX: 花費明細下排欄位滿版 === */
+.expense-meta,
+.ld-expense-meta,
+.expense-item .meta,
+.expense-item .detail {
+  width: 100% !important;
+  flex-basis: 100% !important;
+  display: block !important;
+}
+
 </style>
 
 
@@ -4139,6 +4184,17 @@ color: #d95380;
 	color:white;
 	font-size: 16px;
 }
+
+/* === FIX: 花費明細下排欄位滿版 === */
+.expense-meta,
+.ld-expense-meta,
+.expense-item .meta,
+.expense-item .detail {
+  width: 100% !important;
+  flex-basis: 100% !important;
+  display: block !important;
+}
+
 </style>
 
 </head>
@@ -5008,7 +5064,7 @@ color: #d95380;
       <div style="display:flex;align-items:center;gap:5px;">
         <input id="ldFundInitial" type="number" inputmode="numeric" placeholder="例如：140000" min="0" step="1" style="flex:1;">
         <button id="ldFundEditBtn" type="button" aria-label="編輯公費" class="ld-fund-edit-btn">
-          <span class="icon-pencil" style="font-size:25px;color:#848484;"></span>
+          <span class="icon-pencil" style="font-size:25px;color:#007aff66;"></span>
         </button>
       </div>
     </div>
@@ -10584,7 +10640,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="member-bar-row">
                 <div class="member-bar-name">${esc(cat)}</div>
                 <div class="member-bar"><i style="width:${w.toFixed(2)}%"></i></div>
-                <div class="member-bar-amt">¥ ${fmt(amt)} <span style="color:#6b7280;font-weight:700;">(${pct.toFixed(0)}%)</span></div>
+                <div class="member-bar-amt">¥ ${fmt(amt)} <span style="color:#d95380;font-weight:700;">(${pct.toFixed(0)}%)</span></div>
               </div>
             `;
           }).join("")}

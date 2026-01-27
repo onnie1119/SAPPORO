@@ -3711,20 +3711,26 @@ color: #d95380;
 }
 
 
-/* === 支出明細：上下滾動（主頁） === */
+/* === 支出明細：固定高度＋滾動 === */
 #ldExpenseList{
   max-height: 270px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 14px; /* 底部留一點空間 */
+  padding-bottom: 14px;
 }
 
-/* === 成員花費明細：從 .hd 下方開始滾動 + 底部間距 === */
-.member-list .member-list-scroll{
+/* === 成員花費明細：標題固定，下方滾動 === */
+.member-list{
   max-height: 45vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+.member-list .hd{
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 2;
 }
 
 </style>
@@ -10378,7 +10384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-
+<script>
 <script>
 /* ===== LOGIC PATCH: 分攤欄位永不消失（只做最小行為修正，不動 CSS） =====
    目標：
@@ -10513,8 +10519,8 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<script>
 
+<!-- Fund Edit Modal (獨立，不共用其他彈窗) -->
 <div id="fundModalMask" class="fund-mask" aria-hidden="true">
   <div class="fund-modal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">
     <div class="fund-modal-hd">
@@ -10522,7 +10528,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button type="button" class="fund-close" aria-label="關閉" id="fundModalClose">×</button>
     </div>
 
-
+    <!-- Step 1: choose -->
     <div class="fund-step" id="fundStepChoose">
      
       <div class="fund-actions">
@@ -10531,7 +10537,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
 
-
+    <!-- Step 2: input -->
     <div class="fund-step hidden" id="fundStepInput">
       <div class="fund-desc" id="fundInputDesc">請輸入金額（JPY）</div>
       <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" >
@@ -10542,7 +10548,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 </div>
-</script>
+
 
 <script>
 (function(){
@@ -10676,7 +10682,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const list = `
       <div class="member-list">
         <div class="hd">花費明細</div>
-        <div class="member-list-scroll">
         ${detail.length ? detail.map(({e,alloc})=>{
           const payer = e.payer || "-";
           const cat = e.category || "其他";
@@ -10696,7 +10701,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
         }).join("") : `<div class="member-item"><div class="l"><div class="t">尚無分攤明細</div></div><div class="r"> </div></div>`}
-        </div>
       </div>
     `;
 
@@ -10737,8 +10741,8 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<script>
 
+<!-- Member Detail Sheet -->
 <div id="memberMask" class="member-mask" aria-hidden="true">
   <div class="member-sheet" role="dialog" aria-modal="true" aria-labelledby="memberSheetTitle">
     <div class="member-sheet-hd">
@@ -10748,6 +10752,6 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="member-sheet-bd" id="memberSheetBody"></div>
   </div>
 </div>
-</script>
+
 </body>
 </html>

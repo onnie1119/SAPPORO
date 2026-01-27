@@ -3712,6 +3712,24 @@ color: #d95380;
   display: block !important;
 }
 
+
+
+
+/* === PATCH: 記帳頁「支出明細」清單可上下滑動（只新增這段） === */
+#ldExpenseList{
+  max-height: min(45vh, 360px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.22) transparent;
+}
+#ldExpenseList::-webkit-scrollbar{ width: 6px; }
+#ldExpenseList::-webkit-scrollbar-track{ background: transparent; }
+#ldExpenseList::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.22);
+  border-radius: 99px;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>

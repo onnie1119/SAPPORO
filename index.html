@@ -3711,15 +3711,24 @@ color: #d95380;
 }
 
 
-/* === 支出明細：固定高度＋滾動 === */
+/* === 支出明細：上下滾動（主頁） === */
 #ldExpenseList{
   max-height: 270px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 14px;
+  padding-bottom: 14px; /* 底部留一點空間 */
 }
 
-/* === 成員花費明細：標題固定，下方滾動 === */
+/* === 成員個人明細總表：花費明細上下滾動 + 底部間距 === */
+.member-list{
+  max-height: 45vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+
+/* === 成員花費明細：從 .hd 下方開始滾動 === */
 .member-list{
   max-height: 45vh;
   overflow-y: auto;
@@ -3729,8 +3738,7 @@ color: #d95380;
 .member-list .hd{
   position: sticky;
   top: 0;
-  background: #fff;
-  z-index: 2;
+  z-index: 1;
 }
 
 </style>

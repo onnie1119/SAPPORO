@@ -10656,16 +10656,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const totalAlloc = rows.reduce((s,r)=>s + (r.alloc||0), 0);                 // 該成員實際消費(含公費分攤)
-    const personalPaid = expenses.reduce((s,e)=> s + ((e.payer===member)?(Number(e.amount)||0):0), 0); // 他付款的總額
-    const fundAlloc = rows.reduce((s,r)=> s + ((r.e.payer===FUND)?(r.alloc||0):0), 0);                  // 公費分攤到他
-    const otherAlloc = totalAlloc - fundAlloc;                                                       // 非公費(含自己/他人代付的分攤)
+const personalPaid = expenses.reduce((s,e)=> s + ((e.payer===member)?(Number(e.amount)||0):0), 0); // 他付款的總額
+const fundAlloc = rows.reduce((s,r)=> s + ((r.e.payer===FUND)?(r.alloc||0):0), 0);                  // 公費分攤到他
+const otherAlloc = totalAlloc - fundAlloc;                                                       // 非公費(含自己/他人代付的分攤)
 
-    // 公費餘額計算（涵蓋起始公費金額 + 公費支出；若超支則顯示超支金額）
-    const fundInitial = Math.max(0, Math.round(Number(state.fundInitial)||0));
-    const fundSpent = expenses.reduce((s,e)=> s + ((e && e.payer===FUND)?(Number(e.amount)||0):0), 0);
-    const fundBalanceRaw = fundInitial - fundSpent;
-    const fundBalance = Math.max(0, fundBalanceRaw);
-    const fundOver = Math.max(0, -fundBalanceRaw);
+// 公費餘額計算（涵蓋起始公費金額 + 公費支出；若超支則顯示超支金額）
+const fundInitial = Math.max(0, Math.round(Number(state.fundInitial)||0));
+const fundSpent = expenses.reduce((s,e)=> s + ((e && e.payer===FUND)?(Number(e.amount)||0):0), 0);
+const fundBalanceRaw = fundInitial - fundSpent;
+const fundBalance = Math.max(0, fundBalanceRaw);
+const fundOver = Math.max(0, -fundBalanceRaw);
+
+// ✅【新增】預設「上繳公費」：每人平均（跟你結算頁 paid = paidPersonal + fundPer 的規則一致）:contentReference[oaicite:0]{index=0}
+const fundPer = members.length ? Math.round(fundInitial / members.length) : 0;
+
+// ✅【新增】花費明細總表的「總金額」= 分攤消費(totalAlloc) + 預設上繳公費(fundPer)
+const totalWithFund = totalAlloc + (members.includes(member) ? fundPer : 0);
 
     // 分類統計（以分攤金額為準；含公費）
     // ✅ 若該筆是「本人付款但分攤=0」（你可能把分攤全取消）→ 仍用原始金額計入分類，避免分類漏項
@@ -10689,7 +10695,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pills = `
       <div class="member-mini">
-        <div class="member-pill"><div class="k">總金額</div><div class="v">¥ ${fmt(totalAlloc)}</div></div>
+        <div class="member-pill"><div class="k">總金額</div><div class="v">¥ ${fmt(totalWithFund)}
+</div></div>
         <div class="member-pill"><div class="k">個人花費</div><div class="v">¥ ${fmt(otherAlloc)}</div></div>
         <div class="member-pill">
           <div class="k">公費餘額</div>

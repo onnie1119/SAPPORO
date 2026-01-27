@@ -3719,26 +3719,12 @@ color: #d95380;
   padding-bottom: 14px; /* 底部留一點空間 */
 }
 
-/* === 成員個人明細總表：花費明細上下滾動 + 底部間距 === */
-.member-list{
+/* === 成員花費明細：從 .hd 下方開始滾動 + 底部間距 === */
+.member-list .member-list-scroll{
   max-height: 45vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(18px + env(safe-area-inset-bottom));
-}
-
-
-/* === 成員花費明細：從 .hd 下方開始滾動 === */
-.member-list{
-  max-height: 45vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(18px + env(safe-area-inset-bottom));
-}
-.member-list .hd{
-  position: sticky;
-  top: 0;
-  z-index: 1;
 }
 
 </style>
@@ -10690,6 +10676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const list = `
       <div class="member-list">
         <div class="hd">花費明細</div>
+        <div class="member-list-scroll">
         ${detail.length ? detail.map(({e,alloc})=>{
           const payer = e.payer || "-";
           const cat = e.category || "其他";
@@ -10709,6 +10696,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
         }).join("") : `<div class="member-item"><div class="l"><div class="t">尚無分攤明細</div></div><div class="r"> </div></div>`}
+        </div>
       </div>
     `;
 

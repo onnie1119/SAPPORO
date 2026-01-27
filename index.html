@@ -15,11 +15,9 @@
 <meta content="北海道の旅" name="apple-mobile-web-app-title"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <style>
+	
 
-
-/* ===== MERGED STYLES (auto) ===== */
-
-html {
+	html {
 		margin: 0;
 		padding: 0;
 		height: 100%;}
@@ -3712,6 +3710,15 @@ color: #d95380;
   display: block !important;
 }
 
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.20.4/dist/index.js"></script>
+
+<style>
 /* ===== Translate (Detect <-> JA/EN) ===== */
 #translate-page{
   background:#F6F9FC;
@@ -3840,6 +3847,10 @@ color: #d95380;
   display: block !important;
 }
 
+</style>
+
+
+<style>
 /* === FORCE HIDE OLD TRANSLATE LANGUAGE BARS === */
 .translate-lang-bar,
 .lang-bar,
@@ -3863,6 +3874,10 @@ color: #d95380;
   display: block !important;
 }
 
+</style>
+
+
+<style>
 /* === FORCE SHOW ROMAN / PINYIN === */
 #translate-page .tr-roman{
   display:block !important;
@@ -4181,41 +4196,7 @@ color: #d95380;
   display: block !important;
 }
 
-/* ===== Scroll fixes (auto) ===== */
-/* 記帳頁：支出明細清單可捲動（欄位內捲動） */
-#ldExpenseList{
-  max-height: 45vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-/* 個人：花費明細總表 明細欄位（hd 下方捲動，且 scrollbar 不壓到標題） */
-.member-list{
-  max-height: 60vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable;
-}
-.member-list .hd{
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/wanakana@5.3.1/umd/wanakana.min.js"></script>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.20.4/dist/index.js"></script>
-
-
-
-
-
-
-
-
 
 </head>
 <body>
@@ -5194,9 +5175,7 @@ color: #d95380;
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <script>
-/* ===== MERGED SCRIPT 1/11 ===== */
-
-let isFirstHomeRender = true;
+		let isFirstHomeRender = true;
 		let originalTicketCategoryHTML = "";
 		let navMode = "menu"; // menu | back
 
@@ -6083,9 +6062,8 @@ let isFirstHomeRender = true;
 			});
 
 		});
-
-
-/* ===== MERGED SCRIPT 2/11 ===== */
+	</script>
+<script>
 
 /* =========================
    Pages / Navigation
@@ -6595,7 +6573,38 @@ function settle(net){
     return res;
   }
 
-  function renderExpenses(){
+  
+  // ===== Scroll limit helper: show only first N items height, rest scroll =====
+  function applyScrollLimit(container, itemSelector, maxItems, headerSelector){
+    try{
+      if(!container) return;
+      const items = Array.from(container.querySelectorAll(itemSelector));
+      if(items.length <= maxItems){
+        container.style.maxHeight = "";
+        container.style.overflowY = "";
+        return;
+      }
+      let h = 0;
+      if(headerSelector){
+        const hd = container.querySelector(headerSelector);
+        if(hd) h += hd.offsetHeight;
+      }
+      // include margins by using getBoundingClientRect + computed styles
+      for(let i=0;i<Math.min(maxItems, items.length);i++){
+        const el = items[i];
+        const cs = window.getComputedStyle(el);
+        const mt = parseFloat(cs.marginTop)||0;
+        const mb = parseFloat(cs.marginBottom)||0;
+        h += el.offsetHeight + mt + mb;
+      }
+      // small buffer for borders/padding
+      h += 4;
+      container.style.maxHeight = h + "px";
+      container.style.overflowY = "auto";
+      container.style.scrollbarGutter = "stable";
+    }catch(err){}
+  }
+function renderExpenses(){
     const list = $("ldExpenseList");
     if(!list) return;
     list.innerHTML = "";
@@ -6643,7 +6652,11 @@ function settle(net){
       });
       list.appendChild(item);
     });
+
+    // Only show 3 items in view; scroll for the rest
+    applyScrollLimit(list, ".ld-item", 3);
   }
+
 
   function renderSummary(){
     const sum = $("ldSummary");
@@ -7785,10 +7798,8 @@ document.querySelectorAll(".bottom-nav button").forEach(btn => {
     btn.classList.add("active");
   });
 });
-
-
-/* ===== MERGED SCRIPT 3/11 ===== */
-
+</script>
+<script>
 /* =========================================================
    Weather Page – FULL JS (Timezone-correct, no redeclare)
    ✅ 支援「目前位置」+ 固定城市
@@ -8886,10 +8897,8 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   };
 
 })();
-
-
-/* ===== MERGED SCRIPT 4/11 ===== */
-
+</script>
+<script>
 /* =========================================================
    Shopping – FINAL (Google Sheet Sync via Apps Script JSONP)
    - Works for iOS "Add to Home Screen" (PWA-like)
@@ -9706,11 +9715,9 @@ const descText = weatherCodeToTextWithDayNight(codeNowN, isNightNow);
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 })();
-
-
-/* ===== MERGED SCRIPT 5/11 ===== */
-
-function syncBarsHeight(){
+</script>
+<script>
+  function syncBarsHeight(){
     const topbar = document.getElementById("topbar");
     const bottom = document.querySelector(".bottom-nav");
 
@@ -9913,10 +9920,9 @@ renderHourly24({
   }
 }
 
-
-/* ===== MERGED SCRIPT 6/11 ===== */
-
-const SHEET_NAME = "Sheet1";
+</script>
+<script>
+	const SHEET_NAME = "Sheet1";
 
 function doGet(e) {
   const code = String((e.parameter && e.parameter.code) || "").trim();
@@ -10034,9 +10040,15 @@ function saveLocal(items){
 	
 }
 
+</script>
 
-/* ===== MERGED SCRIPT 7/11 ===== */
 
+
+
+
+
+
+<script>
 function buildPayerUI(){
   const select = document.getElementById('ldPayer');
   const mount  = document.getElementById('payerUI');
@@ -10381,10 +10393,11 @@ document.addEventListener('DOMContentLoaded', () => {
   buildCategoryUI();
   buildPayerUI();
 });
+</script>
 
 
-/* ===== MERGED SCRIPT 8/11 ===== */
-
+<script>
+<script>
 /* ===== LOGIC PATCH: 分攤欄位永不消失（只做最小行為修正，不動 CSS） =====
    目標：
    - 不論你怎麼勾/取消分攤，分攤欄位都不會被隱藏（避免「整個欄位消失」）
@@ -10429,10 +10442,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('DOMContentLoaded', normalize);
 })();
+</script>
 
 
-/* ===== MERGED SCRIPT 9/11 ===== */
-
+<script>
 /* ===== PATCH 2: 成員 + 按鈕恢復 & 結算預設顯示公費 ===== */
 (function(){
   /* --- 1) 恢復成員新增 + 按鈕 --- */
@@ -10483,11 +10496,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 })();
+</script>
 
 
-/* ===== MERGED SCRIPT 10/11 ===== */
-
-/* ===== PATCH 3: 公費付款時，分攤預設全員勾選（動態成員） =====
+<script>/* ===== PATCH 3: 公費付款時，分攤預設全員勾選（動態成員） =====
    規則：
    - 當 payer = 公費
    - 且目前分攤未手動調整/或成員變動時
@@ -10517,10 +10529,40 @@ document.addEventListener('DOMContentLoaded', () => {
     applyDefaultSplit();
   });
 })();
+</script>
 
 
-/* ===== MERGED SCRIPT 11/11 ===== */
+<!-- Fund Edit Modal (獨立，不共用其他彈窗) -->
+<div id="fundModalMask" class="fund-mask" aria-hidden="true">
+  <div class="fund-modal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">
+    <div class="fund-modal-hd">
+      <div id="fundModalTitle" class="fund-modal-title">編輯公費</div>
+      <button type="button" class="fund-close" aria-label="關閉" id="fundModalClose">×</button>
+    </div>
 
+    <!-- Step 1: choose -->
+    <div class="fund-step" id="fundStepChoose">
+     
+      <div class="fund-actions">
+        <button type="button" class="fund-btn" id="fundBtnSet">修改金額</button>
+        <button type="button" class="fund-btn" id="fundBtnAdd">新增公費</button>
+      </div>
+    </div>
+
+    <!-- Step 2: input -->
+    <div class="fund-step hidden" id="fundStepInput">
+      <div class="fund-desc" id="fundInputDesc">請輸入金額（JPY）</div>
+      <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" >
+      <div class="fund-actions">
+        <button type="button" class="fund-btn" id="fundBtnOk">確定</button>
+        <button type="button" class="fund-btn fund-cancel" id="fundBtnBack">返回</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
 (function(){
   const KEY = "LD_LEDGER_V1";
   const FUND = "公費";
@@ -10685,7 +10727,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     title.textContent = `${member} · 花費明細總表`;
     body.innerHTML = buildMemberDetail(member);
-    mask.setAttribute("aria-hidden","false");
+    
+    // Only show 3 detail rows in view; scroll for the rest
+    const ml = body.querySelector(".member-list");
+    if(ml) applyScrollLimit(ml, ".member-item", 3, ".hd");
+mask.setAttribute("aria-hidden","false");
   }
   function closeMemberSheet(){
     const mask = $("memberMask");
@@ -10710,61 +10756,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Fund Edit Modal (獨立，不共用其他彈窗) -->
-<div id="fundModalMask" class="fund-mask" aria-hidden="true">
-  <div class="fund-modal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">
-    <div class="fund-modal-hd">
-      <div id="fundModalTitle" class="fund-modal-title">編輯公費</div>
-      <button type="button" class="fund-close" aria-label="關閉" id="fundModalClose">×</button>
-    </div>
-
-    <!-- Step 1: choose -->
-    <div class="fund-step" id="fundStepChoose">
-     
-      <div class="fund-actions">
-        <button type="button" class="fund-btn" id="fundBtnSet">修改金額</button>
-        <button type="button" class="fund-btn" id="fundBtnAdd">新增公費</button>
-      </div>
-    </div>
-
-    <!-- Step 2: input -->
-    <div class="fund-step hidden" id="fundStepInput">
-      <div class="fund-desc" id="fundInputDesc">請輸入金額（JPY）</div>
-      <input id="fundInputNumber" class="fund-input" type="number" inputmode="numeric" min="0" step="1" >
-      <div class="fund-actions">
-        <button type="button" class="fund-btn" id="fundBtnOk">確定</button>
-        <button type="button" class="fund-btn fund-cancel" id="fundBtnBack">返回</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
 
 
 <!-- Member Detail Sheet -->
